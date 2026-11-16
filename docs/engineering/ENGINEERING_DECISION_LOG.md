@@ -1,0 +1,41 @@
+# ATHEER Trading — Engineering Decision Log
+
+This log records decisions and proposals across project knowledge sources. It does not replace formal ADRs. Formal architectural decisions must be reconciled with historical ADRs before assigning or reusing ADR identifiers.
+
+## Owner-endorsed decisions
+
+### EDL-001 — Federated project knowledge and authority
+
+- **Date:** 2026-11-16
+- **Status:** Owner-endorsed
+- **Decision:** GitHub, ChatGPT Library, and relevant historical ChatGPT conversations form a coordinated project knowledge system. GitHub is authoritative for committed software and Git history, but is not the sole authoritative source for all project architecture or knowledge. The Library remains the designated workspace for governing standards, specifications, architecture documentation, research, and archives. Conversations preserve chronology and rationale. Continuity records connect these sources.
+- **Consequences:** Maintain source provenance, document registry, conversation index, decision log, and continuity records. Do not duplicate or silently supersede authoritative documents.
+
+### EDL-002 — Public foundational repository
+
+- **Date:** 2026-11-16
+- **Status:** Owner-endorsed
+- **Decision:** `atheertrading/atheer-trading-platform` is public during the foundational stage.
+- **Consequences:** Treat all committed content, issues, pull requests, workflow logs, and artifacts as public. Never commit secrets or sensitive account data. Public visibility does not itself grant a reuse license; license selection remains a separate owner decision.
+
+### EDL-003 — Provider-independent AI extensibility
+
+- **Date:** 2026-11-16
+- **Status:** Owner-endorsed product/architecture direction; detailed design pending
+- **Decision:** AI is a foundational platform capability. The architecture should remain extensible across model providers, hosted and local models, agent frameworks, tools, and multi-agent orchestration rather than imposing arbitrary single-vendor restrictions.
+- **Constraints:** Model/provider flexibility does not imply unrestricted permissions. Agents must have explicit responsibilities, least-privilege tool access, data boundaries, auditability, and controlled side effects. AI-generated order intents must pass through the same centralized RiskEngine and Execution Gateway as other order sources.
+- **Next:** Develop an AI architecture proposal and compare provider abstraction, model routing, agent runtime, tool contracts, evaluation, observability, and cost/latency controls.
+
+## Proposals and unresolved decisions
+
+| ID | Topic | Status | Required next step |
+|---|---|---|---|
+| EDP-001 | Modular monorepo structure | Proposed | Reconcile surviving code and documentation before finalizing boundaries |
+| EDP-002 | IPDS color and semantic token system | Proposed | Inspect existing visual specifications, then validate contrast and component semantics |
+| EDP-003 | License for public repository | Unresolved | Owner selects an explicit license; do not add one by assumption |
+| EDP-004 | Branch protection and merge policy | Pending configuration | Inspect repository settings and choose enforceable rules |
+| EDP-005 | CI toolchain matrix | Pending verification | Confirm local and hosted Swift/Xcode/Node toolchains |
+
+## Decision maintenance
+
+Every material decision must state its source, date, scope, status, rationale, consequences, and whether a formal ADR is required. Superseded decisions remain in the log with a replacement reference; do not erase history.
