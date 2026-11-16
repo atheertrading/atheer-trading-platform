@@ -1,0 +1,35 @@
+flowchart LR
+    Trader[Professional Trader]
+    Researcher[Quant Researcher]
+    Operator[Strategy Operator]
+
+    subgraph ATHEER[ATHEER Trading Platform]
+        Workstation[macOS Workstation]
+        Platform[Platform Services]
+        Intelligence[Quantitative and AI Intelligence]
+        Trading[Governed Trading Domain]
+        Risk[Central Risk and Authorization]
+        OMS[Order Management]
+        Gateway[Execution Gateway]
+        Data[Market Data Platform]
+    end
+
+    Broker[Broker APIs and Account]
+    Providers[Market Data Providers]
+    Models[Hosted and Local Model Providers]
+
+    Trader --> Workstation
+    Researcher --> Workstation
+    Operator --> Workstation
+    Workstation --> Platform
+    Workstation --> Trading
+    Providers --> Data
+    Data --> Intelligence
+    Intelligence --> Trading
+    Trading --> Risk
+    Risk --> OMS
+    OMS --> Gateway
+    Gateway <--> Broker
+    Intelligence <--> Models
+    Broker --> Data
+    Broker --> Trading
