@@ -78,3 +78,6 @@ Local synchronization instructions are in docs/development/PULL_REQUEST_AND_LOCA
 
 
 Toolchain compatibility correction: XcodeGen is pinned to 2.36.1 and built from source using the selected Xcode-provided Swift compiler. The current XcodeGen/Homebrew formula line requires Xcode 15.3 or later and is not suitable for the historical Xcode 14.3.1 workstation. Homebrew is therefore optional, not a required bootstrap dependency. The local installer and both CI workflows use the same pinned generator version. This compatibility correction is committed to the open platform foundation PR; local compilation remains unverified.
+
+
+The first complete repository-hygiene run reached Markdown lint and reported 82 formatting-only findings across 22 historical and new Markdown files. The project has a temporary compatibility lint baseline that keeps the remaining default rules active while M00-018 normalizes legacy formatting and re-enables the spacing/link rules. The backend-toolchain job passed Node.js 24 validation. The hosted macOS build/test job is still pending; no Xcode build/test pass is claimed.
