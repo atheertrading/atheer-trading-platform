@@ -51,7 +51,7 @@ bash scripts/build-macos.sh
 bash scripts/test-macos.sh
 ~
 
-The generated Xcode project is reproducible from the committed project.yml and is not the source of truth.
+For a guarded clone/update flow that refuses to overwrite dirty or unrelated directories, run: bash scripts/bootstrap-local.sh. It targets ~/Developer/ATHEER/atheer-trading-platform by default and does not modify the earlier atheer-trading-pro checkout.\n\nThe generated Xcode project is reproducible from the committed project.yml and is not the source of truth.
 
 ## Backend
 Node.js 24 is the selected backend runtime direction. Add TypeScript packages only when their service boundary and contracts are specified. Do not add dependencies without a concrete consumer and security review.
