@@ -21,6 +21,7 @@ Prepare a safe local synchronization and workstation bootstrap workflow for the 
 - Expanded the read-only workstation doctor for Git identity/state, Xcode, Swift, XcodeGen, Node.js 24, npm, optional GitHub CLI authentication, and optional PostgreSQL/Docker status.
 - Standardized local Xcode DerivedData under .build/DerivedData; added an app-run helper and Makefile targets for sync, bootstrap, backend setup/check/start, app run, and safe-sync tests.
 - Changed make clean to remove build artifacts only; it no longer deletes the generated Xcode project.
+- Added a dedicated GitHub Actions workflow that runs shell syntax checks and the safe-sync behavior test on Ubuntu.
 
 ## Verification performed in the isolated Linux container
 
@@ -32,7 +33,7 @@ Prepare a safe local synchronization and workstation bootstrap workflow for the 
 
 ## Acceptance status
 
-**IN PROGRESS.** Hosted repository CI must run the script test and lint checks. The owner's Mac still requires actual repository-state inspection, safe synchronization, prerequisite diagnostics, Xcode project generation, build, XCTest, and application launch.
+**IN PROGRESS.** Hosted repository CI must run the new local-sync workflow and lint checks. The owner's Mac still requires actual repository-state inspection, safe synchronization, prerequisite diagnostics, Xcode project generation, build, XCTest, and application launch.
 
 ## Protected boundaries
 
@@ -40,7 +41,7 @@ No local user files were accessed or modified. No GitHub credentials, Apple sign
 
 ## Next actions
 
-1. Integrate the safe-sync test into repository CI after the workflow action-update PRs are merged.
+1. Verify the new local-sync workflow and repository hygiene checks.
 2. Merge this PR only after its relevant CI checks pass.
 3. Reconcile the current Mac worktree and run the safe-sync procedure only when authorized local computer access is available.
 4. Run make doctor, make bootstrap, make backend-check, make build, make test, start the local API, and verify app launch on the actual Mac.
