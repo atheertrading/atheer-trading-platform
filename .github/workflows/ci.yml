@@ -14,7 +14,7 @@ jobs:
     name: Repository hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate project baseline
         run: |
           set -euo pipefail
@@ -37,7 +37,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Inspect Apple toolchain
         run: |
           xcode-select -p
@@ -67,7 +67,7 @@ jobs:
     name: Backend toolchain
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
