@@ -23,11 +23,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare Swift project for CodeQL
         if: matrix.language == 'swift'
-        run: brew install xcodegen
+        run: bash scripts/install-xcodegen.sh
       - name: Generate Xcode project
         if: matrix.language == 'swift'
         working-directory: apps/macos/ATHEERTradingPro
-        run: xcodegen generate
+        run: $HOME/.local/bin/xcodegen generate
       - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
