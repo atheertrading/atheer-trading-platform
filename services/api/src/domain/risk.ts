@@ -1,4 +1,4 @@
-import { Decimal, DomainError, UtcTimestamp } from "./shared.js";
+import { Decimal, DomainError, Money, UtcTimestamp } from "./shared.js";
 import { MarketQuote, OrderIntent, TradingAccount, TradingInstrument, TradingPosition, TradingSession, identifier } from "./models.js";
 import type { AccountId, InstrumentId } from "./models.js";
 
@@ -51,32 +51,35 @@ export class MaximumOrderQuantityPolicy implements RiskPolicy {
 }
 
 export class MaximumInstrumentExposurePolicy implements RiskPolicy {
-  private readonly maximum: Decimal;
-  constructor(readonly id: string, readonly version: string, maximumExposure: Decimal | string) {
-    this.maximum = Decimal.parse(maximumExposure);
-    if (!this.maximum.isPositive) throw new DomainError("INVALID_RISK_LIMIT", "Maximum instrument exposure must be positive.");
+  private readonly maximum: Money;
+  constructor(readonly id: string, readonly version: string, maximumExposure: Money) {
+    this.maximum = maximumExposure;
+    if (!this.maximum.amount.isPositive) throw new DomainError("INVALID_RISK_LIMIT", "Maximum instrument exposure must be positive.");
   }
   evaluate(intent: OrderIntent, context: RiskContext): readonly RiskViolation[] {
     if (intent.input.operation === "REDUCE" || intent.input.operation === "CLOSE") return [];
     if (context.instrument.specification.input.valuationModel !== "LINEAR") {
       return [{ code: "UNSUPPORTED_EXPOSURE_MODEL", message: "No approved exposure calculator exists for this instrument valuation model.", severity: "BLOCK" }];
     }
+    if (!context.instrument.quoteCurrency || context.instrument.quoteCurrency !== this.maximum.currency) {
+      return [{ code: "RISK_LIMIT_CURRENCY_MISMATCH", message: "Instrument exposure limit currency must match instrument quote currency.", severity: "BLOCK" }];
+    }
     const mark = context.quote.executablePrice(intent.input.side);
     const proposed = intent.quantity.multiply(mark).multiply(context.instrument.specification.contractMultiplier);
     const existing = context.positions
       .filter(position => position.input.instrumentId === intent.input.instrumentId && position.input.status !== "CLOSED")
       .reduce((total, position) => total.add(position.quantity.multiply(mark).multiply(context.instrument.specification.contractMultiplier)), Decimal.zero());
-    return existing.add(proposed).compare(this.maximum) > 0
-      ? [{ code: "MAX_INSTRUMENT_EXPOSURE_EXCEEDED", message: `Proposed exposure exceeds configured instrument limit ${this.maximum}.`, severity: "BLOCK" }]
+    return existing.add(proposed).compare(this.maximum.amount) > 0
+      ? [{ code: "MAX_INSTRUMENT_EXPOSURE_EXCEEDED", message: `Proposed exposure exceeds configured instrument limit ${this.maximum.amount} ${this.maximum.currency}.`, severity: "BLOCK" }]
       : [];
   }
 }
 
 export class MaximumAccountExposurePolicy implements RiskPolicy {
-  private readonly maximum: Decimal;
-  constructor(readonly id: string, readonly version: string, maximumExposureInAccountCurrency: Decimal | string) {
-    this.maximum = Decimal.parse(maximumExposureInAccountCurrency);
-    if (!this.maximum.isPositive) throw new DomainError("INVALID_RISK_LIMIT", "Maximum account exposure must be positive.");
+  private readonly maximum: Money;
+  constructor(readonly id: string, readonly version: string, maximumExposureInAccountCurrency: Money) {
+    this.maximum = maximumExposureInAccountCurrency;
+    if (!this.maximum.amount.isPositive) throw new DomainError("INVALID_RISK_LIMIT", "Maximum account exposure must be positive.");
   }
   evaluate(intent: OrderIntent, context: RiskContext): readonly RiskViolation[] {
     if (intent.input.operation === "REDUCE" || intent.input.operation === "CLOSE") return [];
@@ -84,6 +87,9 @@ export class MaximumAccountExposurePolicy implements RiskPolicy {
       return [{ code: "UNSUPPORTED_ACCOUNT_EXPOSURE_MODEL", message: "No approved account exposure calculator exists for this instrument valuation model.", severity: "BLOCK" }];
     }
     const currency = context.instrument.quoteCurrency;
+    if (this.maximum.currency !== context.account.currency) {
+      return [{ code: "RISK_LIMIT_CURRENCY_MISMATCH", message: "Account exposure limit currency must match account currency.", severity: "BLOCK" }];
+    }
     if (!currency || currency !== context.account.currency) {
       return [{ code: "ACCOUNT_EXPOSURE_FX_REQUIRED", message: "Account-level exposure cannot be aggregated without an approved FX conversion rate.", severity: "BLOCK" }];
     }
@@ -94,8 +100,8 @@ export class MaximumAccountExposurePolicy implements RiskPolicy {
     }
     const existing = context.existingGrossExposureByCurrency.get(currency) ?? Decimal.zero();
     const proposed = intent.quantity.multiply(mark).multiply(multiplier);
-    return existing.add(proposed).compare(this.maximum) > 0
-      ? [{ code: "MAX_ACCOUNT_EXPOSURE_EXCEEDED", message: `Proposed account exposure exceeds configured limit ${this.maximum}.`, severity: "BLOCK" }]
+    return existing.add(proposed).compare(this.maximum.amount) > 0
+      ? [{ code: "MAX_ACCOUNT_EXPOSURE_EXCEEDED", message: `Proposed account exposure exceeds configured limit ${this.maximum.amount} ${this.maximum.currency}.`, severity: "BLOCK" }]
       : [];
   }
 }
@@ -123,6 +129,9 @@ export class RiskEngine {
     if (context.account.environment !== intent.input.environment || context.session.input.environment !== intent.input.environment) block("ENVIRONMENT_MISMATCH", "Intent, account and session environments must match.");
     if (context.session.input.accountId !== intent.input.accountId) block("SESSION_ACCOUNT_MISMATCH", "Trading session does not belong to the intent account.");
     if (context.account.input.status !== "ACTIVE" || !context.account.input.platformTradingEnabled) block("ACCOUNT_NOT_AUTHORIZED", "Account is not enabled by platform authorization.");
+    if (!context.account.input.brokerTradingEnabled) block("BROKER_TRADING_DISABLED", "Broker-reported account capability does not permit trading.");
+    if (context.positions.some(position => position.input.accountId !== intent.input.accountId)) block("POSITION_ACCOUNT_MISMATCH", "Risk context contains a position from another account.");
+    if ([...context.existingGrossExposureByCurrency].some(([code, value]) => !/^[A-Z]{3}$/.test(code) || value.isNegative)) block("INVALID_EXPOSURE_SNAPSHOT", "Gross exposure snapshot contains an invalid currency or negative exposure.");
     if (intent.input.environment === "LIVE") block("LIVE_TRADING_DISABLED", "LIVE trading is disabled by the current platform safety baseline.");
     const exposureIncreasing = intent.input.operation === "OPEN" || intent.input.operation === "INCREASE";
     if (context.session.input.state === "CLOSED") block("SESSION_CLOSED", "Closed trading sessions cannot accept new order intents.");

@@ -252,12 +252,14 @@ test('RiskEngine fails closed when no policies are configured', () => {
 test('RiskEngine rejects excessive order volume and exposure', () => {
   const volumeResult = riskEngine([new MaximumOrderQuantityPolicy('volume', '1', '1')]).assess(intent(), context());
   assert.ok(volumeResult.violations.some(v => v.code === 'MAX_ORDER_QUANTITY_EXCEEDED'));
-  const exposureResult = riskEngine([new MaximumInstrumentExposurePolicy('exposure', '1', '150')]).assess(intent(), context());
+  const exposureResult = riskEngine([new MaximumInstrumentExposurePolicy('exposure', '1', new Money('150', 'USD'))]).assess(intent(), context());
   assert.ok(exposureResult.violations.some(v => v.code === 'MAX_INSTRUMENT_EXPOSURE_EXCEEDED'));
-  const accountExposure = riskEngine([new MaximumAccountExposurePolicy('account-exposure', '1', '150')]).assess(intent(), context({ existingGrossExposureByCurrency: new Map([['USD', Decimal.parse('100')]]) }));
+  const accountExposure = riskEngine([new MaximumAccountExposurePolicy('account-exposure', '1', new Money('150', 'USD'))]).assess(intent(), context({ existingGrossExposureByCurrency: new Map([['USD', Decimal.parse('100')]]) }));
   assert.ok(accountExposure.violations.some(v => v.code === 'MAX_ACCOUNT_EXPOSURE_EXCEEDED'));
-  const incompleteExposure = riskEngine([new MaximumAccountExposurePolicy('account-exposure', '1', '150')]).assess(intent(), context({ exposureSnapshotComplete: false }));
+  const incompleteExposure = riskEngine([new MaximumAccountExposurePolicy('account-exposure', '1', new Money('150', 'USD'))]).assess(intent(), context({ exposureSnapshotComplete: false }));
   assert.ok(incompleteExposure.violations.some(v => v.code === 'ACCOUNT_EXPOSURE_SNAPSHOT_INCOMPLETE'));
+  const wrongCurrency = riskEngine([new MaximumAccountExposurePolicy('account-exposure', '1', new Money('150', 'EUR'))]).assess(intent(), context());
+  assert.ok(wrongCurrency.violations.some(v => v.code === 'RISK_LIMIT_CURRENCY_MISMATCH'));
 });
 
 test('RiskEngine rejects halted, stale, inactive-account and LIVE contexts', () => {
@@ -278,6 +280,8 @@ test('RiskEngine rejects account, instrument and environment mismatches', () => 
   const wrongAccount = new TradingAccount({ id: 'other-account', brokerId: 'broker-generic', environment: 'DEMO', currency: 'USD', status: 'ACTIVE', brokerTradingEnabled: true, platformTradingEnabled: true, provenance: provenance() });
   const result = engine.assess(intent(), context({ account: wrongAccount }));
   assert.ok(result.violations.some(v => v.code === 'ACCOUNT_MISMATCH'));
+  const noBrokerCapability = new TradingAccount({ id: accountId, brokerId: 'broker-generic', environment: 'DEMO', currency: 'USD', status: 'ACTIVE', brokerTradingEnabled: false, platformTradingEnabled: true, provenance: provenance() });
+  assert.ok(engine.assess(intent(), context({ account: noBrokerCapability })).violations.some(v => v.code === 'BROKER_TRADING_DISABLED'));
 });
 
 test('OMS registers and risk-authorizes an intent through the single intake', async () => {

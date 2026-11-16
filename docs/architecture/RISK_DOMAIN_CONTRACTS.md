@@ -26,8 +26,8 @@ Risk context includes account, trading session, instrument specification, quote,
 ## Configurable policies implemented
 
 - `MaximumOrderQuantityPolicy`.
-- `MaximumInstrumentExposurePolicy` (gross exposure, linear instruments only).
-- `MaximumAccountExposurePolicy` (requires a complete exposure snapshot and account-currency-compatible valuation; no implicit FX).
+- `MaximumInstrumentExposurePolicy` (gross exposure, linear instruments only, with a Money limit whose currency must match the instrument quote currency).
+- `MaximumAccountExposurePolicy` (Money limit in account currency; requires a complete gross exposure snapshot and account-currency-compatible valuation; no implicit FX).
 
 The account-exposure context field is `existingGrossExposureByCurrency`; the provider must supply a complete gross exposure snapshot. No netting assumption is made. No numeric production limit is embedded as a default. Policy values and versions must be supplied explicitly by a future authorized configuration layer.
 
