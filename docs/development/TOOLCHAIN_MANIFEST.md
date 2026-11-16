@@ -9,7 +9,7 @@
 | XcodeGen | 2.36.1, commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c | Built from source by scripts/install-xcodegen.sh; upstream Package.resolved locks dependencies |
 | Node.js | 24.x | Major version selected in .nvmrc |
 | npm | Bundled with Node.js 24 | Backend toolchain |
-| GitHub macOS CI | macos-15 | Hosted build and test environment |
+| GitHub macOS CI | macos-15-intel | Hosted build and test environment |
 | GitHub checkout action | actions/checkout@v4 | CI source retrieval |
 | GitHub setup-node action | actions/setup-node@v4 | Node toolchain setup |
 | Markdown lint action | DavidAnson/markdownlint-cli2-action@v19 | Markdown quality checks |
