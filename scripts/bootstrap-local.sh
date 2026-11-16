@@ -27,7 +27,8 @@ fi
 cd "$TARGET_DIR"
 printf '\nRepository synchronized: %s\n' "$TARGET_DIR"
 git status --short --branch
+bash scripts/install-xcodegen.sh
 bash scripts/doctor.sh
 cd apps/macos/ATHEERTradingPro
-xcodegen generate
+$HOME/.local/bin/xcodegen generate
 printf '\nXcode project generated successfully. Open ATHEERTradingPro.xcodeproj in Xcode or run make build and make test from the repository root.\n'
