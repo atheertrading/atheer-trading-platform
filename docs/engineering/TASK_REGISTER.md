@@ -82,3 +82,24 @@ XcodeGen is pinned to 2.36.1 for the historical Xcode 14.3.1 workstation. Do not
 ## Follow-up documentation quality task
 
 - M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable the temporarily disabled markdownlint spacing/link rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
+
+
+## Mermaid documentation and architecture source recovery — 2026-11-16
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| M00-019 | P0 | Correct continuity records for PR #2 merge and active repository identity | IN PROGRESS | Session 008 addendum; update stale implementation and decision snapshots |
+| M00-020 | P0 | Recover and migrate all original Mermaid blocks from the Library archive | IN PROGRESS | 31 source Markdown documents / 52 blocks; extractor committed; generated files, provenance manifest, rendering and review still pending |
+| M01-007 | P1 | Establish canonical architecture diagram sources and Mermaid CI rendering | IN PROGRESS | Eight canonical `.mmd` files, diagram README and workflow on `docs/architecture-diagram-baseline`; PR/checks pending |
+| M00-021 | P1 | Reconcile the 47 formal documents, 517 Q&A sources and approval metadata | IN PROGRESS | Existing source inventory; document-level authority/revision/approval traceability pending |
+
+The historical Mermaid count is **31 source documents containing 52 Mermaid blocks**, not 31 individual diagrams. Do not mark M00-020 or M01-007 DONE until generated legacy sources are committed, all Mermaid files render in CI, and provenance is verified.
+
+
+## Documentation readiness and scaling follow-up — 2026-11-16
+
+- Added `docs/engineering/REPOSITORY_DOCUMENTATION_READINESS.md`: identifies present bootstrap documentation, historical references absent from the current tree, and future production/scaling documentation.
+- Added `docs/architecture/PLATFORM_SCALING_AND_DEPLOYMENT_STRATEGY.md`: proposed modular-monolith-first scaling strategy; no cloud provider, capacity target, SLO, RPO or RTO is invented.
+- Added `docs/engineering/REQUIREMENTS_TRACEABILITY_MATRIX.md`: initial traceability structure; requirement population remains pending.
+- M00-009 (Requirements Traceability Matrix) is now **IN PROGRESS**, not DONE; a template exists, but formal requirement mapping and verification links remain outstanding.
+- PR #6 is open; do not mark Mermaid baseline or repository documentation changes DONE until the full latest CI run passes and the PR is merged.

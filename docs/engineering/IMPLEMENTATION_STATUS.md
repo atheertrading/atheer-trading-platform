@@ -87,3 +87,15 @@ Final toolchain pin: XcodeGen 2.36.1 is built from immutable upstream commit 26e
 
 
 CI resource optimization: Swift CodeQL initialization and analysis now run inside the same macOS job as Xcode build and XCTest, avoiding a second macOS runner allocation. The standalone CodeQL workflow analyzes GitHub Actions configuration on Ubuntu. This preserves Swift static analysis while reducing duplicate macOS runner demand.
+
+
+## Current verified correction — 2026-11-16
+
+This section supersedes earlier status text in this file that says platform foundation PR #2 is open or that its hosted CI has not run.
+
+- Platform foundation PR #2 was squash-merged to `main` at `83e524e35a7f167abf2f8d11838db6af63444f95`.
+- Hosted PR checks passed before merge. No post-merge run is claimed here.
+- The repository contains a reproducible XcodeGen macOS app foundation and CI configuration. Local Mac/Xcode qualification remains pending.
+- The active documentation branch `docs/architecture-diagram-baseline` contains eight canonical Mermaid source diagrams, a source inventory, an extraction utility, a Mermaid render workflow, and a session recovery record. The branch has not yet been merged or CI-qualified.
+- The Library archive contains 31 Mermaid-bearing Markdown documents with 52 fenced Mermaid blocks. The eight canonical diagrams are newly authored current baselines; they do not replace the 52 historical source blocks.
+- No production broker integration, end-to-end trading execution, or LIVE trading capability is established by these documentation changes.

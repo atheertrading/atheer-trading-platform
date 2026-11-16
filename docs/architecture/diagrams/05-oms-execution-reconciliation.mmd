@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    participant Client as UI / Strategy / Agent
+    participant Intake as Intent Intake
+    participant Risk as RiskEngine
+    participant OMS as OMS
+    participant Outbox as Durable Outbox
+    participant EGW as Execution Gateway
+    participant Broker as Broker API
+    participant Recon as Reconciliation
+
+    Client->>Intake: Submit typed order intent
+    Intake->>Risk: Evaluate policy and exposure
+    Risk-->>Intake: Approve / reject with evidence
+    alt Rejected
+        Intake-->>Client: Rejection reason
+    else Approved
+        Intake->>OMS: Create authorized order
+        OMS->>Outbox: Persist command and idempotency key
+        Outbox->>EGW: Dispatch broker command
+        EGW->>Broker: Submit order
+        Broker-->>EGW: Acknowledgement or timeout
+        EGW-->>OMS: Transport result (not fill proof)
+        OMS->>Recon: Reconcile broker order state
+        Recon->>Broker: Query order, fills and positions
+        Broker-->>Recon: Authoritative broker state
+        Recon-->>OMS: Reconciled state and discrepancies
+        OMS-->>Client: Updated order projection
+    end

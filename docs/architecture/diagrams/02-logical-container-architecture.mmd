@@ -1,0 +1,55 @@
+flowchart TB
+    subgraph Client[Presentation Layer]
+        App[SwiftUI macOS Application]
+        Charts[Charts and Visualization]
+        Workspace[Workspace and Panel Composition]
+    end
+
+    subgraph Backend[Backend Application Boundary]
+        API[Application API]
+        Identity[Identity and Authorization]
+        Market[Market Data Context]
+        Strategy[Strategy OS]
+        Quant[Quant Research and Simulation]
+        Agent[Agent Runtime and Model Gateway]
+        Risk[RiskEngine]
+        OMS[OMS and Durable Order State]
+        EGW[Execution Gateway]
+        BrokerAdapter[Broker Adapter]
+    end
+
+    subgraph Infrastructure[Infrastructure Adapters]
+        EventBus[Event and Messaging Adapter]
+        Store[(Persistence)]
+        Telemetry[Audit and Observability]
+        Secrets[Secret Provider]
+    end
+
+    Capital[Capital.com]
+    OtherProviders[Future Provider Adapters]
+    ModelProviders[Model Providers]
+
+    App --> API
+    Charts --> App
+    Workspace --> App
+    API --> Identity
+    API --> Market
+    API --> Strategy
+    API --> Quant
+    API --> Agent
+    Strategy --> Risk
+    Agent --> Risk
+    Risk --> OMS
+    OMS --> EGW
+    EGW --> BrokerAdapter
+    BrokerAdapter --> Capital
+    BrokerAdapter -. provider contract .-> OtherProviders
+    Market --> EventBus
+    Strategy --> EventBus
+    OMS --> Store
+    Market --> Store
+    Risk --> Telemetry
+    OMS --> Telemetry
+    EGW --> Telemetry
+    Agent --> Secrets
+    Agent <--> ModelProviders
