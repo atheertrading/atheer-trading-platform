@@ -65,11 +65,13 @@ Every status change to VERIFIED must cite a commit, file path, test run, build l
 
 ## Platform foundation branch — 2026-11-16
 
-The branch build/platform-foundation adds:
+The branch build/platform-foundation (PR #2) adds:
 - XcodeGen project specification targeting macOS 13.0 and bundle identifier com.atheertrading.desktop.
 - Minimal SwiftUI application shell and an XCTest target.
 - Local doctor/build/test scripts and developer setup instructions.
 - GitHub Actions CI, CodeQL workflow, Dependabot, CODEOWNERS, PR template, and Markdown lint configuration.
 - AI navigation guide, repository architecture/layout, and repository topology decision EDL-004.
 
-Status: committed to the feature branch; not yet merged. GitHub CI has not yet been observed. The Xcode project is generated from project.yml during CI/local setup. No local Xcode build, runtime test, broker integration, or trading capability is verified. The shell intentionally has no broker connection or order execution.
+Status: committed to the feature branch; PR #2 is open and not yet merged. GitHub CI has not yet been observed. The Xcode project is generated from project.yml during CI/local setup. No local Xcode build, runtime test, broker integration, or trading capability is verified. The shell intentionally has no broker connection or order execution.
+
+Local synchronization instructions are in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The new repository is distinct from the earlier atheer-trading-pro local checkout; do not overwrite or repoint that checkout as part of cloning this repository.
