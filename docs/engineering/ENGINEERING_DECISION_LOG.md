@@ -80,3 +80,14 @@ Every material decision must state its source, date, scope, status, rationale, c
 - **Consequences:** CI must generate the project, inspect the scheme, build Debug, run XCTest, and build Release. Local Intel/Xcode 14.3.1 verification remains required. arm64 requires a separate verified host/toolchain. Hardened-runtime settings do not constitute signing or notarization.
 - **Evidence:** Session `ATP-2026-11-16-011`; branch `build/phase-2-xcode-configuration`.
 - **Formal ADR:** Not assigned; historical ADR inventory/reconciliation remains in progress.
+
+
+## EDL-007 — Local backend health vertical slice
+
+- Date: 2026-11-16
+- Status: Accepted engineering decision for the bounded local-development slice under delegated engineering authority; not an owner-approved general API transport decision.
+- Decision: Establish a minimal Node.js 24 / TypeScript API process using Node's built-in HTTP server. Bind only to 127.0.0.1 by default and reject non-loopback host configuration. Expose GET /health/live for process liveness and GET /health/ready for platform readiness.
+- Readiness remains HTTP 503 while persistence and broker adapters are not configured. Trading is explicitly disabled. No market, account, order, strategy, risk, or broker endpoints are exposed.
+- Rationale: Deliver a non-trading application/backend operational slice without fabricating data, exposing services to the network, or prematurely deciding the full API/event transport architecture.
+- Constraints: The slice does not settle REST versus WebSocket versus IPC for business APIs. It does not establish database, broker, authentication, production, or LIVE readiness.
+- Verification: Strict TypeScript build/check and six Node test cases passed in an isolated Linux container using Node 22.16.0. A prior GitHub run on the previous revision passed npm ci, typecheck, and tests on Node 24.22.2, repository hygiene, and GitHub Actions CodeQL; the macOS build remained queued. The compile-first refactor requires a fresh hosted run; local Mac verification remains pending.
