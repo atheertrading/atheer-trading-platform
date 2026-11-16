@@ -46,6 +46,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
+| M02-007 | P2 | Reconcile and operationalize the ChatGPT UI/UX and SwiftUI engineering directive | IN PROGRESS | ATP-UX-001 drafted on `docs/atp-ui-ux-chatgpt-directive`; reconcile formal Library design sources, finalize IPDS contracts, then qualify implementation and visual QA |
 
 ## Governance notes
 
@@ -113,3 +114,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
 - This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
+
+
+## ChatGPT UI/UX and SwiftUI engineering directive — 2026-11-17
+
+- Added the owner-directed baseline `docs/architecture/ATP-UX-001_CHATGPT_UI_UX_AND_SWIFTUI_ENGINEERING_DIRECTIVE.md` on branch `docs/atp-ui-ux-chatgpt-directive`.
+- The directive constrains AI-assisted UI work to approved product requirements, formal design sources, IPDS tokens, shared SwiftUI contracts, explicit interaction semantics, and actual running-app visual verification.
+- It records the settings-window Open/Close behavior and explicitly separates window lifecycle, panel visibility, expand/collapse, boolean switches, service connectivity, and governed trading controls.
+- This is a specification/documentation change only. It does not claim implementation, full Library-source reconciliation, final IPDS completion, or visual qualification.
+- M02-007 remains IN PROGRESS until source reconciliation and implementation-readiness work are complete.
