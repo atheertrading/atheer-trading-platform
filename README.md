@@ -11,7 +11,7 @@ ATHEER Trading is being engineered as an integrated trading environment combinin
 - **Market intelligence:** authentic broker and market data, instrument metadata, streaming, historical data, validation, and freshness controls.
 - **Quantitative systems:** technical indicators, statistical research, strategy development, backtesting, and simulation.
 - **Governed trading lifecycle:** common order-intent intake, centralized risk authorization, order management, execution gateway, broker confirmation, and reconciliation.
-- **AI and agent ecosystem:** provider-independent model integration, local and hosted model support, specialized agents, tool adapters, and multi-agent orchestration.
+- **AI and agent ecosystem:** provider-independent model integration, local and hosted model support, specialized agents, tool adapters, multi-agent orchestration, and pre-authorized autonomous workflows.
 - **Professional workstation:** native macOS experience, charts, monitoring, trading workflows, risk visibility, and configurable workspaces.
 - **Operational integrity:** security, observability, auditability, deterministic testing, and controlled deployment.
 
