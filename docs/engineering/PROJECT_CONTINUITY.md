@@ -92,3 +92,14 @@ For every substantial engineering session, update:
 Each session entry must include date, objective, previous session reference, sources inspected, decisions, files/modules affected, implementation actions, test/verification evidence, unresolved issues, and next action.
 
 Never invent missing conversation transcripts. If a historical transcript cannot be retrieved, record the available summary and mark the source as a summary rather than a complete transcript.
+
+## 9. Bootstrap pull request
+
+- **PR:** https://github.com/atheertrading/atheer-trading-platform/pull/1
+- **Title:** Establish ATHEER engineering governance and continuity baseline
+- **Branch:** `engineering/bootstrap-governance`
+- **Head commit at PR creation:** `f9cb4d3f8acb413f5422aab96892fd9583747958`
+- **State:** Open; not merged at last inspection.
+- **Change scope:** 11 documentation/configuration files; no application source code.
+- **Verification:** All 11 expected files were fetched successfully from the branch. Build/runtime tests are not applicable to this documentation-only change.
+- **Next action:** Owner review and merge decision. Do not mark the baseline merged until GitHub confirms it.
