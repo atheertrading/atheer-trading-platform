@@ -209,3 +209,44 @@ Latest inspected branch commit: `ec52b48958cfeb5890d7d0b7f0c3a000b5b63531`.
 Latest checks: Mermaid rendering passed; CodeQL passed; repository hygiene/Markdown lint passed; backend Node 24 validation passed. Hosted macOS build/XCTest remained in progress at the time of this update. Do not merge or mark complete until the latest full CI run is green.
 
 The original 52 Mermaid blocks are available as a verified export package for inspection, but the historical diagram files still need to be committed into the repository. The export package is a recovery artifact, not a substitute for the repository migration.
+
+## 14. Phase 2 Xcode configuration — 2026-11-16
+
+**Previous session:** ATP-2026-11-16-010 — Phase 1 GitHub/source-control qualification.  
+**Current session:** ATP-2026-11-16-011 — Phase 2 Xcode configuration.  
+**Current implementation branch:** `build/phase-2-xcode-configuration`.
+
+The owner supplied the full Chief Engineering mandate and explicitly authorized implementation. This is recorded as an owner-approved sequencing exception allowing Phase 2 to proceed while Phase 1 remains IN PROGRESS. It does not close or waive Phase 1 findings.
+
+### Source and baseline inspection
+
+Inspected root `AGENTS.md`, XcodeGen project specification, SwiftUI app entry point, XCTest, developer setup, GitHub configuration guide, engineering decision log, conversation index, implementation status, task register, CI workflow, and open Phase 1 PR #7.
+
+Verified project baseline on current `main`:
+- XcodeGen project name `ATHEERTradingPro`.
+- Bundle identifier `com.atheertrading.desktop`; display name `ATHEER Trading Pro`.
+- macOS deployment target 13.0; Swift 5 language mode.
+- Generated Info.plist; hardened-runtime build flag enabled; code signing disabled.
+- One app target, one basic XCTest target, and scheme `ATHEERTradingPro`.
+- No concrete app icon, entitlement, sandbox capability, UI-test target, or package dependency is present.
+
+Historical Xcode 14.3.1 / Swift 5.8.1 on Intel macOS 13.7.8 remains owner-reported/historical, not freshly verified in this session.
+
+### Implemented on the review branch
+
+- `apps/macos/ATHEERTradingPro/project.yml`: explicit Debug/Release settings, targeted Swift concurrency diagnostics, standard architecture selection, organization metadata, and build diagnostics.
+- `.github/workflows/ci.yml`: generated scheme inspection, Debug build, XCTest, and Release build on the existing Intel macOS runner.
+- `docs/development/DEVELOPER_SETUP.md`: configuration policy and limitations.
+- `docs/engineering/TASK_REGISTER.md`: M02-001 moved to IN PROGRESS.
+- `docs/engineering/IMPLEMENTATION_STATUS.md`: current Phase 2 status addendum.
+- `docs/engineering/SESSION_2026-11-16_011_PHASE_2_XCODE_CONFIGURATION.md`: detailed session report.
+
+### Authorization and unresolved Phase 1 controls
+
+The owner approved Phase 2 implementation while Phase 1 remains open. Outstanding Phase 1 controls remain: active main ruleset verification/configuration, local Git author and HTTPS authentication verification, and repository-level Actions/security settings. PR #7 remains a separate open qualification record.
+
+### Verification and next action
+
+The review branch has not yet completed hosted CI. No Debug build, XCTest, Release build, or CodeQL result is claimed. Local Mac generation/build/test/launch remains pending, as does arm64 qualification on a verified Apple Silicon host.
+
+Next: create and inspect the focused PR, resolve CI failures, and stop for a Phase 2 handover. Do not merge before required checks and full diff review. Do not claim Phase 2 complete until local qualification is recorded.
