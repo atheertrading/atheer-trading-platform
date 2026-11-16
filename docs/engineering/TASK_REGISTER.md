@@ -25,6 +25,8 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M00-014 | P1 | Configure repository security automation and branch rules | PENDING | Settings and workflow evidence; secrets/dependency scanning |
 | M00-015 | P2 | Plan source migration and historical Git preservation | PENDING | Owner-reviewed migration and provenance plan |
 
+| M00-016 | P0 | Reconcile four-repository architecture with current repository strategy | IN PROGRESS | ATP-ARCH-042 and owner-endorsed current repository model |
+
 ## M01 — Platform and domain architecture
 
 | ID | Priority | Task | Status |
@@ -61,5 +63,3 @@ The initial governance baseline is available for owner review in [PR #1](https:/
 ## Source-reconciliation progress update — 2026-11-16
 
 Structural inspection of the two Library ZIP archives is complete. Tasks M00-004, M00-005, M00-006, M00-008, M00-011, and M00-012 are now IN PROGRESS. The 47 formal documents and 517 Q&A documents have not yet been reconciled individually. The four-repository versus monorepo conflict is recorded as M00-016 and remains unresolved.
-
-| M00-016 | P0 | Reconcile four-repository architecture with current repository strategy | IN PROGRESS | ATP-ARCH-042 and owner-endorsed current repository model |
