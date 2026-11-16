@@ -52,3 +52,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 - A successful compile is not production qualification.
 - Historical task statuses must be revalidated against current source and test evidence.
 - Update this register together with Project Continuity and Implementation Status.
+
+## Bootstrap review reference
+
+The initial governance baseline is available for owner review in [PR #1](https://github.com/atheertrading/atheer-trading-platform/pull/1). Tasks M00-002 and M00-003 remain IN PROGRESS until the pull request is reviewed and merged. File retrieval verification is complete; merge and default-branch verification remain outstanding.
