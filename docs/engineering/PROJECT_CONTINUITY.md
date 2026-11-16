@@ -147,3 +147,13 @@ The source set uses both five-level autonomy scales and a four-level agent capab
 ## 13. Repository protection inspection
 
 On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. The branch-protection endpoint for `main` returned HTTP 403 (`Resource not accessible by integration`), so branch protection could not be independently verified through the connected GitHub integration. Do not interpret the 403 as proof that protection is absent. Repository ruleset configuration and branch protection remain pending owner-side verification.
+
+
+## 2026-11-16 continuation — governance merge and platform foundation
+
+- PR #1 was squash-merged to main as 27e0ce61d2af09296dd121fb1194d6a7cb930bdc.
+- Repository topology was resolved through EDL-004: one modular engineering monorepo; Library remains federated knowledge authority; historical conversations remain indexed sources. ATP-ARCH-042 is superseded only for the separate-repository topology prescription.
+- Branch build/platform-foundation was created from the merged main commit.
+- The branch adds XcodeGen project specification, minimal SwiftUI macOS shell, XCTest target, local diagnostic/build/test scripts, developer setup, repository architecture/layout, AI navigation, CI, CodeQL, Dependabot, PR template, and CODEOWNERS.
+- No local Xcode build has been run. GitHub Actions results and merge status remain pending.
+- Next: validate branch files and CI, fix issues, open/merge PR #2 under the delegated workflow, then pull main to the local Mac and verify the actual Xcode toolchain/build.
