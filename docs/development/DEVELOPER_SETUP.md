@@ -43,12 +43,12 @@ git switch -c feat/short-scope
 
 ## Generate, build, test
 ~bash
-./scripts/doctor.sh
+bash scripts/doctor.sh
 cd apps/macos/ATHEERTradingPro
 xcodegen generate
 cd ../../..
-./scripts/build-macos.sh
-./scripts/test-macos.sh
+bash scripts/build-macos.sh
+bash scripts/test-macos.sh
 ~
 
 The generated Xcode project is reproducible from the committed project.yml and is not the source of truth.
