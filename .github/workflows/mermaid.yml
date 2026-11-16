@@ -33,7 +33,7 @@ jobs:
           while IFS= read -r -d '' diagram; do
             output="$(mktemp --suffix=.svg)"
             npx --yes @mermaid-js/mermaid-cli@11.4.2 \
-              --input "$diagram" --output "$output"
+              --input "$diagram" --output "$output" --puppeteerConfigFile .github/mermaid-puppeteer.json
             test -s "$output"
             rm -f "$output"
             count=$((count + 1))
