@@ -146,7 +146,7 @@ The recorded historical commit author is `atheertrading <atheertradingpro@gmail.
 | Actions default permissions and security settings verified | BLOCKED — connector cannot inspect these settings |
 | Tags inventoried | UNVERIFIED |
 
-**Phase 1 is not complete. Phase 2 must not begin until the blocking source-control controls are resolved or explicitly recorded as accepted exceptions by the owner.**
+**Phase 1 is not complete.** At the time of this assessment, Phase 2 had not been authorized. On 2026-11-16, the owner subsequently gave explicit authorization to proceed with Phase 2 as a documented sequencing exception while these Phase 1 controls remain open. This authorization does not waive or close any Phase 1 finding.
 
 ## 8. Required owner-side actions
 
@@ -162,4 +162,4 @@ This is a documentation-only qualification change. The GitHub API confirmed the 
 
 No source code, Xcode project, backend, database, broker connection, credentials, signing identities, or trading permissions were modified.
 
-Phase 1 remains open pending the owner-side controls above. Once those are verified and this report is merged, stop and issue a Phase 1 completion handover before beginning Phase 2.
+Phase 1 remains open pending the owner-side controls above. The owner's later explicit authorization permits Phase 2 to proceed as a sequencing exception; it does not constitute Phase 1 completion. Continue to track the owner-side actions and issue a separate Phase 1 completion handover only after the exit criteria are verified.
