@@ -58,6 +58,13 @@ struct BackendHealthPayloadDecoder {
             throw BackendHealthError.invalidPayload
         }
 
+        // A not-ready platform must never advertise trading as enabled.
+        if readiness.status == "not_ready" {
+            guard !readiness.trading.enabled, readiness.trading.status == "disabled" else {
+                throw BackendHealthError.invalidPayload
+            }
+        }
+
         return BackendHealthSnapshot(
             version: liveness.version,
             platformReady: readiness.status == "ready",

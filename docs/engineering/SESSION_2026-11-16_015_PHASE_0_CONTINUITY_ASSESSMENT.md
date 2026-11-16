@@ -83,3 +83,14 @@ Read-only materialization and structural inspection verified:
 - The archive's approval register preserves three explicit section-level declarations for PART III Sections 7–9, with filename/embedded-section mismatches in two records, an unresolved bracketed date, and missing revision identifiers. No blanket approval is inferred.
 
 This narrows but does not close source reconciliation. The current Master Directive and explicit current owner instructions govern over stale repository pointers in the working-draft standards. Original archives remain unchanged.
+
+
+## 10. PR #10 code-review hardening
+
+Manual review identified two fail-closed improvements in the read-only health integration:
+
+- The production URLSession client now fixes its destination to `http://127.0.0.1:4100`; dependency injection can no longer replace the endpoint with an arbitrary host.
+- The readiness decoder now rejects a `not_ready` payload that claims trading is enabled or has a non-disabled trading status.
+- Added an XCTest case proving that contradictory not-ready/trading-enabled payloads are rejected.
+
+These are bounded health-contract safety checks. They do not add broker connectivity, financial operations, or LIVE capability. Fresh hosted CI is required for the updated code head; local Xcode verification remains pending.

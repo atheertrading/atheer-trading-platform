@@ -173,3 +173,8 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 ### PR #10 updated-head verification — 2026-11-16
 
 The original implementation head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` passed hosted macOS build/test/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Fourteen documentation-only follow-up commits advanced the branch to `2a999fc8609ac833c94908ef219c347ec5137c95` (21 commits ahead of main, zero behind). At the latest check inspection, the dedicated safe-sync run had passed, CodeQL and Local Sync Safety were in progress, and the main CI workflow was pending. The updated head is not yet merge-qualified. Local Mac verification remains unperformed.
+
+
+### PR #10 review hardening — 2026-11-16
+
+The health client destination is fixed to loopback rather than accepting an arbitrary base URL. The readiness decoder rejects any `not_ready` response that reports trading enabled or a non-disabled trading status. An XCTest covers this contradictory-payload rejection. This code change is pending fresh hosted CI and local Mac verification.

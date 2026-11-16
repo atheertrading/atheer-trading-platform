@@ -46,6 +46,23 @@ final class ATHEERTradingProTests: XCTestCase {
         ))
     }
 
+
+    func testHealthPayloadDecoderRejectsTradingEnabledWhenPlatformIsNotReady() {
+        let liveness = Data("""
+        {"status":"ok","service":"atheer-api","version":"0.1.0","timestamp":"2026-11-16T10:00:00.000Z"}
+        """.utf8)
+        let readiness = Data("""
+        {"status":"not_ready","service":"atheer-api","timestamp":"2026-11-16T10:00:00.000Z","dependencies":{"persistence":"not_configured","broker":"not_configured"},"trading":{"enabled":true,"status":"enabled"}}
+        """.utf8)
+
+        XCTAssertThrowsError(try BackendHealthPayloadDecoder().decode(
+            livenessData: liveness,
+            livenessStatusCode: 200,
+            readinessData: readiness,
+            readinessStatusCode: 503
+        ))
+    }
+
     @MainActor
     func testViewModelPublishesConnectedButNotReadyState() async {
         let snapshot = BackendHealthSnapshot(

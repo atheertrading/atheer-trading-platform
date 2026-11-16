@@ -113,3 +113,8 @@ Every material decision must state its source, date, scope, status, rationale, c
 - Reject detached HEAD, unexpected origin, and divergent main history. Do not reset, clean, force-push, delete local branches, or automatically merge/rebase feature branches.
 - The default local path is $HOME/Developer/AtheerTradingPlatform. The bootstrap refuses to proceed from a restored non-main branch.
 - Verification: functional tests passed in temporary local Git repositories for dirty worktree, clean fast-forward, wrong origin, and divergent main. This does not qualify the owner's actual Mac.
+
+
+### EDL-008 implementation invariant clarification — 2026-11-16
+
+The native health client is constrained to the loopback endpoint `127.0.0.1:4100`. The client must reject contradictory readiness payloads that report platform `not_ready` while trading is enabled. This is a fail-closed client validation invariant; it does not grant or implement trading authority.
