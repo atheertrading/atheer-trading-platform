@@ -198,3 +198,14 @@ This addendum supersedes earlier statements in this file that describe PR #2 as 
 7. Establish requirements traceability before broker DEMO vertical-slice implementation.
 
 No broker execution, credentials, LIVE permissions, or production trading behavior were changed by this documentation work.
+
+
+## PR #6 documentation and scaling follow-up — 2026-11-16
+
+PR #6 (`docs/architecture-diagram-baseline`) is open against main. It contains the canonical Mermaid diagram baseline, original-source extraction tooling, Mermaid rendering CI, repository documentation readiness matrix, proposed platform scaling/deployment strategy, requirements traceability template, and session continuity updates.
+
+Latest inspected branch commit: `ec52b48958cfeb5890d7d0b7f0c3a000b5b63531`.
+
+Latest checks: Mermaid rendering passed; CodeQL passed; repository hygiene/Markdown lint passed; backend Node 24 validation passed. Hosted macOS build/XCTest remained in progress at the time of this update. Do not merge or mark complete until the latest full CI run is green.
+
+The original 52 Mermaid blocks are available as a verified export package for inspection, but the historical diagram files still need to be committed into the repository. The export package is a recovery artifact, not a substitute for the repository migration.
