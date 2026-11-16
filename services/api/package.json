@@ -1,0 +1,13 @@
+{
+  "name": "@atheer/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24.0.0" },
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "node --experimental-strip-types --test test/*.test.mjs",
+    "start": "node --experimental-strip-types src/main.ts"
+  },
+  "devDependencies": { "typescript": "5.8.3" }
+}

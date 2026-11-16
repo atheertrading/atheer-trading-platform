@@ -75,3 +75,12 @@ jobs:
           node --version
           npm --version
           node -e "if (Number(process.versions.node.split('.')[0]) !== 24) process.exit(1)"
+      - name: Install API dependencies
+        working-directory: services/api
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Type-check API
+        working-directory: services/api
+        run: npm run typecheck
+      - name: Test API
+        working-directory: services/api
+        run: npm test
