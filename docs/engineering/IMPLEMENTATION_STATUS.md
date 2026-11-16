@@ -104,7 +104,7 @@ This section supersedes earlier status text in this file that says platform foun
 
 This addendum is the latest status for the Xcode configuration work and supersedes earlier statements above that do not reflect the current Phase 2 branch.
 
-**Status: IN PROGRESS — changes committed to a review branch; CI and local verification pending.**
+**Status: IN PROGRESS — hosted CI passed on the current review head; local Mac verification remains pending.**
 
 - Inspected current `main` project configuration: XcodeGen project `ATHEERTradingPro`; bundle ID `com.atheertrading.desktop`; display name `ATHEER Trading Pro`; macOS 13.0; Swift 5 language mode; generated Info.plist; hardened-runtime build flag; unsigned build; one app target, one basic XCTest target, scheme `ATHEERTradingPro`.
 - Branch: `build/phase-2-xcode-configuration`.
@@ -113,6 +113,6 @@ This addendum is the latest status for the Xcode configuration work and supersed
 - `DEVELOPER_SETUP.md` documents configuration policy and the known signing, sandbox, architecture, and local verification limitations.
 - Session record: `docs/engineering/SESSION_2026-11-16_011_PHASE_2_XCODE_CONFIGURATION.md`.
 
-No build or test result is claimed for the new branch until its workflow completes. The local Xcode 14.3.1 workstation has not been freshly inspected or tested. Hosted Intel CI does not qualify Apple Silicon/arm64. Hardened-runtime settings do not establish signed/notarized status. No app sandbox, entitlements, icons, UI-test target, or package dependency has been invented.
+**Hosted verification:** PR #8 CI passed on head `44f2262f9af95a789317fea36a2c432cbad04114`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, Swift CodeQL, backend toolchain, and repository hygiene. The local Xcode 14.3.1 workstation has not been freshly inspected or tested. Hosted Intel CI does not qualify Apple Silicon/arm64. Hardened-runtime settings do not establish signed/notarized status. No app sandbox, entitlements, icons, UI-test target, or package dependency has been invented.
 
 Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed with Phase 2 as a sequencing exception. Main-branch ruleset enforcement, local Git author/authentication, and repository-level Actions/security settings remain open.
