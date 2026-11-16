@@ -14,7 +14,7 @@ jobs:
     name: Repository hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate project baseline
         run: |
           set -euo pipefail
@@ -37,7 +37,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Inspect Apple toolchain
         run: |
           xcode-select -p
@@ -51,22 +51,36 @@ jobs:
       - uses: github/codeql-action/init@v4
         with:
           languages: swift
-      - name: Build application
+      - name: Inspect generated schemes
+        run: xcodebuild -list -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj
+      - name: Build Debug application
         run: |
           xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
-      - name: Run tests
+      - name: Run unit tests
         run: |
           xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+      - name: Build Release application
+        run: |
+          xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
       - uses: github/codeql-action/analyze@v4
   backend-toolchain:
     name: Backend toolchain
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - run: |
           node --version
           npm --version
           node -e "if (Number(process.versions.node.split('.')[0]) !== 24) process.exit(1)"
+      - name: Install API dependencies
+        working-directory: services/api
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Type-check API
+        working-directory: services/api
+        run: npm run typecheck
+      - name: Test API
+        working-directory: services/api
+        run: npm test

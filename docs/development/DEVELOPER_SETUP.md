@@ -36,36 +36,53 @@ XcodeGen 2.36.1 is pinned to source commit 26e817b2deca1ceb9fdebfa963b86311fef3d
 
 ## Clone and update
 
-~bash
+```bash
 mkdir -p ~/Developer/ATHEER
 cd ~/Developer/ATHEER
 git clone https://github.com/atheertrading/atheer-trading-platform.git
 cd atheer-trading-platform
 git switch main
 git pull --ff-only origin main
-~
+```
 
 For each task, branch from the latest main:
 
-~bash
+```bash
 git switch main
 git pull --ff-only origin main
 git switch -c feat/short-scope
-~
+```
 
 ## Generate, build, test
 
-~bash
+```bash
 bash scripts/install-xcodegen.sh
 make doctor
 make generate
 make build
 make test
-~
+```
 
-For a guarded clone/update flow that refuses to overwrite dirty or unrelated directories, run bash scripts/bootstrap-local.sh. It targets ~/Developer/ATHEER/atheer-trading-platform by default and does not modify the earlier atheer-trading-pro checkout.
+For a guarded clone/update flow that refuses to overwrite dirty or unrelated directories, run `bash scripts/bootstrap-local.sh`. It targets `~/Developer/ATHEER/atheer-trading-platform` by default and does not modify the earlier `atheer-trading-pro` checkout.
 
-The generated Xcode project is reproducible from the committed project.yml and is not the source of truth.
+The generated Xcode project is reproducible from the committed `project.yml` and is not the source of truth.
+
+## Xcode configuration policy
+
+The XcodeGen specification is the canonical project configuration:
+
+- Product/project: `ATHEERTradingPro`; display name: `ATHEER Trading Pro`.
+- Bundle identifier: `com.atheertrading.desktop`.
+- Deployment target: macOS 13.0.
+- Swift language mode: Swift 5 (`SWIFT_VERSION=5.0`); the compiler version is supplied by the selected Xcode toolchain.
+- Debug: no Swift optimization, testability enabled, active-architecture build, DWARF debug information.
+- Release: optimized Swift build, dSYM debug symbols, assertions disabled, all standard architectures requested.
+- Targeted Swift concurrency diagnostics are enabled as a migration baseline; warnings are not globally promoted to errors.
+- Hardened-runtime capability remains enabled in build settings, but code signing is disabled for the current local/CI unsigned qualification. This is not a signed or notarized release.
+- App Sandbox, entitlements, signing team, provisioning profiles, and app icon assets are intentionally not fabricated. Add them when product capabilities and Phase 3 signing requirements are specified and verified.
+- No UI-test target or package dependency is added until a concrete UI acceptance suite or production dependency exists.
+
+The CI workflow generates the project, lists schemes, builds Debug, runs unit tests, and builds Release on an Intel macOS runner. This qualifies the x86_64 CI environment only; Apple Silicon/arm64 remains a separate qualification item. Run the same checks locally before declaring Phase 2 complete.
 
 ## Backend
 
@@ -77,4 +94,4 @@ Never put real credentials in source, shell command arguments, logs, public CI, 
 
 ## Verification limitation
 
-GitHub configuration cannot install Xcode or update your local clone. Local setup is unverified until the diagnostic, build, and test commands complete on the Mac.
+GitHub configuration cannot install Xcode or update your local clone. Local setup is unverified until the diagnostic, Debug/Release build, and test commands complete on the Mac.

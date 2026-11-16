@@ -87,3 +87,48 @@ Final toolchain pin: XcodeGen 2.36.1 is built from immutable upstream commit 26e
 
 
 CI resource optimization: Swift CodeQL initialization and analysis now run inside the same macOS job as Xcode build and XCTest, avoiding a second macOS runner allocation. The standalone CodeQL workflow analyzes GitHub Actions configuration on Ubuntu. This preserves Swift static analysis while reducing duplicate macOS runner demand.
+
+
+## Current verified correction — 2026-11-16
+
+This section supersedes earlier status text in this file that says platform foundation PR #2 is open or that its hosted CI has not run.
+
+- Platform foundation PR #2 was squash-merged to `main` at `83e524e35a7f167abf2f8d11838db6af63444f95`.
+- Hosted PR checks passed before merge. No post-merge run is claimed here.
+- The repository contains a reproducible XcodeGen macOS app foundation and CI configuration. Local Mac/Xcode qualification remains pending.
+- The active documentation branch `docs/architecture-diagram-baseline` contains eight canonical Mermaid source diagrams, a source inventory, an extraction utility, a Mermaid render workflow, and a session recovery record. The branch has not yet been merged or CI-qualified.
+- The Library archive contains 31 Mermaid-bearing Markdown documents with 52 fenced Mermaid blocks. The eight canonical diagrams are newly authored current baselines; they do not replace the 52 historical source blocks.
+- No production broker integration, end-to-end trading execution, or LIVE trading capability is established by these documentation changes.
+
+## Phase 2 Xcode configuration addendum — 2026-11-16
+
+This addendum is the latest status for the Xcode configuration work and supersedes earlier statements above that do not reflect the current Phase 2 branch.
+
+**Status: IN PROGRESS — hosted CI passed on the current review head; local Mac verification remains pending.**
+
+- Inspected current `main` project configuration: XcodeGen project `ATHEERTradingPro`; bundle ID `com.atheertrading.desktop`; display name `ATHEER Trading Pro`; macOS 13.0; Swift 5 language mode; generated Info.plist; hardened-runtime build flag; unsigned build; one app target, one basic XCTest target, scheme `ATHEERTradingPro`.
+- Branch: `build/phase-2-xcode-configuration`.
+- `project.yml` now defines explicit Debug and Release settings, targeted Swift concurrency diagnostics, standard architecture selection, organization metadata, and build diagnostics.
+- CI now inspects generated schemes, builds Debug, runs XCTest, and builds Release on the existing Intel macOS runner.
+- `DEVELOPER_SETUP.md` documents configuration policy and the known signing, sandbox, architecture, and local verification limitations.
+- Session record: `docs/engineering/SESSION_2026-11-16_011_PHASE_2_XCODE_CONFIGURATION.md`.
+
+**Hosted verification:** PR #8 CI passed on head `44f2262f9af95a789317fea36a2c432cbad04114`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, Swift CodeQL, backend toolchain, and repository hygiene. The local Xcode 14.3.1 workstation has not been freshly inspected or tested. Hosted Intel CI does not qualify Apple Silicon/arm64. Hardened-runtime settings do not establish signed/notarized status. No app sandbox, entitlements, icons, UI-test target, or package dependency has been invented.
+
+Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed with Phase 2 as a sequencing exception. Main-branch ruleset enforcement, local Git author/authentication, and repository-level Actions/security settings remain open.
+
+
+## Backend health vertical slice — ATP-2026-11-16-012
+
+**Status: IN PROGRESS — implementation and isolated-container tests completed; GitHub CI and local Mac verification pending.**
+
+- Branch: feat/backend-health-vertical-slice.
+- Added a private Node.js 24 / TypeScript API package under services/api with no runtime package dependencies.
+- Runtime configuration defaults to 127.0.0.1:4100 and rejects non-loopback host configuration and invalid ports.
+- GET /health/live reports process liveness only.
+- GET /health/ready returns HTTP 503 while persistence and broker adapters remain unconfigured; trading is explicitly disabled.
+- Unknown routes return 404; non-GET requests to known health routes return 405.
+- Added six tests for health responses, fail-closed readiness, method/path handling, and runtime configuration.
+- Added API contract documentation, package setup documentation, Makefile command, and Node 24 CI typecheck/test steps.
+- Isolated verification in the available Linux container: TypeScript 5.8.3 build and strict typecheck passed; Node.js 22.16.0 tests passed 6/6 against compiled JavaScript. A prior GitHub run on the previous revision passed npm ci, strict typecheck, and all six tests on Node.js 24.22.2; repository hygiene and GitHub Actions CodeQL also passed. The macOS build job remained queued. This commit changes TypeScript execution to compile-first and requires a fresh hosted run.
+- No database, broker, market data, account, order, strategy, RiskEngine, OMS, or Execution Gateway functionality is implemented by this slice.

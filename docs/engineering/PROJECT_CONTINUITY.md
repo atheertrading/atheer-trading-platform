@@ -172,3 +172,93 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - CI topology refinement: Swift CodeQL now runs inside the macOS build/test job, so project generation, Xcode build, XCTest, and Swift analysis share one hosted macOS runner. Standalone CodeQL workflow analyzes Actions configuration on Ubuntu. This reduces duplicate macOS runner allocations.
 
 - Added CONVERSATION_RECOVERY_PROTOCOL.md and linked it from the AI working guide and README. Material sessions must update the conversation index, project continuity, task register, implementation status, and decision/conflict records as applicable. The index is a locator/summary, not a guaranteed complete transcript archive.
+
+
+## 2026-11-16 current-state correction — PR #2 and Mermaid recovery
+
+This addendum supersedes earlier statements in this file that describe PR #2 as open, the foundation branch as unmerged, or the current work branch as the original bootstrap branch.
+
+- **Current repository:** `https://github.com/atheertrading/atheer-trading-platform`; `main` is the default branch.
+- **Deleted repository:** `atheertrading/AtheerAutotrade` was deleted by the owner. It is not the active engineering target.
+- **PR #2:** squash-merged; verified merge commit `83e524e35a7f167abf2f8d11838db6af63444f95`. Hosted PR checks passed in the pre-merge run. No post-merge workflow result is inferred.
+- **Local qualification:** local Intel Mac clone/build/test remains pending. Hosted CI does not establish local Xcode 14.3.1 compatibility.
+- **Current documentation work:** branch `docs/architecture-diagram-baseline` is based on the merged main commit. It adds eight canonical Mermaid diagrams, a diagram governance README, an inventory of original Mermaid sources, a deterministic extraction script, a Mermaid rendering workflow, and this session record. PR and CI verification are pending.
+- **Original Mermaid source inventory:** the Library ZIP contains 564 Markdown files (517 Q&A and 47 formal documents). A fresh programmatic inspection found Mermaid fences in 31 source documents, containing 52 diagram blocks. This corrects the imprecise phrase “31 Mermaid diagrams.” The source ZIP remains unchanged in `/AtheerTradingPro/90_SOURCE_ARCHIVES`.
+- **Migration status:** eight new canonical `.mmd` diagrams are committed on the documentation branch. The 52 historical blocks have been counted and an extractor is versioned; their individual generated files still need to be generated, reviewed, rendered and committed.
+- **Repository documentation:** root `AGENTS.md`, README, architecture/layout, developer setup, toolchain, GitHub configuration, continuity, conversation index, decision log, implementation status, source reconciliation and task register are present on main. Their historical status statements must be reconciled as part of this work.
+
+### Current next actions
+
+1. Complete and verify the Mermaid documentation PR and CI.
+2. Run `scripts/extract-mermaid-sources.py` against the preserved Library ZIP; commit all 52 original blocks and provenance manifest.
+3. Reconcile historical diagrams against current accepted architecture and implementation; retain obsolete diagrams as historical, not active design.
+4. Reconcile the 47 formal documents, 517 Q&A sources, approval metadata and source-count discrepancies.
+5. Complete Library documentation uploads when the Library upload quota permits.
+6. Clone/sync the repository on the local Mac and run doctor, project generation, build and XCTest.
+7. Establish requirements traceability before broker DEMO vertical-slice implementation.
+
+No broker execution, credentials, LIVE permissions, or production trading behavior were changed by this documentation work.
+
+
+## PR #6 documentation and scaling follow-up — 2026-11-16
+
+PR #6 (`docs/architecture-diagram-baseline`) is open against main. It contains the canonical Mermaid diagram baseline, original-source extraction tooling, Mermaid rendering CI, repository documentation readiness matrix, proposed platform scaling/deployment strategy, requirements traceability template, and session continuity updates.
+
+Latest inspected branch commit: `ec52b48958cfeb5890d7d0b7f0c3a000b5b63531`.
+
+Latest checks: Mermaid rendering passed; CodeQL passed; repository hygiene/Markdown lint passed; backend Node 24 validation passed. Hosted macOS build/XCTest remained in progress at the time of this update. Do not merge or mark complete until the latest full CI run is green.
+
+The original 52 Mermaid blocks are available as a verified export package for inspection, but the historical diagram files still need to be committed into the repository. The export package is a recovery artifact, not a substitute for the repository migration.
+
+## 14. Phase 2 Xcode configuration — 2026-11-16
+
+**Previous session:** ATP-2026-11-16-010 — Phase 1 GitHub/source-control qualification.  
+**Current session:** ATP-2026-11-16-011 — Phase 2 Xcode configuration.  
+**Current implementation branch:** `build/phase-2-xcode-configuration`.
+
+The owner supplied the full Chief Engineering mandate and explicitly authorized implementation. This is recorded as an owner-approved sequencing exception allowing Phase 2 to proceed while Phase 1 remains IN PROGRESS. It does not close or waive Phase 1 findings.
+
+### Source and baseline inspection
+
+Inspected root `AGENTS.md`, XcodeGen project specification, SwiftUI app entry point, XCTest, developer setup, GitHub configuration guide, engineering decision log, conversation index, implementation status, task register, CI workflow, and open Phase 1 PR #7.
+
+Verified project baseline on current `main`:
+- XcodeGen project name `ATHEERTradingPro`.
+- Bundle identifier `com.atheertrading.desktop`; display name `ATHEER Trading Pro`.
+- macOS deployment target 13.0; Swift 5 language mode.
+- Generated Info.plist; hardened-runtime build flag enabled; code signing disabled.
+- One app target, one basic XCTest target, and scheme `ATHEERTradingPro`.
+- No concrete app icon, entitlement, sandbox capability, UI-test target, or package dependency is present.
+
+Historical Xcode 14.3.1 / Swift 5.8.1 on Intel macOS 13.7.8 remains owner-reported/historical, not freshly verified in this session.
+
+### Implemented on the review branch
+
+- `apps/macos/ATHEERTradingPro/project.yml`: explicit Debug/Release settings, targeted Swift concurrency diagnostics, standard architecture selection, organization metadata, and build diagnostics.
+- `.github/workflows/ci.yml`: generated scheme inspection, Debug build, XCTest, and Release build on the existing Intel macOS runner.
+- `docs/development/DEVELOPER_SETUP.md`: configuration policy and limitations.
+- `docs/engineering/TASK_REGISTER.md`: M02-001 moved to IN PROGRESS.
+- `docs/engineering/IMPLEMENTATION_STATUS.md`: current Phase 2 status addendum.
+- `docs/engineering/SESSION_2026-11-16_011_PHASE_2_XCODE_CONFIGURATION.md`: detailed session report.
+
+### Authorization and unresolved Phase 1 controls
+
+The owner approved Phase 2 implementation while Phase 1 remains open. Outstanding Phase 1 controls remain: active main ruleset verification/configuration, local Git author and HTTPS authentication verification, and repository-level Actions/security settings. Phase 1 PR #7 has been merged as a documentation-only qualification record; its governance findings remain open.
+
+### Verification and next action
+
+Hosted CI and CodeQL passed on PR #8 head `44f2262f9af95a789317fea36a2c432cbad04114`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, backend toolchain, repository hygiene, and CodeQL workflow analysis all succeeded. Local Mac generation/build/test/launch remains pending, as does arm64 qualification on a verified Apple Silicon host.
+
+Next: complete final diff/merge-readiness review, merge only if the latest head checks remain green, then perform controlled local synchronization and separate local Xcode acceptance. Do not claim Phase 2 complete until local qualification is recorded.
+
+
+## ATP-2026-11-16-012 — Backend health vertical slice
+
+- Verified main after PR #8: d51d178cb9997aee21e4c5dadad5aa894f3c6138. PR #8 is closed/merged; GitHub main points to the same commit.
+- PR #8 hosted CI and Swift CodeQL checks were green before merge. No post-merge workflow run was returned by the inspected commit-workflow query.
+- Current application source remains a minimal SwiftUI shell. The repository still has no trading backend, database runtime, market-data pipeline, broker adapter, RiskEngine, OMS, or Execution Gateway.
+- The historical local environment assessment records Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Node.js 24.22.0, Debug and Release builds, XCTest 1/1, and application launch at the earlier local main commit 70794e7f20f129c17ba64bcf4b1eba0df32999df. These results do not qualify the later main commit.
+- A later local-worktree report identified uncommitted continuity/report changes. Current local status has not been inspected in this session; no local synchronization was attempted.
+- Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
+- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
+- Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.

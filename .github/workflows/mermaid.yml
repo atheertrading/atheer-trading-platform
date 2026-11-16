@@ -1,0 +1,42 @@
+name: Mermaid architecture diagrams
+
+on:
+  pull_request:
+    paths:
+      - "docs/architecture/diagrams/**"
+      - ".github/workflows/mermaid.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/architecture/diagrams/**"
+      - ".github/workflows/mermaid.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: Render Mermaid sources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Render every Mermaid source
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' diagram; do
+            output="$(mktemp --suffix=.svg)"
+            npx --yes @mermaid-js/mermaid-cli@11.4.2 \
+              --input "$diagram" --output "$output" --puppeteerConfigFile .github/mermaid-puppeteer.json
+            test -s "$output"
+            rm -f "$output"
+            count=$((count + 1))
+          done < <(find docs/architecture/diagrams -type f -name '*.mmd' -print0)
+          test "$count" -gt 0
+          echo "Successfully rendered $count Mermaid diagrams."
