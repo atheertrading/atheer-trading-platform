@@ -84,3 +84,6 @@ The first complete repository-hygiene run reached Markdown lint and reported 82 
 
 
 Final toolchain pin: XcodeGen 2.36.1 is built from immutable upstream commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c; the upstream Package.resolved locks its dependency graph. The installer verifies the source SHA and records it beside the installed binary. Node.js 24 is selected by .nvmrc and CI consumes that file. Local toolchain installation and Xcode build/test remain unverified.
+
+
+CI resource optimization: Swift CodeQL initialization and analysis now run inside the same macOS job as Xcode build and XCTest, avoiding a second macOS runner allocation. The standalone CodeQL workflow analyzes GitHub Actions configuration on Ubuntu. This preserves Swift static analysis while reducing duplicate macOS runner demand.
