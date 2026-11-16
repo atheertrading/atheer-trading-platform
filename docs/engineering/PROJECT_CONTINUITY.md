@@ -243,10 +243,10 @@ Historical Xcode 14.3.1 / Swift 5.8.1 on Intel macOS 13.7.8 remains owner-report
 
 ### Authorization and unresolved Phase 1 controls
 
-The owner approved Phase 2 implementation while Phase 1 remains open. Outstanding Phase 1 controls remain: active main ruleset verification/configuration, local Git author and HTTPS authentication verification, and repository-level Actions/security settings. PR #7 remains a separate open qualification record.
+The owner approved Phase 2 implementation while Phase 1 remains open. Outstanding Phase 1 controls remain: active main ruleset verification/configuration, local Git author and HTTPS authentication verification, and repository-level Actions/security settings. Phase 1 PR #7 has been merged as a documentation-only qualification record; its governance findings remain open.
 
 ### Verification and next action
 
-The review branch has not yet completed hosted CI. No Debug build, XCTest, Release build, or CodeQL result is claimed. Local Mac generation/build/test/launch remains pending, as does arm64 qualification on a verified Apple Silicon host.
+Hosted CI and CodeQL passed on PR #8 head `44f2262f9af95a789317fea36a2c432cbad04114`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, backend toolchain, repository hygiene, and CodeQL workflow analysis all succeeded. Local Mac generation/build/test/launch remains pending, as does arm64 qualification on a verified Apple Silicon host.
 
-Next: create and inspect the focused PR, resolve CI failures, and stop for a Phase 2 handover. Do not merge before required checks and full diff review. Do not claim Phase 2 complete until local qualification is recorded.
+Next: complete final diff/merge-readiness review, merge only if the latest head checks remain green, then perform controlled local synchronization and separate local Xcode acceptance. Do not claim Phase 2 complete until local qualification is recorded.
