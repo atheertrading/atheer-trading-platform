@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - language: swift
-          - language: javascript-typescript
+          - language: actions
     steps:
       - uses: actions/checkout@v4
       - name: Prepare Swift project for CodeQL
