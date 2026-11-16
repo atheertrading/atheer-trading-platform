@@ -90,11 +90,13 @@ Node.js 24 is the selected backend runtime. The initial local API service is imp
 
 From the repository root:
 
-    cd services/api
-    npm ci
-    npm run typecheck
-    npm test
-    npm start
+```bash
+cd services/api
+npm ci
+npm run typecheck
+npm test
+npm start
+```
 
 The service binds only to 127.0.0.1:4100. Keep it running while using the macOS application health panel. The application reports API connectivity separately from platform readiness; readiness remains not ready and trading remains disabled while persistence and broker adapters are not configured.
 
