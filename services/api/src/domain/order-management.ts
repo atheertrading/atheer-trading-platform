@@ -1,3 +1,4 @@
+import { DomainError } from "./shared.js";
 import { createDomainEvent } from "./events.js";
 import type { DomainEvent } from "./events.js";
 import { OrderIntent, TradingOrder } from "./models.js";
