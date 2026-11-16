@@ -12,8 +12,19 @@ check "Git" git --version
 check "Xcode command line tools" xcode-select -p
 check "Xcode build system" xcodebuild -version
 check "Swift compiler" swift --version
-check "Homebrew" brew --version
-check "XcodeGen" xcodegen --version
+if [[ -x "$HOME/.local/bin/xcodegen" ]]; then
+  xcodegen_bin="$HOME/.local/bin/xcodegen"
+elif command -v xcodegen >/dev/null 2>&1; then
+  xcodegen_bin="$(command -v xcodegen)"
+else
+  xcodegen_bin=""
+fi
+if [[ -n "$xcodegen_bin" ]] && "$xcodegen_bin" --version 2>&1 | grep -Fq "2.36.1"; then
+  printf 'OK      XcodeGen 2.36.1\n'
+else
+  printf 'MISSING or incompatible XcodeGen (required: 2.36.1; run bash scripts/install-xcodegen.sh)\n'
+  failures=$((failures + 1))
+fi
 if command -v node >/dev/null 2>&1; then
   node_major="$(node -p 'process.versions.node.split(".")[0]')"
   if [[ "$node_major" == "24" ]]; then printf 'OK      Node.js 24\n'
