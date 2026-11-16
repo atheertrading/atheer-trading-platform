@@ -14,6 +14,7 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 | Source and document provenance | docs/engineering/MASTER_DOCUMENT_REGISTRY.md and SOURCE_RECONCILIATION_REGISTER.md |
 | System boundaries | docs/architecture/REPOSITORY_ARCHITECTURE.md |
 | Target source layout | docs/architecture/REPOSITORY_LAYOUT.md |
+| ChatGPT UI/UX and SwiftUI design/implementation rules | docs/architecture/ATP-UX-001_CHATGPT_UI_UX_AND_SWIFTUI_ENGINEERING_DIRECTIVE.md |
 | macOS setup and build | docs/development/DEVELOPER_SETUP.md |
 | AI contributor workflow | docs/development/AI_AGENT_WORKING_GUIDE.md |
 | Governance and repository topology | docs/governance/ |
@@ -29,6 +30,9 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 8. Update continuity, task, implementation, and decision records as needed.
 9. Create a focused PR with source references and evidence.
 10. Merge only under the delegated project workflow and repository policy; never perform LIVE trading, credential access, or production deployment as an incidental coding step.
+
+## UI/UX task protocol
+For any new screen, visual redesign, shared component, settings experience, or interaction change, read and follow [ATP-UX-001](ATP-UX-001_CHATGPT_UI_UX_AND_SWIFTUI_ENGINEERING_DIRECTIVE.md) before proposing or implementing the change. Do not substitute model-generated aesthetic preferences for approved requirements, IPDS tokens, existing component contracts, or verified repository behavior. UI work requires actual running-app visual verification; if unavailable, mark it NOT VERIFIED.
 
 ## Source hierarchy
 - Owner instructions and explicit authorization govern scope.
