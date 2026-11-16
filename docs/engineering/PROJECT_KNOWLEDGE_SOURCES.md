@@ -44,3 +44,25 @@ For every source, record:
 ## Integrity rules
 
 Preserve original archives unchanged. Do not claim exhaustive review without enumerating all archive entries. Do not treat a historical assistant summary as the source document. Keep Library updates and GitHub commits independently verifiable.
+
+
+## 5. Direct archive inspection — 2026-11-16
+
+The Library folder inventory and read-only ZIP inspection are documented in [Source Reconciliation Register](SOURCE_RECONCILIATION_REGISTER.md).
+
+Verified structural counts for `Project documents and questions and answers.zip`:
+- 1,312 ZIP entries.
+- 564 Markdown documents: 517 Q&A and 47 formal architecture/implementation documents.
+- 32 `.DS_Store` files and 656 AppleDouble metadata entries under `__MACOSX/`.
+- 3 other non-Markdown, non-`.DS_Store` files.
+
+The separate `ATHEER — Engineering Foundation & Establishment.zip` contains two Markdown documents, including a historical repository audit and legacy `AGENTS.md`. The audit reports a former `AtheerTrader` foundation branch and commit; these are archive-reported, not currently verified GitHub state.
+
+A previous review also refers to 600 canonical extracted source files and 31 Mermaid-containing Markdown documents. These figures are not reconciled with the 564-Markdown ZIP inventory and must remain separately qualified.
+
+## 6. Reconciliation records
+
+- [Source Reconciliation Register](SOURCE_RECONCILIATION_REGISTER.md) — archive structure, formal architecture sources, and historical repository evidence.
+- [Specification Conflict Register](SPECIFICATION_CONFLICT_REGISTER.md) — unresolved repository topology, source authority, AI authority, IPDS palette, archive counts, and document-status issues.
+
+Do not mark source reconciliation complete until the 47 formal documents, 517 Q&A documents, approval metadata, and source-provenance reports have been reconciled to the required depth.
