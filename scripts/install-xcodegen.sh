@@ -34,7 +34,7 @@ else
     swift build -c release
   )
   install -m 755 "$SOURCE_DIR/.build/release/xcodegen" "$BINARY"
-  printf "%s\\n" "$COMMIT_SHA" > "$MARKER"
+  printf "%s\n" "$COMMIT_SHA" > "$MARKER"
 fi
 
 "$BINARY" --version
