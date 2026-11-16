@@ -125,3 +125,17 @@ These repository-authored artifacts are not represented as original source docum
 |---|---|---|
 | ATP-API-002 | Local API Health Contract | Accepted bounded local-development health contract; does not settle general business API transport, authentication, or persistence architecture |
 | ATP-OPS-001 | Non-Destructive Local Synchronization | Implemented and tested in isolated Git repositories; actual Mac execution remains pending |
+
+
+## ATP-DOMAIN-001 engineering documents — 2026-11-17
+
+| Document | Purpose | Status |
+|---|---|---|
+| docs/architecture/ATP-DOMAIN-001_TRADING_DOMAIN_FOUNDATION.md | Phase scope, authority, implemented boundaries and acceptance | Current phase specification; implementation in progress |
+| docs/architecture/TRADING_DOMAIN_ARCHITECTURE.md | Domain dependency direction and safety invariants | Current architecture description of implemented foundation |
+| docs/architecture/TRADING_DOMAIN_MODEL_REFERENCE.md | Canonical model/value-object reference | Current implementation reference |
+| docs/architecture/OMS_FOUNDATION_SPECIFICATION.md | OMS lifecycle, idempotency and persistence/outbox contracts | Foundation only; durable adapter pending |
+| docs/architecture/POSITION_MANAGEMENT_SPECIFICATION.md | Position lifecycle, P&L scope and reconciliation authority | Foundation only; broker sync pending |
+| docs/architecture/RISK_DOMAIN_CONTRACTS.md | Fail-closed risk engine and policy contracts | Foundation only; approved production limits pending |
+| docs/architecture/DOMAIN_EVENTS_REFERENCE.md | Event envelope and event type catalogue | Envelope/types implemented; durable publication pending |
+| docs/engineering/ATP-DOMAIN-001_TEST_AND_VERIFICATION_REPORT.md | Executed test evidence and verification limitations | Current isolated verification report; hosted CI pending |

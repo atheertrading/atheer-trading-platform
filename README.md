@@ -62,3 +62,8 @@ All contributions must follow [AGENTS.md](AGENTS.md), applicable specifications 
 ## License
 
 No open-source license has been selected yet. Public visibility does not itself grant permission to reuse, modify, or redistribute this software. A license decision must be made explicitly by the project owner.
+
+
+## Trading Domain Foundation — ATP-DOMAIN-001 (in progress)
+
+The initial broker-independent Trading Domain package is under implementation on feat/atp-domain-foundation, stacked on PR #10's current head. It adds exact decimal/money primitives, canonical instrument/account/quote/order/position/portfolio/session models, an explicit order lifecycle, fail-closed risk contracts, OMS idempotency and transactional-outbox interfaces, reconciliation primitives, domain events, and deterministic tests. It does not add broker execution, persistence, trading endpoints, or LIVE capability. The domain branch is not integrated into main; its integration is gated on PR #10 and the required local engineering qualification. See docs/architecture/ATP-DOMAIN-001_TRADING_DOMAIN_FOUNDATION.md and docs/engineering/IMPLEMENTATION_STATUS.md.

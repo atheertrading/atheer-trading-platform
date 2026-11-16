@@ -118,3 +118,17 @@ Every material decision must state its source, date, scope, status, rationale, c
 ### EDL-008 implementation invariant clarification — 2026-11-16
 
 The native health client is constrained to the loopback endpoint `127.0.0.1:4100`. The client must reject contradictory readiness payloads that report platform `not_ready` while trading is enabled. This is a fail-closed client validation invariant; it does not grant or implement trading authority.
+
+
+## ATP-DOMAIN-001A implementation decisions (not formal ADRs) — 2026-11-17
+
+- Language/location: implement the broker-independent domain core in the existing Node.js 24 / TypeScript API package under services/api/src/domain/, preserving the modular monorepo and avoiding new dependencies.
+- Financial precision: use an immutable base-10 Decimal backed by bigint and Money with currency equality checks. Division and quantization require explicit scale/rounding mode. No JS binary floating point is used for financial arithmetic.
+- Instrument metadata: precision, tick, quantity step, min/max, multiplier, valuation model, effective timestamp and provenance are explicit; no broker defaults are invented.
+- Broker independence: broker IDs and instrument references are generic opaque values. No Capital.com SDK or API details enter the domain package.
+- Order governance: manual, strategy, algorithm, AI-agent, position-management and risk-control sources use one OrderManagementService intake. It has no broker transport/dealing method. Durable persistence adapters must atomically store idempotency registration and outbox events, then atomically store risk decisions/order state/outbox events.
+- Failure semantics: submission uncertainty is distinct from rejection and requires reconciliation. Blind resubmission is not an allowed state transition. Duplicate execution IDs/references are suppressed; overfills are rejected.
+- Risk: no policies means reject; LIVE is unconditionally blocked. Configured quantity/instrument/account gross-exposure policies are parameterized; no production limits are embedded. Missing FX or incomplete account gross-exposure snapshot fails closed. Emergency halt blocks exposure increase while reduce/close intents still pass the same risk checks.
+- Valuation: local P&L/exposure helpers are restricted to explicitly declared linear instruments. Broker-reported financial snapshots remain authoritative. No netting, FX, derivatives, fees, financing or margin semantics are inferred.
+- Sequencing: ATP-DOMAIN-001A is prepared on a stacked branch because PR #10 and local qualification gates remain open. It is not integrated into main.
+- These are bounded implementation choices under the owner execution directive, not replacements for unavailable formal ADR-0004/0005/0006 or the original ATP-ARCH trading specifications.

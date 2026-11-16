@@ -150,3 +150,16 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - P1 — Reconcile ADR-0004/0005/0006 originals and OOP standard; current archive register references them but does not include their original full text.
 
 - PR #10 code-review correction fixes the health client to loopback and rejects `not_ready` responses that advertise trading enabled; a fifth XCTest covers this fail-closed invariant. Fresh CI is required on the updated branch head.
+
+
+## ATP-DOMAIN-001 — Trading Domain Foundation (2026-11-17)
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-DOMAIN-001A | P1 | Implement broker-independent domain core, value objects, models, lifecycle, risk/OMS contracts and deterministic tests | IMPLEMENTED ON STACKED BRANCH; 28 local domain tests pass; fresh Node 24 CI pending | Branch feat/atp-domain-foundation, base PR #10 head; integration blocked on PR #10 and local qualification |
+| ATP-DOMAIN-001B | P1 | Implement durable repositories, atomic idempotency, transactional outbox/inbox and pending-intent recovery | PENDING | Requires approved persistence architecture, PostgreSQL migrations, transaction/recovery tests |
+| ATP-DOMAIN-001C | P1 | Implement broker-authoritative account/position/order reconciliation projections | PENDING | Requires formal broker contract and persistence adapter |
+| ATP-DOMAIN-001D | P1 | Complete RiskEngine policies and approved risk formulas/limits | PENDING | Requires original risk specifications and owner-approved policy values; do not invent limits |
+| ATP-DOMAIN-001E | P1 | Integrate versioned domain/API DTOs and application services | PENDING | Requires durable OMS/risk contracts and CI verification; no broker execution in this task |
+
+**Phase gate:** ATP-DOMAIN-001A is implementation work in progress on a stacked branch. It is not merged or integrated. PR #10 remains open. Local engineering qualification is outstanding. Do not merge this branch to main until the master phase sequence and repository review/protection requirements are satisfied.

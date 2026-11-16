@@ -84,3 +84,8 @@ Verified archive artifacts:
 - The original 47-document formal architecture archive is referenced by the package registry but was not present as a standalone archive in the visible Library root. The Codex export includes its registry metadata, not all 47 original full-text documents.
 
 The current Master Engineering Execution Directive and Continuous Delegation documents in `/work`, plus the owner's explicit current repository direction, supersede stale repository pointers in the historical working draft. Preserve the draft and its substantive requirements as source material; do not claim blanket owner approval.
+
+
+## ATP-DOMAIN-001 source reconciliation — 2026-11-17
+
+Accessible sources reviewed: repository AGENTS.md, task/continuity/implementation/decision records, the Library Master Project Construction directive, the curated Codex knowledge archive and selected trading lifecycle/market-data/API contracts from the Q&A archive. The Master Document Registry lists ATP-ARCH-002, ATP-ARCH-002-OMS, ATP-ARCH-002-PM, ATP-ARCH-005, ATP-ARCH-016 and ATP-ARCH-019, but their full original texts were not retrievable through the connected Library search/read interface in this execution. Original ADR-0004/0005/0006 texts were also not directly available. Treat detailed netting, FX, derivatives valuation, margin, financing, fees, risk limits and broker-specific lifecycle semantics as unresolved; do not infer approval from registry entries or curated summaries.

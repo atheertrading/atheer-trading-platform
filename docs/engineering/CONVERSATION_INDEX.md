@@ -73,3 +73,8 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-16-014 | 2026-11-16 | Non-destructive local synchronization | Added safe main synchronization, external backup, retained stash, workstation doctor/bootstrap, Makefile workflows, and automated Git behavior tests; actual Mac execution pending. | LOCAL_SYNC_PROCEDURE; EDL-009; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
 
 | ATP-2026-11-16-015 | 2026-11-16 | Phase 0 continuity and engineering-state assessment | Reconciled current main/PR state, reviewed PR #10 implementation and CI, corrected stale README and continuity status on PR branch, recorded local qualification and domain implementation gaps. | PROJECT_CONTINUITY; TASK_REGISTER; IMPLEMENTATION_STATUS; ENGINEERING_DECISION_LOG; README; SESSION_2026-11-16_015_PHASE_0_CONTINUITY_ASSESSMENT |
+
+
+## 2026-11-17 — ATP-DOMAIN-001 Trading Domain Foundation
+
+Owner directive initiated ATP-DOMAIN-001. Repository discovery confirmed the canonical implementation repository remains atheertrading/atheer-trading-platform; the separately named atheertrading/atheer-trading-knowledge-base returned 404 and is not the adopted code topology. PR #10 is still open/unmerged at 06bd496d957b6cd2f999209cf5dc83cae54251cf; CI #117, CodeQL #117 and Local Sync Safety #48 passed. The domain foundation is being implemented on a stacked branch pending PR #10 integration and local engineering qualification. See the ATP-DOMAIN-001 documents and continuity addendum.
