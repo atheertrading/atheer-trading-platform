@@ -250,3 +250,15 @@ The owner approved Phase 2 implementation while Phase 1 remains open. Outstandin
 Hosted CI and CodeQL passed on PR #8 head `44f2262f9af95a789317fea36a2c432cbad04114`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, backend toolchain, repository hygiene, and CodeQL workflow analysis all succeeded. Local Mac generation/build/test/launch remains pending, as does arm64 qualification on a verified Apple Silicon host.
 
 Next: complete final diff/merge-readiness review, merge only if the latest head checks remain green, then perform controlled local synchronization and separate local Xcode acceptance. Do not claim Phase 2 complete until local qualification is recorded.
+
+
+## ATP-2026-11-16-012 — Backend health vertical slice
+
+- Verified main after PR #8: d51d178cb9997aee21e4c5dadad5aa894f3c6138. PR #8 is closed/merged; GitHub main points to the same commit.
+- PR #8 hosted CI and Swift CodeQL checks were green before merge. No post-merge workflow run was returned by the inspected commit-workflow query.
+- Current application source remains a minimal SwiftUI shell. The repository still has no trading backend, database runtime, market-data pipeline, broker adapter, RiskEngine, OMS, or Execution Gateway.
+- The historical local environment assessment records Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Node.js 24.22.0, Debug and Release builds, XCTest 1/1, and application launch at the earlier local main commit 70794e7f20f129c17ba64bcf4b1eba0df32999df. These results do not qualify the later main commit.
+- A later local-worktree report identified uncommitted continuity/report changes. Current local status has not been inspected in this session; no local synchronization was attempted.
+- Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
+- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
+- Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.

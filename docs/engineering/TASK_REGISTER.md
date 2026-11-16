@@ -44,8 +44,8 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 |---|---|---|---|
 | M02-001 | P2 | Qualify macOS/Xcode/Swift compatibility and app structure | IN PROGRESS |
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
-| M02-003 | P2 | Establish backend service foundation and API contracts | PENDING |
-| M02-004 | P2 | Establish automated tests and local developer workflows | PENDING |
+| M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
+| M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
 
 ## Governance notes
 
@@ -104,3 +104,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Branch `build/phase-2-xcode-configuration` introduces explicit Debug/Release build settings, targeted Swift concurrency diagnostics, generated scheme inspection, and a hosted Release build.
 - Developer setup documentation records the configuration policy and known signing/sandbox/architecture limitations.
 - Verification, PR review, local Mac build/test/launch, and arm64 qualification remain pending. Do not mark M02-001 DONE until those acceptance criteria are evidenced.
+
+
+## Backend foundation — local health vertical slice — 2026-11-16
+
+- M02-003 is IN PROGRESS: a loopback-only Node.js 24 / TypeScript API health service is being introduced under services/api.
+- M02-004 is IN PROGRESS: six API/configuration tests and CI execution are added in the review branch.
+- The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
+- This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
+- Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
