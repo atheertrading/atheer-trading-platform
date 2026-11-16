@@ -38,7 +38,7 @@ When sources conflict, record the conflict, dates, revisions, and authority; ins
 
 The platform must remain model- and provider-extensible. Do not hardwire the architecture to a single model vendor, model family, agent framework, or orchestration provider without an accepted decision. Support evaluation of hosted and local models, model routing, tool adapters, specialized agents, and multi-agent workflows.
 
-Extensibility does not mean unrestricted permissions. Every agent and tool integration must declare purpose, inputs/outputs, permissions, data access, side effects, audit requirements, and failure behavior. AI may analyze, research, recommend, and propose order intents within its scope. Broker dealing remains behind the same centralized risk and execution governance as every other order source.
+Extensibility does not mean ungoverned permissions. Every agent and tool integration must declare purpose, inputs/outputs, permissions, data access, side effects, audit requirements, and failure behavior. Agents may analyze, research, recommend, initiate order intents, and operate pre-authorized strategy workflows, including bounded autonomous position management, when their explicit permission profile allows it. They must not call broker dealing APIs directly, authorize their own risk, expand their own permissions, or bypass Strategy OS/authorization policy, RiskEngine, OMS, or Execution Gateway. The Execution Gateway is the controlled broker-dealing boundary. Use a provider-independent Model Gateway; agents and skills must not embed provider-specific SDK access or raw credentials. Use deterministic algorithms for exact calculations, hard financial constraints, and safety-critical decisions.
 
 ## Trading safety baseline
 
