@@ -103,3 +103,32 @@ Never invent missing conversation transcripts. If a historical transcript cannot
 - **Change scope:** 11 documentation/configuration files; no application source code.
 - **Verification:** All 11 expected files were fetched successfully from the branch. Build/runtime tests are not applicable to this documentation-only change.
 - **Next action:** Owner review and merge decision. Do not mark the baseline merged until GitHub confirms it.
+
+
+## 10. Library archive inspection findings
+
+Read-only inspection of the visible `/AtheerTradingPro` Library folder identified the Engineering Operating Standards document and two ZIP archives. Both archives were materialized for inspection; the Library originals were not modified.
+
+The archive `Project documents and questions and answers.zip` contains 564 Markdown documents: 517 Q&A files and 47 formal architecture/implementation documents. The separate `ATHEER — Engineering Foundation & Establishment.zip` contains a historical audit of a repository named `AtheerTrader` and an earlier repository `AGENTS.md`.
+
+The archived audit reports `AtheerTrader` main commit `313bf6ce9c6a`, foundation branch `build/macos-app-foundation`, foundation commit `cbe5bb0512fb`, and an open draft PR #1. A direct GitHub API lookup returned 404 during this session; the repository is not currently accessible through the inspected connection. Its deletion is not confirmed.
+
+A material conflict was identified: ATP-ARCH-042 records a four-repository ownership model, while a recent discussion proposed a single modular monorepo. The current owner direction establishes federated knowledge sources but does not explicitly resolve the repository count. This is recorded in `SPECIFICATION_CONFLICT_REGISTER.md`; no topology change is assumed.
+
+The original brand palette was recovered from the visual-design directives. Alternative palette values previously proposed in conversation remain unapproved and must not replace the documented brand colors without reconciliation.
+
+## 11. Current source-reconciliation status
+
+- Structural inventory of the two visible ZIP archives: complete.
+- Full document-by-document review of 47 formal architecture/implementation documents: pending.
+- Reconciliation of 517 Q&A documents: pending.
+- Approval register and 600-source integrity-count reconciliation: pending.
+- Historical `AtheerTrader` repository and local-work recovery: pending / accessibility unresolved.
+- Repository-topology decision: open.
+- Design-document authority and IPDS token reconciliation: open.
+
+The source and conflict registers are:
+- `SOURCE_RECONCILIATION_REGISTER.md`
+- `SPECIFICATION_CONFLICT_REGISTER.md`
+
+Next action: continue formal-document and approval-metadata reconciliation before finalizing repository topology, architecture module boundaries, or production IPDS tokens.
