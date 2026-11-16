@@ -160,3 +160,5 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 
 
 - Added docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md to define safe branch updates, conflict resolution, PR review/merge, and local clone synchronization. The new repository must be cloned alongside, not over, the earlier engineering repository until its work is separately inventoried.
+
+- Added docs/development/GITHUB_REPOSITORY_CONFIGURATION.md specifying Actions permissions, main-branch rules, merge policy, and repository security settings. The connector cannot currently verify or apply these repository settings; they require GitHub Settings UI verification.
