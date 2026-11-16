@@ -94,3 +94,12 @@ XcodeGen is pinned to 2.36.1 for the historical Xcode 14.3.1 workstation. Do not
 | M00-021 | P1 | Reconcile the 47 formal documents, 517 Q&A sources and approval metadata | IN PROGRESS | Existing source inventory; document-level authority/revision/approval traceability pending |
 
 The historical Mermaid count is **31 source documents containing 52 Mermaid blocks**, not 31 individual diagrams. Do not mark M00-020 or M01-007 DONE until generated legacy sources are committed, all Mermaid files render in CI, and provenance is verified.
+
+
+## Documentation readiness and scaling follow-up — 2026-11-16
+
+- Added `docs/engineering/REPOSITORY_DOCUMENTATION_READINESS.md`: identifies present bootstrap documentation, historical references absent from the current tree, and future production/scaling documentation.
+- Added `docs/architecture/PLATFORM_SCALING_AND_DEPLOYMENT_STRATEGY.md`: proposed modular-monolith-first scaling strategy; no cloud provider, capacity target, SLO, RPO or RTO is invented.
+- Added `docs/engineering/REQUIREMENTS_TRACEABILITY_MATRIX.md`: initial traceability structure; requirement population remains pending.
+- M00-009 (Requirements Traceability Matrix) is now **IN PROGRESS**, not DONE; a template exists, but formal requirement mapping and verification links remain outstanding.
+- PR #6 is open; do not mark Mermaid baseline or repository documentation changes DONE until the full latest CI run passes and the PR is merged.
