@@ -168,3 +168,5 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - CI diagnostic: the first full repository-hygiene job passed required-file and git diff checks, then failed Markdown lint with 82 formatting-only findings across 22 Markdown files. Added task M00-018 to normalize legacy docs and re-enable spacing/link rules; temporary config keeps remaining default rules active. Backend-toolchain job passed Node.js 24 validation. macOS build/test remains pending.
 
 - Reproducibility hardening: XcodeGen 2.36.1 is now pinned to immutable source commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c; upstream Package.resolved supplies dependency pins. Installer verifies source SHA and stores an installation marker. Added .nvmrc for Node 24 and configured CI to consume it. Local setup still requires execution on the user's Mac.
+
+- CI topology refinement: Swift CodeQL now runs inside the macOS build/test job, so project generation, Xcode build, XCTest, and Swift analysis share one hosted macOS runner. Standalone CodeQL workflow analyzes Actions configuration on Ubuntu. This reduces duplicate macOS runner allocations.
