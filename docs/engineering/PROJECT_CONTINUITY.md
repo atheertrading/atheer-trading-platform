@@ -132,3 +132,6 @@ The source and conflict registers are:
 - `SPECIFICATION_CONFLICT_REGISTER.md`
 
 Next action: continue formal-document and approval-metadata reconciliation before finalizing repository topology, architecture module boundaries, or production IPDS tokens.
+
+
+The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) has now been created on the bootstrap branch. It enumerates the 47 formal documents and 517 Q&A documents by section. Document-by-document approval, revision, dependency, and requirement mapping remains in progress.
