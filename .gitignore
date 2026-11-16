@@ -17,6 +17,8 @@ credentials/
 .LSOverride
 
 # Xcode / Swift
+apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj/
+build/
 .build/
 DerivedData/
 *.xcuserstate
