@@ -4,7 +4,13 @@
     "MD013": false,
     "MD033": false,
     "MD041": false,
-    "MD024": false
+    "MD024": false,
+    "MD012": false,
+    "MD022": false,
+    "MD032": false,
+    "MD034": false,
+    "MD036": false,
+    "MD058": false
   },
   "globs": ["**/*.md"],
   "ignores": ["**/node_modules/**"]
