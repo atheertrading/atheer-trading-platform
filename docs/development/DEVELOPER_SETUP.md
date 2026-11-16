@@ -74,7 +74,7 @@ The XcodeGen specification is the canonical project configuration:
 - Product/project: `ATHEERTradingPro`; display name: `ATHEER Trading Pro`.
 - Bundle identifier: `com.atheertrading.desktop`.
 - Deployment target: macOS 13.0.
-- Swift language mode: Swift 5 (`SWIFT_VERSION=5.0)); the compiler version is supplied by the selected Xcode toolchain.
+- Swift language mode: Swift 5 (`SWIFT_VERSION=5.0`); the compiler version is supplied by the selected Xcode toolchain.
 - Debug: no Swift optimization, testability enabled, active-architecture build, DWARF debug information.
 - Release: optimized Swift build, dSYM debug symbols, assertions disabled, all standard architectures requested.
 - Targeted Swift concurrency diagnostics are enabled as a migration baseline; warnings are not globally promoted to errors.
