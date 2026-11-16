@@ -24,7 +24,7 @@ jobs:
           test -f docs/engineering/PROJECT_CONTINUITY.md
           git diff --check
       - name: Markdown lint
-        uses: DavidAnson/markdownlint-cli2-action@v19
+        uses: DavidAnson/markdownlint-cli2-action@v25
         with:
           globs: |
             **/*.md
