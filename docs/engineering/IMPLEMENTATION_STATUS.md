@@ -51,3 +51,13 @@ Historical engineering notes mention macOS 13.7.8, Xcode 14.3.1, and Swift 5.8.1
 ## Verification policy
 
 Every status change to VERIFIED must cite a commit, file path, test run, build log, integration result, or other reproducible evidence. Mark owner-reported or historical evidence explicitly. Never infer operational broker connectivity or financial correctness from UI presence, mock tests, generated source, or successful compilation alone.
+
+## Bootstrap pull request evidence
+
+- Branch: `engineering/bootstrap-governance`
+- PR: https://github.com/atheertrading/atheer-trading-platform/pull/1
+- PR head at creation: `f9cb4d3f8acb413f5422aab96892fd9583747958`
+- Files: 11 changed (documentation and repository configuration only).
+- Verification: all 11 expected paths fetched successfully from the branch.
+- PR state at last inspection: open, not merged.
+- No application build, unit test, integration test, or runtime qualification was performed or claimed.
