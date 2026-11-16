@@ -85,7 +85,7 @@ No source behavior, trading logic, broker integration, credentials, database, ri
 - Applied the three changes above through GitHub's repository contents interface.
 
 **Pending:**
-- Pull request creation and full diff review.
+- PR #8 was created: https://github.com/atheertrading/atheer-trading-platform/pull/8. The initial repository-hygiene run found one MD047 missing-final-newline issue in this session report; the file was corrected and the workflow is re-running.
 - XcodeGen 2.36.1 generation under the hosted runner.
 - Scheme listing.
 - Debug build.
@@ -109,4 +109,4 @@ No build or test result is claimed at this point. A successful CI run will quali
 
 ## 8. Next action
 
-Create and inspect a focused PR for this branch. Wait for all required CI jobs, resolve any generated-project/compiler/test failures, then stop for a Phase 2 verification handover. Do not merge until the diff and required checks are satisfactory. Local Mac verification remains required before Phase 2 can be marked fully complete.
+PR #8 is open. Re-check the corrected repository-hygiene run and complete macOS generation, scheme, Debug, XCTest, Release, and Swift CodeQL checks. Resolve any failures before merge. Local Mac verification remains required before Phase 2 can be marked fully complete.
