@@ -3,12 +3,13 @@
 ## Mandatory read order
 1. AGENTS.md
 2. docs/engineering/PROJECT_CONTINUITY.md
-3. docs/engineering/IMPLEMENTATION_STATUS.md
-4. docs/engineering/TASK_REGISTER.md
-5. docs/engineering/MASTER_DOCUMENT_REGISTRY.md
-6. docs/engineering/SOURCE_RECONCILIATION_REGISTER.md
-7. Relevant Library specification, including revision and approval status
-8. Relevant source code, tests, Git history, and open PRs
+3. docs/engineering/CONVERSATION_INDEX.md and CONVERSATION_RECOVERY_PROTOCOL.md
+4. docs/engineering/IMPLEMENTATION_STATUS.md
+5. docs/engineering/TASK_REGISTER.md
+6. docs/engineering/MASTER_DOCUMENT_REGISTRY.md
+7. docs/engineering/SOURCE_RECONCILIATION_REGISTER.md
+8. Relevant Library specification, including revision and approval status
+9. Relevant source code, tests, Git history, and open PRs
 
 Do not assume a document is approved merely because it appears in a registry. Record inaccessible sources rather than inventing their contents.
 
