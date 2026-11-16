@@ -81,3 +81,6 @@ Toolchain compatibility correction: XcodeGen is pinned to 2.36.1 and built from 
 
 
 The first complete repository-hygiene run reached Markdown lint and reported 82 formatting-only findings across 22 historical and new Markdown files. The project has a temporary compatibility lint baseline that keeps the remaining default rules active while M00-018 normalizes legacy formatting and re-enables the spacing/link rules. The backend-toolchain job passed Node.js 24 validation. The hosted macOS build/test job is still pending; no Xcode build/test pass is claimed.
+
+
+Final toolchain pin: XcodeGen 2.36.1 is built from immutable upstream commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c; the upstream Package.resolved locks its dependency graph. The installer verifies the source SHA and records it beside the installed binary. Node.js 24 is selected by .nvmrc and CI consumes that file. Local toolchain installation and Xcode build/test remain unverified.
