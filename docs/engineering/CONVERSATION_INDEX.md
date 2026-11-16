@@ -43,3 +43,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-005 | 2026-11-16 | Repository foundation and development environment | PR #1 squash-merged; adopted the single modular engineering monorepo with federated Library knowledge; created the platform foundation branch with XcodeGen macOS shell, CI/security workflows, AI navigation, developer setup, and local diagnostics. | EDL-004; REPOSITORY_TOPOLOGY_DECISION; platform foundation PR |
+
+| ATP-2026-11-16-006 | 2026-11-16 | Toolchain compatibility and CI qualification | Pinned XcodeGen 2.36.1 to immutable source commit for Xcode 14.3.1 / Swift 5.8.1 compatibility; added Node .nvmrc and manifest; diagnosed markdown lint findings, added temporary legacy baseline and M00-018; repository hygiene and Node 24 checks passed; macOS build/test and CodeQL Swift pending. | TOOLCHAIN_MANIFEST; DEVELOPER_SETUP; PR #2 |
