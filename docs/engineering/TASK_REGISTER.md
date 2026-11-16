@@ -77,3 +77,8 @@ The pull-request and local synchronization procedure is documented in docs/devel
 
 
 XcodeGen is pinned to 2.36.1 for the historical Xcode 14.3.1 workstation. Do not mark M02-001 complete until the installer, project generation, build, and XCTest run are verified on the actual local Mac.
+
+
+## Follow-up documentation quality task
+
+- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable the temporarily disabled markdownlint spacing/link rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
