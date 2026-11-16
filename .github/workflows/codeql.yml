@@ -21,7 +21,18 @@ jobs:
           - language: javascript-typescript
     steps:
       - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - name: Prepare Swift project for CodeQL
+        if: matrix.language == 'swift'
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        if: matrix.language == 'swift'
+        working-directory: apps/macos/ATHEERTradingPro
+        run: xcodegen generate
+      - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-      - uses: github/codeql-action/analyze@v3
+      - name: Build Swift application for analysis
+        if: matrix.language == 'swift'
+        run: |
+          xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+      - uses: github/codeql-action/analyze@v4
