@@ -1,13 +1,14 @@
 # Engineering Session ATP-2026-11-16-013 — macOS Backend Health Integration
 
 **Date:** 2026-11-16  
-**Previous session:** ATP-2026-11-16-012 — Backend health vertical slice  
+**Original base main:** c29615cd2f68b1e8b1925b7fc5996743b083b961  
+**Current integration base:** 0dc062bb620a4afa93c60e5f060ee405846e3cbc  
 **Branch:** feat/macos-backend-health-integration  
-**Base main:** c29615cd2f68b1e8b1925b7fc5996743b083b961
+**Pull request:** #10
 
 ## Objective
 
-Connect the native macOS workspace to the local backend health contract. Deliver a non-trading integration slice that distinguishes API process availability from platform readiness.
+Connect the native macOS workspace to the local backend health contract delivered in PR #9. Deliver a non-trading integration slice that distinguishes API process availability from platform readiness.
 
 ## Implementation
 
@@ -40,5 +41,5 @@ No broker connection, credentials, database, market data, account data, order su
 
 1. Obtain hosted macOS CI results for this branch.
 2. Reconcile the formal API, security/IAM, persistence, market-data, RiskEngine, OMS, and Execution Gateway sources before implementing business services.
-3. Prepare a non-destructive local synchronization procedure that first inspects and preserves existing modified and untracked files.
-4. Perform local Xcode generation, Debug/Release build, XCTest, and app launch only when actual Mac access is available.
+3. Execute the non-destructive local synchronization procedure only when actual Mac access is available.
+4. Perform local Xcode generation, Debug/Release build, XCTest, and app launch.

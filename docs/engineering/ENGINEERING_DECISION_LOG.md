@@ -103,3 +103,13 @@ Every material decision must state its source, date, scope, status, rationale, c
 - No broker credentials, account data, market data, orders, or execution operations are introduced. Trading remains disabled.
 - This decision applies only to the local health contract. It does not settle general business API transport, authentication, authorization, or service discovery.
 - Verification: Swift 6.2.1 Linux Foundation/URLSession typecheck and Swift-to-Node local health smoke test passed. Xcode/macOS CI and local Mac qualification remain pending.
+
+## EDL-009 — Non-destructive local main synchronization
+
+- Date: 2026-11-16
+- Status: Accepted operational safety decision under delegated engineering authority.
+- Decision: Local main synchronization must validate the expected repository origin, preserve staged and unstaged patches and non-ignored untracked files in a private external backup, create a local pre-sync branch and retained stash, then fast-forward main only.
+- After updating main, restore the original branch and reapply the stash with index state. Retain the stash, backup branch, and external backup for inspection; never auto-drop preservation data.
+- Reject detached HEAD, unexpected origin, and divergent main history. Do not reset, clean, force-push, delete local branches, or automatically merge/rebase feature branches.
+- The default local path is $HOME/Developer/AtheerTradingPlatform. The bootstrap refuses to proceed from a restored non-main branch.
+- Verification: functional tests passed in temporary local Git repositories for dirty worktree, clean fast-forward, wrong origin, and divergent main. This does not qualify the owner's actual Mac.

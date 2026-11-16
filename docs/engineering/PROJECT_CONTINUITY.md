@@ -260,17 +260,17 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - The historical local environment assessment records Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Node.js 24.22.0, Debug and Release builds, XCTest 1/1, and application launch at the earlier local main commit 70794e7f20f129c17ba64bcf4b1eba0df32999df. These results do not qualify the later main commit.
 - A later local-worktree report identified uncommitted continuity/report changes. Current local status has not been inspected in this session; no local synchronization was attempted.
 - Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
-- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
-- Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.
+- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. PR #9 backend CI on Node.js 24.22.2 passed; local Node.js 24 checks remain pending.
+- Subsequent progress: PR #3, #4, #5, and #11 are merged. PR #10 remains open for native macOS backend-health integration. PR #11 adds tested non-destructive local synchronization, but it has not been run against the owner's Mac. Formal source/ADR reconciliation and business API, persistence, and domain contracts remain prerequisites before implementing financial services.
 
 
-## ATP-2026-11-16-013 — macOS backend health integration
+## Current integration status — 2026-11-16
 
-- Base main: c29615cd2f68b1e8b1925b7fc5996743b083b961 (PR #9 merged).
-- Backend API service and contract are on main. Backend CI on Node 24.22.2 passed npm ci, strict typecheck, and six API tests; repository hygiene and GitHub Actions CodeQL passed. The unchanged macOS CI job remained queued at the time of this record.
-- Branch feat/macos-backend-health-integration adds a URLSession health client, payload decoder, view model, and backend status panel to the native macOS workspace.
-- The client treats a valid HTTP 503 / not_ready payload as a reachable API with platform readiness unavailable. It never infers trading readiness from liveness.
-- Four XCTest cases are added. Linux Swift 6.2.1 Foundation/URLSession typecheck and Swift-to-Node API smoke test passed; neither substitutes for Xcode/macOS verification.
-- Local Mac access is not available in this session. No local checkout, Xcode project, signing identity, or user files were modified.
-- No database, broker, market data, account, order, strategy, risk, OMS, or execution capability was added.
-- Next: qualify PR #10 on hosted macOS CI, then prepare non-destructive local synchronization while preserving the previously reported dirty/untracked worktree. Continue PR #3/#4/#5 workflow maintenance after revalidating their latest checks.
+- Current main: 0dc062bb620a4afa93c60e5f060ee405846e3cbc.
+- Merged PRs: #3 (Node setup action), #4 (markdownlint action/config baseline), #5 (checkout action), #9 (local backend health service), and #11 (safe local synchronization/bootstrap).
+- PR #10 adds native macOS health integration. Its branch is being rebased onto current main; hosted macOS build/test and local Mac qualification remain pending.
+- The local synchronization procedure is implemented and its dedicated Ubuntu Git behavior workflow passed. It has not been executed against the owner's Mac.
+- The historical local report identified modified continuity/report files and an untracked session artifact. The current local worktree has not been inspected in this session; no local synchronization was attempted.
+- The safe-sync workflow preserves staged, unstaged, and non-ignored untracked work, retains an external backup, backup branch, and stash, and fast-forwards local main only. It does not rebase feature branches.
+- The local backend remains loopback-only at 127.0.0.1:4100. Platform readiness remains not ready; persistence and broker are not configured; trading remains disabled.
+- Next: complete PR #10 hosted macOS CI; then inspect and safely synchronize the actual Mac, run doctor/bootstrap, build and test the macOS app, and verify backend/app launch. Continue formal source and ADR reconciliation before defining persistence, market-data, RiskEngine, OMS, or execution contracts.

@@ -117,10 +117,11 @@ For every formal document, add:
 For every Q&A document, capture its original path, topic, related formal specification, requirement/decision references, and whether its conclusion remains current. Resolve conflicts without deleting source history.
 
 
-## 6. Current repository-authored engineering contracts
+## 6. Current repository-authored engineering contracts and procedures
 
-The following documents are authored in the current repository under delegated engineering authority. They are not represented as original source documents from the Library archive and do not claim separate owner approval.
+These repository-authored artifacts are not represented as original source documents from the Library archive and do not claim separate owner approval.
 
 | Document ID | Repository document | Status and scope |
 |---|---|---|
 | ATP-API-002 | Local API Health Contract | Accepted bounded local-development health contract; does not settle general business API transport, authentication, or persistence architecture |
+| ATP-OPS-001 | Non-Destructive Local Synchronization | Implemented and tested in isolated Git repositories; actual Mac execution remains pending |

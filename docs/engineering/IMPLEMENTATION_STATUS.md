@@ -136,12 +136,22 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 
 ## macOS backend health integration — ATP-2026-11-16-013
 
-**Status: IN PROGRESS — implementation and cross-language smoke test completed; Xcode CI and local Mac qualification pending.**
+**Status: IN PROGRESS — implementation and isolated-container smoke test completed; hosted macOS CI and local Mac qualification pending.**
 
-- Branch: feat/macos-backend-health-integration, based on main c29615cd2f68b1e8b1925b7fc5996743b083b961.
-- Added a dependency-injected URLSession client for the local health contract, a view model, and a compact backend status panel in the macOS workspace.
+- Branch: feat/macos-backend-health-integration; PR #10.
+- Added a dependency-injected URLSession client, payload decoder, view model, and backend status panel to the native macOS workspace.
 - The app distinguishes API connectivity from platform readiness. HTTP 503 with a valid not_ready payload is displayed as API connected / platform not ready.
-- The app displays persistence and broker as not configured and trading as disabled. It adds no order controls and no broker connection.
-- Added four XCTest cases for payload mapping, inconsistent status rejection, connected-but-not-ready state, and disconnected state.
-- Isolated Linux verification: Swift 6.2.1 typecheck passed for the Foundation/URLSession client layer; a Swift URLSession-to-Node API smoke test passed against the local service on Node.js 22.16.0.
-- This is not an Xcode/macOS build or local workstation qualification. GitHub macOS CI and local Mac verification remain pending.
+- Persistence and broker are shown as not configured; trading is shown as disabled. No order controls or broker connection were added.
+- Four XCTest cases cover payload mapping, inconsistent HTTP status rejection, connected-but-not-ready state, and disconnected state.
+- Swift 6.2.1 Linux Foundation/URLSession typecheck and Swift-to-Node API smoke test passed. These are not Xcode/macOS acceptance results.
+- Current PR #10 hosted backend, repository hygiene, and CodeQL checks passed on its prior head; macOS build/test remained queued. The branch is being rebased onto current main, so fresh CI is required.
+- Local Mac build, XCTest, and launch remain separate acceptance requirements.
+
+## Safe local synchronization — ATP-2026-11-16-014
+
+**Status: IMPLEMENTED AND VERIFIED IN ISOLATED GIT TESTS; LOCAL MAC EXECUTION PENDING.**
+
+- PR #11 merged scripts/safe-sync.sh, bootstrap and doctor updates, deterministic DerivedData paths, app-run helper, Makefile workflows, local sync documentation, and a dedicated GitHub Actions safety workflow.
+- The safety workflow passed. It verifies staged/unstaged and untracked preservation, backup branch and external backup, retained stash, clean fast-forward, origin mismatch rejection, and divergent-main refusal.
+- No local user repository or workstation files were accessed or modified in this session.
+- Actual local repository inspection, safe synchronization, Xcode project generation, build, XCTest, and application launch remain pending.

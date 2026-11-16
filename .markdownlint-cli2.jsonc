@@ -1,6 +1,6 @@
 {
   "config": {
-    // Temporary legacy baseline: re-enable formatting rules after historical docs normalization (task M00-018).
+    // Temporary legacy baseline: re-enable formatting and table-style rules after historical docs normalization (task M00-018).
     "default": true,
     "MD013": false,
     "MD033": false,
@@ -11,7 +11,8 @@
     "MD032": false,
     "MD034": false,
     "MD036": false,
-    "MD058": false
+    "MD058": false,
+    "MD060": false
   },
   "globs": ["**/*.md"],
   "ignores": ["**/node_modules/**"]

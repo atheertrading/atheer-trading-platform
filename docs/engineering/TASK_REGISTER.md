@@ -47,6 +47,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
 | M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS |
+| M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 
 ## Governance notes
 
@@ -72,7 +73,7 @@ The local Mac has not been freshly qualified in this session. The XcodeGen pin r
 
 ## Documentation quality task
 
-- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable the temporarily disabled markdownlint spacing/link rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
+- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable temporarily disabled spacing, link, and table-style rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
 
 ## Mermaid documentation and architecture source recovery — 2026-11-16
 
@@ -116,9 +117,15 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
 
 
-## macOS backend health integration — 2026-11-16
+## M02-005 macOS backend health integration — 2026-11-16
 
-- M02-005 is IN PROGRESS: the macOS shell now has a dependency-injected URLSession health client, view model, and backend status panel.
+- Added a dependency-injected URLSession health client, view model, and backend status panel on branch feat/macos-backend-health-integration.
 - The client treats HTTP 503 with a valid not_ready response as a reachable API and a platform-readiness failure, not a network disconnect.
 - The application exposes no broker or order controls. Trading remains disabled.
-- Xcode CI and local Mac build/test/launch verification remain pending.
+- Four XCTest cases are included. Hosted macOS CI and local Mac build/test/launch verification remain pending.
+
+## M02-006 Safe local synchronization and workstation bootstrap — 2026-11-16
+
+- PR #11 merged the non-destructive safe-sync workflow, workstation doctor, bootstrap guard, Makefile targets, and local sync procedure.
+- The isolated Git behavior tests passed for dirty-worktree preservation, clean fast-forward, origin mismatch rejection, and divergent-main refusal.
+- Actual execution against the owner's Mac and current local worktree remains pending.
