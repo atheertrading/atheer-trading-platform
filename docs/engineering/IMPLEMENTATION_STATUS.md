@@ -132,3 +132,16 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 - Added API contract documentation, package setup documentation, Makefile command, and Node 24 CI typecheck/test steps.
 - Isolated verification in the available Linux container: TypeScript 5.8.3 build and strict typecheck passed; Node.js 22.16.0 tests passed 6/6 against compiled JavaScript. A prior GitHub run on the previous revision passed npm ci, strict typecheck, and all six tests on Node.js 24.22.2; repository hygiene and GitHub Actions CodeQL also passed. The macOS build job remained queued. This commit changes TypeScript execution to compile-first and requires a fresh hosted run.
 - No database, broker, market data, account, order, strategy, RiskEngine, OMS, or Execution Gateway functionality is implemented by this slice.
+
+
+## macOS backend health integration — ATP-2026-11-16-013
+
+**Status: IN PROGRESS — implementation and cross-language smoke test completed; Xcode CI and local Mac qualification pending.**
+
+- Branch: feat/macos-backend-health-integration, based on main c29615cd2f68b1e8b1925b7fc5996743b083b961.
+- Added a dependency-injected URLSession client for the local health contract, a view model, and a compact backend status panel in the macOS workspace.
+- The app distinguishes API connectivity from platform readiness. HTTP 503 with a valid not_ready payload is displayed as API connected / platform not ready.
+- The app displays persistence and broker as not configured and trading as disabled. It adds no order controls and no broker connection.
+- Added four XCTest cases for payload mapping, inconsistent status rejection, connected-but-not-ready state, and disconnected state.
+- Isolated Linux verification: Swift 6.2.1 typecheck passed for the Foundation/URLSession client layer; a Swift URLSession-to-Node API smoke test passed against the local service on Node.js 22.16.0.
+- This is not an Xcode/macOS build or local workstation qualification. GitHub macOS CI and local Mac verification remain pending.
