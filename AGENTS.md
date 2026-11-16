@@ -53,7 +53,7 @@ Extensibility does not mean unrestricted permissions. Every agent and tool integ
 
 For substantial work, follow: discovery → source reconciliation → design → bounded implementation → tests → verification → documentation → review → handover.
 
-Use focused branches and pull requests. Prefer small, reviewable commits. Include acceptance criteria and verification evidence in PR descriptions. Do not merge a PR or release software unless the owner has authorized that action or the applicable governance explicitly delegates it.
+Use short-lived branches named `feat/<scope>`, `fix/<scope>`, `refactor/<scope>`, `docs/<scope>`, `test/<scope>`, `build/<scope>`, or `chore/<scope>`. The initial bootstrap branch is a historical exception created before the legacy branch convention was recovered. Use focused pull requests and small, reviewable commits. Include acceptance criteria and verification evidence in PR descriptions. Do not merge a PR or release software unless the owner has authorized that action or the applicable governance explicitly delegates it.
 
 ## Compatibility and platform constraints
 
