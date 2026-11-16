@@ -192,3 +192,38 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - PR #10 remains open and unmerged. GitHub reports mergeable. No review submissions or requested reviewers were present at inspection. Branch protection is unverified because the endpoint returned 403 to the connected integration; rulesets returned an empty list.
 - Actual owner-Mac build/test/launch and local app/backend health integration remain outstanding. M02-005 remains IN PROGRESS. Hosted CI is not physical workstation qualification.
 - Coordination request posted on PR #10 for the macOS verification worker and review/maintainer worker. No local worktree was accessed and no protected trading/security/production settings were changed.
+
+
+## ATP-DOMAIN-001A — Trading Domain Foundation (2026-11-17)
+
+**Status: IMPLEMENTED ON STACKED FEATURE BRANCH; NOT INTEGRATED; FRESH CI PENDING.**
+
+### Implemented
+
+- Exact base-10 Decimal, currency-safe Money, UTC timestamps, branded identifiers and domain errors.
+- TradingInstrument, InstrumentSpecification, MarketQuote, TradingAccount, TradingBalance, TradingSession, OrderIntent, TradingOrder, OrderExecution, Trade, Portfolio and TradingPosition.
+- Explicit order state machine including partial/full fills, cancellation, submission-unknown and reconciliation-required states.
+- Position long/short, weighted average entry, partial close, linear calculated P&L and gross exposure.
+- Broker order/position snapshot reconciliation contracts; broker snapshots remain authoritative.
+- Fail-closed RiskEngine with explicit maximum order quantity, instrument exposure and account gross-exposure policies.
+- Central OMS intent intake with atomic idempotency and transactional-outbox adapter contracts; manual/strategy/algorithm/AI intent sources converge on one entry point.
+- Versioned domain-event envelope and event type catalogue.
+
+### Verified in isolated container
+
+- tsc --noEmit --project tsconfig.json: PASS.
+- tsc --project tsconfig.json: PASS.
+- node --test test/trading-domain.test.mjs: 28 passed, 0 failed.
+- Runtime: Node 22.16.0; TypeScript 5.8.3. This is below repository Node 24 target and is not a substitute for CI.
+
+### Not implemented / not verified
+
+- Durable database adapter, transactional outbox/inbox, multi-process idempotency and pending-intent recovery worker.
+- Execution Gateway, Capital.com adapter, broker transport, broker submission/cancellation or production API routes.
+- Full FX conversion, derivatives/inverse valuation, margin, fees/financing, drawdown and complete approved risk policies.
+- Owner Mac/Xcode qualification and real application/backend integration.
+- Fresh CI on ATP-DOMAIN-001 branch head.
+
+### Integration gate
+
+The branch is stacked on PR #10 head 06bd496d957b6cd2f999209cf5dc83cae54251cf. PR #10 current-head CI #117, CodeQL #117 and Local Sync Safety #48 passed, but PR #10 remains open/unmerged and local Mac qualification plus repository review/protection confirmation remain outstanding. No integration into main is claimed.

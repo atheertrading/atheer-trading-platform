@@ -332,3 +332,28 @@ This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness 
 - Physical owner-Mac Xcode build, XCTest, app launch, and local app-to-backend health verification remain outstanding. Historical workstation values are not freshly verified. No local filesystem or worktree was accessed.
 - PR description was updated with the current-head verification and outstanding acceptance. M02-005 remains IN PROGRESS. Do not claim local qualification or merge readiness until required review/protection policy and remaining acceptance evidence are confirmed.
 - Safety state unchanged: read-only health integration, loopback-only backend, persistence/broker not configured, trading disabled; no credentials, signing identities, risk limits, broker permissions, or production state changed.
+
+
+## ATP-DOMAIN-001 execution addendum — 2026-11-17
+
+### PR #10 current state
+
+- PR #10 remains OPEN and UNMERGED at 06bd496d957b6cd2f999209cf5dc83cae54251cf (27 commits ahead of main, 0 behind; GitHub reports mergeable).
+- Current-head CI #117 passed, including backend toolchain, repository hygiene, Xcode project generation, macOS Debug build, XCTest, Release build and Swift CodeQL. GitHub Actions CodeQL #117 passed. Local Sync Safety #48 passed.
+- The prior COMMENTED review note is not an approval. No independent approval evidence is recorded. Branch-protection read returned 403 to the connected integration; rulesets query returned empty. Required policy is unverified, not assumed absent.
+- Physical owner-Mac qualification remains outstanding: actual toolchain inspection, local Xcode generation/build/test/launch and app-to-local-backend verification have not been performed.
+
+### ATP-DOMAIN-001 implementation branch
+
+- Owner directed the Trading Domain Foundation phase to begin. The master project sequence places local qualification after PR #10 and before domain integration; the current package is therefore being prepared in parallel on a stacked branch, not integrated into main.
+- Branch: feat/atp-domain-foundation; base is PR #10 head 06bd496d957b6cd2f999209cf5dc83cae54251cf.
+- ATP-DOMAIN-001A adds broker-independent TypeScript domain primitives, core models, order/position state machines, risk policy contracts, OMS idempotency/outbox interfaces, reconciliation and event envelopes.
+- Isolated local verification: TypeScript project typecheck and compile passed; 28 domain tests passed on Node 22.16.0 / TypeScript 5.8.3. Node 22 is below the repository Node 24 target; fresh Node 24 CI on the new branch is required.
+- No database adapter, durable idempotency store, transactional outbox/inbox, recovery worker, Execution Gateway, Capital.com adapter, API trading routes, or live broker integration is implemented.
+- Formal source limitation: the Library registry identifies ATP-ARCH-002, ATP-ARCH-002-OMS, ATP-ARCH-002-PM, ATP-ARCH-005, ATP-ARCH-016 and ATP-ARCH-019, but their full original texts were not retrievable in this execution. ADR-0004/0005/0006 originals were also not directly available. The implementation therefore stays within conservative, explicitly documented contracts and leaves disputed financial semantics open.
+
+### Safety and integration gates
+
+- LIVE remains disabled in code; no broker credentials, account permissions, risk limits or production state were changed.
+- The domain branch must not be merged into main until PR #10 is integrated and local engineering qualification plus required review/protection conditions are satisfied.
+- The next domain work is durable persistence/idempotency/outbox and pending-intent recovery design, after formal specification reconciliation.
