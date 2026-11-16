@@ -1,0 +1,41 @@
+name: ATHEERTradingPro
+options:
+  deploymentTarget:
+    macOS: "13.0"
+  bundleIdPrefix: com.atheertrading
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.atheertrading.desktop
+    GENERATE_INFOPLIST_FILE: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGNING_ALLOWED: NO
+targets:
+  ATHEERTradingPro:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        INFOPLIST_KEY_CFBundleDisplayName: ATHEER Trading Pro
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        PRODUCT_NAME: ATHEERTradingPro
+  ATHEERTradingProTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: ATHEERTradingPro
+schemes:
+  ATHEERTradingPro:
+    build:
+      targets:
+        ATHEERTradingPro: all
+        ATHEERTradingProTests: [test]
+    test:
+      config: Debug
+      targets:
+        - ATHEERTradingProTests
