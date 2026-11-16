@@ -16,6 +16,13 @@ A conflict may be a direct contradiction, an unresolved scope difference, a stat
 | SCR-007 | Specification status | Several architecture documents are marked established or decided by authority. | Other documents explicitly remain in progress, proposed, or pending qualification; ATP-ARCH-041 says ATP-ARCH-036 remains incomplete. | The archive is not a single uniformly approved specification set. | Build per-document status registry; do not treat all 47 files as approved or implementation-ready. |
 | SCR-008 | Public visibility and license | New repository is owner-authorized as public. | No explicit open-source license selection is recorded. | Public visibility is verified; reuse rights remain unspecified. | Do not add a license or claim open-source reuse rights until owner selects one. |
 
+## Additional AI architecture reconciliation findings
+
+| ID | Topic | Source A | Source B / related source | Current assessment | Required resolution |
+|---|---|---|---|---|---|
+| SCR-009 | Agent autonomy versus permission taxonomy | Q27.2 and Q29.5 define five operational autonomy levels (L0–L4 / A0–A4). | Q28.24 defines four capability-authority levels (observe, analyze, propose, controlled operation); Q27.5 adds explicit authority boundaries. | Likely distinct dimensions rather than one conflicting scale. Do not collapse them into one numeric permission. | Reconcile as separate autonomy and capability-permission dimensions, with a canonical action authorization classification and receiving-domain enforcement. Preserve historical mappings. |
+| SCR-010 | AI-initiated execution versus direct broker submission | ATP-ARCH-011 prohibits agents from authorizing risk and submitting broker orders. | Q27.4 permits AI to initiate and execute trading workflows through the centralized Execution Gateway under explicit authorization; Q27.6 requires risk validation for risk-relevant actions. | Compatible if “submit broker orders” means direct broker API access. Agents can initiate an order intent; only the governed execution infrastructure transmits broker commands. | Define the agent-to-domain order-intent contract and retain RiskEngine, OMS, Execution Gateway, broker confirmation, and reconciliation as independent controls. |
+
 ## Resolution policy
 
 - Do not delete, overwrite, or silently reinterpret conflicting source documents.
