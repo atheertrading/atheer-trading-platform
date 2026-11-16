@@ -53,7 +53,7 @@ Extensibility does not mean ungoverned permissions. Every agent and tool integra
 
 For substantial work, follow: discovery → source reconciliation → design → bounded implementation → tests → verification → documentation → review → handover.
 
-Use short-lived branches named `feat/<scope>`, `fix/<scope>`, `refactor/<scope>`, `docs/<scope>`, `test/<scope>`, `build/<scope>`, or `chore/<scope>`. The initial bootstrap branch is a historical exception created before the legacy branch convention was recovered. Use focused pull requests and small, reviewable commits. Include acceptance criteria and verification evidence in PR descriptions. Do not merge a PR or release software unless the owner has authorized that action or the applicable governance explicitly delegates it.
+Use short-lived branches named `feat/<scope>`, `fix/<scope>`, `refactor/<scope>`, `docs/<scope>`, `test/<scope>`, `build/<scope>`, or `chore/<scope>`. The initial bootstrap branch is a historical exception created before the legacy branch convention was recovered. Use focused pull requests and small, reviewable commits. Include acceptance criteria and verification evidence in PR descriptions. The owner has delegated routine engineering PR review, issue resolution, and merging to the Head of Engineering: merge when required checks pass, conflicts are resolved, and the change complies with governing specifications. If checks are unavailable or blocked, record the exception and risk; do not conceal it. Production deployment, release publication with external consequences, credentials, broker-account permissions, destructive history changes, and LIVE dealing remain separately gated.
 
 ## Compatibility and platform constraints
 
