@@ -66,3 +66,6 @@ A previous review also refers to 600 canonical extracted source files and 31 Mer
 - [Specification Conflict Register](SPECIFICATION_CONFLICT_REGISTER.md) — unresolved repository topology, source authority, AI authority, IPDS palette, archive counts, and document-status issues.
 
 Do not mark source reconciliation complete until the 47 formal documents, 517 Q&A documents, approval metadata, and source-provenance reports have been reconciled to the required depth.
+
+
+The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) lists the 47 formal architecture/implementation documents and section-level counts for the 517 Q&A documents. It is a navigation baseline; approval, revision, dependencies, and supersession metadata still require full reconciliation.
