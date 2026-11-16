@@ -45,7 +45,7 @@ The wider project knowledge system consists of:
 3. **Historical conversations:** chronology, decisions, rationale, and discussion context.
 4. **Continuity records:** traceable links between the sources and the latest verified project state.
 
-Start with [AGENTS.md](AGENTS.md), [AI Agent Navigation](docs/architecture/AI_AGENT_NAVIGATION.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md). For local setup and Xcode build instructions, see [Developer Setup](docs/development/DEVELOPER_SETUP.md) and the [Toolchain Manifest](docs/development/TOOLCHAIN_MANIFEST.md). See [Pull Request and Local Sync Workflow](docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md) for branch, merge, conflict-resolution, and local update procedures, and [GitHub Repository Configuration](docs/development/GITHUB_REPOSITORY_CONFIGURATION.md) for Actions, branch protection, and security settings.
+Start with [AGENTS.md](AGENTS.md), [AI Agent Navigation](docs/architecture/AI_AGENT_NAVIGATION.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md). For local setup and Xcode build instructions, see [Developer Setup](docs/development/DEVELOPER_SETUP.md) and the [Toolchain Manifest](docs/development/TOOLCHAIN_MANIFEST.md). Conversation continuity is maintained through the [Conversation Index](docs/engineering/CONVERSATION_INDEX.md) and [Recovery Protocol](docs/engineering/CONVERSATION_RECOVERY_PROTOCOL.md). See [Pull Request and Local Sync Workflow](docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md) for branch, merge, conflict-resolution, and local update procedures, and [GitHub Repository Configuration](docs/development/GITHUB_REPOSITORY_CONFIGURATION.md) for Actions, branch protection, and security settings.
 
 ## Trading safety
 
