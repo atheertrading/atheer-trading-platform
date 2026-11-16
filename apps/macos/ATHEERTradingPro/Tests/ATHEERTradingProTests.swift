@@ -77,6 +77,7 @@ final class ATHEERTradingProTests: XCTestCase {
 private struct StubBackendHealthClient: BackendHealthClient {
     let result: Result<BackendHealthSnapshot, StubBackendHealthError>
 
+    @MainActor
     func fetchSnapshot() async throws -> BackendHealthSnapshot {
         try result.get()
     }

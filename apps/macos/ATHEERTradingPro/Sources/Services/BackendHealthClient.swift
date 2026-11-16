@@ -4,6 +4,7 @@ import FoundationNetworking
 #endif
 
 protocol BackendHealthClient {
+    @MainActor
     func fetchSnapshot() async throws -> BackendHealthSnapshot
 }
 
@@ -20,6 +21,7 @@ struct URLSessionBackendHealthClient: BackendHealthClient {
         self.session = session
     }
 
+    @MainActor
     func fetchSnapshot() async throws -> BackendHealthSnapshot {
         let (livenessData, livenessStatusCode) = try await get(path: ["health", "live"])
         let (readinessData, readinessStatusCode) = try await get(path: ["health", "ready"])
