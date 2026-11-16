@@ -155,3 +155,16 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 - The safety workflow passed. It verifies staged/unstaged and untracked preservation, backup branch and external backup, retained stash, clean fast-forward, origin mismatch rejection, and divergent-main refusal.
 - No local user repository or workstation files were accessed or modified in this session.
 - Actual local repository inspection, safe synchronization, Xcode project generation, build, XCTest, and application launch remain pending.
+
+
+## Phase 0 engineering-state assessment — 2026-11-16
+
+**Repository snapshot:** `atheertrading/atheer-trading-platform`, default branch `main`, verified main SHA `0dc062bb620a4afa93c60e5f060ee405846e3cbc` before PR #10 integration. PR #10 branch `feat/macos-backend-health-integration` was seven commits ahead and zero behind that main SHA.
+
+**Implemented and merged:** governance baseline, XcodeGen macOS shell/configuration, Mermaid documentation baseline, backend health/readiness service, and safe local synchronization/bootstrap. Relevant merged PRs: #1, #2, #6, #7, #8, #9, #11; dependency PRs #3, #4, #5 also merged.
+
+**Pending integration:** PR #10 adds the native macOS health panel, URLSession client, payload validation, view model, and four XCTest cases. Its original head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` had successful hosted macOS Debug/Release build, XCTest, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Two subsequent documentation-only commits updated continuity and README status; fresh checks on the updated head are required before merge.
+
+**Not implemented in the repository:** PostgreSQL persistence, authentication/authorization, broker adapter or Capital.com connectivity, market-data ingestion/streaming, instruments domain, RiskEngine, OMS, Execution Gateway, order lifecycle, reconciliation, portfolio/positions, strategy engine, backtesting/simulation, Model Gateway, agent runtime, production IPDS, and operational production deployment.
+
+**Local qualification:** not performed in this assessment. Historical Xcode 14.3.1 / Swift 5.8.1 / macOS 13.7.8 and XcodeGen 2.36.1 are not freshly verified. The safe-sync workflow is not yet executed against the owner's local checkout. Do not mark M02-001, M02-005, or M02-006 complete on hosted evidence alone.
