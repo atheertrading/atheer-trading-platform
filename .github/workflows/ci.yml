@@ -40,10 +40,10 @@ jobs:
           xcodebuild -version
           swift --version
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: bash scripts/install-xcodegen.sh
       - name: Generate Xcode project
         working-directory: apps/macos/ATHEERTradingPro
-        run: xcodegen generate
+        run: $HOME/.local/bin/xcodegen generate
       - name: Build application
         run: |
           xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
