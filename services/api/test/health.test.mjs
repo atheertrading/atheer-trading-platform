@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { loadRuntimeConfig } from "../src/config/runtime-config.ts";
-import { createApiServer } from "../src/server.ts";
+import { loadRuntimeConfig } from "../dist/config/runtime-config.js";
+import { createApiServer } from "../dist/server.js";
 
 const server = createApiServer();
 let baseUrl;

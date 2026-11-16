@@ -31,5 +31,6 @@ A successful liveness response is not evidence that the trading platform is read
 - No runtime npm dependencies are used.
 - TypeScript is a pinned development-only dependency.
 - The current TypeScript declaration shim exposes only the small Node core HTTP/process surface used by this package; replace it with the standard Node type package when dependency policy is expanded.
+- TypeScript is compiled to JavaScript before execution; the runtime does not execute TypeScript source.
 - No broker credentials, database credentials, account information, market data, or order state are read or logged.
 - No broker connection or trading operation is possible through this service.

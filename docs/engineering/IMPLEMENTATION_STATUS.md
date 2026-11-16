@@ -130,5 +130,5 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 - Unknown routes return 404; non-GET requests to known health routes return 405.
 - Added six tests for health responses, fail-closed readiness, method/path handling, and runtime configuration.
 - Added API contract documentation, package setup documentation, Makefile command, and Node 24 CI typecheck/test steps.
-- Isolated verification in the available Linux container: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 test run passed 6/6. This is not Node.js 24, macOS, GitHub CI, or local workstation qualification.
+- Isolated verification in the available Linux container: TypeScript 5.8.3 build and strict typecheck passed; Node.js 22.16.0 tests passed 6/6 against compiled JavaScript. A prior GitHub run on the previous revision passed npm ci, strict typecheck, and all six tests on Node.js 24.22.2; repository hygiene and GitHub Actions CodeQL also passed. The macOS build job remained queued. This commit changes TypeScript execution to compile-first and requires a fresh hosted run.
 - No database, broker, market data, account, order, strategy, RiskEngine, OMS, or Execution Gateway functionality is implemented by this slice.

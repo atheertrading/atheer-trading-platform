@@ -33,6 +33,7 @@ Begin the backend building phase with a bounded, non-trading operational service
 
 - Added a private Node.js 24 / TypeScript package under services/api.
 - Added strict TypeScript configuration and a pinned TypeScript development dependency.
+- TypeScript is compiled to JavaScript in dist before execution; runtime startup and tests do not depend on Node's experimental TypeScript type stripping.
 - Added a Node built-in HTTP server with loopback-only runtime configuration.
 - Added GET /health/live and GET /health/ready.
 - Readiness returns 503 and explicitly reports persistence/broker as not configured and trading as disabled.
@@ -44,11 +45,11 @@ Begin the backend building phase with a bounded, non-trading operational service
 
 ## Verification performed in the available isolated container
 
-- TypeScript 5.8.3 strict typecheck: passed.
-- Node.js 22.16.0 test runner: 6 tests passed, 0 failed.
-- The test command used Node's experimental TypeScript type stripping.
+- TypeScript 5.8.3 strict typecheck and JavaScript build: passed.
+- Node.js 22.16.0 test runner: 6 tests passed, 0 failed against compiled JavaScript; no experimental runtime flag is used.
 - npm ci was not run in this container because external package registry access was unavailable.
-- This environment is not the owner's Mac, not Node.js 24, and not the hosted GitHub CI runner.
+- Prior GitHub run 80 on the pre-compile-first revision passed npm ci, strict typecheck, and six tests on Node.js 24.22.2; repository hygiene and GitHub Actions CodeQL passed. The macOS build job remained queued.
+- The compile-first refactor in this revision requires a fresh hosted CI run. This environment is not the owner's Mac.
 
 ## Acceptance status
 
