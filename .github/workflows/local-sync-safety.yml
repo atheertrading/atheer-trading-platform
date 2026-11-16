@@ -1,0 +1,32 @@
+name: Local Sync Safety
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  local-sync-safety:
+    name: Local sync safety tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate shell syntax
+        shell: bash
+        run: |
+          bash -n scripts/safe-sync.sh
+          bash -n scripts/bootstrap-local.sh
+          bash -n scripts/doctor.sh
+          bash -n scripts/build-macos.sh
+          bash -n scripts/test-macos.sh
+          bash -n scripts/run-macos.sh
+          bash -n scripts/tests/test-safe-sync.sh
+
+      - name: Test non-destructive synchronization
+        shell: bash
+        run: bash scripts/tests/test-safe-sync.sh
