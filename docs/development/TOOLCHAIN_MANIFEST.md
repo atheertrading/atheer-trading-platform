@@ -13,7 +13,7 @@
 | GitHub checkout action | actions/checkout@v4 | CI source retrieval |
 | GitHub setup-node action | actions/setup-node@v4 | Node toolchain setup |
 | Markdown lint action | DavidAnson/markdownlint-cli2-action@v19 | Markdown quality checks |
-| CodeQL action | github/codeql-action@v4 | Swift and Actions static analysis |
+| CodeQL action | github/codeql-action@v4 | Swift analysis runs inside the macOS build job; Actions workflow analysis runs separately on Ubuntu |
 
 ## Compatibility policy
 
