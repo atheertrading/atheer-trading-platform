@@ -42,7 +42,7 @@ DEMO, SIMULATION, BACKTEST, and LIVE are distinct modes with separate data prove
 
 ## AI governance
 
-The platform is model- and provider-extensible. AI agents may perform research, analysis, strategy evaluation, monitoring, and authorized workflow assistance. Every agent/tool must have explicit capabilities, scoped data access, least-privilege permissions, side-effect declarations, audit trails, and testable failure behavior. AI cannot grant itself permissions or bypass the central risk/execution architecture.
+The platform is model- and provider-extensible. AI agents may perform research, analysis, strategy evaluation, monitoring, and authorized workflow execution. They may initiate trading workflows and manage positions autonomously when operating under an explicitly enabled strategy and permission profile. Every agent/tool must have explicit capabilities, scoped data access, least-privilege permissions, side-effect declarations, audit trails, and testable failure behavior. Agents cannot access broker dealing APIs directly, authorize their own risk, expand their own permissions, or bypass strategy eligibility, authorization policy, the RiskEngine, OMS, or Execution Gateway. Deterministic controls remain independent of AI availability.
 
 ## Documentation and continuity
 
