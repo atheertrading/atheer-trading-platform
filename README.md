@@ -45,7 +45,7 @@ The wider project knowledge system consists of:
 3. **Historical conversations:** chronology, decisions, rationale, and discussion context.
 4. **Continuity records:** traceable links between the sources and the latest verified project state.
 
-Start with [AGENTS.md](AGENTS.md) and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md).
+Start with [AGENTS.md](AGENTS.md), [AI Agent Navigation](docs/architecture/AI_AGENT_NAVIGATION.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md). For local setup and Xcode build instructions, see [Developer Setup](docs/development/DEVELOPER_SETUP.md).
 
 ## Trading safety
 
@@ -53,7 +53,7 @@ DEMO, SIMULATION, BACKTEST, and LIVE are distinct operating modes. Broker-derive
 
 ## Current status
 
-The repository is at its initial engineering-governance baseline. No production trading, Capital.com integration, production IPDS, or unrestricted agent execution capability is claimed by this README. See [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md) and [Task Register](docs/engineering/TASK_REGISTER.md).
+The governance baseline is merged. The platform foundation branch introduces a reproducible XcodeGen macOS app shell and CI/tooling configuration; it remains subject to CI and local Xcode verification. No production trading, Capital.com integration, or production IPDS is claimed by this README. See [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md) and [Task Register](docs/engineering/TASK_REGISTER.md).
 
 ## Contributing
 
