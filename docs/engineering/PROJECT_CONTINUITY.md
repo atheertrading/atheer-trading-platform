@@ -317,3 +317,18 @@ The PR #10 branch has advanced to `2a999fc8609ac833c94908ef219c347ec5137c95`, tw
 ### PR #10 fail-closed review correction — 2026-11-16
 
 The PR #10 health client now fixes its destination to `127.0.0.1:4100`, and its decoder rejects a `not_ready` payload that reports trading enabled or a non-disabled trading status. A fifth XCTest covers the contradictory-payload rejection. The code change is committed at `ee92ac8c97e065db2cd774804c130499a1f49a4c`; fresh hosted checks and local Mac qualification remain pending.
+
+
+### PR #10 current-head revalidation — 2026-11-17
+
+This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness snapshots in this file.
+
+- Repository: `atheertrading/atheer-trading-platform`; PR #10 remains OPEN and UNMERGED.
+- Verified head: `bbe43218e4010442605befb9527907b0968dca4f`; base `main` at `0dc062bb620a4afa93c60e5f060ee405846e3cbc`; 26 commits ahead / 0 behind; 19 changed files (747 additions / 9 deletions); GitHub reports mergeable.
+- Current-head hosted CI #116 passed: repository hygiene/Markdown lint; backend install, typecheck and tests; XcodeGen project generation and scheme inspection; macOS Debug build; XCTest; Release build; Swift CodeQL. Local Sync Safety #46 and GitHub Actions CodeQL #116 also passed.
+- The current diff includes fail-closed review correction commit `ee92ac8c97e065db2cd774804c130499a1f49a4c`: fixed loopback destination and rejection of `not_ready` payloads that advertise trading enabled; five health-focused XCTest cases are present.
+- No PR review submissions, inline review threads, conversation comments, or requested reviewers existed before the coordination comment was posted. A coordination comment now requests actual Mac qualification from the macOS implementation/verification worker and current-head review/protection confirmation from the maintainer/review worker.
+- Branch-protection read returned HTTP 403 (resource not accessible by integration); the rulesets endpoint returned an empty list. Required review/protection policy remains unverified; do not infer that no branch protection exists.
+- Physical owner-Mac Xcode build, XCTest, app launch, and local app-to-backend health verification remain outstanding. Historical workstation values are not freshly verified. No local filesystem or worktree was accessed.
+- PR description was updated with the current-head verification and outstanding acceptance. M02-005 remains IN PROGRESS. Do not claim local qualification or merge readiness until required review/protection policy and remaining acceptance evidence are confirmed.
+- Safety state unchanged: read-only health integration, loopback-only backend, persistence/broker not configured, trading disabled; no credentials, signing identities, risk limits, broker permissions, or production state changed.

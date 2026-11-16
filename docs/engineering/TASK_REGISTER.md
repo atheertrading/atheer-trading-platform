@@ -46,7 +46,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
-| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — PR #10 hosted CI passed on original code head 3b7bc500; local Mac Xcode build/test/launch and end-to-end integration remain required |
+| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — current PR #10 head `bbe43218e4010442605befb9527907b0968dca4f` passed hosted CI #116 (macOS Debug/XCTest/Release/Swift CodeQL), Local Sync Safety #46, and Actions CodeQL #116; local Mac build/test/launch and app/backend integration remain outstanding |
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 
 ## Governance notes

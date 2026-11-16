@@ -180,3 +180,15 @@ The original implementation head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` pass
 The health client destination is fixed to loopback rather than accepting an arbitrary base URL. The readiness decoder rejects any `not_ready` response that reports trading enabled or a non-disabled trading status. An XCTest covers this contradictory-payload rejection. This code change is pending fresh hosted CI and local Mac verification.
 
 - PR #10 review hardening: loopback endpoint is fixed; not-ready/trading-enabled contradictions are rejected; five XCTest cases cover the health decoder and view-model behavior.
+
+
+## PR #10 current-head verification — 2026-11-17
+
+**Status: HOSTED CI VERIFIED; PR OPEN; LOCAL QUALIFICATION AND REVIEW POLICY OUTSTANDING.**
+
+- Exact inspected head: `bbe43218e4010442605befb9527907b0968dca4f`; base `main` at `0dc062bb620a4afa93c60e5f060ee405846e3cbc`; 26 ahead / 0 behind; 19 files changed.
+- CI #116 passed repository hygiene, backend toolchain/typecheck/tests, XcodeGen generation, scheme inspection, macOS Debug, XCTest, Release, and Swift CodeQL. Local Sync Safety #46 and GitHub Actions CodeQL #116 passed.
+- Fail-closed correction `ee92ac8c97e065db2cd774804c130499a1f49a4c` fixes the URLSession client to `127.0.0.1:4100` and rejects a `not_ready` payload that advertises trading enabled. Five health-focused XCTest cases are present.
+- PR #10 remains open and unmerged. GitHub reports mergeable. No review submissions or requested reviewers were present at inspection. Branch protection is unverified because the endpoint returned 403 to the connected integration; rulesets returned an empty list.
+- Actual owner-Mac build/test/launch and local app/backend health integration remain outstanding. M02-005 remains IN PROGRESS. Hosted CI is not physical workstation qualification.
+- Coordination request posted on PR #10 for the macOS verification worker and review/maintainer worker. No local worktree was accessed and no protected trading/security/production settings were changed.
