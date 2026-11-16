@@ -162,3 +162,5 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - Added docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md to define safe branch updates, conflict resolution, PR review/merge, and local clone synchronization. The new repository must be cloned alongside, not over, the earlier engineering repository until its work is separately inventoried.
 
 - Added docs/development/GITHUB_REPOSITORY_CONFIGURATION.md specifying Actions permissions, main-branch rules, merge policy, and repository security settings. The connector cannot currently verify or apply these repository settings; they require GitHub Settings UI verification.
+
+- Toolchain correction: pinned XcodeGen 2.36.1 and added a source-build installer using the selected Xcode Swift compiler, preserving the historical Xcode 14.3.1 / Swift 5.8.1 baseline. Removed Homebrew as a required dependency because the current XcodeGen formula requires Xcode 15.3 or later. CI and local bootstrap now use the same generator version.
