@@ -27,6 +27,10 @@ targets:
     platform: macOS
     sources:
       - path: Tests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.atheertrading.desktop.tests
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: ATHEERTradingPro
 schemes:
