@@ -274,3 +274,31 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - The safe-sync workflow preserves staged, unstaged, and non-ignored untracked work, retains an external backup, backup branch, and stash, and fast-forwards local main only. It does not rebase feature branches.
 - The local backend remains loopback-only at 127.0.0.1:4100. Platform readiness remains not ready; persistence and broker are not configured; trading remains disabled.
 - Next: complete PR #10 hosted macOS CI; then inspect and safely synchronize the actual Mac, run doctor/bootstrap, build and test the macOS app, and verify backend/app launch. Continue formal source and ADR reconciliation before defining persistence, market-data, RiskEngine, OMS, or execution contracts.
+
+
+## Phase 0 engineering-state reconciliation — 2026-11-16
+
+This addendum supersedes earlier current-branch and PR #10 status statements above where they conflict with the verified GitHub snapshot.
+
+- Canonical repository: atheertrading/atheer-trading-platform; default branch main.
+- Verified main commit at assessment: 0dc062bb620a4afa93c60e5f060ee405846e3cbc.
+- Merged PRs include #1, #2, #6, #7, #8, #9, and #11; Dependabot PRs #3, #4, and #5 are also merged.
+- PR #10 (feat/macos-backend-health-integration) is open, seven commits ahead of main and zero commits behind. Head: 3b7bc500a7a2225b92409c5ab8da2fb3d6b56564.
+- PR #10 hosted checks were inspected on its exact head: macOS build/tests/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and local-sync safety checks all completed successfully. No review submissions or review comments were present at inspection.
+- PR #10 implements the read-only native health panel and four XCTest cases. Its task remains IN PROGRESS until local Mac Xcode build, test, launch, and integration qualification are performed.
+- PR #9 implements only the local health/readiness service. Persistence, broker, market data, account services, RiskEngine, OMS, Execution Gateway, strategies, and trading execution remain unimplemented in this repository.
+- PR #11 safe-sync implementation and its isolated Git behavior tests are merged; no synchronization has been executed against the owner's physical Mac.
+- Historical local workstation values (Intel iMac, macOS 13.7.8, Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1) remain historical and have not been freshly verified.
+- Branch protection could not be read through the GitHub integration (HTTP 403). An earlier rulesets query returned no rulesets; current protection status remains unverified and must not be inferred from the 403.
+- Local repository path remains /Users/enghossamalfahad/Developer/AtheerTradingPlatform. No local filesystem or shell session is available in this assessment; local dirty-worktree state and the previously reported modified continuity files/untracked session report remain unverified and must be preserved.
+
+### Current next actions
+
+1. Complete final review and integrate PR #10 only while its head remains unchanged and all required checks remain green.
+2. Verify the resulting main commit and update repository status records.
+3. Execute the documented safe-sync workflow on the owner's Mac only when actual local access is available; inspect and preserve all local modifications first.
+4. Run local doctor, XcodeGen generation, Debug/Release builds, XCTest, application launch, and local backend/app health integration. Record exact toolchain versions and results.
+5. Continue Phase 1 repository security/local Git configuration findings without treating hosted CI success as closure.
+6. Reconcile the Library's formal specifications and historical ADRs before defining persistence, market-data, broker, RiskEngine, OMS, Execution Gateway, strategy, or AI implementation contracts.
+
+No broker credentials, database, financial state, risk limits, LIVE capability, signing identity, or production deployment was changed.
