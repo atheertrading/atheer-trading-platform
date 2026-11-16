@@ -40,3 +40,10 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-16-003 | 2026-11-16 | Library archive inventory and architecture reconciliation | Inspected both visible Library ZIP archives; confirmed 564 Markdown documents in the Q&A/architecture archive; recovered the historical AtheerTrader repository snapshot; created the initial Master Document Registry; identified the four-repository versus monorepo conflict and recovered the original brand palette. | Source Reconciliation Register; Specification Conflict Register |
 
 | ATP-2026-11-16-004 | 2026-11-16 | AI autonomy and Model Gateway source review | Reviewed AI provider, model-management, hybrid-intelligence, agent-autonomy, authority, and execution Q&A alongside ATP-ARCH-011/028/029; recorded a proposed two-axis autonomy/permission synthesis and clarified governed AI-initiated execution. | EDL-003; EDP-006; SCR-009; SCR-010; Source Reconciliation Register |
+
+
+| ATP-2026-11-16-005 | 2026-11-16 | Repository foundation and development environment | PR #1 squash-merged; adopted the single modular engineering monorepo with federated Library knowledge; created the platform foundation branch with XcodeGen macOS shell, CI/security workflows, AI navigation, developer setup, and local diagnostics. | EDL-004; REPOSITORY_TOPOLOGY_DECISION; platform foundation PR |
+
+| ATP-2026-11-16-006 | 2026-11-16 | Toolchain compatibility and CI qualification | Pinned XcodeGen 2.36.1 to immutable source commit for Xcode 14.3.1 / Swift 5.8.1 compatibility; added Node .nvmrc and manifest; diagnosed markdown lint findings, added temporary legacy baseline and M00-018; repository hygiene and Node 24 checks passed; macOS build/test and CodeQL Swift pending. | TOOLCHAIN_MANIFEST; DEVELOPER_SETUP; PR #2 |
+
+| ATP-2026-11-16-007 | 2026-11-16 | Conversation recovery and project continuity | Added a durable protocol for indexing material sessions, retrieving prior context, reconciling historical summaries with current repository evidence, and recording next actions without claiming full transcript availability. | CONVERSATION_RECOVERY_PROTOCOL; AI_AGENT_WORKING_GUIDE |

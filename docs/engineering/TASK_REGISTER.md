@@ -1,7 +1,7 @@
 # ATHEER Trading — Task Register
 
 **Snapshot date:** 2026-11-16  
-**Active milestone:** M00 — Knowledge, governance, and source reconciliation
+**Active milestone:** M00 — Governance baseline merged; M01 — Platform architecture and toolchain foundation
 
 Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = not started; `BLOCKED` = dependency prevents progress; `OWNER DECISION` = requires explicit owner direction.
 
@@ -10,8 +10,8 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | ID | Priority | Task | Status | Acceptance evidence / dependency |
 |---|---|---|---|---|
 | M00-001 | P0 | Inspect new repository identity, visibility, default branch, and initial commit | DONE | GitHub metadata and commit inspected |
-| M00-002 | P0 | Establish root engineering instructions and security baseline | IN PROGRESS | Bootstrap branch and PR; review/merge outstanding |
-| M00-003 | P0 | Establish project continuity, conversation index, decision log, and task register | IN PROGRESS | Bootstrap branch and PR; review/merge outstanding |
+| M00-002 | P0 | Establish root engineering instructions and security baseline | DONE | PR #1 squash-merged as 27e0ce61d2af09296dd121fb1194d6a7cb930bdc |
+| M00-003 | P0 | Establish project continuity, conversation index, decision log, and task register | DONE | PR #1 squash-merged as 27e0ce61d2af09296dd121fb1194d6a7cb930bdc |
 | M00-004 | P0 | Reconcile Library Engineering Operating Standards and governance references | IN PROGRESS | Full document/source review and conflict register |
 | M00-005 | P0 | Inventory Library archives, source documents, and historical specifications | IN PROGRESS | Inventory with source IDs, versions, and provenance |
 | M00-006 | P0 | Inspect surviving repositories and local source-code history | IN PROGRESS | Repository/source inventory; inaccessible sources marked |
@@ -25,7 +25,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M00-014 | P1 | Configure repository security automation and branch rules | PENDING | Rulesets endpoint returned an empty list; branch-protection read returned 403 to the integration; owner-side verification and configuration evidence required |
 | M00-015 | P2 | Plan source migration and historical Git preservation | PENDING | Owner-reviewed migration and provenance plan |
 
-| M00-016 | P0 | Reconcile four-repository architecture with current repository strategy | IN PROGRESS | ATP-ARCH-042 and owner-endorsed current repository model |
+| M00-016 | P0 | Reconcile four-repository architecture with current repository strategy | DONE | EDL-004; repository topology decision; SCR-001 resolved for topology only |
 | M00-017 | P0 | Reconcile AI autonomy, capability permissions, and execution authority taxonomies | IN PROGRESS | ATP-ARCH-011/028/029 and Q27.2/Q27.4/Q27.5/Q27.6/Q28.24/Q28.47/Q29.5 |
 
 ## M01 — Platform and domain architecture
@@ -58,9 +58,27 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 
 ## Bootstrap review reference
 
-The initial governance baseline is available for owner review in [PR #1](https://github.com/atheertrading/atheer-trading-platform/pull/1). Tasks M00-002 and M00-003 remain IN PROGRESS until the pull request is reviewed and merged. File retrieval verification is complete; merge and default-branch verification remain outstanding.
+The initial governance baseline was squash-merged through [PR #1](https://github.com/atheertrading/atheer-trading-platform/pull/1) as commit 27e0ce61d2af09296dd121fb1194d6a7cb930bdc.
 
 
 ## Source-reconciliation progress update — 2026-11-16
 
-Structural inspection of the two Library ZIP archives is complete. Tasks M00-004, M00-005, M00-006, M00-008, M00-011, and M00-012 are now IN PROGRESS. The 47 formal documents and 517 Q&A documents have not yet been reconciled individually. The four-repository versus monorepo conflict is recorded as M00-016 and remains unresolved.
+Structural inspection of the two Library ZIP archives is complete. Tasks M00-004, M00-005, M00-006, M00-008, M00-011, and M00-012 are now IN PROGRESS. The 47 formal documents and 517 Q&A documents have not yet been reconciled individually. The repository topology conflict was resolved by EDL-004; the original ATP-ARCH-042 remains preserved as a source document.
+
+
+## Platform foundation work — 2026-11-16
+
+A second foundation branch, build/platform-foundation, adds the XcodeGen-driven macOS app shell, macOS build/test scripts, local environment diagnostics, AI navigation guidance, repository architecture and topology records, PR template, CodeQL and CI workflows, Dependabot, and developer setup instructions. These changes remain pending PR review and CI verification. The local Mac has not yet been inspected or built by this session.
+
+
+The pull-request and local synchronization procedure is documented in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The active platform foundation changes are tracked in PR #2; do not mark toolchain setup complete until hosted CI and the local Mac build/test are verified.
+
+- GitHub Actions and branch protection settings require owner-side UI verification because the current integration exposes no settings mutation/read capability for rulesets and reports no workflow runs/status checks for PR #2.
+
+
+XcodeGen is pinned to 2.36.1 for the historical Xcode 14.3.1 workstation. Do not mark M02-001 complete until the installer, project generation, build, and XCTest run are verified on the actual local Mac.
+
+
+## Follow-up documentation quality task
+
+- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable the temporarily disabled markdownlint spacing/link rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.

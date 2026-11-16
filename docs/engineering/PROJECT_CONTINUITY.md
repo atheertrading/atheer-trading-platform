@@ -147,3 +147,28 @@ The source set uses both five-level autonomy scales and a four-level agent capab
 ## 13. Repository protection inspection
 
 On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. The branch-protection endpoint for `main` returned HTTP 403 (`Resource not accessible by integration`), so branch protection could not be independently verified through the connected GitHub integration. Do not interpret the 403 as proof that protection is absent. Repository ruleset configuration and branch protection remain pending owner-side verification.
+
+
+## 2026-11-16 continuation — governance merge and platform foundation
+
+- PR #1 was squash-merged to main as 27e0ce61d2af09296dd121fb1194d6a7cb930bdc.
+- Repository topology was resolved through EDL-004: one modular engineering monorepo; Library remains federated knowledge authority; historical conversations remain indexed sources. ATP-ARCH-042 is superseded only for the separate-repository topology prescription.
+- Branch build/platform-foundation was created from the merged main commit.
+- The branch adds XcodeGen project specification, minimal SwiftUI macOS shell, XCTest target, local diagnostic/build/test scripts, developer setup, repository architecture/layout, AI navigation, CI, CodeQL, Dependabot, PR template, and CODEOWNERS.
+- No local Xcode build has been run. GitHub Actions results and merge status remain pending.
+- Next: validate branch files and CI, fix issues, open/merge PR #2 under the delegated workflow, then pull main to the local Mac and verify the actual Xcode toolchain/build.
+
+
+- Added docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md to define safe branch updates, conflict resolution, PR review/merge, and local clone synchronization. The new repository must be cloned alongside, not over, the earlier engineering repository until its work is separately inventoried.
+
+- Added docs/development/GITHUB_REPOSITORY_CONFIGURATION.md specifying Actions permissions, main-branch rules, merge policy, and repository security settings. The connector cannot currently verify or apply these repository settings; they require GitHub Settings UI verification.
+
+- Toolchain correction: pinned XcodeGen 2.36.1 and added a source-build installer using the selected Xcode Swift compiler, preserving the historical Xcode 14.3.1 / Swift 5.8.1 baseline. Removed Homebrew as a required dependency because the current XcodeGen formula requires Xcode 15.3 or later. CI and local bootstrap now use the same generator version.
+
+- CI diagnostic: the first full repository-hygiene job passed required-file and git diff checks, then failed Markdown lint with 82 formatting-only findings across 22 Markdown files. Added task M00-018 to normalize legacy docs and re-enable spacing/link rules; temporary config keeps remaining default rules active. Backend-toolchain job passed Node.js 24 validation. macOS build/test remains pending.
+
+- Reproducibility hardening: XcodeGen 2.36.1 is now pinned to immutable source commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c; upstream Package.resolved supplies dependency pins. Installer verifies source SHA and stores an installation marker. Added .nvmrc for Node 24 and configured CI to consume it. Local setup still requires execution on the user's Mac.
+
+- CI topology refinement: Swift CodeQL now runs inside the macOS build/test job, so project generation, Xcode build, XCTest, and Swift analysis share one hosted macOS runner. Standalone CodeQL workflow analyzes Actions configuration on Ubuntu. This reduces duplicate macOS runner allocations.
+
+- Added CONVERSATION_RECOVERY_PROTOCOL.md and linked it from the AI working guide and README. Material sessions must update the conversation index, project continuity, task register, implementation status, and decision/conflict records as applicable. The index is a locator/summary, not a guaranteed complete transcript archive.

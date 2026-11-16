@@ -61,3 +61,29 @@ Every status change to VERIFIED must cite a commit, file path, test run, build l
 - Verification: all 11 expected paths fetched successfully from the branch.
 - PR state at last inspection: open, not merged.
 - No application build, unit test, integration test, or runtime qualification was performed or claimed.
+
+
+## Platform foundation branch — 2026-11-16
+
+The branch build/platform-foundation (PR #2) adds:
+- XcodeGen project specification targeting macOS 13.0 and bundle identifier com.atheertrading.desktop.
+- Minimal SwiftUI application shell and an XCTest target.
+- Local doctor/build/test scripts and developer setup instructions.
+- GitHub Actions CI, CodeQL workflow, Dependabot, CODEOWNERS, PR template, and Markdown lint configuration.
+- AI navigation guide, repository architecture/layout, and repository topology decision EDL-004.
+
+Status: committed to the feature branch; PR #2 is open and not yet merged. GitHub CI has not yet been observed. The Xcode project is generated from project.yml during CI/local setup. No local Xcode build, runtime test, broker integration, or trading capability is verified. The shell intentionally has no broker connection or order execution.
+
+Local synchronization instructions are in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The new repository is distinct from the earlier atheer-trading-pro local checkout; do not overwrite or repoint that checkout as part of cloning this repository.
+
+
+Toolchain compatibility correction: XcodeGen is pinned to 2.36.1 and built from source using the selected Xcode-provided Swift compiler. The current XcodeGen/Homebrew formula line requires Xcode 15.3 or later and is not suitable for the historical Xcode 14.3.1 workstation. Homebrew is therefore optional, not a required bootstrap dependency. The local installer and both CI workflows use the same pinned generator version. This compatibility correction is committed to the open platform foundation PR; local compilation remains unverified.
+
+
+The first complete repository-hygiene run reached Markdown lint and reported 82 formatting-only findings across 22 historical and new Markdown files. The project has a temporary compatibility lint baseline that keeps the remaining default rules active while M00-018 normalizes legacy formatting and re-enables the spacing/link rules. The backend-toolchain job passed Node.js 24 validation. The hosted macOS build/test job is still pending; no Xcode build/test pass is claimed.
+
+
+Final toolchain pin: XcodeGen 2.36.1 is built from immutable upstream commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c; the upstream Package.resolved locks its dependency graph. The installer verifies the source SHA and records it beside the installed binary. Node.js 24 is selected by .nvmrc and CI consumes that file. Local toolchain installation and Xcode build/test remain unverified.
+
+
+CI resource optimization: Swift CodeQL initialization and analysis now run inside the same macOS job as Xcode build and XCTest, avoiding a second macOS runner allocation. The standalone CodeQL workflow analyzes GitHub Actions configuration on Ubuntu. This preserves Swift static analysis while reducing duplicate macOS runner demand.

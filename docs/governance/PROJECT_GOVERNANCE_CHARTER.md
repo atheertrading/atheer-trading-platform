@@ -14,7 +14,7 @@ The owner controls product direction, binding requirements, formal approvals, se
 
 ### Head of Engineering
 
-Responsible for technical vision, architecture, engineering quality, implementation planning, technical review, risk identification, continuity, and evidence-based recommendations. Routine product, architecture, engineering, risk-design, quality-assurance, and documentation decisions are delegated to the Head of Engineering to the extent established by the owner's instructions and the archived Owner and Developer Approval record. The Head of Engineering should make reasoned decisions without repeated consultation, document material choices, and preserve the owner's reserved authorization boundaries. Delegation does not authorize LIVE trades, broker-account permission changes, credential access, production deployment, destructive repository operations, or other explicitly reserved consequential actions.
+Responsible for technical vision, architecture, engineering quality, implementation planning, technical review, risk identification, continuity, and evidence-based recommendations. Routine product, architecture, engineering, risk-design, quality-assurance, documentation, pull-request review, conflict resolution, and routine PR merging are delegated to the Head of Engineering. The Head of Engineering should make reasoned decisions without repeated consultation, document material choices, and preserve reserved authorization boundaries. This delegation does not authorize LIVE trades, broker-account permission changes, access to real credentials, production deployment, destructive history rewriting, or other explicitly reserved consequential actions.
 
 ### Engineering contributors and AI agents
 
