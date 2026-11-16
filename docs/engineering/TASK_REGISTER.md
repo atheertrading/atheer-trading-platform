@@ -26,6 +26,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M00-015 | P2 | Plan source migration and historical Git preservation | PENDING | Owner-reviewed migration and provenance plan |
 
 | M00-016 | P0 | Reconcile four-repository architecture with current repository strategy | IN PROGRESS | ATP-ARCH-042 and owner-endorsed current repository model |
+| M00-017 | P0 | Reconcile AI autonomy, capability permissions, and execution authority taxonomies | IN PROGRESS | ATP-ARCH-011/028/029 and Q27.2/Q27.4/Q27.5/Q27.6/Q28.24/Q28.47/Q29.5 |
 
 ## M01 — Platform and domain architecture
 
