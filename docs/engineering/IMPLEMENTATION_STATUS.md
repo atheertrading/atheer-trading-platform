@@ -61,3 +61,15 @@ Every status change to VERIFIED must cite a commit, file path, test run, build l
 - Verification: all 11 expected paths fetched successfully from the branch.
 - PR state at last inspection: open, not merged.
 - No application build, unit test, integration test, or runtime qualification was performed or claimed.
+
+
+## Platform foundation branch — 2026-11-16
+
+The branch build/platform-foundation adds:
+- XcodeGen project specification targeting macOS 13.0 and bundle identifier com.atheertrading.desktop.
+- Minimal SwiftUI application shell and an XCTest target.
+- Local doctor/build/test scripts and developer setup instructions.
+- GitHub Actions CI, CodeQL workflow, Dependabot, CODEOWNERS, PR template, and Markdown lint configuration.
+- AI navigation guide, repository architecture/layout, and repository topology decision EDL-004.
+
+Status: committed to the feature branch; not yet merged. GitHub CI has not yet been observed. The Xcode project is generated from project.yml during CI/local setup. No local Xcode build, runtime test, broker integration, or trading capability is verified. The shell intentionally has no broker connection or order execution.
