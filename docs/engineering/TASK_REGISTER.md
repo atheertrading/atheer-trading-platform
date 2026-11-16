@@ -46,7 +46,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
-| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS |
+| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS | PR #10 hosted CI passed on head 3b7bc500; local Mac Xcode build/test/launch and end-to-end local integration remain required |
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 
 ## Governance notes
@@ -129,3 +129,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - PR #11 merged the non-destructive safe-sync workflow, workstation doctor, bootstrap guard, Makefile targets, and local sync procedure.
 - The isolated Git behavior tests passed for dirty-worktree preservation, clean fast-forward, origin mismatch rejection, and divergent-main refusal.
 - Actual execution against the owner's Mac and current local worktree remains pending.
+
+
+### Phase 0 reconciliation — 2026-11-16
+
+- M02-005 remains IN PROGRESS: PR #10 contains the native loopback health client, readiness decoder, view model, workspace panel, and four XCTest cases. Hosted macOS Debug/Release build and XCTest, backend checks, repository hygiene, and CodeQL passed on the pre-documentation head; the documentation-only follow-up commits require their own fresh checks. Local Mac verification remains outstanding.
+- M02-006 remains IN PROGRESS: safe-sync and workstation bootstrap are merged and isolated Git behavior tests passed. Execution against the owner's local checkout has not been performed.
+- M02-001 remains IN PROGRESS: hosted Xcode qualification passed, but local Xcode 14.3.1 compatibility, app launch, and Apple Silicon qualification remain unverified.
+- M00-014 remains PENDING: branch protection and repository security configuration cannot be verified through the connected integration; HTTP 403 is an access limitation, not evidence of disabled protection.
+- M00-004/005/006/007/008/011/012/017 and M00-021 remain in source/document reconciliation states as already recorded. The 47 formal documents, 517 Q&A records, approval metadata, historical repository recovery, ADR inventory, and requirement mapping are not fully reconciled.
