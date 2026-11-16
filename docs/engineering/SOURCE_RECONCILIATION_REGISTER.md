@@ -151,3 +151,22 @@ The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) now enumerat
 4. Retrieve the historical `AtheerTrader` repository or local working copy if available; otherwise preserve the archived snapshot as historical evidence.
 5. Resolve repository-topology and design-authority conflicts before creating final architecture modules or IPDS tokens.
 6. Keep original Library archives unchanged.
+
+
+## 9. AI autonomy and provider architecture sources
+
+The following Q&A documents were inspected at the header and decision-section level:
+
+- **Q27.2 — Agent autonomy:** five operational levels, from Observe through Adaptive Autonomous Operation; autonomy does not grant permission to override risk controls.
+- **Q27.4 — AI order execution:** supports recommendation-based, pre-authorized automated, and adaptive autonomous execution models through the centralized Execution Gateway.
+- **Q27.5 — AI authority limits:** authority is delegated, bounded, revocable, and cannot self-expand.
+- **Q27.6 — Risk Engine:** risk-relevant actions require the appropriate independent authorization; control intensity depends on the actual financial effect.
+- **Q27.8 — Provider selection:** OpenAI and Gemini are initial provider candidates; other qualified providers and local models remain eligible.
+- **Q27.9 — Model management:** one central model-management/gateway layer owns registry, provider adapters, routing, orchestration, lifecycle, evaluation, resource governance, security, fallback, and audit.
+- **Q27.10 — API credentials:** provider credentials are backend-managed; agents and models never receive raw keys.
+- **Q28.24 — Agent authority:** four capability levels (Observe, Analyze, Propose, Controlled Operation) and least-privilege separation.
+- **Q28.47 — Hybrid intelligence:** combine AI models with deterministic algorithms, rule-based systems, quantitative models, and specialized engines; do not force every operation through an LLM.
+- **Q29.5 — Professional autonomy:** A0–A4, including governed execution and adaptive operation within explicitly approved boundaries.
+- **Q29.7 — Institutional knowledge:** distinguish operational records, episodic memory, semantic knowledge, procedural knowledge, and governance knowledge; preserve provenance and validity.
+
+A proposed synthesis is recorded as EDP-006. It is not yet a final consolidated autonomy specification. In particular, the autonomy level, capability permissions, action authorization classification, and broker execution authority must remain separate concepts.
