@@ -45,7 +45,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-001 | P2 | Qualify macOS/Xcode/Swift compatibility and app structure | IN PROGRESS |
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | PENDING |
-| M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
+| M02-004 | P2 | Establish automated tests and local developer workflows | PENDING |
 
 ## Governance notes
 
