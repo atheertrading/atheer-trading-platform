@@ -36,3 +36,11 @@ A conflict may be a direct contradiction, an unresolved scope difference, a stat
 ## Resolved conflicts
 
 - SCR-001 — Repository topology: Resolved by EDL-004 and docs/governance/REPOSITORY_TOPOLOGY_DECISION.md. The single modular engineering monorepo is adopted. ATP-ARCH-042 is superseded only for its four-repository topology prescription; its other substantive provisions remain in force.
+
+
+## SCR-009 — Engineering Operating Standards approval status and repository lineage
+
+- **Source A:** Original `ATHEER_Trading_Engineering_Operating_Standards.md` recovered from the Codex source archive. It names `AtheerAutotrade` as code repository and states approval is subject to applicable owner approval.
+- **Source B:** Current Master Engineering Execution Directive and Continuous Delegation in the Library `/work` folder, current explicit owner direction, and EDL-004 in the inspected repository.
+- **Assessment:** The original Standards document is an owner-designated historical working reference, but the inspected text does not establish blanket owner approval. The concise `ENGINEERING_OPERATING_STANDARDS.md` in the Codex package is a separate synthesis accepted under delegated engineering authority. Current canonical GitHub repository is `atheertrading/atheer-trading-platform`; historical `AtheerAutotrade` reference is stale for current implementation and its deletion is owner-reported. Do not conflate the two standards documents or infer that every clause in the original is adopted.
+- **Resolution:** Current Master Directive, Continuous Delegation, explicit owner instructions, accepted ADRs, and verified repository state govern. Preserve the original source and continue clause-level reconciliation. The formal 47-document archive remains unavailable as original bytes in the visible Library inventory.
