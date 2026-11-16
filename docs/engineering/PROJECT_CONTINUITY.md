@@ -172,3 +172,29 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - CI topology refinement: Swift CodeQL now runs inside the macOS build/test job, so project generation, Xcode build, XCTest, and Swift analysis share one hosted macOS runner. Standalone CodeQL workflow analyzes Actions configuration on Ubuntu. This reduces duplicate macOS runner allocations.
 
 - Added CONVERSATION_RECOVERY_PROTOCOL.md and linked it from the AI working guide and README. Material sessions must update the conversation index, project continuity, task register, implementation status, and decision/conflict records as applicable. The index is a locator/summary, not a guaranteed complete transcript archive.
+
+
+## 2026-11-16 current-state correction — PR #2 and Mermaid recovery
+
+This addendum supersedes earlier statements in this file that describe PR #2 as open, the foundation branch as unmerged, or the current work branch as the original bootstrap branch.
+
+- **Current repository:** `https://github.com/atheertrading/atheer-trading-platform`; `main` is the default branch.
+- **Deleted repository:** `atheertrading/AtheerAutotrade` was deleted by the owner. It is not the active engineering target.
+- **PR #2:** squash-merged; verified merge commit `83e524e35a7f167abf2f8d11838db6af63444f95`. Hosted PR checks passed in the pre-merge run. No post-merge workflow result is inferred.
+- **Local qualification:** local Intel Mac clone/build/test remains pending. Hosted CI does not establish local Xcode 14.3.1 compatibility.
+- **Current documentation work:** branch `docs/architecture-diagram-baseline` is based on the merged main commit. It adds eight canonical Mermaid diagrams, a diagram governance README, an inventory of original Mermaid sources, a deterministic extraction script, a Mermaid rendering workflow, and this session record. PR and CI verification are pending.
+- **Original Mermaid source inventory:** the Library ZIP contains 564 Markdown files (517 Q&A and 47 formal documents). A fresh programmatic inspection found Mermaid fences in 31 source documents, containing 52 diagram blocks. This corrects the imprecise phrase “31 Mermaid diagrams.” The source ZIP remains unchanged in `/AtheerTradingPro/90_SOURCE_ARCHIVES`.
+- **Migration status:** eight new canonical `.mmd` diagrams are committed on the documentation branch. The 52 historical blocks have been counted and an extractor is versioned; their individual generated files still need to be generated, reviewed, rendered and committed.
+- **Repository documentation:** root `AGENTS.md`, README, architecture/layout, developer setup, toolchain, GitHub configuration, continuity, conversation index, decision log, implementation status, source reconciliation and task register are present on main. Their historical status statements must be reconciled as part of this work.
+
+### Current next actions
+
+1. Complete and verify the Mermaid documentation PR and CI.
+2. Run `scripts/extract-mermaid-sources.py` against the preserved Library ZIP; commit all 52 original blocks and provenance manifest.
+3. Reconcile historical diagrams against current accepted architecture and implementation; retain obsolete diagrams as historical, not active design.
+4. Reconcile the 47 formal documents, 517 Q&A sources, approval metadata and source-count discrepancies.
+5. Complete Library documentation uploads when the Library upload quota permits.
+6. Clone/sync the repository on the local Mac and run doctor, project generation, build and XCTest.
+7. Establish requirements traceability before broker DEMO vertical-slice implementation.
+
+No broker execution, credentials, LIVE permissions, or production trading behavior were changed by this documentation work.
