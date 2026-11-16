@@ -27,14 +27,14 @@ The CI workflow defines these jobs:
 - macOS build, tests, and Swift CodeQL
 - Backend toolchain
 
-CodeQL runs separately through the CodeQL workflow. Confirm workflow runs appear for PR #2 before making the checks required.
+Swift CodeQL runs inside the macOS build/test job. The separate CodeQL workflow analyzes GitHub Actions configuration on Ubuntu. Confirm both workflow runs appear for PR #2 before making the checks required.
 
 ## Main branch ruleset
 
 In Settings → Rules → Rulesets, create an active branch ruleset targeting the main branch:
 
 - Require a pull request before merging.
-- Require the Repository hygiene, macOS build and tests, and Backend toolchain checks after their first successful run.
+- Require the Repository hygiene, macOS build, tests, and Swift CodeQL; Backend toolchain; and Analyze GitHub Actions workflows checks after their first successful run.
 - Require conversation resolution.
 - Block force pushes.
 - Block branch deletion.
