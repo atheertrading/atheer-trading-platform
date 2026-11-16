@@ -71,7 +71,7 @@ The local Mac has not been freshly qualified in this session. The XcodeGen pin r
 
 ## Documentation quality task
 
-- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable the temporarily disabled markdownlint spacing/link rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
+- M00-018 — Normalize legacy Markdown formatting across the historical engineering registry and knowledge-source documents, then re-enable temporarily disabled spacing, link, and table-style rules. The initial CI lint run found 82 formatting-only findings across 22 files; the current config keeps other default rules active while this baseline cleanup remains pending.
 
 ## Mermaid documentation and architecture source recovery — 2026-11-16
 
