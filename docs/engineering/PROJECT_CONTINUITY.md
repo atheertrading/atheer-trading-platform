@@ -135,3 +135,10 @@ Next action: continue formal-document and approval-metadata reconciliation befor
 
 
 The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) has now been created on the bootstrap branch. It enumerates the 47 formal documents and 517 Q&A documents by section. Document-by-document approval, revision, dependency, and requirement mapping remains in progress.
+
+
+## 12. AI architecture reconciliation findings
+
+Inspection of ATP-ARCH-011, ATP-ARCH-028, ATP-ARCH-029 and selected Q&A records recovered a provider-independent Model Gateway, hybrid intelligence architecture, and support for meaningful bounded autonomous execution. AI is not intended to be advisory-only: authorized agents may initiate pre-authorized workflows and manage positions within their mandate. They cannot directly call broker dealing APIs, authorize their own risk, or expand permissions. The RiskEngine, OMS, and Execution Gateway remain independent authorities.
+
+The source set uses both five-level autonomy scales and a four-level agent capability-authority scale. These may be orthogonal dimensions. A proposed synthesis is recorded as EDP-006, with SCR-009 and SCR-010 tracking the reconciliation. No final consolidated agent permission matrix is yet approved or implemented.
