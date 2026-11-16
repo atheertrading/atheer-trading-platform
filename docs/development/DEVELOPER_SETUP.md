@@ -12,7 +12,7 @@ Historical primary workstation: Intel iMac, macOS 13.7.8, Xcode 14.3.1, Swift 5.
 | Swift | Xcode-provided compiler | Native application |
 | Git | Current supported version | Version control |
 | Homebrew | Current supported version | Developer tooling |
-| XcodeGen | Compatible current release | Generate project from project.yml |
+| XcodeGen | Pinned 2.36.1 | Generate project from project.yml; compatible with the Xcode 14.3 toolchain |
 | Node.js | 24.x | Backend runtime/tooling |
 | npm | Bundled with Node 24 | Package scripts |
 
@@ -51,7 +51,7 @@ bash scripts/build-macos.sh
 bash scripts/test-macos.sh
 ~
 
-For a guarded clone/update flow that refuses to overwrite dirty or unrelated directories, run: bash scripts/bootstrap-local.sh. It targets ~/Developer/ATHEER/atheer-trading-platform by default and does not modify the earlier atheer-trading-pro checkout.\n\nThe generated Xcode project is reproducible from the committed project.yml and is not the source of truth.
+For a guarded clone/update flow that refuses to overwrite dirty or unrelated directories, run: bash scripts/bootstrap-local.sh. It targets ~/Developer/ATHEER/atheer-trading-platform by default and does not modify the earlier atheer-trading-pro checkout.\n\nThe generated Xcode project is reproducible from the committed project.yml and is not the source of truth. XcodeGen 2.36.1 is pinned because the current XcodeGen release requires a newer Xcode than the legacy workstation; do not upgrade the generator without requalifying the local toolchain and generated project.
 
 ## Backend
 Node.js 24 is the selected backend runtime direction. Add TypeScript packages only when their service boundary and contracts are specified. Do not add dependencies without a concrete consumer and security review.
