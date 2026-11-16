@@ -142,3 +142,8 @@ The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) has now been
 Inspection of ATP-ARCH-011, ATP-ARCH-028, ATP-ARCH-029 and selected Q&A records recovered a provider-independent Model Gateway, hybrid intelligence architecture, and support for meaningful bounded autonomous execution. AI is not intended to be advisory-only: authorized agents may initiate pre-authorized workflows and manage positions within their mandate. They cannot directly call broker dealing APIs, authorize their own risk, or expand permissions. The RiskEngine, OMS, and Execution Gateway remain independent authorities.
 
 The source set uses both five-level autonomy scales and a four-level agent capability-authority scale. These may be orthogonal dimensions. A proposed synthesis is recorded as EDP-006, with SCR-009 and SCR-010 tracking the reconciliation. No final consolidated agent permission matrix is yet approved or implemented.
+
+
+## 13. Repository protection inspection
+
+On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. The branch-protection endpoint for `main` returned HTTP 403 (`Resource not accessible by integration`), so branch protection could not be independently verified through the connected GitHub integration. Do not interpret the 403 as proof that protection is absent. Repository ruleset configuration and branch protection remain pending owner-side verification.
