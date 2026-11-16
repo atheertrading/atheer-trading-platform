@@ -60,15 +60,3 @@ This status is intentional. It must not be changed to ready using mock values or
 This contract does not define business API transport, authentication, authorization, user identity, database schemas, broker authentication, market-data schemas, order states, risk formulas, event delivery, or persistence semantics. Those require source reconciliation and separate contracts.
 
 No endpoint in this service can submit orders or alter financial state.
-
-
-## macOS client consumption
-
-The native macOS application consumes these endpoints only for local service diagnostics:
-
-- Request GET /health/live and require HTTP 200 with status ok and service atheer-api.
-- Request GET /health/ready and accept HTTP 200 for ready or HTTP 503 for not_ready.
-- HTTP 503 with a valid not_ready payload is a successful health-query exchange, not a network disconnection. The client must display API connected and platform not ready as separate states.
-- Read persistence, broker, and trading fields from the response. Never infer connectivity, readiness, or trading permission from process liveness.
-- The client uses the loopback address and a bounded request timeout. No credentials or trading commands are sent.
-- The first application integration performs an initial check and offers manual refresh; it does not create a polling loop or automatic backend process manager.

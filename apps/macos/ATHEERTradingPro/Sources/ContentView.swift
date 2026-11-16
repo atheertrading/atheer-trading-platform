@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     private let background = Color(red: 18.0 / 255.0, green: 18.0 / 255.0, blue: 18.0 / 255.0)
     private let accent = Color(red: 0.0, green: 206.0 / 255.0, blue: 200.0 / 255.0)
-    @StateObject private var backendHealthModel = BackendHealthViewModel()
 
     var body: some View {
         HStack(spacing: 0) {
@@ -41,7 +40,6 @@ struct ContentView: View {
                         .foregroundColor(accent)
                 }
                 Divider()
-                BackendStatusPanel(model: backendHealthModel, accent: accent)
                 Spacer()
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Engineering foundation")
@@ -62,8 +60,6 @@ struct ContentView: View {
         }
         .frame(minWidth: 900, minHeight: 600)
         .background(background)
-        .task {
-            await backendHealthModel.refresh()
-        }
     }
 }
+
