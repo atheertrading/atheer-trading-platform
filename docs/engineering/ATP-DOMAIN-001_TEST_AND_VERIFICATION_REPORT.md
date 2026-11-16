@@ -39,7 +39,7 @@ Node.js 22 is below the repository's required Node.js 24 runtime target. These r
 
 ## Not verified
 
-- Node.js 24 execution in hosted CI for this branch.
+- Completion of the macOS Xcode build/test/Swift CodeQL job on the current branch head.
 - Full existing API test suite against the authoritative source snapshot.
 - PostgreSQL, durable idempotency, transactional outbox/inbox, restart recovery or multi-process concurrency.
 - Real broker/Capital.com behavior, account state, market data, order execution or reconciliation.
@@ -52,3 +52,11 @@ The in-memory registry used by tests is a test fixture only. It is not productio
 ## Hosted verification gate
 
 PR #10's current head `06bd496d957b6cd2f999209cf5dc83cae54251cf` has green CI #117, CodeQL #117 and Local Sync Safety #48. Those runs predate ATP-DOMAIN-001A and do not verify this new branch. Fresh CI on the ATP-DOMAIN-001A head is required after the branch commit. PR #10 remains open/unmerged; the domain branch is stacked on its feature branch.
+
+
+## Hosted CI partial evidence — head 4c43ebe8f0b356e38cd03ea965e9a4bcaeb3fecc
+
+- CI #121 Backend toolchain ran on Node.js v24.22.2 / npm 11.19.1: TypeScript typecheck passed; API and domain test suite passed (34 tests, 0 failures).
+- CI #121 Repository hygiene and Markdown lint passed.
+- Local Sync Safety #56 passed.
+- CI #121 macOS build, XCTest and Swift CodeQL job was still running at the time of this record; no result is claimed. A complete green run on the final branch head remains required.
