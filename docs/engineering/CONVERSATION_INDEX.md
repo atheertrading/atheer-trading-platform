@@ -50,3 +50,18 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-008 | 2026-11-16 | Mermaid source recovery and repository documentation | Re-read the November 15–16 project context; corrected the active repository identity (`AtheerAutotrade` deleted, `atheer-trading-platform` current); verified PR #2 merge; inspected existing setup/continuity documentation; extracted archive inventory counts of 31 Mermaid-bearing Markdown sources and 52 Mermaid blocks; created a canonical Mermaid baseline, source extractor, render workflow and session record on a documentation branch. | SESSION_2026-11-16_008_MERMAID_SOURCE_RECOVERY; PROJECT_CONTINUITY; TASK_REGISTER; LEGACY_SOURCE_INVENTORY |
+
+## ATP-2026-11-16-011 — Phase 2 Xcode configuration
+
+- **Date:** 2026-11-16
+- **Previous session:** ATP-2026-11-16-010 — Phase 1 GitHub/source-control qualification.
+- **Objective:** Begin Professional Xcode Configuration under the Chief Engineering mandate.
+- **Authorization:** Owner explicitly authorized implementation; recorded as a sequencing exception while Phase 1 remains IN PROGRESS.
+- **Sources inspected:** Root `AGENTS.md`, project.yml, SwiftUI app entry, XCTest, developer setup, GitHub repository configuration, engineering decision log, conversation index, implementation status, task register, CI workflow, and PR #7.
+- **Verified baseline:** Bundle ID `com.atheertrading.desktop`; macOS 13.0; Swift 5 language mode; XcodeGen project `ATHEERTradingPro`; generated Info.plist; hardened-runtime flag; unsigned build; one app target and one XCTest target.
+- **Changes:** Explicit Debug/Release settings, targeted concurrency diagnostics, generated scheme inspection, hosted Release build, and developer configuration documentation.
+- **Branch:** `build/phase-2-xcode-configuration`.
+- **Session report:** `docs/engineering/SESSION_2026-11-16_011_PHASE_2_XCODE_CONFIGURATION.md`.
+- **Verification:** Hosted CI and Swift CodeQL passed on head `44f2262f9af95a789317fea36a2c432cbad04114`; local Mac verification remains pending.
+- **Outstanding:** Phase 1 governance controls; local Xcode 14.3.1 qualification; arm64 qualification.
+- **Next action:** Complete final diff/merge-readiness review, merge if final checks remain green, then perform controlled local synchronization and separate local Xcode acceptance.
