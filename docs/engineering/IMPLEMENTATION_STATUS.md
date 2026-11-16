@@ -168,3 +168,8 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 **Not implemented in the repository:** PostgreSQL persistence, authentication/authorization, broker adapter or Capital.com connectivity, market-data ingestion/streaming, instruments domain, RiskEngine, OMS, Execution Gateway, order lifecycle, reconciliation, portfolio/positions, strategy engine, backtesting/simulation, Model Gateway, agent runtime, production IPDS, and operational production deployment.
 
 **Local qualification:** not performed in this assessment. Historical Xcode 14.3.1 / Swift 5.8.1 / macOS 13.7.8 and XcodeGen 2.36.1 are not freshly verified. The safe-sync workflow is not yet executed against the owner's local checkout. Do not mark M02-001, M02-005, or M02-006 complete on hosted evidence alone.
+
+
+### PR #10 updated-head verification — 2026-11-16
+
+The original implementation head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` passed hosted macOS build/test/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Six documentation-only follow-up commits advanced the branch to `27dba0ac60d1fbc053fbab4ac88789d4892d37d5` (13 commits ahead of main, zero behind). At the latest check inspection, the dedicated safe-sync run had passed, CodeQL and Local Sync Safety were in progress, and the main CI workflow was pending. The updated head is not yet merge-qualified. Local Mac verification remains unperformed.
