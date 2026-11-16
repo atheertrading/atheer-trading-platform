@@ -2,7 +2,7 @@
 
 **Session ID:** ATP-2026-11-16-011  
 **Date:** 2026-11-16  
-**Status:** IN PROGRESS — configuration changes committed to a review branch; hosted and local verification pending  
+**Status:** IN PROGRESS — hosted CI passed; local Mac verification and merge remain pending  
 **Previous session:** ATP-2026-11-16-010 — Phase 1 GitHub/source-control qualification  
 **Repository:** `atheertrading/atheer-trading-platform`  
 **Branch:** `build/phase-2-xcode-configuration`
@@ -84,24 +84,22 @@ No source behavior, trading logic, broker integration, credentials, database, ri
 - Created branch `build/phase-2-xcode-configuration` from `main`.
 - Applied the three changes above through GitHub's repository contents interface.
 
-**Pending:**
-- PR #8 was created: https://github.com/atheertrading/atheer-trading-platform/pull/8. The initial repository-hygiene run found one MD047 missing-final-newline issue in this session report; the file was corrected and the workflow is re-running.
-- XcodeGen 2.36.1 generation under the hosted runner.
-- Scheme listing.
-- Debug build.
-- XCTest execution.
-- Release build.
-- Swift CodeQL and repository hygiene checks.
-- Local Mac generation, Debug/Release builds, XCTest, app launch/debugging.
-- arm64 qualification on a verified Apple Silicon host/toolchain.
-- Confirm actual generated settings against Xcode 14.3.1 compatibility.
+**Hosted verification — passed:**
+- PR #8 CI run `43925937713`: XcodeGen installation, project generation, generated-scheme inspection, Debug build, XCTest, Release build, backend toolchain, and repository hygiene all succeeded.
+- PR #8 CodeQL run `43925937900`: GitHub Actions workflow analysis succeeded.
+- Verified head at that run: `44f2262f9af95a789317fea36a2c432cbad04114`.
 
-No build or test result is claimed at this point. A successful CI run will qualify the hosted Intel runner and its selected Xcode image, not the physical local workstation or Apple Silicon.
+**Still pending:**
+- Local Mac generation, Debug/Release builds, XCTest, app launch/debugging, and verification against the installed Xcode 14.3.1 toolchain.
+- arm64 qualification on a verified Apple Silicon host/toolchain.
+- PR review completion and merge.
+
+Hosted CI qualifies the hosted Intel runner and its selected Xcode image, not the physical local workstation or Apple Silicon.
 
 ## 7. Risks and outstanding items
 
 - Phase 1 governance gaps remain open under the owner's explicit sequencing exception.
-- The open Phase 1 PR #7 is not merged; its own CI state must be checked independently.
+- Phase 1 PR #7 has been merged as a documentation-only qualification record; Phase 1 itself remains IN PROGRESS pending owner-side governance controls.
 - Main-branch ruleset and repository-level Actions/security settings remain unverified.
 - Local worktree has four modified continuity files and one untracked session report from the earlier local qualification. These must not be reset, cleaned, stashed, or overwritten.
 - The current XcodeGen schema and build settings must be validated by the pinned generator and actual Xcode build before merge.
@@ -109,4 +107,4 @@ No build or test result is claimed at this point. A successful CI run will quali
 
 ## 8. Next action
 
-PR #8 is open. Re-check the corrected repository-hygiene run and complete macOS generation, scheme, Debug, XCTest, Release, and Swift CodeQL checks. Resolve any failures before merge. Local Mac verification remains required before Phase 2 can be marked fully complete.
+PR #8 hosted CI and CodeQL passed. Complete the final diff/merge-readiness review, merge only if the final head checks remain green, then perform controlled local synchronization and separate local Xcode acceptance. Do not mark Phase 2 complete until local qualification is recorded.
