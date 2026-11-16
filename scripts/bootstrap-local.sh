@@ -9,6 +9,11 @@ if [[ -e "$TARGET_DIR" ]]; then
     echo "Refusing to use existing non-repository path: $TARGET_DIR" >&2
     exit 2
   fi
+  origin_url="$(git -C "$TARGET_DIR" remote get-url origin)"
+  case "$origin_url" in
+    https://github.com/atheertrading/atheer-trading-platform|https://github.com/atheertrading/atheer-trading-platform.git|git@github.com:atheertrading/atheer-trading-platform|git@github.com:atheertrading/atheer-trading-platform.git) ;;
+    *) echo "Refusing repository with unexpected origin: $origin_url" >&2; exit 5 ;;
+  esac
   if [[ -n "$(git -C "$TARGET_DIR" status --porcelain)" ]]; then
     echo "Working tree is not clean. Preserve or commit local changes before updating." >&2
     git -C "$TARGET_DIR" status --short --branch
