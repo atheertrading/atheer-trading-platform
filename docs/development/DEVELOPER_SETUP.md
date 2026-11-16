@@ -25,14 +25,14 @@ Homebrew is optional and is not required by the repository bootstrap. The XcodeG
    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 2. Install Command Line Tools if needed:
    xcode-select --install
-3. Install Node.js 24 using the official installer or a version manager.
+3. Install Node.js using the official installer or a version manager. The repository's .nvmrc selects Node.js 24; with nvm installed, run nvm install and nvm use from the repository root.
 4. Clone the repository using the instructions below.
 5. From the repository root, build and install the XcodeGen 2.36.1 tool:
    bash scripts/install-xcodegen.sh
 6. Verify prerequisites:
    make doctor
 
-XcodeGen 2.36.1 is deliberately pinned for the Xcode 14.3 / Swift 5.8 compatibility baseline. Do not upgrade it without requalifying the workstation toolchain and generated project.
+XcodeGen 2.36.1 is pinned to source commit 26e817b2deca1ceb9fdebfa963b86311fef3d05c for the Xcode 14.3 / Swift 5.8 compatibility baseline. Its upstream Package.resolved is used to lock dependencies. Do not upgrade it without requalifying the workstation toolchain and generated project.
 
 ## Clone and update
 
