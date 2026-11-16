@@ -14,7 +14,13 @@ check "Xcode build system" xcodebuild -version
 check "Swift compiler" swift --version
 check "Homebrew" brew --version
 check "XcodeGen" xcodegen --version
-check "Node.js 24" bash -c 'node -e "process.exit(Number(process.versions.node.split(\".\")[0]) === 24 ? 0 : 1)"'
+if command -v node >/dev/null 2>&1; then
+  node_major="$(node -p 'process.versions.node.split(".")[0]')"
+  if [[ "$node_major" == "24" ]]; then printf 'OK      Node.js 24\n'
+  else printf 'MISMATCH Node.js major version %s (expected 24)\n' "$node_major"; failures=$((failures + 1)); fi
+else
+  printf 'MISSING Node.js 24\n'; failures=$((failures + 1))
+fi
 check "npm" npm --version
 if [[ "$failures" -gt 0 ]]; then
   printf '\n%d prerequisite check(s) failed. See docs/development/DEVELOPER_SETUP.md.\n' "$failures"
