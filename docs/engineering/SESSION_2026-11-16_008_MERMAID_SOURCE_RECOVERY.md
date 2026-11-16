@@ -55,3 +55,17 @@ The historical 52-block extraction is not marked complete until the generated in
 ## Next action
 
 Run the extractor using the preserved Library archive, inspect and render all 52 generated `.mmd` files, commit them with the provenance manifest, then reconcile each diagram against the current approved architecture documents. Update the conversation index, continuity, task register and implementation status with the resulting PR/commit/check evidence.
+
+
+## PR and follow-on documentation update
+
+- **PR:** https://github.com/atheertrading/atheer-trading-platform/pull/6
+- **Branch:** `docs/architecture-diagram-baseline`
+- **Latest inspected branch commit:** `ec52b48958cfeb5890d7d0b7f0c3a000b5b63531`
+- Added `docs/architecture/PLATFORM_SCALING_AND_DEPLOYMENT_STRATEGY.md` as proposed strategy, with no unapproved provider, capacity or SLO commitments.
+- Added `docs/engineering/REPOSITORY_DOCUMENTATION_READINESS.md` to identify existing bootstrap documentation and missing historical/production documentation.
+- Added `docs/engineering/REQUIREMENTS_TRACEABILITY_MATRIX.md` as an initial traceability template; requirement-level population remains pending.
+- Mermaid workflow run #4 on the latest commit completed successfully. CodeQL run #62 completed successfully. CI run #62: repository hygiene/Markdown lint and backend toolchain passed; hosted macOS build/XCTest was still running at the time of this update.
+- The first Mermaid workflow attempt failed because Chromium could not launch with the runner's sandbox restrictions. Added a dedicated Puppeteer configuration with `--no-sandbox` and `--disable-setuid-sandbox`; the subsequent Mermaid rendering workflow passed. The initial failed run is retained as part of the CI history.
+
+The PR remains open until the complete required CI run is green. No merge is claimed.
