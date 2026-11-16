@@ -75,3 +75,6 @@ The branch build/platform-foundation (PR #2) adds:
 Status: committed to the feature branch; PR #2 is open and not yet merged. GitHub CI has not yet been observed. The Xcode project is generated from project.yml during CI/local setup. No local Xcode build, runtime test, broker integration, or trading capability is verified. The shell intentionally has no broker connection or order execution.
 
 Local synchronization instructions are in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The new repository is distinct from the earlier atheer-trading-pro local checkout; do not overwrite or repoint that checkout as part of cloning this repository.
+
+
+Toolchain compatibility correction: XcodeGen is pinned to 2.36.1 and built from source using the selected Xcode-provided Swift compiler. The current XcodeGen/Homebrew formula line requires Xcode 15.3 or later and is not suitable for the historical Xcode 14.3.1 workstation. Homebrew is therefore optional, not a required bootstrap dependency. The local installer and both CI workflows use the same pinned generator version. This compatibility correction is committed to the open platform foundation PR; local compilation remains unverified.
