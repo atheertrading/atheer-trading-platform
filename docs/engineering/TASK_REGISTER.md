@@ -69,3 +69,6 @@ Structural inspection of the two Library ZIP archives is complete. Tasks M00-004
 ## Platform foundation work — 2026-11-16
 
 A second foundation branch, build/platform-foundation, adds the XcodeGen-driven macOS app shell, macOS build/test scripts, local environment diagnostics, AI navigation guidance, repository architecture and topology records, PR template, CodeQL and CI workflows, Dependabot, and developer setup instructions. These changes remain pending PR review and CI verification. The local Mac has not yet been inspected or built by this session.
+
+
+The pull-request and local synchronization procedure is documented in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The active platform foundation changes are tracked in PR #2; do not mark toolchain setup complete until hosted CI and the local Mac build/test are verified.
