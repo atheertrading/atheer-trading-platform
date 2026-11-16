@@ -46,6 +46,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
+| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS | Local API connectivity, explicit readiness, and disabled-trading states |
 
 ## Governance notes
 
@@ -113,3 +114,11 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
 - This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
+
+
+## macOS backend health integration — 2026-11-16
+
+- M02-005 is IN PROGRESS: the macOS shell now has a dependency-injected URLSession health client, view model, and backend status panel.
+- The client treats HTTP 503 with a valid not_ready response as a reachable API and a platform-readiness failure, not a network disconnect.
+- The application exposes no broker or order controls. Trading remains disabled.
+- Xcode CI and local Mac build/test/launch verification remain pending.
