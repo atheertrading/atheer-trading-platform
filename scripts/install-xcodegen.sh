@@ -7,14 +7,18 @@ CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/atheer"
 SOURCE_DIR="$CACHE_ROOT/XcodeGen-$VERSION"
 INSTALL_DIR="$HOME/.local/bin"
 BINARY="$INSTALL_DIR/xcodegen"
+MARKER="$INSTALL_DIR/xcodegen-source-commit"
 
 mkdir -p "$CACHE_ROOT" "$INSTALL_DIR"
 
-if [[ -x "$BINARY" ]] && "$BINARY" --version 2>&1 | grep -Fq "$VERSION"; then
+if [[ -x "$BINARY" && -f "$MARKER" ]] && grep -Fqx "$COMMIT_SHA" "$MARKER" && "$BINARY" --version 2>&1 | grep -Fq "$VERSION"; then
   echo "XcodeGen $VERSION is already installed at $BINARY"
 else
   if [[ ! -d "$SOURCE_DIR/.git" ]]; then
     git init "$SOURCE_DIR"
+    git -C "$SOURCE_DIR" remote add origin https://github.com/yonaskolb/XcodeGen.git
+  fi
+  if ! git -C "$SOURCE_DIR" remote get-url origin >/dev/null 2>&1; then
     git -C "$SOURCE_DIR" remote add origin https://github.com/yonaskolb/XcodeGen.git
   fi
   git -C "$SOURCE_DIR" fetch --depth 1 origin "$COMMIT_SHA"
@@ -30,6 +34,7 @@ else
     swift build -c release
   )
   install -m 755 "$SOURCE_DIR/.build/release/xcodegen" "$BINARY"
+  printf "%s\\n" "$COMMIT_SHA" > "$MARKER"
 fi
 
 "$BINARY" --version
