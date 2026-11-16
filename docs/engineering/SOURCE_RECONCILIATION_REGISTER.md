@@ -139,7 +139,11 @@ The archive contains multiple visual-design documents with different approval me
 
 A prior archive-contained review refers to 600 canonical extracted source files and 31 Markdown documents containing Mermaid diagrams. The directly inspected ZIP contains 564 Markdown files, including 47 formal architecture/implementation documents and 517 Q&A documents. These figures may describe different source collections or extraction layers; they must not be conflated. Reconcile the 600-file integrity report and the 31-diagram claim against the actual source package before publishing a final document registry.
 
-## 7. Next reconciliation steps
+## 7. Registry artifact
+
+The initial [Master Document Registry](MASTER_DOCUMENT_REGISTRY.md) now enumerates all 47 formal architecture/implementation documents and the 517 Q&A documents by section. It records header statuses where visible and explicitly flags missing or non-normalized metadata. It is not yet the final approval or requirements traceability register.
+
+## 8. Next reconciliation steps
 
 1. Enumerate all 47 formal documents with revision, authority, approval status, dependencies, and implementation status.
 2. Reconcile all 517 Q&A documents against the formal requirements and architecture documents; preserve original source paths.
