@@ -46,7 +46,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
-| M02-007 | P2 | Reconcile and operationalize the ChatGPT UI/UX and SwiftUI engineering directive | IN PROGRESS | ATP-UX-001 drafted on `docs/atp-ui-ux-chatgpt-directive`; reconcile formal Library design sources, finalize IPDS contracts, then qualify implementation and visual QA |
+| M02-007 | P2 | Reconcile and operationalize the ChatGPT UI/UX and SwiftUI engineering directive | IN PROGRESS — ATP-UX-001 drafted; reconcile formal Library design sources, finalize IPDS contracts, then qualify implementation and visual QA |
 
 ## Governance notes
 
