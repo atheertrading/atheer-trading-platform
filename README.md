@@ -45,7 +45,7 @@ The wider project knowledge system consists of:
 3. **Historical conversations:** chronology, decisions, rationale, and discussion context.
 4. **Continuity records:** traceable links between the sources and the latest verified project state.
 
-Start with [AGENTS.md](AGENTS.md), [AI Agent Navigation](docs/architecture/AI_AGENT_NAVIGATION.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md). For local setup and Xcode build instructions, see [Developer Setup](docs/development/DEVELOPER_SETUP.md).
+Start with [AGENTS.md](AGENTS.md), [AI Agent Navigation](docs/architecture/AI_AGENT_NAVIGATION.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md). For local setup and Xcode build instructions, see [Developer Setup](docs/development/DEVELOPER_SETUP.md). See [Pull Request and Local Sync Workflow](docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md) for branch, merge, conflict-resolution, and local update procedures.
 
 ## Trading safety
 
