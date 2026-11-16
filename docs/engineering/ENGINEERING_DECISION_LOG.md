@@ -69,3 +69,14 @@ Every material decision must state its source, date, scope, status, rationale, c
 **Decision:** Maintain architecture diagrams as version-controlled Mermaid source files (`.mmd`) under `docs/architecture/diagrams/`, with a catalog, provenance for historical extracts, and automated rendering in CI. Historical diagrams must be preserved separately from canonical current diagrams; extraction does not imply approval or implementation.  
 **Rationale:** Source-controlled diagrams are diffable, reviewable, reproducible, and can be validated alongside architecture documentation. Exported images alone are not sufficient source artifacts.  
 **Constraints:** Mermaid diagrams express intended architecture and workflows; they are not evidence of implementation. Historical source paths and revisions must remain traceable. A diagram may be marked superseded only with an explicit replacement reference; original source content is retained.
+
+## EDL-006 — Conservative Xcode configuration baseline
+
+- **Date:** 2026-11-16
+- **Status:** Accepted engineering decision under delegated Head of Engineering authority; implementation and compatibility verification pending.
+- **Scope:** Native macOS project configuration for `ATHEERTradingPro`.
+- **Decision:** Preserve the verified project identity (bundle ID `com.atheertrading.desktop`), macOS 13.0 deployment target, Swift 5 language mode, and pinned XcodeGen 2.36.1 toolchain compatibility. Define explicit Debug and Release build configurations. Enable targeted Swift concurrency diagnostics as a staged migration baseline. Keep standard architecture selection rather than forcing a universal binary. Keep local/CI code signing disabled pending Phase 3. Do not invent app entitlements, sandbox capabilities, icons, UI-test targets, or package dependencies without concrete product requirements.
+- **Rationale:** Minimize compatibility risk against the historical Xcode 14.3.1 / Swift 5.8.1 Intel workstation while improving build reproducibility, diagnostics, and Release qualification.
+- **Consequences:** CI must generate the project, inspect the scheme, build Debug, run XCTest, and build Release. Local Intel/Xcode 14.3.1 verification remains required. arm64 requires a separate verified host/toolchain. Hardened-runtime settings do not constitute signing or notarization.
+- **Evidence:** Session `ATP-2026-11-16-011`; branch `build/phase-2-xcode-configuration`.
+- **Formal ADR:** Not assigned; historical ADR inventory/reconciliation remains in progress.
