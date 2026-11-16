@@ -81,7 +81,7 @@ The local Mac has not been freshly qualified in this session. The XcodeGen pin r
 |---|---|---|---|---|
 | M00-019 | P0 | Correct continuity records for PR #2 merge and active repository identity | IN PROGRESS | Session 008 addendum; update stale implementation and decision snapshots |
 | M00-020 | P0 | Recover and migrate all original Mermaid blocks from the Library archive | IN PROGRESS | 31 source Markdown documents / 52 blocks; extractor committed; generated files, provenance manifest, rendering and review still pending |
-| M01-007 | P1 | Establish canonical architecture diagram sources and Mermaid CI rendering | IN PROGRESS | Eight canonical `.mmd` files, diagram README and workflow on `docs/architecture-diagram-baseline`; PR/checks pending |
+| M01-007 | P1 | Establish canonical architecture diagram sources and Mermaid CI rendering | DONE | PR #6 merged at 70794e7f20f129c17ba64bcf4b1eba0df32999df; Mermaid rendering, repository hygiene, backend, macOS build/tests/Swift CodeQL, and Actions analysis passed |
 | M00-021 | P1 | Reconcile the 47 formal documents, 517 Q&A sources and approval metadata | IN PROGRESS | Existing source inventory; document-level authority/revision/approval traceability pending |
 
 The historical Mermaid count is 31 source documents containing 52 Mermaid blocks, not 31 individual diagrams. Do not mark M00-020 or M01-007 DONE until generated legacy sources are committed, all Mermaid files render in CI, and provenance is verified.
@@ -92,7 +92,7 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Added `docs/architecture/PLATFORM_SCALING_AND_DEPLOYMENT_STRATEGY.md`: proposed modular-monolith-first scaling strategy; no cloud provider, capacity target, SLO, RPO or RTO is invented.
 - Added `docs/engineering/REQUIREMENTS_TRACEABILITY_MATRIX.md`: initial traceability structure; formal requirement mapping and verification links remain pending.
 - M00-009 (Requirements Traceability Matrix) is IN PROGRESS, not DONE; a template exists, but formal requirement mapping and verification links remain outstanding.
-- PR #6 is open; do not mark Mermaid baseline or repository documentation changes DONE until the full latest CI run is green and the PR is merged.
+- PR #6 is merged and its Mermaid rendering, repository hygiene, backend, macOS build/tests/Swift CodeQL, and Actions-analysis checks passed. M01-007 is DONE. M00-020 remains IN PROGRESS until all 31 source Markdown documents / 52 Mermaid blocks are extracted, committed with provenance, rendered, and reviewed.
 
 ## Phase 1 qualification — 2026-11-16
 
