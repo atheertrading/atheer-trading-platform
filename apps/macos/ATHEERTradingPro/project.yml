@@ -38,7 +38,6 @@ schemes:
     build:
       targets:
         ATHEERTradingPro: all
-        ATHEERTradingProTests: [test]
     test:
       config: Debug
       targets:
