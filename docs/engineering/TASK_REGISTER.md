@@ -138,3 +138,13 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - M02-001 remains IN PROGRESS: hosted Xcode qualification passed, but local Xcode 14.3.1 compatibility, app launch, and Apple Silicon qualification remain unverified.
 - M00-014 remains PENDING: branch protection and repository security configuration cannot be verified through the connected integration; HTTP 403 is an access limitation, not evidence of disabled protection.
 - M00-004/005/006/007/008/011/012/017 and M00-021 remain in source/document reconciliation states as already recorded. The 47 formal documents, 517 Q&A records, approval metadata, historical repository recovery, ADR inventory, and requirement mapping are not fully reconciled.
+
+
+### Phase 0 source retrieval findings — 2026-11-16
+
+- P0 — Preserve and register the three current governing documents in Library `/work`; complete their cross-reference and revision metadata.
+- P0 — Reconcile the original Engineering Operating Standards working draft against the current Master Directive and delegation. Its repository pointer names AtheerAutotrade and its own approval statement is conditional; do not treat it as blanket owner-approved.
+- P0 — Locate original formal architecture archive (47 documents) and compare against the Codex package registry; full originals were not present in the visible Library folder inventory.
+- P1 — Reconcile 517 primary Q&A files plus nested archive content; retain original paths, hashes, approval states, and requirement/ADR links.
+- P1 — Verify source-stated approval declarations AR-001–003 against exact embedded section scope, revision, and date. They do not establish blanket approval or LIVE authorization.
+- P1 — Reconcile ADR-0004/0005/0006 originals and OOP standard; current archive register references them but does not include their original full text.
