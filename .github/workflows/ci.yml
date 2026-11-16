@@ -1,0 +1,65 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project baseline
+        run: |
+          set -euo pipefail
+          test -f AGENTS.md
+          test -f README.md
+          test -f SECURITY.md
+          test -f docs/engineering/PROJECT_CONTINUITY.md
+          git diff --check
+      - name: Markdown lint
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            **/*.md
+            !**/node_modules/**
+  macos:
+    name: macOS build and tests
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect Apple toolchain
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          swift --version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: apps/macos/ATHEERTradingPro
+        run: xcodegen generate
+      - name: Build application
+        run: |
+          xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+      - name: Run tests
+        run: |
+          xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+  backend-toolchain:
+    name: Backend toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: |
+          node --version
+          npm --version
+          node -e "if (Number(process.versions.node.split('.')[0]) !== 24) process.exit(1)"
