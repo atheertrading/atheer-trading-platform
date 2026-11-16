@@ -157,3 +157,6 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - The branch adds XcodeGen project specification, minimal SwiftUI macOS shell, XCTest target, local diagnostic/build/test scripts, developer setup, repository architecture/layout, AI navigation, CI, CodeQL, Dependabot, PR template, and CODEOWNERS.
 - No local Xcode build has been run. GitHub Actions results and merge status remain pending.
 - Next: validate branch files and CI, fix issues, open/merge PR #2 under the delegated workflow, then pull main to the local Mac and verify the actual Xcode toolchain/build.
+
+
+- Added docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md to define safe branch updates, conflict resolution, PR review/merge, and local clone synchronization. The new repository must be cloned alongside, not over, the earlier engineering repository until its work is separately inventoried.
