@@ -72,3 +72,5 @@ A second foundation branch, build/platform-foundation, adds the XcodeGen-driven 
 
 
 The pull-request and local synchronization procedure is documented in docs/development/PULL_REQUEST_AND_LOCAL_SYNC.md. The active platform foundation changes are tracked in PR #2; do not mark toolchain setup complete until hosted CI and the local Mac build/test are verified.
+
+- GitHub Actions and branch protection settings require owner-side UI verification because the current integration exposes no settings mutation/read capability for rulesets and reports no workflow runs/status checks for PR #2.
