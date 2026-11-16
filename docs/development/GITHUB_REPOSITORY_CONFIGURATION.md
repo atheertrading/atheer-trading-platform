@@ -24,7 +24,7 @@ In Settings → Actions → General:
 
 The CI workflow defines these jobs:
 - Repository hygiene
-- macOS build and tests
+- macOS build, tests, and Swift CodeQL
 - Backend toolchain
 
 CodeQL runs separately through the CodeQL workflow. Confirm workflow runs appear for PR #2 before making the checks required.
