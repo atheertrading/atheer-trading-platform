@@ -12,15 +12,15 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M00-001 | P0 | Inspect new repository identity, visibility, default branch, and initial commit | DONE | GitHub metadata and commit inspected |
 | M00-002 | P0 | Establish root engineering instructions and security baseline | IN PROGRESS | Bootstrap branch and PR; review/merge outstanding |
 | M00-003 | P0 | Establish project continuity, conversation index, decision log, and task register | IN PROGRESS | Bootstrap branch and PR; review/merge outstanding |
-| M00-004 | P0 | Reconcile Library Engineering Operating Standards and governance references | PENDING | Full document/source review and conflict register |
-| M00-005 | P0 | Inventory Library archives, source documents, and historical specifications | PENDING | Inventory with source IDs, versions, and provenance |
-| M00-006 | P0 | Inspect surviving repositories and local source-code history | PENDING | Repository/source inventory; inaccessible sources marked |
+| M00-004 | P0 | Reconcile Library Engineering Operating Standards and governance references | IN PROGRESS | Full document/source review and conflict register |
+| M00-005 | P0 | Inventory Library archives, source documents, and historical specifications | IN PROGRESS | Inventory with source IDs, versions, and provenance |
+| M00-006 | P0 | Inspect surviving repositories and local source-code history | IN PROGRESS | Repository/source inventory; inaccessible sources marked |
 | M00-007 | P0 | Create Master Document Registry and Source Provenance Register | PENDING | Traceable registry with authority and status |
-| M00-008 | P0 | Create Specification Conflict Register | PENDING | Conflicts, source authority, resolution, and owner questions |
+| M00-008 | P0 | Create Specification Conflict Register | IN PROGRESS | Conflicts, source authority, resolution, and owner questions |
 | M00-009 | P1 | Create Requirements Traceability Matrix | PENDING | Requirement → source → architecture → implementation → test |
 | M00-010 | P1 | Establish architecture baseline and bounded-context map | PENDING | Reviewed architecture document and diagrams |
-| M00-011 | P1 | Reconcile historical ADRs and OOP standard | PENDING | ADR inventory; no identifier collisions |
-| M00-012 | P1 | Define IPDS v1.0 specification and token governance | PENDING | Primitive, semantic, component, theme, accessibility contracts |
+| M00-011 | P1 | Reconcile historical ADRs and OOP standard | IN PROGRESS | ADR inventory; no identifier collisions |
+| M00-012 | P1 | Define IPDS v1.0 specification and token governance | IN PROGRESS | Primitive, semantic, component, theme, accessibility contracts |
 | M00-013 | P1 | Establish documentation validation and CI baseline | PENDING | Reproducible workflow and passing checks |
 | M00-014 | P1 | Configure repository security automation and branch rules | PENDING | Settings and workflow evidence; secrets/dependency scanning |
 | M00-015 | P2 | Plan source migration and historical Git preservation | PENDING | Owner-reviewed migration and provenance plan |
@@ -56,3 +56,8 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 ## Bootstrap review reference
 
 The initial governance baseline is available for owner review in [PR #1](https://github.com/atheertrading/atheer-trading-platform/pull/1). Tasks M00-002 and M00-003 remain IN PROGRESS until the pull request is reviewed and merged. File retrieval verification is complete; merge and default-branch verification remain outstanding.
+
+
+## Source-reconciliation progress update — 2026-11-16
+
+Structural inspection of the two Library ZIP archives is complete. Tasks M00-004, M00-005, M00-006, M00-008, M00-011, and M00-012 are now IN PROGRESS. The 47 formal documents and 517 Q&A documents have not yet been reconciled individually. The four-repository versus monorepo conflict is recorded as M00-016 and remains unresolved.
