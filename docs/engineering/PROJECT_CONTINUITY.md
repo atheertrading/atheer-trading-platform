@@ -164,3 +164,5 @@ On 2026-11-16, the GitHub repository rulesets endpoint returned an empty list. T
 - Added docs/development/GITHUB_REPOSITORY_CONFIGURATION.md specifying Actions permissions, main-branch rules, merge policy, and repository security settings. The connector cannot currently verify or apply these repository settings; they require GitHub Settings UI verification.
 
 - Toolchain correction: pinned XcodeGen 2.36.1 and added a source-build installer using the selected Xcode Swift compiler, preserving the historical Xcode 14.3.1 / Swift 5.8.1 baseline. Removed Homebrew as a required dependency because the current XcodeGen formula requires Xcode 15.3 or later. CI and local bootstrap now use the same generator version.
+
+- CI diagnostic: the first full repository-hygiene job passed required-file and git diff checks, then failed Markdown lint with 82 formatting-only findings across 22 Markdown files. Added task M00-018 to normalize legacy docs and re-enable spacing/link rules; temporary config keeps remaining default rules active. Backend-toolchain job passed Node.js 24 validation. macOS build/test remains pending.
