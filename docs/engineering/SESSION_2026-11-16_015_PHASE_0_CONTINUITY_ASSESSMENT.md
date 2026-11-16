@@ -33,7 +33,7 @@ Activated the owner's ATHEER Trading Pro Master Engineering Execution Directive.
 
 **Merged:** XcodeGen macOS shell/configuration; basic XCTest; Node.js/TypeScript loopback health/readiness service; API contract and tests; safe local synchronization, workstation doctor/bootstrap, Makefile workflows, and Git behavior tests; CI, CodeQL, Dependabot, Mermaid source baseline, and engineering governance records.
 
-**PR #10 pending integration:** native Swift URLSession client; liveness/readiness payload validation; view model; workspace backend-status panel; four XCTest cases; developer setup and continuity updates. It remains read-only. Persistence and broker are not configured; trading remains disabled.
+**PR #10 pending integration:** native Swift URLSession client; liveness/readiness payload validation; view model; workspace backend-status panel; five XCTest cases; developer setup and continuity updates. It remains read-only. Persistence and broker are not configured; trading remains disabled.
 
 **Not implemented:** PostgreSQL persistence, authentication/authorization, Capital.com integration, market-data services, instrument domain, RiskEngine, OMS, Execution Gateway, broker order lifecycle/reconciliation, portfolio/positions, strategy/backtesting/simulation engines, Model Gateway, agent runtime, and production IPDS.
 
@@ -94,3 +94,8 @@ Manual review identified two fail-closed improvements in the read-only health in
 - Added an XCTest case proving that contradictory not-ready/trading-enabled payloads are rejected.
 
 These are bounded health-contract safety checks. They do not add broker connectivity, financial operations, or LIVE capability. Fresh hosted CI is required for the updated code head; local Xcode verification remains pending.
+
+
+### Updated implementation evidence
+
+The native health integration now has five XCTest cases. The review correction fixes the production URLSession endpoint to loopback and rejects inconsistent not-ready/trading-enabled payloads. Code commit: `ee92ac8c97e065db2cd774804c130499a1f49a4c`. The current branch head at this documentation snapshot is `ee92ac8c97e065db2cd774804c130499a1f49a4c`; 22 commits ahead of main, zero behind. Fresh checks are pending.

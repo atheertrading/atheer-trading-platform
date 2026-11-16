@@ -18,7 +18,7 @@ Connect the native macOS workspace to the local backend health contract delivere
 - Added a view model with initial, checking, connected, and disconnected states.
 - Added a compact workspace status panel for API, platform readiness, persistence, broker, and trading state.
 - The UI treats a valid 503 readiness payload as API connected / platform not ready.
-- Added four XCTest cases for readiness payload mapping, inconsistent HTTP status rejection, connected-but-not-ready state, and disconnected state.
+- Added five XCTest cases for readiness payload mapping, inconsistent HTTP status rejection, connected-but-not-ready state, and disconnected state.
 - Updated developer setup, API health contract, task register, master document registry, implementation status, continuity, decision log, and conversation index.
 
 ## Verification performed in the isolated Linux container
@@ -43,3 +43,8 @@ No broker connection, credentials, database, market data, account data, order su
 2. Reconcile the formal API, security/IAM, persistence, market-data, RiskEngine, OMS, and Execution Gateway sources before implementing business services.
 3. Execute the non-destructive local synchronization procedure only when actual Mac access is available.
 4. Perform local Xcode generation, Debug/Release build, XCTest, and app launch.
+
+
+### Review correction
+
+A fifth XCTest rejects a readiness payload that reports `not_ready` while advertising trading as enabled. The production client endpoint is fixed to loopback; arbitrary base-URL injection was removed. These corrections require fresh hosted CI and local Mac acceptance.

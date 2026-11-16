@@ -163,7 +163,7 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 
 **Implemented and merged:** governance baseline, XcodeGen macOS shell/configuration, Mermaid documentation baseline, backend health/readiness service, and safe local synchronization/bootstrap. Relevant merged PRs: #1, #2, #6, #7, #8, #9, #11; dependency PRs #3, #4, #5 also merged.
 
-**Pending integration:** PR #10 adds the native macOS health panel, URLSession client, payload validation, view model, and four XCTest cases. Its original head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` had successful hosted macOS Debug/Release build, XCTest, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Two subsequent documentation-only commits updated continuity and README status; fresh checks on the updated head are required before merge.
+**Pending integration:** PR #10 adds the native macOS health panel, URLSession client, payload validation, view model, and five XCTest cases. Its original head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` had successful hosted macOS Debug/Release build, XCTest, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Two subsequent documentation-only commits updated continuity and README status; fresh checks on the updated head are required before merge.
 
 **Not implemented in the repository:** PostgreSQL persistence, authentication/authorization, broker adapter or Capital.com connectivity, market-data ingestion/streaming, instruments domain, RiskEngine, OMS, Execution Gateway, order lifecycle, reconciliation, portfolio/positions, strategy engine, backtesting/simulation, Model Gateway, agent runtime, production IPDS, and operational production deployment.
 
@@ -178,3 +178,5 @@ The original implementation head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` pass
 ### PR #10 review hardening — 2026-11-16
 
 The health client destination is fixed to loopback rather than accepting an arbitrary base URL. The readiness decoder rejects any `not_ready` response that reports trading enabled or a non-disabled trading status. An XCTest covers this contradictory-payload rejection. This code change is pending fresh hosted CI and local Mac verification.
+
+- PR #10 review hardening: loopback endpoint is fixed; not-ready/trading-enabled contradictions are rejected; five XCTest cases cover the health decoder and view-model behavior.

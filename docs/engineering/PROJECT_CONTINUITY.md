@@ -285,7 +285,7 @@ This addendum supersedes earlier current-branch and PR #10 status statements abo
 - Merged PRs include #1, #2, #6, #7, #8, #9, and #11; Dependabot PRs #3, #4, and #5 are also merged.
 - PR #10 (feat/macos-backend-health-integration) is open, twenty-one commits ahead of main and zero commits behind after fourteen documentation-only follow-up commits. Current head: 2a999fc8609ac833c94908ef219c347ec5137c95. The original implementation head 3b7bc500a7a2225b92409c5ab8da2fb3d6b56564 passed hosted CI; checks for the current documentation-updated head are still running.
 - PR #10 hosted checks were inspected on its exact head: macOS build/tests/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and local-sync safety checks all completed successfully. No review submissions or review comments were present at inspection.
-- PR #10 implements the read-only native health panel and four XCTest cases. Its task remains IN PROGRESS until local Mac Xcode build, test, launch, and integration qualification are performed.
+- PR #10 implements the read-only native health panel and five XCTest cases. Its task remains IN PROGRESS until local Mac Xcode build, test, launch, and integration qualification are performed.
 - PR #9 implements only the local health/readiness service. Persistence, broker, market data, account services, RiskEngine, OMS, Execution Gateway, strategies, and trading execution remain unimplemented in this repository.
 - PR #11 safe-sync implementation and its isolated Git behavior tests are merged; no synchronization has been executed against the owner's physical Mac.
 - Historical local workstation values (Intel iMac, macOS 13.7.8, Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1) remain historical and have not been freshly verified.
@@ -312,3 +312,8 @@ The PR #10 branch now contains six sequential documentation-only follow-up commi
 ### Latest Phase 0 documentation batch — 2026-11-16
 
 The PR #10 branch has advanced to `2a999fc8609ac833c94908ef219c347ec5137c95`, twenty-one commits ahead of `main` with no divergence. Fourteen commits after the original implementation head are documentation-only Phase 0 reconciliation updates covering README, project continuity, source provenance, specification conflicts, task register, implementation status, conversation index, and the Phase 0 session record. Re-run and inspect all checks on the exact current head before integration.
+
+
+### PR #10 fail-closed review correction — 2026-11-16
+
+The PR #10 health client now fixes its destination to `127.0.0.1:4100`, and its decoder rejects a `not_ready` payload that reports trading enabled or a non-disabled trading status. A fifth XCTest covers the contradictory-payload rejection. The code change is committed at `ee92ac8c97e065db2cd774804c130499a1f49a4c`; fresh hosted checks and local Mac qualification remain pending.

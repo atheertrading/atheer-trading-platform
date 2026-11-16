@@ -133,7 +133,7 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 
 ### Phase 0 reconciliation — 2026-11-16
 
-- M02-005 remains IN PROGRESS: PR #10 contains the native loopback health client, readiness decoder, view model, workspace panel, and four XCTest cases. Hosted macOS Debug/Release build and XCTest, backend checks, repository hygiene, and CodeQL passed on the pre-documentation head; the documentation-only follow-up commits require their own fresh checks. Local Mac verification remains outstanding.
+- M02-005 remains IN PROGRESS: PR #10 contains the native loopback health client, readiness decoder, view model, workspace panel, and five XCTest cases. Hosted macOS Debug/Release build and XCTest, backend checks, repository hygiene, and CodeQL passed on the pre-documentation head; the documentation-only follow-up commits require their own fresh checks. Local Mac verification remains outstanding.
 - M02-006 remains IN PROGRESS: safe-sync and workstation bootstrap are merged and isolated Git behavior tests passed. Execution against the owner's local checkout has not been performed.
 - M02-001 remains IN PROGRESS: hosted Xcode qualification passed, but local Xcode 14.3.1 compatibility, app launch, and Apple Silicon qualification remain unverified.
 - M00-014 remains PENDING: branch protection and repository security configuration cannot be verified through the connected integration; HTTP 403 is an access limitation, not evidence of disabled protection.
@@ -148,3 +148,5 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - P1 — Reconcile 517 primary Q&A files plus nested archive content; retain original paths, hashes, approval states, and requirement/ADR links.
 - P1 — Verify source-stated approval declarations AR-001–003 against exact embedded section scope, revision, and date. They do not establish blanket approval or LIVE authorization.
 - P1 — Reconcile ADR-0004/0005/0006 originals and OOP standard; current archive register references them but does not include their original full text.
+
+- PR #10 code-review correction fixes the health client to loopback and rejects `not_ready` responses that advertise trading enabled; a fifth XCTest covers this fail-closed invariant. Fresh CI is required on the updated branch head.
