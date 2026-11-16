@@ -69,3 +69,17 @@ Branch-protection configuration remains unverified due GitHub API access restric
 6. Reconcile formal Library documents and historical ADRs before implementing persistence, broker, market data, RiskEngine, OMS, Execution Gateway, strategy, and AI services.
 
 No credentials, signing identities, broker permissions, risk limits, production deployment, or LIVE trading actions were performed.
+
+
+## 9. Additional Library archive retrieval and governing-source reconciliation
+
+The visible Library folders were enumerated. `/work` contains the current Master Engineering Execution Directive, Continuous Delegation mandate, and Chief Engineering/macOS setup mandate. `/Aether Document Repository` contains `Atheer Q&A Repository.zip` and `Codex.zip`.
+
+Read-only materialization and structural inspection verified:
+- `Atheer Q&A Repository.zip`: 3,770,219 bytes; SHA-256 `c6af385151a71fca3f2ef261115d6d2ecd22fa62b6787dd130e10c27050f9af2`; 517 primary Markdown Q&A files and two nested ZIP archives.
+- `Codex.zip`: 7,557,870 bytes; SHA-256 `210f540a98fd8d52cfceb03438f4bebf8e8a6dd949442c2cd96cca2b7e5e1f8f`; generated knowledge-base export with master index, accepted delegated engineering synthesis, requirements, implementation status, task register, conflict register, approval evidence register, and ADR index.
+- The original Engineering Operating Standards text is 54,647 characters and says approval is subject to applicable owner approval; it names the historical AtheerAutotrade repository. The concise `ENGINEERING_OPERATING_STANDARDS.md` is a separate synthesis marked accepted under delegated engineering authority. The two are not interchangeable.
+- The original 47-document formal archive was not present as a standalone file in the visible Library root. The Codex package provides a registry of 47 titles/statuses, not the full original documents.
+- The archive's approval register preserves three explicit section-level declarations for PART III Sections 7–9, with filename/embedded-section mismatches in two records, an unresolved bracketed date, and missing revision identifiers. No blanket approval is inferred.
+
+This narrows but does not close source reconciliation. The current Master Directive and explicit current owner instructions govern over stale repository pointers in the working-draft standards. Original archives remain unchanged.
