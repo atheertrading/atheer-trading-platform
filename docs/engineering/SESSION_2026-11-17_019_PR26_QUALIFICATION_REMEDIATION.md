@@ -6,10 +6,11 @@ Resolve the qualification defects reported by the owner's macOS 13.7.8 / Xcode 1
 ## Baseline
 - PR: [#26](https://github.com/atheertrading/atheer-trading-platform/pull/26)
 - Branch: `feat/broker-management-keychain-demo`
-- Baseline head: `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9`
+- Initial remediation head: `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9`
+- Follow-up test-harness head: `9559dc30539a41d2e2319bc45bd05466bf721804`
 - PR state: Open / Draft; base remains PR #25 head.
-- Local evidence: project generation succeeded; Debug compilation succeeded after the MainActor correction; 34/35 XCTest cases passed; one Capital.com request-body assertion failed. Release and app launch did not execute because the command sequence stopped at `make test` failure.
-- Hosted CI for the baseline head failed the same XCTest; Release was skipped and Apple Silicon qualification was cancelled.
+- Initial owner-Mac evidence: project generation succeeded; Debug compilation succeeded after the MainActor correction; the original XCTest run reported a single Capital.com request-body assertion failure. Release and app launch did not execute because the command sequence stopped at `make test` failure.
+- The subsequent request-body capture patch introduced a compile-time mismatch: the URLProtocol handler still called the old one-argument recorder API after `RequestRecorder.append` changed to require `body:`.
 
 ## GitHub defect reports
 | Issue | Priority | Scope | State |
@@ -21,11 +22,12 @@ Resolve the qualification defects reported by the owner's macOS 13.7.8 / Xcode 1
 ## Workstream sequence
 
 ### 1. Request-body test harness correction — IN PROGRESS
-- Record request and body bytes at URLProtocol interception time.
-- Prefer `httpBody` when present; otherwise read `httpBodyStream` to completion and close it deterministically.
+- Capture request and body bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`.
 - Keep body data in test memory only; do not log credential values.
 - Assert `identifier`, `password`, and `encryptedPassword == false` from decoded JSON.
-- Preserve POST endpoint/header assertions, GET session-token header assertions, DELETE disconnect assertion, and LIVE no-network assertion.
+- The owner-Mac run at `9559dc30539a41d2e2319bc45bd05466bf721804` confirmed the app Debug target builds, but XCTest compilation fails because the handler retained `recorder.append(request)` after the recorder signature changed.
+- Correction: remove the redundant recorder append from the response handler. `StubURLProtocol.requestObserver` is the single recording boundary and records each intercepted request exactly once, including the captured body.
+- Re-run focused authentication tests and the full suite on the corrected exact head; no passing result is claimed yet.
 
 ### 2. Capital.com authentication contract requalification — PENDING
 - Run focused `CapitalComAuthenticationTests`.
@@ -49,10 +51,10 @@ Resolve the qualification defects reported by the owner's macOS 13.7.8 / Xcode 1
 - Owner workstation Debug, XCTest, Release, app launch, navigation and cancellation QA.
 - Keychain persistence/restart checks and sanitized DEMO session evidence remain separate acceptance requirements.
 
-## First source correction in this session
-The authentication contract test now records a `RecordedRequest` containing the intercepted `URLRequest` and captured body bytes. `StubURLProtocol` supports both in-memory `httpBody` and streamed `httpBodyStream` content. The test decodes the captured JSON and asserts all three required fields.
+## Source correction
+The URLProtocol test harness records a `RecordedRequest` containing the intercepted `URLRequest` and captured body bytes. `StubURLProtocol` supports both in-memory `httpBody` and streamed `httpBodyStream` content. The response handler now only supplies mocked responses; it no longer records requests a second time or calls the obsolete recorder signature.
 
-**Verification status:** source patch prepared for commit; no compile, XCTest, Release, or runtime result is claimed until exact-head CI and owner-Mac execution complete.
+**Verification status:** correction prepared for commit; no compile, XCTest, Release, or runtime result is claimed until exact-head CI and owner-Mac execution complete.
 
 ## Safety and scope
 - No production authentication behavior changed in this correction.

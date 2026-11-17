@@ -210,12 +210,3 @@ PR #25 is stacked on PR #24 to preserve the existing Command Center and Workspac
 | ATP-BROKER-001G | P0 | Resolve Swift 5.8 MainActor default-argument build failure found during owner-Mac qualification | IMPLEMENTED — requalification pending | Injected authentication dependency now defaults to nil and is constructed inside the MainActor-isolated ViewModel initializer; added default-composition XCTest; exact-head Debug/XCTest/Release and owner-Mac rerun required |
 
 The implementation branch is stacked on PR #25 head to retain the existing app and DEMO provider baseline. PR #24 and PR #25 source branches and HEADs are not modified. LIVE remains blocked; market streaming and trading remain separate and disabled.
-
-
-## PR #26 qualification remediation — 2026-11-17
-
-- Owner-Mac qualification after commit `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9` confirmed Debug compilation and 34 of 35 XCTest cases passing; the single failure is `CapitalComAuthenticationTests.testDemoAuthenticationUsesOfficialRequestContractAndVerifiesSession()` at the post-URLSession `httpBody` unwrap. The exact-head hosted macOS XCTest job failed at the same assertion; its Release step was skipped and the Apple Silicon job was cancelled.
-- GitHub defect reports: [#27 request-body capture](https://github.com/atheertrading/atheer-trading-platform/issues/27), [#28 URLSession Sendable diagnostics](https://github.com/atheertrading/atheer-trading-platform/issues/28), and [#29 Brokers UI freeze investigation](https://github.com/atheertrading/atheer-trading-platform/issues/29).
-- Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
-- Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
-- This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.

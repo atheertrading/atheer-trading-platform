@@ -10,7 +10,6 @@ final class CapitalComAuthenticationTests: XCTestCase {
         configuration.protocolClasses = [StubURLProtocol.self]
         let session = URLSession(configuration: configuration)
         StubURLProtocol.handler = { request in
-            recorder.append(request)
             switch request.httpMethod {
             case "POST":
                 let response = HTTPURLResponse(
