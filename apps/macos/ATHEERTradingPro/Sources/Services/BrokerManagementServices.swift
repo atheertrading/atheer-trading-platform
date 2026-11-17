@@ -127,17 +127,17 @@ struct SystemKeychainAccess: KeychainAccessing {
 
     func write(_ data: Data, service: String, account: String) throws {
         let query = baseQuery(service: service, account: account)
-        let attributes: [String: Any] = [
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        let updateAttributes: [String: Any] = [
+            kSecValueData as String: data
         ]
-        let updateStatus = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        let updateStatus = SecItemUpdate(query as CFDictionary, updateAttributes as CFDictionary)
         if updateStatus == errSecSuccess { return }
         guard updateStatus == errSecItemNotFound else {
             throw BrokerCredentialStoreError.storageFailure(updateStatus)
         }
         var insertion = query
-        attributes.forEach { insertion[$0.key] = $0.value }
+        insertion[kSecValueData as String] = data
+        insertion[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         let addStatus = SecItemAdd(insertion as CFDictionary, nil)
         guard addStatus == errSecSuccess else {
             throw BrokerCredentialStoreError.storageFailure(addStatus)
