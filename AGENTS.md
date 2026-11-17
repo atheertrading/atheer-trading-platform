@@ -1,7 +1,6 @@
 # ATHEER Trading — Repository Engineering Instructions
 
 ## Mission
-
 Develop ATHEER Trading as a professional, intelligent, extensible multi-asset trading platform. The intended system combines real-time market data, quantitative research, strategy execution, centralized risk management, order and position management, broker connectivity, AI-assisted decision intelligence, and a professional macOS workstation.
 
 This repository is the canonical engineering and implementation workspace. It is **not the sole authority for all project knowledge or architecture**. The project operates through coordinated GitHub, ChatGPT Library, and historical conversation sources.
@@ -52,6 +51,10 @@ Extensibility does not mean ungoverned permissions. Every agent and tool integra
 ## Continuous engineering operating directive
 
 Follow `docs/engineering/ATHEER_CONTINUOUS_ENGINEERING_OPERATING_DIRECTIVE.md` for task recovery, execution, approval/delegation boundaries, verification, and handover. It supplements this file and cannot override owner approvals, accepted decisions, or approved Library specifications.
+
+## Sequential execution queue
+
+Use the root `WORK.md` as the ordered active execution queue. At the start of each material work session, revalidate its first eligible item against current repository and GitHub evidence; execute in dependency order; and update the queue plus the relevant task and continuity records at each material checkpoint. `WORK.md` defines what to execute next; it does not replace this file, the CEOD, the task register, or the project continuity record.
 
 ## Engineering workflow
 
