@@ -9,8 +9,8 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection])
-        XCTAssertEqual(AppSection.apiConnection.title, "API Connection")
+        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
     @MainActor
@@ -463,5 +463,35 @@ private final class InMemoryWorkspacePersistence: WorkspacePersistence {
 
     func save(_ snapshot: WorkspaceSnapshot) throws {
         self.snapshot = snapshot
+    }
+}
+
+
+private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
+    let result: Result<BrokerAccountSnapshot, Error>
+
+    @MainActor
+    func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot {
+        try result.get()
+    }
+
+    @MainActor
+    func disconnect() async {}
+}
+
+private final class InMemoryKeychainAccess: KeychainAccessing {
+    private var values: [String: Data] = [:]
+    var itemCount: Int { values.count }
+
+    func read(service: String, account: String) throws -> Data? {
+        values["\\(service):\\(account)"]
+    }
+
+    func write(_ data: Data, service: String, account: String) throws {
+        values["\\(service):\\(account)"] = data
+    }
+
+    func delete(service: String, account: String) throws {
+        values.removeValue(forKey: "\\(service):\\(account)")
     }
 }
