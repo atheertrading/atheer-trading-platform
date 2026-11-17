@@ -58,3 +58,5 @@ Verified lifecycle:
   - `testDemoAuthenticationMapsUnauthorizedResponseWithoutExposingSecrets`
   - `testLiveEnvironmentIsRejectedBeforeNetworkAccess`
 - Authentication requests use an ephemeral URLSession with URL caching and cookie persistence disabled, plus Cache-Control: no-store.
+
+- The workspace distinguishes the last successful authentication time from the latest session verification time. These timestamps are currently in-memory only and reset after application restart; persistence of non-secret connection metadata remains a follow-up.

@@ -431,6 +431,7 @@ final class BrokerManagementViewModel: ObservableObject {
     @Published private(set) var maskedAPIKey: String?
     @Published private(set) var account: BrokerAccountSnapshot?
     @Published private(set) var lastSuccessfulConnection: Date?
+    @Published private(set) var lastSessionVerification: Date?
     @Published private(set) var isWorking = false
 
     private let credentialStore: BrokerCredentialStore
@@ -484,6 +485,7 @@ final class BrokerManagementViewModel: ObservableObject {
             let snapshot = try await authentication.authenticate(credential, environment: environment)
             account = snapshot
             lastSuccessfulConnection = snapshot.authenticatedAt
+            lastSessionVerification = snapshot.authenticatedAt
             state = .connected
         } catch is CancellationError {
             state = .disconnected
@@ -499,7 +501,7 @@ final class BrokerManagementViewModel: ObservableObject {
         do {
             let snapshot = try await authentication.validateSession()
             account = snapshot
-            lastSuccessfulConnection = snapshot.authenticatedAt
+            lastSessionVerification = snapshot.authenticatedAt
         } catch is CancellationError {
             return
         } catch let error as BrokerAuthenticationError {
@@ -548,6 +550,8 @@ final class BrokerManagementViewModel: ObservableObject {
         hasSavedCredentials = false
         maskedAPIKey = nil
         account = nil
+        lastSuccessfulConnection = nil
+        lastSessionVerification = nil
         state = .notConfigured
     }
 }

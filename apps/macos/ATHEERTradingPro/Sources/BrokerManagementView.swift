@@ -81,6 +81,8 @@ struct BrokerManagementView: View {
                 metric("CREDENTIALS", value: model.hasSavedCredentials ? "Stored in Keychain" : "Not configured")
                 metric("AUTHENTICATION", value: model.state.title)
                 metric("SESSION", value: model.state == .connected ? "Active" : (model.state == .sessionExpired ? "Expired" : "Inactive"))
+                metric("LAST CONNECTED", value: model.lastSuccessfulConnection?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified this session")
+                metric("LAST SESSION CHECK", value: model.lastSessionVerification?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
                 metric("MARKET STREAM", value: "Not connected", tint: .secondary)
                 metric("TRADING", value: "Disabled", tint: .secondary)
             }
@@ -111,7 +113,6 @@ struct BrokerManagementView: View {
                     if let currency = account.currencyCode {
                         metric("CURRENCY", value: currency)
                     }
-                    metric("LAST VERIFIED", value: account.authenticatedAt.formatted(date: .abbreviated, time: .shortened))
                 }
             }
 
