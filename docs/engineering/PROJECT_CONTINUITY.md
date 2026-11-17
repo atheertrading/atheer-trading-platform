@@ -523,3 +523,17 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 - Follow-up PR #33: [Market Explorer search lifecycle hardening](https://github.com/atheertrading/atheer-trading-platform/pull/33), OPEN / DRAFT; branch `fix/market-explorer-search-lifecycle`; exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; 9 ahead / 0 behind.
 - PR #33 CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS pass is claimed.
+
+
+## ATP-MKT-003 — Capital.com DEMO Market Streaming Foundation — 2026-11-17
+
+- Created `feat/capital-demo-market-streaming` from PR #33 exact head at branch creation `61b0953a04047868f000709369e2a182b3db34d4`; PR #33 branch remains unchanged.
+- Added provider-returned `streamEndpoint` resolution through authenticated `GET /session`, strict WSS/host validation, and server-only CST/security-token handling.
+- Added a shared DEMO WebSocket runtime with correlation acknowledgements, 40-epic ceiling, subscription reconciliation, five-minute ping, bounded exponential reconnect, and resubscription.
+- Added quote normalization, validation, duplicate/out-of-order rejection, in-memory latest snapshots, and per-consumer fan-out.
+- Added local loopback SSE transport `GET /market-data/stream?epics=...`, stream status, keepalive, and client-disconnect cleanup. API disconnect tears down streaming before ending REST session.
+- Added architecture doc `ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE.md`, Mermaid diagram 09, and session report `SESSION_2026-11-17_023_CAPITAL_DEMO_STREAMING.md`.
+- Backend tests added; hosted TypeScript/API verification is pending. No provider connection or real quote receipt is claimed.
+- No macOS SSE consumer or Market Explorer quote UI has been added yet. This is a backend foundation increment only.
+- The 5-second freshness evaluation is informational at arrival time and is not wired to RiskEngine/OMS/Execution Gateway.
+- DEMO only; `CAP_ALLOW_TRADING=false` unchanged; no dealing or LIVE functionality.
