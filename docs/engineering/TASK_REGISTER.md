@@ -170,3 +170,14 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Local toolchain inventory returned Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1, and an existing generated Xcode project. This is environment discovery only; no local build, XCTest, launch, or visual result is claimed.
 - PR #18 workflow #135 passed on source head `331f424d6d1180569504b725cbcaa1eece41ed46`: repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety workflow #90 also passed.
 - Next: inspect full governing/architecture requirements and source; run local Debug → XCTest → Release with isolated DerivedData; then launch and perform visual, interaction, accessibility, and multi-display checks where supported.
+
+
+## Command Center and ATP-WORKSPACE-001 — 2026-11-17
+
+- PR #24 remains OPEN / DRAFT on `feat/macos-command-center-ipds`, stacked directly on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Command Center source is implemented in `CommandCenterView.swift`; `WorkspaceHomeView` delegates to it. Market, broker, account and execution values remain explicitly unavailable; no synthetic financial data or dealing controls were introduced.
+- ATP-WORKSPACE-001 is IN PROGRESS. `WorkspaceEngine.swift` now contains typed workspace/profile/panel/layout models, stable identities, versioned snapshots, a persistence protocol, UserDefaults persistence, observable state, workspace creation/selection/rename, panel visibility, reset/save/restore, validation, and safe recovery paths.
+- Command Center now reads panel visibility and width constraints from the engine. Panel reorder/resize UI, full profile management, independent windows, window restoration, and multi-display behavior remain unimplemented.
+- Added deterministic in-memory persistence XCTest coverage for visibility persistence/restoration, workspace creation, duplicate panel identity, unsupported schema, and unreadable stored data recovery.
+- Latest implementation head at this record: `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`. Local Sync Safety #207 passed. Exact-head CI #174 is queued; no macOS build/XCTest result is claimed.
+- Owner Mac build, runtime, and visual qualification for PR #24 remain pending. Do not mark M02-009 or ATP-WORKSPACE-001 DONE before exact-head CI and owner-side qualification.
