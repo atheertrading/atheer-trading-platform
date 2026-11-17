@@ -2,7 +2,7 @@ import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
 import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
 import { CapitalDemoStreamingRuntime } from "./market-data/capital-demo-streaming-runtime.ts";
-import { createPostgresPool, runSqlMigrations, type SqlPool } from "./persistence/postgres.ts";
+import { createPostgresPool, verifySqlMigrations, type SqlPool } from "./persistence/postgres.ts";
 import { createApiServer, type PersistenceReadiness } from "./server.ts";
 
 const config = loadRuntimeConfig(env);
@@ -24,7 +24,7 @@ async function start(): Promise<void> {
   if (databaseUrl !== undefined && databaseUrl.trim().length > 0) {
     databasePool = createPostgresPool(databaseUrl);
     try {
-      await runSqlMigrations(databasePool);
+      await verifySqlMigrations(databasePool);
       await databasePool.query("SELECT 1");
       persistenceReadiness = "ready";
     } catch {
