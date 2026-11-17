@@ -93,7 +93,7 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await repository.recordAuditEvent(audit);
 
     const outbox = await pool.query("SELECT event_type FROM domain_outbox WHERE environment='DEMO' AND correlation_id=$1 ORDER BY event_type", [intent.correlationId]);
-    assert.deepEqual(outbox.rows.map((row) => row.event_type).sort(), ["order.intent.persisted", "risk.assessment.persisted"].sort());
+    assert.deepEqual(outbox.rows.map((row) => row.event_type).sort(), ["order.intent.persisted", "risk.assessment.persisted", "audit.event.persisted"].sort());
     const persisted = await pool.query("SELECT outcome FROM risk_assessments WHERE environment='DEMO' AND risk_assessment_id=$1", [assessment.id]);
     assert.equal(persisted.rows[0].outcome, "REJECTED");
     const reconciliationCount = await pool.query("SELECT count(*)::text AS count FROM reconciliation_events WHERE environment='DEMO' AND reconciliation_event_id=$1", [reconciliation.id]);
