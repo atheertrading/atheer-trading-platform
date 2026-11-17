@@ -46,9 +46,9 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
-| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — PR #10 exact head `06bd496d957b6cd2f999209cf5dc83cae54251cf` passed hosted CI #117; owner Mac XcodeGen/Debug/XCTest/launch are owner-confirmed; owner supplied /health/live 200 and /health/ready 503 expected payload. App-panel verification remains pending in PR #17. |
+| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — PR #10 exact head `06bd496d957b6cd2f999209cf5dc83cae54251cf` passed hosted CI #117; owner confirms general app launch and two-display use; local XcodeGen/Debug/XCTest logs were not captured in this session. Owner-provided /health/live 200 and /health/ready 503 evidence validates endpoint behavior; API Connection screen-specific visual/state/copy/keyboard verification remains pending. |
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
-| M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; owner runtime QA pending |
+| M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; general app launch/two-display use is owner-confirmed, while API Connection screen-specific behavior, recovery, copy/paste, keyboard and accessibility verification remain pending |
 | M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; workflow #132 passed on its exact head; full control audit and owner runtime QA pending |
 | M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 provides the initial shared tokens and four panels. Follow-up branch `feat/workspace-adaptive-layout` at `db073848e7a80bbd4db2868faa741725698cb86c` replaces fixed grids with adaptive status/panel widths. CI and owner visual acceptance for this follow-up remain pending. Owner confirms application launch and two-display use; this does not establish visual/accessibility acceptance. Formal IPDS source/approval reconciliation remains pending. |
 
@@ -179,3 +179,10 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Owner confirms the app launches on the Mac and has been exercised across two displays. Record this as OWNER-CONFIRMED; it is not independent visual QA or evidence of accessibility acceptance.
 - Current Library retrieval did not surface the original ATP-ARCH-014/037/038 or IPDS files. The Q&A and Codex archives are not substitutes; M00-021 and M02-009 remain IN PROGRESS.
 - No trading, broker, risk, credential, or LIVE behavior was introduced.
+
+
+### PR #22 adaptive Workspace layout — current checkpoint
+
+- PR #22 is OPEN and stacked on PR #18; base head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`; current head `35f18277bafa48f37c17ec5888317cd6af8bf2b2`.
+- CI #156 is queued and Local Sync Safety #155 is in progress. No exact-head pass is claimed.
+- Owner-confirmed application launch and two-display use are recorded separately from independent visual/accessibility acceptance.
