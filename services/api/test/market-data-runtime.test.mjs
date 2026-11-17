@@ -29,9 +29,18 @@ function createMockClient() {
       calls.push(["markets", session, searchTerm]);
       return { markets: [{ epic: "AAPL" }] };
     },
-    async getPriceHistory(session, epic, resolution, max) {
-      calls.push(["history", session, epic, resolution, max]);
-      return { prices: [] };
+    async getPriceHistory(session, epic, resolution, max, from, to) {
+      calls.push(["history", session, epic, resolution, max, from, to]);
+      return {
+        prices: [{
+          snapshotTimeUTC: "2026-11-17T10:00:00",
+          openPrice: { bid: 100, ask: 100.2 },
+          highPrice: { bid: 103, ask: 103.2 },
+          lowPrice: { bid: 99, ask: 99.2 },
+          closePrice: { bid: 102, ask: 102.2 },
+          lastTradedVolume: 18,
+        }],
+      };
     },
     async ping(session) {
       calls.push(["ping", session]);
@@ -124,6 +133,29 @@ test("loopback market-data routes connect and return DEMO market results only", 
   assert.equal(payload.environment, "DEMO");
   assert.equal(payload.markets[0].epic, "AAPL");
   assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
+
+  const from = "2026-11-17T10:00:00Z";
+  const to = "2026-11-17T11:00:00Z";
+  const historyResponse = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&resolution=MINUTE&max=10&from=" +
+      encodeURIComponent(from) + "&to=" + encodeURIComponent(to),
+  );
+  const history = await historyResponse.json();
+  assert.equal(historyResponse.status, 200);
+  assert.equal(history.provider, "capital.com");
+  assert.equal(history.environment, "DEMO");
+  assert.equal(history.candles.length, 1);
+  assert.deepEqual(history.candles[0].bid, { open: 100, high: 103, low: 99, close: 102 });
+  assert.deepEqual(history.candles[0].ask, { open: 100.2, high: 103.2, low: 99.2, close: 102.2 });
+  assert.equal(history.candles[0].providerVolumeField, "lastTradedVolume");
+  assert.equal(history.request.from, from);
+  assert.equal(history.request.to, to);
+  assert.equal(history.pagination.limitReached, false);
+  assert.equal(JSON.stringify(history).includes("secret-cst"), false);
+  assert.deepEqual(serverClient.calls.filter((call) => call[0] === "history")[0].slice(2), [
+    "AAPL", "MINUTE", 10, from, to,
+  ]);
+
   const disconnect = await fetch(baseUrl + "/market-data/disconnect", { method: "POST" });
   assert.equal(disconnect.status, 200);
   assert.equal((await disconnect.json()).state, "disconnected");
@@ -135,4 +167,12 @@ test("market-data routes reject wrong methods and invalid resolutions", async ()
   assert.equal(wrongMethod.headers.get("allow"), "POST");
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID");
   assert.equal(invalidResolution.status, 400);
+  const invalidMax = await fetch(baseUrl + "/market-data/history?epic=AAPL&max=1001");
+  assert.equal(invalidMax.status, 400);
+  const incompleteRange = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&from=2026-11-17T10%3A00%3A00Z",
+  );
+  assert.equal(incompleteRange.status, 400);
+  const invalidEpic = await fetch(baseUrl + "/market-data/history?epic=BAD%2FEPIC");
+  assert.equal(invalidEpic.status, 400);
 });
