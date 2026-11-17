@@ -60,6 +60,10 @@ struct MarketExplorerView: View {
                 Label("Backend Market Data", systemImage: "server.rack")
                     .font(ATHEERDesignTokens.Typography.panelTitle)
                 Spacer()
+                Button(action: onOpenAPIConnection) {
+                    Label("API Diagnostics", systemImage: "network")
+                }
+                .buttonStyle(.borderless)
                 Button {
                     Task { await model.refreshBackendStatus() }
                 } label: {
