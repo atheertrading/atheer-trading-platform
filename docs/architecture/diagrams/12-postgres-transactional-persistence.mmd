@@ -1,0 +1,32 @@
+flowchart TB
+  subgraph Application["Application services — no broker dealing in this package"]
+    Intake["Validated order intent"]
+    Risk["Risk assessment from RiskEngine boundary"]
+    Repo["PostgresTradingRepository"]
+    Migration["Checksum-verified migration runner"]
+  end
+
+  subgraph Database["PostgreSQL — environment-scoped records"]
+    Ledger[("Migration ledger") ]
+    Instrument[("Instruments and versioned specifications") ]
+    Account[("Broker accounts and balance snapshots") ]
+    Intent[("Immutable order-intent journal") ]
+    Assessment[("Risk-assessment journal") ]
+    Audit[("Append-only audit and reconciliation") ]
+    Outbox[("Transactional domain-event outbox") ]
+  end
+
+  Intake --> Repo
+  Risk --> Repo
+  Migration --> Ledger
+  Repo --> Instrument
+  Repo --> Account
+  Repo --> Intent
+  Repo --> Assessment
+  Repo --> Audit
+  Repo --> Outbox
+  Intent -->|same transaction| Assessment
+  Assessment -->|same transaction| Outbox
+  Audit -->|same transaction| Outbox
+  Outbox -. "future publisher; not implemented" .-> Blocked["OMS / Execution Gateway — separate qualified batch"]
+  Blocked -. "no dispatch capability in ATP-PERSISTENCE-001" .-> Stop["No broker dealing / no LIVE"]
