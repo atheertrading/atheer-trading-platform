@@ -186,3 +186,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - PR #22 is OPEN and stacked on PR #18; base head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`. The branch received documentation follow-ups after PR creation, so use the live PR metadata for the current head.
 - Exact-head CI on the final revision is pending; earlier workflow attempts on prior heads do not qualify. No exact-head pass is claimed.
 - Owner-confirmed application launch and two-display use are recorded separately from independent visual/accessibility acceptance.
+
+
+## 2026-11-17 continuation revalidation — ATP-2026-11-17-019
+
+- M02-009 remains IN PROGRESS. PR #22 exact HEAD `3931c937708d4adad7a9595657015d478787f418` passed CI #160 (repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug/XCTest/Release, Swift CodeQL) and Local Sync Safety #167. This supersedes the earlier pending exact-head CI note.
+- PR #10/#17/#18/#22 remain open and unmerged in the required dependency chain. Their inspected exact-head CI and Local Sync Safety runs passed: #10 CI/CodeQL #117 and safety #48; #17 CI #132 and safety #82; #18 CI #155 and safety #145; #22 CI #160 and safety #167.
+- Owner-confirmed launch/two-display use is not exact-build visual or accessibility acceptance. Local Xcode/XCTest evidence and screenshots remain outstanding; do not mark M02-001 or M02-009 DONE.
+- Formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation remains outstanding. Adaptive width metrics remain provisional.
+- Next acceptance: read-only local preflight, then exact-revision local Debug → XCTest → Release and owner visual/accessibility review on both displays. Preserve all uncommitted local work; no synchronization or branch switch until preflight is reviewed.
