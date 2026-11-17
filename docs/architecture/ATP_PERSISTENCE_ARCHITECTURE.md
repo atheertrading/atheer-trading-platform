@@ -58,3 +58,7 @@ The outbox is durable and transactional, but no publisher/lease worker is implem
 
 The PostgreSQL integration suite is enabled by `DATABASE_URL` and covers repeated/concurrent migration startup, checksum drift rejection, foreign-key rollback, exact idempotent replay, conflicting idempotency reuse, risk-decision journaling, audit/reconciliation persistence, environment rejection, and the absence of execution-dispatch events. Hosted results must be attached to the exact PR head before qualification is claimed.
 
+
+## 8. Startup and migration safety
+
+The API does not mutate the database schema during startup. When `DATABASE_URL` is present, it verifies the migration ledger/checksums and performs a connectivity check; missing or mismatched schema prevents startup readiness. Schema changes are applied only through the explicit `npm run migrate` command. Production migration execution requires a separately reviewed operational change. See `docs/operations/POSTGRESQL.md`.
