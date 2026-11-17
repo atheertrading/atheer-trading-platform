@@ -487,14 +487,14 @@ private final class InMemoryKeychainAccess: KeychainAccessing {
     var itemCount: Int { values.count }
 
     func read(service: String, account: String) throws -> Data? {
-        values["\\(service):\\(account)"]
+        values["\(service):\(account)"]
     }
 
     func write(_ data: Data, service: String, account: String) throws {
-        values["\\(service):\\(account)"] = data
+        values["\(service):\(account)"] = data
     }
 
     func delete(service: String, account: String) throws {
-        values.removeValue(forKey: "\\(service):\\(account)")
+        values.removeValue(forKey: "\(service):\(account)")
     }
 }

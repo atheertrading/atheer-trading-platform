@@ -204,7 +204,7 @@ PR #25 is stacked on PR #24 to preserve the existing Command Center and Workspac
 | ATP-BROKER-001A | P0 | Add Settings → Brokers native navigation and broker-management screen | IN PROGRESS | Feature branch `feat/broker-management-keychain-demo`; runtime verification pending |
 | ATP-BROKER-001B | P0 | Add Keychain-backed broker/environment credential storage | IN PROGRESS | Keychain implementation and deterministic storage tests added; macOS execution pending |
 | ATP-BROKER-001C | P0 | Add Capital.com DEMO REST authentication and session verification | IN PROGRESS | POST /session + GET /session implemented from official contract; no owner credentials or live DEMO result |
-| ATP-BROKER-001D | P1 | Add session expiry monitoring and safe re-authentication | PENDING | Requires explicit session health/lifecycle implementation and tests |
+| ATP-BROKER-001D | P1 | Add session expiry monitoring and safe re-authentication | IN PROGRESS | Read-only GET /session health verification runs every 60 seconds while the Brokers view is active; explicit re-authentication remains manual |
 | ATP-BROKER-001E | P1 | Complete credential deletion, failure, cancellation, and persistence qualification | IN PROGRESS | Source paths and tests added; Xcode execution pending |
 | ATP-BROKER-001F | P1 | Perform real Capital.com DEMO authentication and capture sanitized evidence | BLOCKED | Requires owner-provided DEMO credentials through local Keychain only |
 
