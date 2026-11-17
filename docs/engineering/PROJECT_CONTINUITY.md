@@ -549,3 +549,9 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Updated architecture doc and Mermaid diagram 09; session report: `SESSION_2026-11-17_024_MARKET_EXPLORER_LIVE_QUOTES.md`.
 - Hosted macOS Intel/Apple Silicon qualification and owner-Mac QA are pending. No real Capital.com DEMO quote receipt is claimed.
 - No new screen/navigation destination. No order/dealing action. No RiskEngine/OMS/Execution Gateway connection. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## Market Explorer live quote branch reconciliation — 2026-11-17
+
+PR #34 was updated with the Swift 5.8 MainActor dependency-construction remediation. Its corrected head is 2baf8a2b026566846825a18e9b9af9a918c0d864; its base remains PR #33 exact head 61b0953a04047868f000709369e2a182b3db34d4. PR #34 Local Sync Safety and Mermaid validation passed; exact-head CI is queued.
+
+The original live-quote PR #35 was closed as superseded because it was behind/diverged after the parent remediation. Replacement PR #36 is open/draft on feat/macos-market-explorer-live-quotes-qualified, exact head 80912e8b1e80479afaa694f3bbf0e04ab5e1fce8, based on corrected PR #34 head 2baf8a2b026566846825a18e9b9af9a918c0d864 (11 ahead / 0 behind). Exact-head backend TypeScript/API tests passed 31/31; Repository Hygiene, Mermaid, and Local Sync Safety passed. Intel and Apple Silicon macOS qualification remains queued. No owner-Mac runtime or real provider quote is claimed.
