@@ -314,3 +314,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` defers the always-visible navigation sidebar List selection state update as an additional AppKit reentrancy safeguard. This is source-level mitigation; owner runtime confirmation remains pending.
+
+
+### PR #26 post-remediation owner-Mac test checkpoint — 2026-11-17
+
+- **Owner-reported local XCTest:** successful (`TEST SUCCEEDED`); owner confirms no test errors or warnings. Result bundle: `.build/DerivedData/Logs/Test/Test-ATHEERTradingPro-2026.11.17_21-39-15-+0200.xcresult`. The result bundle was not independently inspected to bind its contents to an exact source SHA.
+- **Hosted CI on source SHA `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`:** Intel macOS Debug/XCTest/Release/Swift CodeQL passed; repository hygiene passed; backend toolchain passed; Apple Silicon arm64 queued at review time. Local Sync Safety passed.
+- **Coverage:** not measured. `xccov` found no coverage data in the result bundle; no percentage or 0% claim is made.
+- **Still outstanding:** arm64 hosted CI; fresh exact-head CI after documentation commit; owner app launch/visual/navigation QA and AppKit warning confirmation; backend-running health integration; real Keychain persistence across restart; real Capital.com DEMO authentication.
+- PR #26 remains Open/Draft and unmerged; PR #24/#25 qualification and dependency order remain in force. No LIVE/dealing or risk-control change.
+- Full evidence: `SESSION_2026-11-17_022_PR26_OWNER_MAC_POST_REMEDIATION_TEST.md`.
