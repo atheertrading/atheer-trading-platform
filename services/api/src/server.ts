@@ -154,14 +154,15 @@ async function handleMarketDataRequest(
         connection: "keep-alive",
         "x-accel-buffering": "no",
       });
-      response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
 
       let unsubscribe: (() => void) | undefined;
       let keepAlive: ReturnType<typeof setInterval> | undefined;
+      let statusTimer: ReturnType<typeof setInterval> | undefined;
       let closed = false;
       response.on("close", () => {
         closed = true;
         if (keepAlive) clearInterval(keepAlive);
+        if (statusTimer) clearInterval(statusTimer);
         unsubscribe?.();
       });
 
@@ -175,9 +176,16 @@ async function handleMarketDataRequest(
           unsubscribe();
           return;
         }
+
+        response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
         for (const quote of streamRuntime.latest(epics)) {
           response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
         }
+        statusTimer = setInterval(() => {
+          if (!response.destroyed) {
+            response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
+          }
+        }, 5_000);
         keepAlive = setInterval(() => {
           if (!response.destroyed) response.write(": keep-alive\n\n");
         }, 15_000);

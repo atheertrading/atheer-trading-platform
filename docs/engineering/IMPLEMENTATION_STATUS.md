@@ -367,3 +367,32 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Hosted TypeScript/API tests and real DEMO provider verification remain pending. No real quote receipt is claimed.
 - macOS consumer, durable history, OHLC stream, Charting, and RiskEngine integration are not part of this increment.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE capability added.
+
+
+## ATP-MKT-004 — Existing Market Explorer Live Quote Integration — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING  
+**Branch:** `feat/macos-market-explorer-live-quotes`  
+**Base:** PR #34 head at branch creation `1378cc9d78151dc58bc548887ff5a3c45594d62b`
+
+- Native URLSession SSE consumer and parser added.
+- Existing Market Explorer now has explicit instrument selection and Start/Stop/Clear streaming controls; maximum 40 selected instruments.
+- Timestamped provider Bid/Ask, provider time, quote age, and arrival-time data-quality state are displayed from stream events only.
+- Backend sends post-subscription and periodic status events.
+- Hosted macOS Intel/Apple Silicon and owner-Mac QA are pending. No live Capital.com quote is claimed.
+- No new screen or trading capability. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## Swift 5.8 Market Explorer stream qualification remediation — 2026-11-18
+
+| Item | Status | Evidence |
+|---|---|---|
+| XCTest async error propagation | IMPLEMENTED ON PR #38 / #39 BRANCHES | Test now declares `async throws`; commits `f07548e...` and `59ddc5e...` |
+| Quote-event test construction | IMPLEMENTED ON PR #38 / #39 BRANCHES | Quote factory returns `MarketDataStreamQuote` before `.quote(...)` wrapping |
+| Foundation concurrency import adjustment | IMPLEMENTED ON PR #38 / #39 BRANCHES | `@preconcurrency import Foundation` in `MarketSearchClient.swift` |
+| Owner Intel Debug/XCTest | OWNER-REPORTED | PR #39 comment 6962746664: Debug passed, 48/48 tests; tested base plus local source modifications |
+| New exact-head hosted CI | PENDING | PR #38 run #44190351651; PR #39 run #44190373646 |
+| Apple Silicon / Release / runtime / accessibility / provider verification | NOT VERIFIED | Explicitly outside the owner-reported local run |
+
+The hosted PR #38 failure on its previous head was a source-level XCTest compile failure, not a demonstrated application runtime failure. Do not mark the streaming integration accepted or merge-qualified until exact-head CI and the remaining architecture/runtime gates complete.

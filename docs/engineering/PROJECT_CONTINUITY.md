@@ -537,3 +537,31 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No macOS SSE consumer or Market Explorer quote UI has been added yet. This is a backend foundation increment only.
 - The 5-second freshness evaluation is informational at arrival time and is not wired to RiskEngine/OMS/Execution Gateway.
 - DEMO only; `CAP_ALLOW_TRADING=false` unchanged; no dealing or LIVE functionality.
+
+
+## ATP-MKT-004 — Existing Market Explorer Live Quote Integration — 2026-11-17
+
+- Created `feat/macos-market-explorer-live-quotes` from PR #34 exact head at branch creation `1378cc9d78151dc58bc548887ff5a3c45594d62b`; PR #34 remains unchanged.
+- Added a native `URLSession.bytes(for:)` SSE client and parser for status/quote events.
+- Existing Market Explorer now supports explicit instrument selection, Start/Stop/Clear controls, a 40-instrument cap, live Bid/Ask, provider timestamp, quote age, and ingestion-time quality label.
+- Selection alone does not connect; the user must explicitly start streaming. The view cancels the SSE task when hidden and resumes only if streaming had been requested.
+- Backend SSE status is now emitted after provider subscription succeeds and refreshed every five seconds.
+- Updated architecture doc and Mermaid diagram 09; session report: `SESSION_2026-11-17_024_MARKET_EXPLORER_LIVE_QUOTES.md`.
+- Hosted macOS Intel/Apple Silicon qualification and owner-Mac QA are pending. No real Capital.com DEMO quote receipt is claimed.
+- No new screen/navigation destination. No order/dealing action. No RiskEngine/OMS/Execution Gateway connection. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## Market Explorer live quote branch reconciliation — 2026-11-17
+
+PR #34 was updated with the Swift 5.8 MainActor dependency-construction remediation. Its corrected head is 2baf8a2b026566846825a18e9b9af9a918c0d864; its base remains PR #33 exact head 61b0953a04047868f000709369e2a182b3db34d4. PR #34 Local Sync Safety and Mermaid validation passed; exact-head CI is queued.
+
+The original live-quote PR #35 was closed as superseded because it was behind/diverged after the parent remediation. Replacement PR #36 is open/draft on feat/macos-market-explorer-live-quotes-qualified, exact head 80912e8b1e80479afaa694f3bbf0e04ab5e1fce8, based on corrected PR #34 head 2baf8a2b026566846825a18e9b9af9a918c0d864 (11 ahead / 0 behind). Exact-head backend TypeScript/API tests passed 31/31; Repository Hygiene, Mermaid, and Local Sync Safety passed. Intel and Apple Silicon macOS qualification remains queued. No owner-Mac runtime or real provider quote is claimed.
+
+
+## ATP-2026-11-18-027 — Swift 5.8 Market Explorer stream-test remediation
+
+- Inspected PR #38 exact-head CI run #44178484275 and confirmed XCTest compilation failures: one async test used `try await` without `throws`, and two quote events passed raw integer arguments instead of `MarketDataStreamQuote` values.
+- Applied the bounded correction to both PR #38 and PR #39 branches. PR #38 moved from `0d37f11a8f91d09c82b39c443e346622a7df3530` to `f07548eb0233e5113de794f69a8840b3bdd6841f`; PR #39 moved from `36a475e505cc4c2e7e235aeed7d53737912c1fa3` to `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
+- Owner-Mac evidence in PR #39 comment 6962746664 reports Intel Debug build success and 48/48 XCTest on the base plus two uncommitted local source changes. The same source changes are now committed on the PR #39 branch; this evidence remains owner-reported, not independently executed here.
+- New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation is in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
+- Both PRs remain open/draft and unmerged. `CAP_ALLOW_TRADING=false` and all risk/execution safeguards remain unchanged.
+- Detailed session: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.
