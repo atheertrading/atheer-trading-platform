@@ -99,10 +99,10 @@ export class CapitalDemoClient {
     const query = new URLSearchParams({ searchTerm: normalizedSearch });
     const response = await this.authorizedGet(session, `/markets?${query.toString()}`);
     const payload: unknown = await response.json();
-    if (!isRecord(payload) || !Array.isArray(payload.markets)) {
+    if (!isRecord(payload) || !Array.isArray(payload.markets) || !payload.markets.every(isCapitalMarket)) {
       throw new Error("Capital.com returned an invalid market search response.");
     }
-    return { markets: payload.markets.filter(isCapitalMarket) };
+    return { markets: payload.markets };
   }
 
   async getPriceHistory(
@@ -124,12 +124,10 @@ export class CapitalDemoClient {
       `/prices/${encodeURIComponent(normalizedEpic)}?${query.toString()}`,
     );
     const payload: unknown = await response.json();
-    if (!isRecord(payload) || !Array.isArray(payload.prices)) {
+    if (!isRecord(payload) || !Array.isArray(payload.prices) || !payload.prices.every(isRecord)) {
       throw new Error("Capital.com returned an invalid price history response.");
     }
-    return {
-      prices: payload.prices.filter(isRecord),
-    };
+    return { prices: payload.prices };
   }
 
   async ping(session: CapitalDemoSession): Promise<void> {
