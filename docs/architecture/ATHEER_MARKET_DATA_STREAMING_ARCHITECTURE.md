@@ -1,12 +1,12 @@
 # ATHEER Trading Pro — Capital.com DEMO Streaming Architecture
 
-**Work package:** ATP-MKT-003  
-**Status:** IMPLEMENTED ON FOCUSED BRANCH — HOSTED VERIFICATION PENDING  
-**Scope:** Backend provider WebSocket ingestion and local SSE relay. No new application screen.
+**Work packages:** ATP-MKT-003 / ATP-MKT-004  
+**Status:** IMPLEMENTED ON FOCUSED BRANCHES — HOSTED VERIFICATION PENDING  
+**Scope:** Backend provider WebSocket ingestion, local SSE relay, and live quote integration in the existing Market Explorer. No new application screen.
 
 ## 1. Purpose and boundary
 
-This increment extends the existing Capital.com DEMO REST foundation with a server-side real-time quote stream. It does not implement the macOS presentation consumer, historical persistence, OHLC subscriptions, Charting, or trading execution.
+This implementation extends the existing Capital.com DEMO REST foundation with a server-side real-time quote stream and connects the existing Market Explorer to that stream. It does not implement historical persistence, OHLC subscriptions, Charting, or trading execution.
 
 The provider credentials and session tokens remain in the backend. The macOS application receives normalized quote events over the local API and never receives CST or X-SECURITY-TOKEN.
 
@@ -54,7 +54,7 @@ The API exposes:
 The API host is restricted to `127.0.0.1` by the existing runtime configuration. The SSE endpoint is not intended to be exposed on a network interface; remote exposure requires an authenticated client boundary and explicit security review.
 
 SSE events:
-- `status`: initial stream state
+- `status`: provider stream state after subscription succeeds, then periodic status snapshots every five seconds
 - `quote`: normalized provider quote
 - `error`: non-sensitive connection failure category
 
@@ -72,9 +72,16 @@ Provider tokens are never included in SSE payloads, status responses, or logs.
 
 **Important safety boundary:** this increment does not authorize execution. The freshness result is not connected to RiskEngine, OMS, or Execution Gateway. A future RiskEngine integration must re-evaluate quote age at decision time and apply operation-specific limits, market-session context, feed health, and broker-side protections. A quiet or unchanged market must not be classified as disconnected solely because no price changed.
 
-## 6. Explicitly not implemented
+## 6. Existing Market Explorer integration
 
-- macOS `URLSession` SSE consumer and Market Explorer live quote presentation.
+- The native app uses `URLSessionMarketDataStreamClient` to parse SSE status and quote events.
+- Users explicitly select instruments (maximum 40) and start/stop the stream; selection alone does not connect.
+- The existing Market Explorer displays Bid, Ask, provider timestamp, current quote age, and the ingestion-time quality state.
+- The view cancels its SSE task when it disappears and resumes only when the user had requested streaming.
+- The UI is read-only and does not treat the ingestion-time freshness flag as execution authorization.
+
+## 7. Explicitly not implemented
+
 - Provider OHLC WebSocket subscriptions.
 - Historical candle normalization, pagination, durable storage, gap recovery, and dataset lineage.
 - Charting Engine and indicator computation.
@@ -83,9 +90,9 @@ Provider tokens are never included in SSE payloads, status responses, or logs.
 
 The next vertical slice should connect the existing Market Explorer to this stream without creating another screen. Charting follows only after the normalized historical/live candle contract is qualified.
 
-## 7. Verification
+## 8. Verification
 
-The branch adds tests for:
+The branches add tests for:
 - Provider-returned streaming endpoint and strict host validation.
 - DEMO token headers and server-side token isolation.
 - WebSocket connection path, subscription messages, and acknowledgement handling.
@@ -93,13 +100,24 @@ The branch adds tests for:
 - 40-instrument subscription ceiling.
 - Reconnection and subscription restoration.
 - SSE event framing, client-disconnect cleanup, and invalid subscription rejection.
+- Swift SSE status/quote decoding, explicit instrument selection, quote-state updates, and the 40-instrument selection ceiling.
 
-Hosted TypeScript/API tests and macOS qualification are pending. No live Capital.com connection, real quote receipt, or successful provider authentication is claimed.
+Hosted TypeScript/API and macOS qualification are pending for the integrated branch. No live Capital.com connection, real quote receipt, or successful provider authentication is claimed.
 
-## 8. Safety
+## 9. Safety
 
 - DEMO only.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
 - No order/dealing API methods are added.
 - No RiskEngine, OMS, Execution Gateway, broker permission, credential, or LIVE behavior is changed.
 - Manual and automated order governance is unaffected.
+
+## Native presentation and selection boundary
+
+The native Market Explorer validates instrument identifiers against the backend-compatible [A-Za-z0-9_.-]{1,64} contract before adding them to a subscription. The client and backend both enforce the 40-instrument ceiling.
+
+Quote ingestion remains independent from SwiftUI rendering. The view model coalesces pending quote updates and publishes the latest per-instrument snapshot on a 100 ms presentation cadence (at most 10 UI publications per second while updates are arriving). This throttle is strictly a presentation optimization: it must not be reused for backend ingestion, quote ordering, freshness evaluation, risk authorization, or execution decisions.
+
+When the selected instrument set becomes empty or the backend session is unavailable, the native stream task and presentation throttle are both cancelled. Re-selection can resume only while the user-requested streaming intent remains active. The UI labels prices as DEMO Bid/Ask to avoid conflating the provider's DEMO environment with LIVE trading.
+
+The native view and view model also construct default URLSession clients inside the MainActor-isolated composition boundary; default arguments no longer instantiate actor-isolated services from a nonisolated context.
