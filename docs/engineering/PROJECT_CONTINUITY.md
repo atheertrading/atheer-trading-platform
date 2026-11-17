@@ -279,3 +279,26 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - No application source was changed; no local Mac build, XCTest, visual/runtime test, broker test, or trading verification was performed. No existing PR was merged or rewritten.
 
 **Immediate next action:** Re-fetch each relevant PR's exact current head and required checks, resolve documentation overlap without rewriting history, then begin the next bounded Workspace source implementation increment.
+
+
+## 15. GitHub engineering traceability — 2026-11-17
+
+The owner reiterated that engineering activity, commit history, and work progression must be documented and managed professionally. Continue using the existing documentation PR rather than creating duplicate records.
+
+### Current documentation checkpoint
+
+- **Repository:** `atheertrading/atheer-trading-platform`.
+- **Documentation branch:** `docs/engineering-session-2026-11-17-workflow-tracking`.
+- **Documentation PR:** [#23 — docs(engineering): record Nov 17 workflow revalidation](https://github.com/atheertrading/atheer-trading-platform/pull/23).
+- **Session record:** [SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md](SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md), including ATP-2026-11-17-003 follow-up.
+- **Latest CI evidence:** PR #25 exact head `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`, run #201. Apple Silicon arm64 job #134229421496 is queued; Intel x86_64 job #134229424016 is cancelled; backend toolchain and repository hygiene passed. PR #24 exact head `e9e7085fc7699da19fe934dfd35274e8c8217922`, run #189, has both macOS jobs cancelled.
+- **Qualification:** Phase A remains BLOCKED. No macOS CI pass is established. Local owner-side Xcode/XCTest/runtime/visual verification remains outstanding.
+- **Next action:** Poll Apple Silicon; separately recover Intel and PR #24 macOS checks; retain the existing PR dependency chain and do not proceed to streaming qualification until all required gates are satisfied.
+
+### Git controls applied
+
+- Documentation updates are made sequentially on the scoped documentation branch, using the latest fetched file blob SHA for each update.
+- Keep commits focused and attributable to the specific report/index/continuity/task-register change.
+- Never create empty or speculative commits; do not commit unrelated app changes with documentation.
+- Do not commit directly to `main`, force-push, rewrite history, or merge Draft PRs with unresolved checks.
+- Preserve explicit owner-approval gates for credentials, broker permissions, risk-limit changes, production deployment, and LIVE dealing.
