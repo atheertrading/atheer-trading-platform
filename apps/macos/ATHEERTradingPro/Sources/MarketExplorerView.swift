@@ -5,7 +5,7 @@ struct MarketExplorerView: View {
     let onOpenAPIConnection: () -> Void
 
     init(
-        client: MarketSearchClient = URLSessionMarketSearchClient(),
+        client: MarketSearchClient? = nil,
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
