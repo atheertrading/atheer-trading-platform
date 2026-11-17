@@ -65,6 +65,10 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await repository.registerBrokerAccount(account);
     await repository.registerInstrument(instrument, specification);
     await repository.registerInstrument(instrument, specification);
+    await assert.rejects(
+      repository.registerInstrument({ ...instrument, displayName: "Conflicting canonical identity" }, specification),
+      PersistenceConflictError,
+    );
 
     const accountSnapshot = {
       accountId: account.id,
@@ -83,6 +87,13 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
       [account.id, new Date(accountSnapshot.asOf).toISOString()],
     );
     assert.equal(exactBalance.rows[0].amount, "1000.25");
+    await assert.rejects(
+      repository.recordAccountSnapshot(account, {
+        ...accountSnapshot,
+        balance: { amount: decimalValue("1000.26"), currency: currencyCode("USD") },
+      }),
+      PersistenceConflictError,
+    );
 
     const intent = createOrderIntentEnvelope({
       id: orderIntentId(prefix + "-intent"), commandId: commandId(prefix + "-command"),
