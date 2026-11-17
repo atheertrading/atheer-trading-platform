@@ -88,7 +88,48 @@ Five deterministic XCTest cases were added for:
 - Owner-Mac Xcode build, XCTest, app launch, Keychain QA, visual QA, keyboard/focus, VoiceOver, and multi-display QA: pending.
 - Real Capital.com DEMO backend authentication and market search: not attempted; no owner credentials were supplied and no provider connection is claimed.
 
-## 8. Next actions
+## 8. GitHub PR and exact-head CI checkpoint
+
+- PR #31: https://github.com/atheertrading/atheer-trading-platform/pull/31
+- PR title: feat(macos): add DEMO Market Explorer and instrument search.
+- PR state: OPEN / DRAFT / not merged.
+- Base branch: feat/broker-management-keychain-demo at 9f46a5ce9fc313e73dbff9e78680804c4dd1692f.
+- Feature branch head at PR creation: 94766cfe98ff3238e3c42d0560335d45395df163.
+- Branch comparison: 17 commits ahead of the exact PR #26 head; 14 intended changed files.
+
+Initial PR CI run #44159176929 on head 94766cfe98ff3238e3c42d0560335d45395df163:
+- Repository hygiene / Markdown lint: SUCCESS.
+- Backend toolchain / TypeScript type-check / API tests: SUCCESS.
+- Intel x86_64 macOS build, XCTest, Release, and Swift CodeQL: QUEUED.
+- Apple Silicon arm64 macOS build, XCTest, and Release: QUEUED.
+- Local Sync Safety run #44159176655: SUCCESS.
+- A separate Local Sync Safety push run #44159105424: SUCCESS.
+
+The successful checks above apply only to the exact head shown. They do not establish macOS build/XCTest success, owner-Mac runtime/visual acceptance, or provider connectivity.
+
+### Feature-branch commit trail
+
+The following 17 commits were added after the PR #26 base:
+
+1. 3f0c3401248096ca4d2d11252e0014000b364246 — publish the English execution prompt.
+2. a91f8bfcc28208ef3a828c027a47df8080d1fca7 — add the read-only DEMO market-search client.
+3. 1c5c3aa5ab9913e279978df7d7190dd2f4ff59c8 — add Market Explorer screen.
+4. 8cf8d7693b5550bffc1b2d57a2edbc062f34ef14 — add Markets navigation destination.
+5. 81cba78312c3feb9e53eb4aabd358ee67be5bca5 — integrate Market Explorer into ContentView.
+6. 6644ad47ded427c521c6d5d730701ec60520626c — preserve search failure state after backend status refresh.
+7. 090aa2c88a4c5be48263d42fc010b3411ed581bd — adapt status and result layouts.
+8. 36b88db5e156821d0f2203de6576202efe9f59bb — add DEMO search decoder and session-gating tests.
+9. 676e82c9f13d1c801bbab989c5cc6b17edfbbcbb — add API diagnostics navigation.
+10. 9707db15fbde9e95bae52f9cc3591c4d1875d932 — register the screen inventory.
+11. 8e21221b85a11f976e3b51ec1488d7b82623f4e1 — add the engineering session report.
+12. 876be40cb1c34870eb8eb5751ff4dd12030fe44a — update product IA.
+13. 9cee993a5557e611928c9f5406b5cd88d5b9050d — update document registry.
+14. b8ff150e85e3b36a2000901fdf7f2a583bbc498d — update task register.
+15. 1578b27ba8bcb93e3f55d92f9a35a3533282b983 — update implementation status.
+16. 60f1a4f8102823a3731c34f7cab37ec8d2c6a2e9 — update project continuity.
+17. 94766cfe98ff3238e3c42d0560335d45395df163 — update conversation index.
+
+## 9. Next actions
 
 1. Finish the product IA and engineering continuity cross-references.
 2. Review the full branch diff for correctness and scope.
