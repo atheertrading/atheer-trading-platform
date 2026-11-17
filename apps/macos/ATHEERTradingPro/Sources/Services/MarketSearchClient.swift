@@ -194,6 +194,7 @@ final class MarketExplorerViewModel: ObservableObject {
     private let client: MarketSearchClient
     private let streamClient: MarketDataStreamClient
     private var streamTask: Task<Void, Never>?
+    private var streamingRequested = false
     private var searchGeneration: UInt64 = 0
     private var statusRefreshGeneration: UInt64 = 0
 
@@ -282,11 +283,16 @@ final class MarketExplorerViewModel: ObservableObject {
         selectedEpics.contains(epic)
     }
 
+    var canStartStreaming: Bool {
+        backendStatus?.state == .connected && !selectedEpics.isEmpty
+    }
+
+    var isStreamingRequested: Bool {
+        streamingRequested
+    }
+
     func canSubscribe(to epic: String) -> Bool {
-        isSubscribed(to: epic) || (
-            backendStatus?.state == .connected &&
-            selectedEpics.count < 40
-        )
+        isSubscribed(to: epic) || selectedEpics.count < 40
     }
 
     func toggleStreamSubscription(for epic: String) {
@@ -294,14 +300,10 @@ final class MarketExplorerViewModel: ObservableObject {
             selectedEpics.remove(epic)
             streamingQuotes.removeValue(forKey: epic)
             streamingError = nil
-            restartStream()
+            if streamingRequested { restartStream() }
             return
         }
 
-        guard backendStatus?.state == .connected else {
-            streamingError = "Connect the backend Capital.com DEMO session before subscribing to quotes."
-            return
-        }
         guard selectedEpics.count < 40 else {
             streamingError = "The provider stream supports a maximum of 40 selected instruments."
             return
@@ -309,21 +311,37 @@ final class MarketExplorerViewModel: ObservableObject {
 
         selectedEpics.insert(epic)
         streamingError = nil
+        if streamingRequested { restartStream() }
+    }
+
+    func startStreaming() {
+        guard canStartStreaming else {
+            streamingError = "Connect the backend DEMO session and select at least one instrument."
+            return
+        }
+        streamingRequested = true
         restartStream()
     }
 
     func resumeStreamIfNeeded() {
+        guard streamingRequested else { return }
         startStreamIfNeeded()
     }
 
-    func stopStream() {
+    func pauseStream() {
         streamTask?.cancel()
         streamTask = nil
         streamingState = .disconnected
     }
 
+    func stopStream() {
+        streamingRequested = false
+        pauseStream()
+    }
+
     private func startStreamIfNeeded() {
-        guard streamTask == nil,
+        guard streamingRequested,
+              streamTask == nil,
               !selectedEpics.isEmpty,
               backendStatus?.state == .connected else {
             return
@@ -335,7 +353,9 @@ final class MarketExplorerViewModel: ObservableObject {
         streamTask?.cancel()
         streamTask = nil
 
-        guard !selectedEpics.isEmpty, backendStatus?.state == .connected else {
+        guard streamingRequested,
+              !selectedEpics.isEmpty,
+              backendStatus?.state == .connected else {
             streamingState = .disconnected
             return
         }
