@@ -556,12 +556,53 @@ PR #34 was updated with the Swift 5.8 MainActor dependency-construction remediat
 
 The original live-quote PR #35 was closed as superseded because it was behind/diverged after the parent remediation. Replacement PR #36 is open/draft on feat/macos-market-explorer-live-quotes-qualified, exact head 80912e8b1e80479afaa694f3bbf0e04ab5e1fce8, based on corrected PR #34 head 2baf8a2b026566846825a18e9b9af9a918c0d864 (11 ahead / 0 behind). Exact-head backend TypeScript/API tests passed 31/31; Repository Hygiene, Mermaid, and Local Sync Safety passed. Intel and Apple Silicon macOS qualification remains queued. No owner-Mac runtime or real provider quote is claimed.
 
+## ATP-MKT-005 — Historical Market Data Contracts — 2026-11-17
+
+Branch `feat/historical-market-data-contracts` is based on PR #38 exact head `0d37f11a8f91d09c82b39c443e346622a7df3530`. It adds typed normalization of Capital.com historical price records into separate Bid and Ask OHLC, explicit UTC provider timestamps and local receipt timestamps, optional raw provider volume lineage, duplicate detection, and observed-gap reporting. The history API now validates explicit UTC `from/to` pairs, supports the provider's 1–1000 `max` limit, and returns normalized candle batches.
+
+Observed gaps are not classified as missing until market-session calendars are integrated. Automatic range cursors are not generated because provider boundary inclusivity has not been verified against a real DEMO response. PostgreSQL persistence is not part of this increment; platform architecture records PostgreSQL as the direction, while deployment and workload qualification remain pending.
+
+New deterministic tests and architecture/Mermaid/session documentation are committed. Exact-head backend and Mermaid CI are pending. No live Capital.com request, durable storage, or Charting integration is claimed. DEMO read-only and `CAP_ALLOW_TRADING=false` remain unchanged.
+
+
+## ATP-2026-11-17-026 — Historical market-data review correction and exact-head revalidation
+
+### Repository and dependency state
+- Active implementation repository: `atheertrading/atheer-trading-platform`.
+- PR #39 remains OPEN / DRAFT and is stacked on PR #38 exact parent head `0d37f11a8f91d09c82b39c443e346622a7df3530`.
+- PR #39 source correction commit: `d6bca573c28ca71b38cb10c9313e86c517b68f08`; subsequent task/status/continuity/index documentation commits advanced the branch. The final PR head must be re-fetched from GitHub and revalidated.
+- No branch history was rewritten; four focused commits follow the previously qualified documentation checkpoint `5cc73cca9d42e076ebcb5e82255414710b459b5e`.
+
+### Review finding and implementation
+- Review identified a data-integrity defect: `pagination.limitReached` was computed from normalized candle count, which can be smaller than the raw provider count after exact duplicate removal.
+- Corrected the flag to use `result.prices.length === max` before normalization.
+- Added an API regression scenario with two identical provider records and `max=2`; normalized output contains one candle and one duplicate, while `pagination.limitReached` remains true.
+- Updated `ATHEER_HISTORICAL_MARKET_DATA_ARCHITECTURE.md`, Session 025, task register, implementation status, and PR #39 description.
+- Resolved the pagination review thread after the backend regression test passed.
+
+### Exact-head verification
+- Current head: `d6bca573c28ca71b38cb10c9313e86c517b68f08`.
+- Backend Toolchain: **passed** — Node 24.22.2, TypeScript type-check/build, **37/37 API tests** (CI run #44182796685, job #134391313681).
+- Repository Hygiene: **passed** (CI run #44182796685, job #134391313140).
+- Local Sync Safety: **passed** (run #44182796765).
+- Mermaid architecture validation: **in progress** (run #44182796666).
+- Intel x86_64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313683).
+- Apple Silicon arm64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313955).
+- The 37/37 API evidence applies to source correction head `d6bca573...`; subsequent documentation-only commits require a fresh exact-head CI run. No macOS result is claimed until jobs complete.
+
+### Boundaries and next action
+- PR #39 has not been merged. No PR in the dependent market-data chain is treated as integrated solely from backend success.
+- No real Capital.com DEMO request/quote, durable PostgreSQL persistence, market-session calendar, automatic pagination cursor, OHLC streaming, or Charting integration is claimed.
+- No local Mac pull, Xcode run, app runtime, visual, accessibility, or Keychain verification was performed in this session.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no dealing, LIVE capability, or RiskEngine/OMS/Execution Gateway change.
+- Next: complete Mermaid and macOS exact-head jobs, revalidate the dependent PR chain and required owner-Mac gates, then proceed to the PostgreSQL persistence work package with explicit decimal precision, migration, retention, and idempotency contracts.
+
 
 ## ATP-2026-11-18-027 — Swift 5.8 Market Explorer stream-test remediation
 
 - Inspected PR #38 exact-head CI run #44178484275 and confirmed XCTest compilation failures: one async test used `try await` without `throws`, and two quote events passed raw integer arguments instead of `MarketDataStreamQuote` values.
-- Applied the bounded correction to both PR #38 and PR #39 branches. PR #38 moved from `0d37f11a8f91d09c82b39c443e346622a7df3530` to `f07548eb0233e5113de794f69a8840b3bdd6841f`; PR #39 moved from `36a475e505cc4c2e7e235aeed7d53737912c1fa3` to `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
+- Applied the bounded correction to both PR #38 and PR #39 branches. PR #38 moved to source head `f07548eb0233e5113de794f69a8840b3bdd6841f`; PR #39 moved to source head `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
 - Owner-Mac evidence in PR #39 comment 6962746664 reports Intel Debug build success and 48/48 XCTest on the base plus two uncommitted local source changes. The same source changes are now committed on the PR #39 branch; this evidence remains owner-reported, not independently executed here.
-- New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation is in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
+- New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation was in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
 - Both PRs remain open/draft and unmerged. `CAP_ALLOW_TRADING=false` and all risk/execution safeguards remain unchanged.
 - Detailed session: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.

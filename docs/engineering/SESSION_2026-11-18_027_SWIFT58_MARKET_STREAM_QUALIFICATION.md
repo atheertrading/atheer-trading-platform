@@ -8,10 +8,8 @@
 
 - Repository: `atheertrading/atheer-trading-platform`.
 - PR #38 branch: `feat/macos-market-explorer-live-quotes-qualified-v2`.
-- PR #38 pre-remediation head: `0d37f11a8f91d09c82b39c443e346622a7df3530`.
 - PR #38 remediation commit: `f07548eb0233e5113de794f69a8840b3bdd6841f`.
 - PR #39 branch: `feat/historical-market-data-contracts`.
-- PR #39 pre-remediation head: `36a475e505cc4c2e7e235aeed7d53737912c1fa3`.
 - PR #39 remediation commit: `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
 - PR #38 and PR #39 remain OPEN / DRAFT. No merge, rebase, force-push, or history rewrite was performed.
 
@@ -50,8 +48,8 @@ Not tested or claimed: Release configuration, Apple Silicon, visual/runtime QA, 
 
 ## 5. Exact-head hosted verification after remediation
 
-- PR #38 head `f07548eb0233e5113de794f69a8840b3bdd6841f`: Local Sync Safety passed (run #44190351463); Mermaid validation is in progress (run #44190351296); CI run #44190351651 is queued.
-- PR #39 head `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`: Local Sync Safety passed (run #44190373622); Mermaid validation is in progress (run #44190373562); CI run #44190373646 is pending.
+- PR #38 head `f07548eb0233e5113de794f69a8840b3bdd6841f`: Local Sync Safety passed (run #44190351463); Mermaid validation was in progress (run #44190351296); CI run #44190351651 was queued.
+- PR #39 head `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`: Local Sync Safety passed (run #44190373622); Mermaid validation was in progress (run #44190373562); CI run #44190373646 was pending.
 - Previous backend 37/37 and Mermaid results on PR #39 head `36a475e...` do not automatically qualify the new source heads.
 
 ## 6. Safety and remaining gates

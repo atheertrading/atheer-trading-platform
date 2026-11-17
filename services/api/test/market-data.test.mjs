@@ -196,3 +196,43 @@ test("Capital API errors expose status but never echo response bodies", async ()
     },
   );
 });
+
+test("historical price requests encode explicit UTC range bounds and enforce the provider limit", async () => {
+  const calls = [];
+  const client = new CapitalDemoClient(async (url, init) => {
+    calls.push({ url: String(url), init });
+    return response({ prices: [] });
+  });
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  await client.getPriceHistory(
+    session,
+    "AAPL",
+    "MINUTE",
+    1000,
+    "2026-11-17T10:00:00Z",
+    "2026-11-17T11:00:00Z",
+  );
+
+  const requestUrl = new URL(calls[0].url);
+  assert.equal(requestUrl.searchParams.get("max"), "1000");
+  assert.equal(requestUrl.searchParams.get("from"), "2026-11-17T10:00:00");
+  assert.equal(requestUrl.searchParams.get("to"), "2026-11-17T11:00:00");
+  assert.equal(calls[0].init.headers.CST, "demo-cst");
+
+  await assert.rejects(
+    client.getPriceHistory(session, "AAPL", "MINUTE", 10, "2026-11-17T10:00:00Z"),
+    /both from and to/,
+  );
+  await assert.rejects(
+    client.getPriceHistory(session, "AAPL", "MINUTE", 1001),
+    /between 1 and 1000/,
+  );
+  assert.equal(calls.length, 1);
+});
+

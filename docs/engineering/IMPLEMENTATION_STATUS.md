@@ -383,6 +383,28 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Hosted macOS Intel/Apple Silicon and owner-Mac QA are pending. No live Capital.com quote is claimed.
 - No new screen or trading capability. `CAP_ALLOW_TRADING=false` remains unchanged.
 
+## ATP-MKT-005 — Historical Market Data Contracts
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** BACKEND VERIFIED; FULL EXACT-HEAD QUALIFICATION PENDING  
+**Branch:** `feat/historical-market-data-contracts`  
+**Source correction commit:** `d6bca573c28ca71b38cb10c9313e86c517b68f08`  
+**Base:** PR #38 exact head `0d37f11a8f91d09c82b39c443e346622a7df3530`
+
+- Typed provider-neutral historical candle contract added.
+- Bid and Ask OHLC remain separate; provider UTC timestamp and local receipt time are preserved independently.
+- Optional `lastTradedVolume` is retained with explicit provider-field lineage; no unsupported volume interpretation is assigned.
+- Exact duplicates are dropped/countable; conflicting duplicates are rejected.
+- Time gaps are reported as observed and require a market-session calendar before classification.
+- DEMO historical endpoint accepts paired UTC `from/to` bounds and max 1–1000, and returns normalized data.
+- Pagination metadata corrected to use raw provider record count before duplicate removal; regression case verifies `max=2`, two raw duplicates, one normalized candle, and `limitReached=true`.
+- Exact-head Backend Toolchain passed Node 24.22.2 type-check/build and 37/37 API tests (run #44182796685, job #134391313681); Repository Hygiene passed; Local Sync Safety passed (run #44182796765).
+- Mermaid validation remains in progress (run #44182796666); Intel x86_64 and Apple Silicon arm64 macOS jobs remain queued (jobs #134391313683 and #134391313955).
+- Pagination review thread was resolved after the correction and regression test passed.
+- Follow-up task/status/continuity/index documentation commits were added after the source correction. The 37/37 result above applies to source correction head `d6bca573...`; the final documentation-updated PR head requires a fresh exact-head run.
+- No durable persistence, live provider verification, OHLC streaming, Charting, or market-session calendar is claimed.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE behavior.
+
 
 ## Swift 5.8 Market Explorer stream qualification remediation — 2026-11-18
 
