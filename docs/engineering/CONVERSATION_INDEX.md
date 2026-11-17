@@ -82,3 +82,17 @@ For each new substantial session, add one row and preserve chronology. The detai
 - **Commit:** `63298d6ee1b7b4d6b961e11160a8a5324c9a84cf`.
 - **Verification:** GitHub Contents API confirmed the session file commit. Documentation-only; no local build, XCTest, runtime, visual, or broker tests were run.
 - **Next:** Re-fetch exact PR heads and CI; reconcile documentation overlap/dependencies; proceed to bounded Workspace implementation.
+
+
+## ATP-2026-11-17-003 — GitHub commit discipline and CI rerun tracking
+
+- **Date:** 2026-11-17
+- **Previous session:** ATP-2026-11-17-002 — GitHub workflow revalidation.
+- **Objective:** Record the owner's instruction to document engineering activity on GitHub and maintain disciplined commit/PR traceability.
+- **Repository:** `atheertrading/atheer-trading-platform`.
+- **Branch / PR:** `docs/engineering-session-2026-11-17-workflow-tracking` / PR #23.
+- **Verified CI update:** PR #25 run #201 remains incomplete. Latest attempt shows Apple Silicon arm64 job #134229421496 queued, Intel x86_64 job #134229424016 cancelled, Backend Toolchain passed, and Repository Hygiene passed. PR #24 run #189 still has both macOS jobs cancelled.
+- **Changes:** Appended the exact latest-attempt evidence and next gates to the existing session report; synchronized this index, Project Continuity, and Task Register.
+- **Commit policy:** Sequential documentation commits on the existing scoped branch, preserving existing history and using each fetched blob SHA for the corresponding update. No direct main commit, source change, CI edit, merge, or force-push.
+- **Verification limits:** Queued Apple Silicon work is not a pass. Intel and PR #24 macOS qualification remain unresolved. No local Mac, broker, or trading verification was performed.
+- **Next action:** Poll the queued Apple Silicon job, then resolve Intel and PR #24 macOS qualification before any streaming implementation or PR integration.
