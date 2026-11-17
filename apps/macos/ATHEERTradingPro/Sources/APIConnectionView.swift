@@ -72,30 +72,50 @@ struct APIConnectionView: View {
                 .textSelection(.enabled)
         case .invalidResponse(let message):
             statusLine("Process liveness", value: "Response received", symbol: "exclamationmark.triangle", color: .orange)
-            statusLine("Health contract", value: "Invalid response", symbol: "exclamationmark.triangle", color: .orange)
+            statusLine("Liveness contract", value: "Invalid response", symbol: "exclamationmark.triangle", color: .orange)
             Text(message)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
                 .textSelection(.enabled)
         case .serverError(let statusCode):
             statusLine("Process liveness", value: "Response received", symbol: "exclamationmark.triangle", color: .orange)
-            statusLine("Health endpoint", value: "HTTP \(statusCode)", symbol: "exclamationmark.triangle", color: .orange)
+            statusLine("Liveness endpoint", value: "HTTP \(statusCode)", symbol: "exclamationmark.triangle", color: .orange)
         case .connected(let snapshot):
             statusLine("Process liveness", value: "Alive · HTTP 200", symbol: "checkmark.circle", color: .green)
-            statusLine(
-                "Platform readiness",
-                value: snapshot.platformReady ? "Ready" : "Not ready",
-                symbol: snapshot.platformReady ? "checkmark.circle" : "exclamationmark.circle",
-                color: snapshot.platformReady ? .green : .orange
-            )
-            statusLine("Readiness response", value: "HTTP \(snapshot.readinessHTTPStatus)", symbol: "network", color: .secondary)
-            statusLine("Persistence", value: display(snapshot.persistenceStatus), symbol: "externaldrive", color: .secondary)
-            statusLine("Broker", value: display(snapshot.brokerStatus), symbol: "building.columns", color: .secondary)
-            statusLine("Trading", value: snapshot.tradingEnabled ? "Enabled" : "Disabled", symbol: "lock", color: snapshot.tradingEnabled ? .orange : .secondary)
+            if let failure = snapshot.readinessFailure {
+                statusLine("Platform readiness", value: "Unavailable", symbol: "exclamationmark.triangle", color: .orange)
+                Text(failure.message)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+            } else {
+                if let platformReady = snapshot.platformReady {
+                    statusLine(
+                        "Platform readiness",
+                        value: platformReady ? "Ready" : "Not ready",
+                        symbol: platformReady ? "checkmark.circle" : "exclamationmark.circle",
+                        color: platformReady ? .green : .orange
+                    )
+                }
+                if let statusCode = snapshot.readinessHTTPStatus {
+                    statusLine("Readiness response", value: "HTTP \(statusCode)", symbol: "network", color: .secondary)
+                }
+                if let persistence = snapshot.persistenceStatus {
+                    statusLine("Persistence", value: display(persistence), symbol: "externaldrive", color: .secondary)
+                }
+                if let broker = snapshot.brokerStatus {
+                    statusLine("Broker", value: display(broker), symbol: "building.columns", color: .secondary)
+                }
+                if let tradingEnabled = snapshot.tradingEnabled {
+                    statusLine("Trading", value: tradingEnabled ? "Enabled" : "Disabled", symbol: "lock", color: tradingEnabled ? .orange : .secondary)
+                }
+            }
             Divider()
             CopyableValueRow(title: "API version", value: snapshot.version)
             CopyableValueRow(title: "Liveness timestamp", value: snapshot.livenessTimestamp)
-            CopyableValueRow(title: "Readiness timestamp", value: snapshot.lastCheckedAt)
+            if let readinessTimestamp = snapshot.readinessTimestamp {
+                CopyableValueRow(title: "Readiness timestamp", value: readinessTimestamp)
+            }
         }
     }
 

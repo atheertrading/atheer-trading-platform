@@ -1,15 +1,38 @@
 import Foundation
 
+struct BackendLivenessSnapshot: Equatable {
+    let version: String
+    let timestamp: String
+}
+
+enum BackendHealthFailure: Equatable {
+    case transport(String)
+    case invalidResponse(String)
+    case serverError(Int)
+
+    var message: String {
+        switch self {
+        case .transport(let message):
+            return message
+        case .invalidResponse(let message):
+            return message
+        case .serverError(let statusCode):
+            return "The readiness endpoint returned unexpected HTTP status \(statusCode)."
+        }
+    }
+}
+
 struct BackendHealthSnapshot: Equatable {
     let version: String
-    let platformReady: Bool
-    let persistenceStatus: String
-    let brokerStatus: String
-    let tradingEnabled: Bool
-    let tradingStatus: String
     let livenessTimestamp: String
-    let readinessHTTPStatus: Int
-    let lastCheckedAt: String
+    let platformReady: Bool?
+    let persistenceStatus: String?
+    let brokerStatus: String?
+    let tradingEnabled: Bool?
+    let tradingStatus: String?
+    let readinessHTTPStatus: Int?
+    let readinessTimestamp: String?
+    let readinessFailure: BackendHealthFailure?
 }
 
 enum BackendHealthViewState: Equatable {
@@ -33,72 +56,113 @@ enum BackendHealthError: Error, LocalizedError {
             return "The health API returned an invalid or inconsistent response."
         }
     }
+
+    var failure: BackendHealthFailure {
+        switch self {
+        case .unexpectedHTTPStatus(let statusCode):
+            return .serverError(statusCode)
+        case .invalidPayload:
+            return .invalidResponse(localizedDescription)
+        }
+    }
 }
 
 struct BackendHealthPayloadDecoder {
-    func decode(
-        livenessData: Data,
-        livenessStatusCode: Int,
-        readinessData: Data,
-        readinessStatusCode: Int
+    func decodeLiveness(data: Data, statusCode: Int) throws -> BackendLivenessSnapshot {
+        guard statusCode == 200 else {
+            throw BackendHealthError.unexpectedHTTPStatus(statusCode)
+        }
+
+        let payload: LivenessPayload
+        do {
+            payload = try JSONDecoder().decode(LivenessPayload.self, from: data)
+        } catch {
+            throw BackendHealthError.invalidPayload
+        }
+        guard payload.status == "ok", payload.service == "atheer-api" else {
+            throw BackendHealthError.invalidPayload
+        }
+
+        return BackendLivenessSnapshot(version: payload.version, timestamp: payload.timestamp)
+    }
+
+    func decodeReadiness(
+        liveness: BackendLivenessSnapshot,
+        data: Data,
+        statusCode: Int
     ) throws -> BackendHealthSnapshot {
-        guard livenessStatusCode == 200 else {
-            throw BackendHealthError.unexpectedHTTPStatus(livenessStatusCode)
+        guard statusCode == 200 || statusCode == 503 else {
+            throw BackendHealthError.unexpectedHTTPStatus(statusCode)
         }
 
-        let liveness: LivenessPayload
+        let payload: ReadinessPayload
         do {
-            liveness = try JSONDecoder().decode(LivenessPayload.self, from: livenessData)
+            payload = try JSONDecoder().decode(ReadinessPayload.self, from: data)
         } catch {
             throw BackendHealthError.invalidPayload
         }
-        guard liveness.status == "ok", liveness.service == "atheer-api" else {
-            throw BackendHealthError.invalidPayload
-        }
-
-        guard readinessStatusCode == 200 || readinessStatusCode == 503 else {
-            throw BackendHealthError.unexpectedHTTPStatus(readinessStatusCode)
-        }
-
-        let readiness: ReadinessPayload
-        do {
-            readiness = try JSONDecoder().decode(ReadinessPayload.self, from: readinessData)
-        } catch {
-            throw BackendHealthError.invalidPayload
-        }
-        guard readiness.service == liveness.service else {
+        guard payload.service == "atheer-api" else {
             throw BackendHealthError.invalidPayload
         }
 
         let expectedStatusCode: Int
-        switch readiness.status {
+        switch payload.status {
         case "ready": expectedStatusCode = 200
         case "not_ready": expectedStatusCode = 503
         default: throw BackendHealthError.invalidPayload
         }
 
-        guard readinessStatusCode == expectedStatusCode else {
+        guard statusCode == expectedStatusCode else {
             throw BackendHealthError.invalidPayload
         }
 
         // A not-ready platform must never advertise trading as enabled.
-        if readiness.status == "not_ready" {
-            guard !readiness.trading.enabled, readiness.trading.status == "disabled" else {
+        if payload.status == "not_ready" {
+            guard !payload.trading.enabled, payload.trading.status == "disabled" else {
                 throw BackendHealthError.invalidPayload
             }
         }
 
         return BackendHealthSnapshot(
             version: liveness.version,
-            platformReady: readiness.status == "ready",
-            persistenceStatus: readiness.dependencies.persistence,
-            brokerStatus: readiness.dependencies.broker,
-            tradingEnabled: readiness.trading.enabled,
-            tradingStatus: readiness.trading.status,
             livenessTimestamp: liveness.timestamp,
-            readinessHTTPStatus: readinessStatusCode,
-            lastCheckedAt: readiness.timestamp
+            platformReady: payload.status == "ready",
+            persistenceStatus: payload.dependencies.persistence,
+            brokerStatus: payload.dependencies.broker,
+            tradingEnabled: payload.trading.enabled,
+            tradingStatus: payload.trading.status,
+            readinessHTTPStatus: statusCode,
+            readinessTimestamp: payload.timestamp,
+            readinessFailure: nil
         )
+    }
+
+    func snapshot(
+        liveness: BackendLivenessSnapshot,
+        readinessFailure: BackendHealthFailure
+    ) -> BackendHealthSnapshot {
+        BackendHealthSnapshot(
+            version: liveness.version,
+            livenessTimestamp: liveness.timestamp,
+            platformReady: nil,
+            persistenceStatus: nil,
+            brokerStatus: nil,
+            tradingEnabled: nil,
+            tradingStatus: nil,
+            readinessHTTPStatus: nil,
+            readinessTimestamp: nil,
+            readinessFailure: readinessFailure
+        )
+    }
+
+    func decode(
+        livenessData: Data,
+        livenessStatusCode: Int,
+        readinessData: Data,
+        readinessStatusCode: Int
+    ) throws -> BackendHealthSnapshot {
+        let liveness = try decodeLiveness(data: livenessData, statusCode: livenessStatusCode)
+        return try decodeReadiness(liveness: liveness, data: readinessData, statusCode: readinessStatusCode)
     }
 }
 

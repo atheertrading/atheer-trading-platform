@@ -41,7 +41,7 @@ struct BackendStatusPanel: View {
                     .foregroundColor(.secondary)
                     .textSelection(.enabled)
             case .invalidResponse(let message):
-                statusRow("API", value: "Invalid health response", color: .orange)
+                statusRow("API", value: "Invalid liveness response", color: .orange)
                 Text(message)
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
@@ -50,11 +50,27 @@ struct BackendStatusPanel: View {
                 statusRow("API", value: "HTTP \(statusCode)", color: .orange)
             case .connected(let snapshot):
                 statusRow("API", value: "Connected", color: accent)
-                statusRow("Platform readiness", value: snapshot.platformReady ? "Ready" : "Not ready", color: .secondary)
-                statusRow("Persistence", value: display(snapshot.persistenceStatus), color: .secondary)
-                statusRow("Broker", value: display(snapshot.brokerStatus), color: .secondary)
-                statusRow("Trading", value: snapshot.tradingEnabled ? "Enabled" : "Disabled", color: .secondary)
-                Text("API version \(snapshot.version) · \(snapshot.lastCheckedAt)")
+                if let failure = snapshot.readinessFailure {
+                    statusRow("Platform readiness", value: "Unavailable", color: .orange)
+                    Text(failure.message)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                } else {
+                    if let platformReady = snapshot.platformReady {
+                        statusRow("Platform readiness", value: platformReady ? "Ready" : "Not ready", color: .secondary)
+                    }
+                    if let persistence = snapshot.persistenceStatus {
+                        statusRow("Persistence", value: display(persistence), color: .secondary)
+                    }
+                    if let broker = snapshot.brokerStatus {
+                        statusRow("Broker", value: display(broker), color: .secondary)
+                    }
+                    if let tradingEnabled = snapshot.tradingEnabled {
+                        statusRow("Trading", value: tradingEnabled ? "Enabled" : "Disabled", color: .secondary)
+                    }
+                }
+                Text("API version \(snapshot.version) · \(snapshot.livenessTimestamp)")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .lineLimit(2)

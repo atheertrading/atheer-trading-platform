@@ -22,14 +22,24 @@ struct URLSessionBackendHealthClient: BackendHealthClient {
     @MainActor
     func fetchSnapshot() async throws -> BackendHealthSnapshot {
         let (livenessData, livenessStatusCode) = try await get(path: ["health", "live"])
-        let (readinessData, readinessStatusCode) = try await get(path: ["health", "ready"])
+        let liveness = try decoder.decodeLiveness(data: livenessData, statusCode: livenessStatusCode)
 
-        return try decoder.decode(
-            livenessData: livenessData,
-            livenessStatusCode: livenessStatusCode,
-            readinessData: readinessData,
-            readinessStatusCode: readinessStatusCode
-        )
+        do {
+            let (readinessData, readinessStatusCode) = try await get(path: ["health", "ready"])
+            return try decoder.decodeReadiness(
+                liveness: liveness,
+                data: readinessData,
+                statusCode: readinessStatusCode
+            )
+        } catch let error as BackendHealthError {
+            return decoder.snapshot(liveness: liveness, readinessFailure: error.failure)
+        } catch {
+            // A failed readiness request does not erase a successful liveness result.
+            return decoder.snapshot(
+                liveness: liveness,
+                readinessFailure: .transport(error.localizedDescription)
+            )
+        }
     }
 
     private func get(path: [String]) async throws -> (Data, Int) {

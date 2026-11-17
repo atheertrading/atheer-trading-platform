@@ -28,14 +28,31 @@ final class ATHEERTradingProTests: XCTestCase {
             readinessStatusCode: 503
         )
 
-        XCTAssertFalse(snapshot.platformReady)
+        XCTAssertEqual(snapshot.platformReady, false)
         XCTAssertEqual(snapshot.persistenceStatus, "not_configured")
         XCTAssertEqual(snapshot.brokerStatus, "not_configured")
-        XCTAssertFalse(snapshot.tradingEnabled)
+        XCTAssertEqual(snapshot.tradingEnabled, false)
         XCTAssertEqual(snapshot.tradingStatus, "disabled")
         XCTAssertEqual(snapshot.readinessHTTPStatus, 503)
         XCTAssertEqual(snapshot.livenessTimestamp, "2026-11-16T10:00:00.000Z")
-        XCTAssertEqual(snapshot.lastCheckedAt, "2026-11-16T10:00:01.000Z")
+        XCTAssertEqual(snapshot.readinessTimestamp, "2026-11-16T10:00:01.000Z")
+        XCTAssertNil(snapshot.readinessFailure)
+    }
+
+    func testHealthPayloadDecoderPreservesLivenessWhenReadinessIsUnavailable() throws {
+        let livenessData = Data("""
+        {"status":"ok","service":"atheer-api","version":"0.1.0","timestamp":"2026-11-16T10:00:00.000Z"}
+        """.utf8)
+        let liveness = try BackendHealthPayloadDecoder().decodeLiveness(data: livenessData, statusCode: 200)
+        let snapshot = BackendHealthPayloadDecoder().snapshot(
+            liveness: liveness,
+            readinessFailure: .transport("Readiness request timed out.")
+        )
+
+        XCTAssertEqual(snapshot.version, "0.1.0")
+        XCTAssertEqual(snapshot.livenessTimestamp, "2026-11-16T10:00:00.000Z")
+        XCTAssertNil(snapshot.platformReady)
+        XCTAssertEqual(snapshot.readinessFailure, .transport("Readiness request timed out."))
     }
 
     func testHealthPayloadDecoderRejectsInconsistentReadinessStatusCode() {
@@ -74,14 +91,15 @@ final class ATHEERTradingProTests: XCTestCase {
     func testViewModelPublishesConnectedButNotReadyState() async {
         let snapshot = BackendHealthSnapshot(
             version: "0.1.0",
+            livenessTimestamp: "2026-11-16T10:00:00.000Z",
             platformReady: false,
             persistenceStatus: "not_configured",
             brokerStatus: "not_configured",
             tradingEnabled: false,
             tradingStatus: "disabled",
-            livenessTimestamp: "2026-11-16T10:00:00.000Z",
             readinessHTTPStatus: 503,
-            lastCheckedAt: "2026-11-16T10:00:01.000Z"
+            readinessTimestamp: "2026-11-16T10:00:01.000Z",
+            readinessFailure: nil
         )
         let model = BackendHealthViewModel(client: StubBackendHealthClient(result: .success(snapshot)))
 
@@ -91,7 +109,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
-    func testViewModelReportsDisconnectedWhenBackendCannotBeReached() async {
+    func testViewModelReportsDisconnectedWhenLivenessCannotBeReached() async {
         let model = BackendHealthViewModel(client: StubBackendHealthClient(result: .failure(.unavailable)))
 
         await model.refresh()
