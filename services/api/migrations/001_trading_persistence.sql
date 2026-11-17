@@ -91,43 +91,14 @@ CREATE TABLE reconciliation_events (
   aggregate_id text NOT NULL,
   outcome_code text NOT NULL,
   occurred_at timestamptz NOT NULL,
-  payload_hash char(64) NOT NULL CHECK (payload_hash ~ '^[0-9a-f]{64}
-  environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
-  outbox_id text NOT NULL,
-  aggregate_type text NOT NULL,
-  aggregate_id text NOT NULL,
-  event_type text NOT NULL CHECK (event_type IN ('order.intent.persisted', 'risk.assessment.persisted', 'reconciliation.event.persisted', 'audit.event.persisted')),
-  correlation_id text NOT NULL,
-  idempotency_key text NOT NULL,
-  payload jsonb NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  published_at timestamptz,
-  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  PRIMARY KEY (environment, outbox_id),
-  UNIQUE (environment, event_type, idempotency_key)
-);
-CREATE INDEX domain_outbox_pending_idx ON domain_outbox (created_at) WHERE published_at IS NULL;
-
-CREATE TABLE audit_events (
-  environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
-  audit_event_id text NOT NULL,
-  correlation_id text NOT NULL,
-  subject_type text NOT NULL,
-  subject_id text NOT NULL,
-  event_type text NOT NULL,
-  occurred_at timestamptz NOT NULL,
   payload_hash char(64) NOT NULL CHECK (payload_hash ~ '^[0-9a-f]{64}$'),
-  payload jsonb NOT NULL,
-  PRIMARY KEY (environment, audit_event_id)
-);
-CREATE INDEX audit_events_subject_idx ON audit_events (environment, subject_type, subject_id, occurred_at);
-),
   discrepancy_codes jsonb NOT NULL,
   provenance jsonb NOT NULL,
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, reconciliation_event_id)
 );
 CREATE INDEX reconciliation_events_aggregate_idx ON reconciliation_events (environment, aggregate_type, aggregate_id, occurred_at);
+
 CREATE TABLE domain_outbox (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   outbox_id text NOT NULL,
