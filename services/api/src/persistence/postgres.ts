@@ -14,7 +14,16 @@ import {
   type InstrumentIdentity,
   type InstrumentSpecification,
 } from "../domain/instrument.ts";
-import type { OrderIntentEnvelope, RiskAssessment } from "../domain/trading.ts";
+import {
+  createAuditEvent,
+  createOrderIntentEnvelope,
+  createReconciliationEvent,
+  createRiskAssessment,
+  type AuditEvent,
+  type OrderIntentEnvelope,
+  type ReconciliationEvent,
+  type RiskAssessment,
+} from "../domain/trading.ts";
 import type { TradingEnvironment } from "../domain/shared.ts";
 
 export interface SqlResult<Row extends Record<string, unknown> = Record<string, unknown>> {
@@ -183,6 +192,8 @@ export class PostgresTradingRepository {
   }
 
   async persistIntentAndRiskAssessment(intent: OrderIntentEnvelope, assessment: RiskAssessment): Promise<PersistIntentResult> {
+    createOrderIntentEnvelope(intent);
+    createRiskAssessment(assessment);
     this.assertEnvironment(intent.environment);
     this.assertEnvironment(assessment.provenance.environment);
     if (assessment.intentId !== intent.id) throw new PersistenceConflictError("Risk assessment must reference the persisted order intent.");
@@ -232,6 +243,50 @@ export class PostgresTradingRepository {
       return { intentInserted, riskAssessmentInserted, replayed: !intentInserted && !riskAssessmentInserted };
     });
   }
+  async recordReconciliationEvent(event: ReconciliationEvent): Promise<void> {
+    createReconciliationEvent(event);
+    this.assertEnvironment(event.environment);
+    const payload = canonicalJson(event);
+    const payloadHash = sha256(payload);
+    await inTransaction(this.pool, async (client) => {
+      await client.query(
+        "INSERT INTO reconciliation_events (environment,reconciliation_event_id,aggregate_type,aggregate_id,outcome_code,occurred_at,payload_hash,discrepancy_codes,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb) ON CONFLICT (environment,reconciliation_event_id) DO NOTHING",
+        [this.environment,event.id,event.aggregateType,event.aggregateId,event.outcomeCode,isoTimestamp(event.occurredAt),payloadHash,canonicalJson(event.discrepancyCodes),canonicalJson(event.provenance),payload],
+      );
+      const existing = await client.query<{ payload_hash: string }>(
+        "SELECT payload_hash FROM reconciliation_events WHERE environment=$1 AND reconciliation_event_id=$2",
+        [this.environment,event.id],
+      );
+      if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Reconciliation event identity was reused with different content.");
+      await client.query(
+        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RECONCILIATION',$3,'reconciliation.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        [this.environment,"reconciliation:" + event.id,event.aggregateType,event.provenance.source.sourceId,"reconciliation:" + event.id,payload],
+      );
+    });
+  }
+
+  async recordAuditEvent(event: AuditEvent): Promise<void> {
+    createAuditEvent(event);
+    this.assertEnvironment(event.environment);
+    const payload = canonicalJson(event);
+    const payloadHash = sha256(payload);
+    await inTransaction(this.pool, async (client) => {
+      await client.query(
+        "INSERT INTO audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
+        [this.environment,event.id,event.correlationId,event.subjectType,event.subjectId,event.actionCode,isoTimestamp(event.occurredAt),payloadHash,payload],
+      );
+      const existing = await client.query<{ payload_hash: string }>(
+        "SELECT payload_hash FROM audit_events WHERE environment=$1 AND audit_event_id=$2",
+        [this.environment,event.id],
+      );
+      if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Audit event identity was reused with different content.");
+      await client.query(
+        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'AUDIT',$3,'audit.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        [this.environment,"audit:" + event.id,event.subjectType,event.subjectId,event.correlationId,"audit:" + event.id,payload],
+      );
+    });
+  }
+
 }
 
 export function isTradingEnvironment(value: string): value is TradingEnvironment {
