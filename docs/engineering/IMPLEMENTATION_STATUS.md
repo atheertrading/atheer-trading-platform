@@ -242,3 +242,21 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - No local Xcode build, XCTest, app launch, or visual QA has been performed for PR #24. Hosted CI does not replace owner-Mac qualification.
 - No broker integration, market data, financial values, order execution, risk mutation, credentials, LIVE capability, or production settings were introduced.
 - Not implemented: panel drag/drop/reorder, interactive resize, docking, full profile-management UI, independent windows, window restoration, and multi-display orchestration.
+
+
+## ATP-MD-001 — Capital.com DEMO / Market Data (2026-11-17)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Capital.com DEMO REST adapter source | IMPLEMENTED — pending exact-head qualification | PR #25, CapitalDemoClient |
+| Backend DEMO session runtime | IMPLEMENTED — pending exact-head qualification | PR #25, CapitalDemoRuntime |
+| Local API market-data routes | IMPLEMENTED — pending exact-head qualification | PR #25, /market-data/* routes |
+| Provider-neutral quote and freshness contracts | IMPLEMENTED — pending exact-head qualification | PR #25, normalized quote contract |
+| Mocked adapter/runtime tests | PRESENT — exact-head execution pending | PR #25, services/api/test/market-data*.test.mjs |
+| Authenticated Capital.com DEMO session | NOT VERIFIED | No owner credentials supplied; no live provider authentication attempted |
+| Capital.com DEMO WebSocket endpoint | UNKNOWN / BLOCKING | Official public API page does not explicitly identify a DEMO streaming hostname |
+| Real-time Market Watch | NOT IMPLEMENTED | Must wait for authenticated stream and data qualification |
+| Live-connected Charting | NOT IMPLEMENTED | Must wait for validated stream and candle contracts |
+| LIVE trading / dealing | DISABLED / NOT IMPLEMENTED | No LIVE or dealing routes introduced |
+
+Mocked tests and compilation do not prove broker connectivity. Status must be upgraded only with exact-head CI and provider-side integration evidence.
