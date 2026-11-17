@@ -41,6 +41,9 @@ export interface IntentOrigin {
   readonly kind: IntentOriginKind;
   readonly sourceId: SourceId;
   readonly permissionProfileReference?: string;
+  readonly strategyReference?: string;
+  readonly strategyVersion?: string;
+  readonly agentReference?: string;
 }
 
 export type OrderDirection = "BUY" | "SELL";
@@ -75,6 +78,8 @@ export interface OrderIntentEnvelope<TPayload extends OrderIntentPayload = Order
   readonly intentVersion: number;
   readonly schemaVersion: string;
   readonly marketDataReference?: string;
+  readonly marketDataSnapshotAt?: UtcTimestamp;
+  readonly signalAt?: UtcTimestamp;
   readonly payload: Readonly<TPayload>;
 }
 
@@ -118,9 +123,26 @@ export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   if (input.origin.permissionProfileReference !== undefined) {
     nonEmptyString(input.origin.permissionProfileReference, "permission_profile_reference");
   }
+  if (input.origin.strategyReference !== undefined) {
+    nonEmptyString(input.origin.strategyReference, "strategy_reference");
+  }
+  if (input.origin.strategyVersion !== undefined) {
+    nonEmptyString(input.origin.strategyVersion, "strategy_version");
+  }
+  if ((input.origin.strategyReference === undefined) !== (input.origin.strategyVersion === undefined)) {
+    throw new DomainValidationError("incomplete_strategy_provenance", "Strategy reference and version must be supplied together.");
+  }
+  if (input.origin.agentReference !== undefined) {
+    nonEmptyString(input.origin.agentReference, "agent_reference");
+  }
   if (input.marketDataReference !== undefined) {
     nonEmptyString(input.marketDataReference, "market_data_reference");
+    if (input.marketDataSnapshotAt === undefined) {
+      throw new DomainValidationError("missing_market_data_timestamp", "A market-data reference requires its source snapshot timestamp.");
+    }
   }
+  if (input.marketDataSnapshotAt !== undefined) utcTimestamp(input.marketDataSnapshotAt);
+  if (input.signalAt !== undefined) utcTimestamp(input.signalAt);
   return deepFreeze({ ...input }) as OrderIntentEnvelope<Readonly<TPayload>>;
 }
 

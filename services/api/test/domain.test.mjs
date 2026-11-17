@@ -176,11 +176,19 @@ test("order intents are immutable, versioned envelopes with a common origin and 
     instrumentId: instrumentId("instrument-GOLD"),
     instrumentSpecificationId: instrumentSpecificationId("spec-GOLD-v1"),
     environment: "DEMO",
-    origin: { kind: "AI_AGENT", sourceId: sourceId("agent-market-analysis") },
+    origin: {
+      kind: "AI_AGENT",
+      sourceId: sourceId("agent-market-analysis"),
+      agentReference: "agent-market-analysis",
+      strategyReference: "strategy-breakout",
+      strategyVersion: "3.2.0",
+    },
     createdAt: utcTimestamp(1_800_000_000_200),
     intentVersion: 1,
     schemaVersion: "1.0.0",
     marketDataReference: "quote-snapshot-123",
+    marketDataSnapshotAt: utcTimestamp(1_800_000_000_150),
+    signalAt: utcTimestamp(1_800_000_000_175),
     payload,
   });
   assert.equal(intent.payload.operationCode, "OPEN");
