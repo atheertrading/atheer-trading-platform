@@ -445,3 +445,11 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - Previous head `34015bda...`: backend 46/46 tests, Repository Hygiene, Mermaid, Local Sync Safety, and Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 queued.
 - New fix head `7ebe46ce...`: Local Sync Safety passed; Mermaid in progress and CI queued at last inspection. Previous-head results are not carried forward.
 - PostgreSQL persistence remains the next package after exact-head domain qualification and formal schema/state reconciliation. No dealing or LIVE capability; `CAP_ALLOW_TRADING=false`.
+
+## ATP-PERSISTENCE-001 — PostgreSQL durable trading journal — IN PROGRESS
+
+- PR #41: `feat/postgres-persistence-foundation`, stacked on PR #40.
+- Implemented PostgreSQL driver/lockfile, SQL migration ledger and schema, environment-pinned repository adapter, instrument/account persistence, order-intent/risk journal, reconciliation/audit persistence, and transactional domain outbox.
+- Added real PostgreSQL 17 CI service and integration tests for migration checksum drift, concurrent migration startup, intent/risk idempotency, conflict detection, foreign-key rollback, audit/reconciliation records, and no execution-dispatch events.
+- Exact-head hosted verification has not yet been inspected. No test pass is claimed at this checkpoint.
+- No broker dealing API, execution dispatcher, production database, or LIVE capability. `CAP_ALLOW_TRADING=false` unchanged.
