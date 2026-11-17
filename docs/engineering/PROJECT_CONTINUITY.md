@@ -537,3 +537,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No macOS SSE consumer or Market Explorer quote UI has been added yet. This is a backend foundation increment only.
 - The 5-second freshness evaluation is informational at arrival time and is not wired to RiskEngine/OMS/Execution Gateway.
 - DEMO only; `CAP_ALLOW_TRADING=false` unchanged; no dealing or LIVE functionality.
+
+
+## ATP-MKT-004 — Existing Market Explorer Live Quote Integration — 2026-11-17
+
+- Created `feat/macos-market-explorer-live-quotes` from PR #34 exact head at branch creation `1378cc9d78151dc58bc548887ff5a3c45594d62b`; PR #34 remains unchanged.
+- Added a native `URLSession.bytes(for:)` SSE client and parser for status/quote events.
+- Existing Market Explorer now supports explicit instrument selection, Start/Stop/Clear controls, a 40-instrument cap, live Bid/Ask, provider timestamp, quote age, and ingestion-time quality label.
+- Selection alone does not connect; the user must explicitly start streaming. The view cancels the SSE task when hidden and resumes only if streaming had been requested.
+- Backend SSE status is now emitted after provider subscription succeeds and refreshed every five seconds.
+- Updated architecture doc and Mermaid diagram 09; session report: `SESSION_2026-11-17_024_MARKET_EXPLORER_LIVE_QUOTES.md`.
+- Hosted macOS Intel/Apple Silicon qualification and owner-Mac QA are pending. No real Capital.com DEMO quote receipt is claimed.
+- No new screen/navigation destination. No order/dealing action. No RiskEngine/OMS/Execution Gateway connection. `CAP_ALLOW_TRADING=false` remains unchanged.
