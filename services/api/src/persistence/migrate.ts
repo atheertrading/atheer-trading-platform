@@ -1,4 +1,4 @@
-import { env, exitCode } from "node:process";
+import process, { env } from "node:process";
 import { createPostgresPool, runSqlMigrations } from "./postgres.ts";
 
 const databaseUrl = env.DATABASE_URL;
@@ -17,5 +17,3 @@ if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
     await pool.end().catch(() => undefined);
   }
 }
-
-void exitCode;
