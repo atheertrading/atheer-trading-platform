@@ -50,6 +50,7 @@ struct CommandCenterView: View {
         .sheet(isPresented: $isPanelManagementPresented) {
             WorkspacePanelManagementView(engine: workspaceEngine)
         }
+    }
 
     private var header: some View {
         HStack(alignment: .center, spacing: 16) {
