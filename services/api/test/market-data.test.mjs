@@ -5,10 +5,6 @@ import {
   normalizeCapitalQuote,
 } from "../dist/market-data/contracts.js";
 import {
-  normalizeCapitalHistoricalPrices,
-  validateHistoricalDateRange,
-} from "../dist/market-data/historical-prices.js";
-import {
   CapitalDemoClient,
   CapitalDemoApiError,
 } from "../dist/market-data/capital-demo-client.js";
