@@ -210,3 +210,17 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - Full workspace/panel composition, settings window, IPDS token conformance, and application-wide clipboard audit remain incomplete. Issues #14 and #16 remain open.
 - The repository contains no Capital.com adapter or credential-handoff API. No credential form or Keychain workflow is implemented; the current local health API is not a secure secret-transfer contract.
 - No broker credentials, trading operations, risk controls, LIVE capability, or production configuration were changed.
+
+
+## Workspace visual foundation — 2026-11-17
+
+- PR #18 branch: `feat/macos-workspace-visual-foundation`, based on PR #17 head `75144f209e4a25d6cd10c2cd4571ac7e5070cffd`.
+- Current commit: `98f8e36807fa15027b8ff3eb6ba897b69140be50`.
+- Added `ATHEERDesignTokens.swift` with shared color roles, typography roles and spacing primitives based on the owner-provided palette and existing shell treatment.
+- Added `WorkspacePanel.swift` with reusable panel, unavailable-state and status-tile components.
+- Replaced the minimal Workspace home with an operational overview containing Market Watch, Chart Workspace, Account & Risk and Platform Health panels plus explicit market-data, broker, account and trading status.
+- Added in-memory panel show/hide/reset and a direct API Connection navigation action. No persistence or docking behavior is claimed.
+- Added test `testWorkspacePanelInventoryAndDefaultVisibility`.
+- Added provisional product information architecture and IPDS foundation records. Full formal source and approval reconciliation remains pending.
+- PR #17 workflow #132 passed on its exact head. PR #18 exact-head CI and owner-side visual/runtime QA remain pending.
+- No broker, credential, order, risk-policy, trading-permission, LIVE or production behavior was changed.

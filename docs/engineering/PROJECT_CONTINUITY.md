@@ -6,7 +6,7 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `feat/macos-workspace-api-connection` (PR #17, stacked on PR #10) |
+| Current work branch | `feat/macos-workspace-visual-foundation` (PR #18, stacked on PR #17 → PR #10) |
 | Record status | Initial baseline; further source reconciliation required |
 | Last reviewed | 2026-11-17 |
 
@@ -371,3 +371,17 @@ This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness 
 ### Boundaries and next action
 
 PR #10 remains open and unchanged. PR #17 is not merged. The API process remains external to the app; the UI refreshes and reports health but does not launch or terminate the process. No broker credentials, Keychain records, Capital.com sessions, market data, orders, risk limits, or trading permissions were introduced. Continue with exact-head CI, then owner-Mac runtime verification.
+
+
+## Workspace visual foundation — ATP-2026-11-17-016
+
+- PR #17 remains open and unchanged at head `75144f209e4a25d6cd10c2cd4571ac7e5070cffd`.
+- PR #17 exact-head workflow #132 passed backend toolchain/typecheck/tests, repository hygiene/Markdown lint, XcodeGen generation, macOS Debug build, XCTest, Release build and Swift CodeQL.
+- Owner-side runtime and visual verification of PR #17 remains pending.
+- PR #18 branch: `feat/macos-workspace-visual-foundation`; head `98f8e36807fa15027b8ff3eb6ba897b69140be50`; stacked on PR #17.
+- Added shared design tokens, reusable workspace panel/status components, a designed four-panel operational workspace, ephemeral panel visibility controls, and a workspace panel inventory test.
+- Added provisional product IA and IPDS foundation records. These remain pending formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation.
+- No new trading destinations, market values, account values, order controls, broker credentials or LIVE capabilities were added.
+- PR #18 exact-head hosted CI is pending; PR #17's passing CI is not substituted for it.
+- Panel visibility is in-memory only. Workspace persistence, docking/resizing and Settings remain unimplemented.
+- Next acceptance: PR #18 exact-head CI and owner-side macOS visual/runtime QA.
