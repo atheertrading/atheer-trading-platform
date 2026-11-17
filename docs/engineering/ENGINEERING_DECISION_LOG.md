@@ -91,3 +91,15 @@ Every material decision must state its source, date, scope, status, rationale, c
 - Rationale: Deliver a non-trading application/backend operational slice without fabricating data, exposing services to the network, or prematurely deciding the full API/event transport architecture.
 - Constraints: The slice does not settle REST versus WebSocket versus IPC for business APIs. It does not establish database, broker, authentication, production, or LIVE readiness.
 - Verification: Strict TypeScript build/check and six Node test cases passed in an isolated Linux container using Node 22.16.0. A prior GitHub run on the previous revision passed npm ci, typecheck, and tests on Node 24.22.2, repository hygiene, and GitHub Actions CodeQL; the macOS build remained queued. The compile-first refactor requires a fresh hosted run; local Mac verification remains pending.
+
+
+## EDL-008 — Continuous engineering execution and delegated authority
+
+- **Date:** 2026-11-17
+- **Status:** Owner-authorized operating directive; implementation pending PR review/merge.
+- **Decision:** Establish CEOD v1.0 as the operating mechanism for recovering project state, inspecting authoritative sources, interpreting bounded tasks, exercising delegated engineering authority, implementing and verifying changes, updating continuity records, and handing over a concrete next action.
+- **Delegation:** Routine technical design, implementation, tests, documentation, branch/PR preparation, technical review, routine conflict resolution, and merge decisions are delegated within repository policy and acceptance gates.
+- **Approval gates:** LIVE dealing, broker-account permissions/credentials, financial risk-policy changes, production deployment/release, destructive or irreversible repository/data actions, Apple private signing/security operations, legal/regulatory commitments, licensing, and material privacy-policy changes require explicit task-specific owner approval.
+- **Constraints:** This directive does not grant background execution, monitoring, or asynchronous continuation to ordinary ChatGPT sessions. It does not waive source reconciliation, tests, CI, local Mac QA, or exact-head verification.
+- **Consequences:** Apply CEOD v1.0 alongside root AGENTS.md and the approved Library standards. Preserve higher-level source precedence and record any conflicts rather than silently overriding them.
+- **Evidence:** ATP-2026-11-17-001; branch `docs/continuous-engineering-operating-directive`.
