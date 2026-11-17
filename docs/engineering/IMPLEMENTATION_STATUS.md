@@ -231,9 +231,9 @@ The health client destination is fixed to loopback rather than accepting an arbi
 
 ## Adaptive Workspace layout increment — 2026-11-17
 
-**Status: IMPLEMENTED IN SOURCE; hosted CI and owner visual acceptance pending.**
+**Status: IMPLEMENTED IN SOURCE; exact-head CI queued; owner visual acceptance pending.**
 
-- Branch: `feat/workspace-adaptive-layout`, based on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- PR #22: `https://github.com/atheertrading/atheer-trading-platform/pull/22`, branch `feat/workspace-adaptive-layout`, based on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
 - Commit: `db073848e7a80bbd4db2868faa741725698cb86c`.
 - Changed `apps/macos/ATHEERTradingPro/Sources/WorkspaceHomeView.swift`: replaced the fixed four-column status grid and fixed two-column panel grid with SwiftUI adaptive grids.
 - Initial provisional layout metrics: status tiles 150–240 points; workspace panels 320–560 points; existing workspace content maximum width remains 1280 points.
