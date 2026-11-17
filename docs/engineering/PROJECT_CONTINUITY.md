@@ -450,3 +450,36 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Adaptive layout source is committed; exact-head hosted CI and local Xcode/XCTest verification remain pending.
 - PR #22 is OPEN at `https://github.com/atheertrading/atheer-trading-platform/pull/22`, with `feat/workspace-adaptive-layout` based on PR #18. The branch received documentation follow-ups after PR creation; inspect the live PR head and its exact-head CI rather than relying on an earlier run.
 - Next: verify CI on the final PR #22 head, then request owner visual inspection at representative window widths on both displays. Keep PR #10 → #17 → #18 → #22 ancestry intact.
+
+
+## 2026-11-17 — Continuation session ATP-2026-11-17-019
+
+### Repository revalidation
+
+- Repository: `atheertrading/atheer-trading-platform`; default branch `main`.
+- Active workspace follow-up: PR #22, branch `feat/workspace-adaptive-layout`, exact inspected HEAD `3931c937708d4adad7a9595657015d478787f418`.
+- PR #22 base is PR #18 exact head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Dependency chain remains PR #10 → PR #17 → PR #18 → PR #22. All four PRs remain OPEN, UNMERGED, and reported mergeable; no branch was retargeted and no merge was performed.
+- PR #10 HEAD `06bd496d957b6cd2f999209cf5dc83cae54251cf`; PR #17 HEAD `75144f209e4a25d6cd10c2cd4571ac7e5070cffd`; PR #18 HEAD `08d7b68ef14dbbce57752ce7b7f0215404a281cb`; PR #22 HEAD `3931c937708d4adad7a9595657015d478787f418`.
+
+### Exact-head hosted verification
+
+- PR #10: CI #117, CodeQL #117, and Local Sync Safety #48 passed on its inspected HEAD.
+- PR #17: CI #132 and Local Sync Safety #82 passed on its inspected HEAD.
+- PR #18: CI #155 and Local Sync Safety #145 passed on its inspected HEAD.
+- PR #22: CI #160 and Local Sync Safety #167 passed on exact inspected HEAD `3931c937708d4adad7a9595657015d478787f418`. CI jobs passed repository hygiene/Markdown lint, backend toolchain/typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety passed shell syntax and non-destructive synchronization tests.
+- The previous checkpoint describing PR #22 exact-head CI as pending is superseded by this verification. This is hosted CI evidence only.
+
+### Source and review findings
+
+- Inspected root `AGENTS.md`, repository architecture, current PR metadata/diffs, WorkspaceHomeView.swift, WorkspacePanel.swift, provisional IPDS foundation, task register, continuity and implementation records, and the documented local Mac handoff/build/test scripts on the applicable documentation branch.
+- PR #10 retains one COMMENTED, non-blocking review note about distinguishing transport errors from invalid API responses; PR #17 includes the later error-classification correction. PR #17, #18 and #22 have no submitted reviews in the current inspection; PR #18/#22 have no inline review threads.
+- Branch protection/ruleset configuration remains unverified through the connected integration.
+- Formal ATP-ARCH-014/037/038 and original IPDS approval/source retrieval remain unresolved. Proposed responsive widths (status 150–240 pt; panels 320–560 pt) remain provisional.
+
+### Local qualification and acceptance
+
+- The previously recorded local qualification branch is `work/local-pr18-qualification`; its current local HEAD and worktree have not been re-read in this session.
+- Owner-confirmed application launch and two-display use remain owner-reported and are not attributed to an exact commit. No new local Xcode build, XCTest, application launch, screenshot review, accessibility, keyboard/focus, or visual QA was performed in this session.
+- Next: run read-only local repository/toolchain preflight; then qualify the intended PR #22 revision on the owner's Mac without overwriting or synchronizing a dirty worktree. Perform visual QA at representative widths on both displays before expanding workspace/panel behavior.
+- No trading, broker, credential, risk-policy, production, or LIVE settings were changed.
