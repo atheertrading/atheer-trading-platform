@@ -86,3 +86,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers navigation sidebar List selection changes to avoid synchronous detail-hierarchy updates during AppKit's NSTableView delegate callback.
+
+| ATP-2026-11-17-021 | 2026-11-17 | Master screen execution prompt and Market Explorer | Published the reusable English screen/application/workstation execution prompt; verified the PR #24 → #25 → #26 dependency chain; created a feature branch from exact PR #26 head; implemented a native Markets destination, read-only DEMO instrument search screen and client, response validation, state gating, five XCTest source cases, and screen/workflow inventory. Exact-head CI and owner-Mac verification remain pending. | ATP-PROMPT-SCREEN-EXEC-001; ATP-SCR-MKT-001; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; SESSION_2026-11-17_021_MARKET_EXPLORER_IMPLEMENTATION |
