@@ -7,13 +7,13 @@ flowchart TB
   end
 
   subgraph Database["PostgreSQL — environment-scoped records"]
-    Ledger[("Migration ledger") ]
-    Instrument[("Instruments and versioned specifications") ]
-    Account[("Broker accounts and balance snapshots") ]
-    Intent[("Immutable order-intent journal") ]
-    Assessment[("Risk-assessment journal") ]
-    Audit[("Append-only audit and reconciliation") ]
-    Outbox[("Transactional domain-event outbox") ]
+    Ledger["Migration ledger"]
+    Instrument["Instruments and versioned specifications"]
+    Account["Broker accounts and balance snapshots"]
+    Intent["Immutable order-intent journal"]
+    Assessment["Risk-assessment journal"]
+    Audit["Append-only audit and reconciliation"]
+    Outbox["Transactional domain-event outbox"]
   end
 
   Intake --> Repo
