@@ -30,25 +30,41 @@ jobs:
             **/*.md
             !**/node_modules/**
   macos:
-    name: macOS build, tests, and Swift CodeQL
-    runs-on: macos-15-intel
+    name: macOS build, tests, and Swift CodeQL (${{ matrix.architecture }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: Intel x86_64
+            runner: macos-15-intel
+            codeql: true
+          - architecture: Apple Silicon arm64
+            runner: macos-15
+            codeql: false
+    runs-on: ${{ matrix.runner }}
     permissions:
       actions: read
       contents: read
       security-events: write
     steps:
       - uses: actions/checkout@v7
-      - name: Inspect Apple toolchain
+      - name: Inspect Apple toolchain and verify runner architecture
         run: |
+          set -euo pipefail
           xcode-select -p
           xcodebuild -version
           swift --version
+          actual_arch="$(uname -m)"
+          expected_arch="${{ matrix.architecture == 'Intel x86_64' && 'x86_64' || 'arm64' }}"
+          echo "Runner architecture: $actual_arch (expected $expected_arch)"
+          test "$actual_arch" = "$expected_arch"
       - name: Install XcodeGen
         run: bash scripts/install-xcodegen.sh
       - name: Generate Xcode project
         working-directory: apps/macos/ATHEERTradingPro
         run: $HOME/.local/bin/xcodegen generate
       - uses: github/codeql-action/init@v4
+        if: matrix.codeql
         with:
           languages: swift
       - name: Inspect generated schemes
@@ -63,6 +79,7 @@ jobs:
         run: |
           xcodebuild -project apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj -scheme ATHEERTradingPro -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
       - uses: github/codeql-action/analyze@v4
+        if: matrix.codeql
   backend-toolchain:
     name: Backend toolchain
     runs-on: ubuntu-latest
