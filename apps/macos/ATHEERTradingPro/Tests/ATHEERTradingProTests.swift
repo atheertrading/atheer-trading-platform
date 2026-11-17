@@ -75,6 +75,22 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testWorkspaceEngineRecoversWhenStoredDataCannotBeDecoded() {
+        let persistence = InMemoryWorkspacePersistence()
+        persistence.loadError = WorkspacePersistenceError.corruptData("invalid JSON")
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("invalid JSON"))
+        } else {
+            XCTFail("Unreadable persisted workspace data should recover to defaults.")
+        }
+        XCTAssertNotNil(persistence.snapshot)
+    }
+
+    @MainActor
     func testCommandCenterCanBeInstantiatedWithInjectedHealthModel() {
         let model = BackendHealthViewModel(
             client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
@@ -229,9 +245,13 @@ private enum StubBackendHealthError: Error {
 
 private final class InMemoryWorkspacePersistence: WorkspacePersistence {
     var snapshot: WorkspaceSnapshot?
+    var loadError: Error?
 
     func load() throws -> WorkspaceSnapshot? {
-        snapshot
+        if let loadError {
+            throw loadError
+        }
+        return snapshot
     }
 
     func save(_ snapshot: WorkspaceSnapshot) throws {
