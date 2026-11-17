@@ -123,3 +123,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - It records the settings-window Open/Close behavior and explicitly separates window lifecycle, panel visibility, expand/collapse, boolean switches, service connectivity, and governed trading controls.
 - This is a specification/documentation change only. It does not claim implementation, full Library-source reconciliation, final IPDS completion, or visual qualification.
 - M02-007 remains IN PROGRESS until source reconciliation and implementation-readiness work are complete.
+
+
+## Continuous engineering operating directive — 2026-11-17
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| M00-022 | P0 | Establish continuous engineering execution, approvals/delegation, verification, and handover protocol | IN PROGRESS | CEOD v1.0 on `docs/continuous-engineering-operating-directive`; pending PR review/merge and exact-head documentation checks |
+
+The owner authorized implementation of sections 6 (Engineering Decision, Approvals, and Delegation) and 7 (ATHEER Execution Mechanism). Routine engineering work is delegated within the documented boundaries; explicit approval gates remain intact. This documentation change does not authorize LIVE trading, broker permission changes, production deployment, destructive repository operations, or security-sensitive actions.
