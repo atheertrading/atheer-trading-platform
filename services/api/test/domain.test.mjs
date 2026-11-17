@@ -31,6 +31,7 @@ import {
   tradingEnvironment,
   unitCode,
   utcTimestamp,
+  utcTimestampFromIso,
   validateAccountBalanceSnapshot,
   validateBrokerAccountIdentity,
   validateExecutionFill,
@@ -80,6 +81,19 @@ function instrumentSpecification(overrides = {}) {
     ...overrides,
   };
 }
+
+test("UTC timestamp parsing rejects impossible calendar dates and clock values", () => {
+  assert.equal(
+    utcTimestampFromIso("2024-02-29T23:59:59.123Z"),
+    Date.parse("2024-02-29T23:59:59.123Z"),
+  );
+  assert.throws(() => utcTimestampFromIso("2025-02-29T12:00:00Z"), { code: "invalid_utc_timestamp" });
+  assert.throws(() => utcTimestampFromIso("2026-02-31T12:00:00Z"), { code: "invalid_utc_timestamp" });
+  assert.throws(() => utcTimestampFromIso("2026-04-31T12:00:00Z"), { code: "invalid_utc_timestamp" });
+  assert.throws(() => utcTimestampFromIso("2026-13-01T12:00:00Z"), { code: "invalid_utc_timestamp" });
+  assert.throws(() => utcTimestampFromIso("2026-01-01T24:00:00Z"), { code: "invalid_utc_timestamp" });
+  assert.throws(() => utcTimestampFromIso("2026-01-01T12:60:00Z"), { code: "invalid_utc_timestamp" });
+});
 
 test("decimal values preserve exact base-10 precision without floating-point coercion", () => {
   assert.equal(decimalValue("0.1000"), "0.1");
