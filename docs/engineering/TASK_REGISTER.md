@@ -299,3 +299,13 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 ## ATP-MKT-003 MainActor build remediation — 2026-11-17
 
 The initial Intel macOS job for PR #34 reached Debug compilation and failed because Swift 5.8 evaluates actor-isolated service default arguments from a nonisolated caller context. The Market Explorer view and view-model now accept optional injected clients and instantiate the default URLSession client inside the MainActor-isolated view-model initializer. This is a source remediation only; exact-head hosted requalification remains pending. PR #34 remains open/draft and unmerged.
+
+## ATP-MKT-004 branch replacement and CI evidence — 2026-11-17
+
+- Original PR #35 was closed as superseded after its branch became divergent from the corrected PR #34 head.
+- Replacement PR #36: https://github.com/atheertrading/atheer-trading-platform/pull/36.
+- Branch: feat/macos-market-explorer-live-quotes-qualified; exact head at this checkpoint: 80912e8b1e80479afaa694f3bbf0e04ab5e1fce8.
+- Base: feat/capital-demo-market-streaming at exact head 2baf8a2b026566846825a18e9b9af9a918c0d864; comparison is 11 commits ahead / 0 behind.
+- Exact-head CI #44177274649: Repository Hygiene passed; Backend Toolchain passed; TypeScript build and 31/31 API tests passed. Mermaid diagram validation #44177274622 passed; Local Sync Safety #44177274600 passed.
+- Intel and Apple Silicon macOS Debug/XCTest/Release/Swift CodeQL jobs remain queued. Owner-Mac runtime, visual, keyboard/focus, VoiceOver, and real DEMO provider verification remain pending.
+- Source includes epic validation, 100 ms UI presentation coalescing, and cancellation of the presentation throttle when streaming becomes ineligible. No risk/execution integration or LIVE capability is introduced.
