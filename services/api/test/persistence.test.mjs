@@ -20,7 +20,7 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
   try {
     const migrations = await loadSqlMigrations();
     await runSqlMigrations(pool);
-    await runSqlMigrations(pool);
+    await Promise.all([runSqlMigrations(pool), runSqlMigrations(pool)]);
     await assert.rejects(
       applySqlMigrations(pool, [{ version: migrations[0].version, sql: migrations[0].sql + "\n-- checksum drift\n" }]),
       (error) => error instanceof PersistenceConflictError && error.message.includes("checksum"),
@@ -71,6 +71,18 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     });
     assert.deepEqual(await repository.persistIntentAndRiskAssessment(intent, assessment), { intentInserted: true, riskAssessmentInserted: true, replayed: false });
     assert.deepEqual(await repository.persistIntentAndRiskAssessment(intent, assessment), { intentInserted: false, riskAssessmentInserted: false, replayed: true });
+
+    const orphanIntent = createOrderIntentEnvelope({
+      ...intent,
+      id: orderIntentId(prefix + "-orphan-intent"),
+      accountId: brokerAccountId(prefix + "-missing-account"),
+      idempotencyKey: idempotencyKey(prefix + "-orphan-idempotency"),
+    });
+    await assert.rejects(
+      repository.persistIntentAndRiskAssessment(orphanIntent, { ...assessment, id: riskAssessmentId(prefix + "-orphan-risk"), intentId: orphanIntent.id }),
+    );
+    const orphanCount = await pool.query("SELECT count(*)::text AS count FROM order_intents WHERE environment='DEMO' AND intent_id=$1", [orphanIntent.id]);
+    assert.equal(orphanCount.rows[0].count, "0");
 
     const conflictingIntent = createOrderIntentEnvelope({
       ...intent, id: orderIntentId(prefix + "-other-intent"), payload: { ...intent.payload, quantity: quantity("0.3", unitCode("CONTRACT")) },
