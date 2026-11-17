@@ -142,6 +142,50 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testWorkspaceEngineMovesPanelsAndPersistsVisualOrder() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.movePanel(.marketWatch, to: 0))
+        XCTAssertEqual(engine.orderedPanels.map(\\.panelID).first, .marketWatch)
+        XCTAssertEqual(engine.orderedPanels.map(\\.order), Array(0..<engine.orderedPanels.count))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.orderedPanels.map(\\.panelID), engine.orderedPanels.map(\\.panelID))
+    }
+
+    @MainActor
+    func testWorkspaceEngineAddsAndRemovesPanelConfigurationsIdempotently() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.removePanel(.platformHealth))
+        XCTAssertFalse(engine.activeWorkspace.panels.contains { $0.panelID == .platformHealth })
+        XCTAssertFalse(engine.removePanel(.platformHealth))
+
+        XCTAssertTrue(engine.addPanel(.platformHealth))
+        XCTAssertTrue(engine.visiblePanels.contains(.platformHealth))
+        XCTAssertFalse(engine.addPanel(.platformHealth))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertTrue(restored.visiblePanels.contains(.platformHealth))
+    }
+
+    @MainActor
+    func testWorkspaceEngineResizesSidebarWithinSupportedBoundsAndPersistsWidth() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.resizeSidebar(to: 480))
+        XCTAssertEqual(engine.activeWorkspace.layout.sidebarWidth, 480)
+        XCTAssertTrue(engine.resizeSidebar(to: 900))
+        XCTAssertEqual(engine.activeWorkspace.layout.sidebarWidth, 640)
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.activeWorkspace.layout.sidebarWidth, 640)
+    }
+
+    @MainActor
     func testCommandCenterCanBeInstantiatedWithInjectedHealthModel() {
         let model = BackendHealthViewModel(
             client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
