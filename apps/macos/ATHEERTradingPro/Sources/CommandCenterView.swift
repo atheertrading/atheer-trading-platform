@@ -327,7 +327,9 @@ struct CommandCenterView: View {
             Text("Use Manage panels to restore a workspace panel.")
                 .font(ATHEERDesignTokens.Typography.body)
                 .foregroundColor(.secondary)
-            Button("Restore default panels", action: resetPanels)
+            Button("Restore default panels") {
+                workspaceEngine.restoreDefaultPanels()
+            }
                 .buttonStyle(.link)
         }
         .frame(maxWidth: .infinity, minHeight: 180)
