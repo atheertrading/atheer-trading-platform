@@ -60,7 +60,7 @@ function canonicalize(value: unknown): unknown {
   return value;
 }
 
-function canonicalJson(value: unknown): string { return JSON.stringify(canonicalize(value)); }
+function canonicalJson(value: unknown): string { return JSON.stringify(canonicalize(value)) ?? "null"; }
 function sha256(value: string): string { return createHash("sha256").update(value, "utf8").digest("hex"); }
 function isoTimestamp(epochMilliseconds: number): string { return new Date(epochMilliseconds).toISOString(); }
 
