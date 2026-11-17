@@ -283,6 +283,19 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - Implemented provider session endpoint discovery, WSS validation, server-side token handling, shared 40-instrument subscription cap, correlation acknowledgements, five-minute ping, reconnect/resubscribe, quote quality checks, in-memory cache, and loopback SSE.
 - No CI or real-provider success is claimed yet. macOS consumer, historical persistence, OHLC streaming, Charting, and RiskEngine integration remain separate follow-up work.
 
+
+## ATP-MKT-004 — Existing Market Explorer Live Quote Integration — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Connect existing Market Explorer to backend DEMO SSE stream with explicit selection and timestamped quote presentation | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #34 streaming backend | Intel + Apple Silicon Build/XCTest/Release/CodeQL; owner-Mac visual/accessibility/runtime QA; provider DEMO verification |
+
+- Branch: `feat/macos-market-explorer-live-quotes`, based on PR #34 head `1378cc9d78151dc58bc548887ff5a3c45594d62b`.
+- Session report: `SESSION_2026-11-17_024_MARKET_EXPLORER_LIVE_QUOTES.md`.
+- Adds URLSession SSE parser/client, explicit selection and Start/Stop/Clear controls, maximum 40 instruments, quote state, timestamp, age, and arrival-time quality presentation.
+- No new screen, no synthetic prices, no trading action, and no RiskEngine integration.
+- Hosted macOS and owner-Mac verification remain pending; no real provider quote is claimed.
+
 ## ATP-MKT-003 MainActor build remediation — 2026-11-17
 
 The initial Intel macOS job for PR #34 reached Debug compilation and failed because Swift 5.8 evaluates actor-isolated service default arguments from a nonisolated caller context. The Market Explorer view and view-model now accept optional injected clients and instantiate the default URLSession client inside the MainActor-isolated view-model initializer. This is a source remediation only; exact-head hosted requalification remains pending. PR #34 remains open/draft and unmerged.
