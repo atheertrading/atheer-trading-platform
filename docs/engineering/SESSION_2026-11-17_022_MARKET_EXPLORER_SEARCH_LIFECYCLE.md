@@ -63,3 +63,9 @@ All parent PRs remain open and unmerged at this report's creation. No parent bra
 - CI run #44170652406 on the exact PR #33 head: Repository Hygiene **passed**; Backend Toolchain **in progress**; Intel macOS and Apple Silicon macOS jobs **queued**.
 - Local Sync Safety run #44170652465 on the same exact head: **passed**.
 - These are dispatch-time results only. No macOS compile/XCTest/Release/CodeQL result is claimed.
+
+## Swift 5.8 MainActor build remediation — 2026-11-17
+
+Hosted Intel CI exposed actor-isolated default-argument construction in MarketExplorerView and MarketExplorerViewModel. Both initializers now accept optional injected clients and construct URLSessionMarketSearchClient inside the MainActor-isolated view-model initializer. This preserves dependency injection and resolves the Swift 5.8 isolation pattern. No search contract, provider behavior, broker permissions, trading gate, or execution boundary changed.
+
+The correction is committed on the branch. Exact-head Intel/Apple Silicon Debug, XCTest, Release, and Swift CodeQL requalification remains pending.
