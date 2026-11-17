@@ -150,3 +150,51 @@ This addendum records a second, exact-head inspection performed after the initia
 - **Next execution gate:** obtain a terminal outcome for the queued Intel job on PR #25, investigate the cancelled macOS job evidence, and establish passing Intel + Apple Silicon build/test/Release/Swift CodeQL results on the exact current heads before proceeding to streaming qualification.
 - Streaming remains blocked until the required macOS CI qualification is complete. Separately, PR #25 records that the official documentation does not explicitly identify a DEMO WebSocket hostname; that provider fact must be resolved with Capital.com before a streaming endpoint is hardcoded.
 
+
+
+---
+
+## Follow-up revalidation — 2026-11-17 (ATP-2026-11-17-003)
+
+### Purpose and scope
+
+This continuation records the owner's instruction to maintain GitHub engineering traceability and the latest observable state after requesting a targeted Apple Silicon job rerun. It updates documentation only. It does not change application source, CI configuration, PR #24/#25 branches, or trading permissions.
+
+### Latest verified CI state
+
+Repository: `atheertrading/atheer-trading-platform`  
+PR #25 exact head: `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`  
+Workflow: CI run [44124205521](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44124205521), run number 201.
+
+The latest-attempt job listing returned:
+
+| Job | Job ID | Latest observed status | Qualification |
+|---|---:|---|---|
+| Apple Silicon arm64 macOS build/tests/Release | 134229421496 | queued | Rerun is now represented by a queued job; no build/test result yet. |
+| Intel x86_64 macOS build/tests/Swift CodeQL | 134229424016 | completed / cancelled | Not qualified; separate recovery is still required. |
+| Backend toolchain | 134229490489 | completed / success | API dependency install, TypeScript type-check, and API tests passed. |
+| Repository hygiene | 134229532093 | completed / success | Project baseline validation and Markdown lint passed. |
+
+The earlier Apple Silicon job ID `134214908044` belongs to the previous attempt and was cancelled. The new queued job ID is the current evidence. A queued job is not a successful rerun and must not be reported as a macOS pass.
+
+PR #24 remains blocked on CI run [44118381361](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44118381361), run number 189: repository hygiene and backend checks passed, while both Intel and Apple Silicon macOS jobs were cancelled. No macOS qualification is established for PR #24.
+
+### Engineering assessment and next actions
+
+1. Poll run #201 until the Apple Silicon job reaches a terminal conclusion; inspect its executed steps/logs if it starts.
+2. Treat Intel x86_64 as an independent unresolved qualification item. Do not infer a pass from the Apple Silicon rerun or from backend/hygiene checks.
+3. Revalidate the exact PR #24 and #25 heads before any subsequent review or integration action.
+4. Keep PR #24 and #25 open and Draft; no merge, retarget, force-push, rebase, or history rewrite.
+5. Do not modify `.github/workflows/ci.yml` or infer that `cancel-in-progress: true` caused the cancellations without direct event/log evidence.
+6. Keep Capital.com streaming blocked pending macOS CI qualification and authoritative confirmation of the DEMO streaming hostname.
+7. Owner-side local macOS build, XCTest, runtime, and visual qualification remain separate acceptance gates.
+
+### Commit and change record
+
+- Updated this session report, the conversation index, project continuity, and task register on the existing scoped documentation branch `docs/engineering-session-2026-11-17-workflow-tracking`.
+- Each file update is a separate, sequential GitHub Contents API commit with the current blob SHA supplied for optimistic concurrency.
+- No application source or workflow file changed.
+- No PR was merged or closed. No branch history was rewritten.
+- No local Xcode, XCTest, visual/runtime, authenticated broker, or trading test was performed by this continuation.
+
+**Session status:** Documentation checkpoint recorded; Phase A CI qualification remains BLOCKED.
