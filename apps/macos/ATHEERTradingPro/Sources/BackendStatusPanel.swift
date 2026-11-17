@@ -7,8 +7,8 @@ struct BackendStatusPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("BACKEND STATUS")
-                    .font(.system(size: 10, weight: .bold))
+                Text("PLATFORM HEALTH")
+                    .font(ATHEERDesignTokens.Typography.caption)
                     .tracking(1.1)
                     .foregroundColor(.secondary)
                 Spacer()
@@ -16,7 +16,7 @@ struct BackendStatusPanel: View {
                     Task { await model.refresh() }
                 } label: {
                     Label("Refresh", systemImage: "arrow.clockwise")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(ATHEERDesignTokens.Typography.caption)
                 }
                 .buttonStyle(.borderless)
                 .disabled(model.isRefreshing)
@@ -31,31 +31,22 @@ struct BackendStatusPanel: View {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
                     Text("Checking…")
-                        .font(.system(size: 12))
+                        .font(ATHEERDesignTokens.Typography.body)
                         .foregroundColor(.secondary)
                 }
             case .disconnected(let message):
-                statusRow("API", value: "Disconnected", color: .red)
-                Text(message)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .textSelection(.enabled)
+                statusRow("API", value: "Disconnected", color: ATHEERDesignTokens.ColorRole.danger)
+                diagnostic(message)
             case .invalidResponse(let message):
-                statusRow("API", value: "Invalid liveness response", color: .orange)
-                Text(message)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .textSelection(.enabled)
+                statusRow("API", value: "Invalid liveness response", color: ATHEERDesignTokens.ColorRole.attention)
+                diagnostic(message)
             case .serverError(let statusCode):
-                statusRow("API", value: "HTTP \(statusCode)", color: .orange)
+                statusRow("API", value: "HTTP \(statusCode)", color: ATHEERDesignTokens.ColorRole.attention)
             case .connected(let snapshot):
                 statusRow("API", value: "Connected", color: accent)
                 if let failure = snapshot.readinessFailure {
-                    statusRow("Platform readiness", value: "Unavailable", color: .orange)
-                    Text(failure.message)
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                        .textSelection(.enabled)
+                    statusRow("Platform readiness", value: "Unavailable", color: ATHEERDesignTokens.ColorRole.attention)
+                    diagnostic(failure.message)
                 } else {
                     if let platformReady = snapshot.platformReady {
                         statusRow("Platform readiness", value: platformReady ? "Ready" : "Not ready", color: .secondary)
@@ -67,37 +58,45 @@ struct BackendStatusPanel: View {
                         statusRow("Broker", value: display(broker), color: .secondary)
                     }
                     if let tradingEnabled = snapshot.tradingEnabled {
-                        statusRow("Trading", value: tradingEnabled ? "Enabled" : "Disabled", color: .secondary)
+                        statusRow("Trading", value: tradingEnabled ? "Enabled" : "Disabled", color: tradingEnabled ? ATHEERDesignTokens.ColorRole.attention : .secondary)
                     }
                 }
                 Text("API version \(snapshot.version) · \(snapshot.livenessTimestamp)")
-                    .font(.system(size: 10))
+                    .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.secondary)
                     .lineLimit(2)
                     .textSelection(.enabled)
             }
         }
         .padding(14)
-        .background(Color.white.opacity(0.035))
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(ATHEERDesignTokens.ColorRole.panel)
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .contain)
     }
 
     private func statusRow(_ title: String, value: String, color: Color) -> some View {
         HStack {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(ATHEERDesignTokens.Typography.body)
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(color)
                 .textSelection(.enabled)
         }
+    }
+
+    private func diagnostic(_ message: String) -> some View {
+        Text(message)
+            .font(.system(size: 10))
+            .foregroundColor(.secondary)
+            .textSelection(.enabled)
     }
 
     private func display(_ value: String) -> String {

@@ -13,6 +13,14 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(AppSection.apiConnection.title, "API Connection")
     }
 
+    func testWorkspacePanelInventoryAndDefaultVisibility() {
+        XCTAssertEqual(
+            WorkspacePanelID.allCases,
+            [.marketWatch, .charts, .accountRisk, .platformHealth]
+        )
+        XCTAssertEqual(WorkspacePanelID.defaultVisible, Set(WorkspacePanelID.allCases))
+    }
+
     func testHealthPayloadDecoderKeepsTradingDisabledWhenPlatformIsNotReady() throws {
         let liveness = Data("""
         {"status":"ok","service":"atheer-api","version":"0.1.0","timestamp":"2026-11-16T10:00:00.000Z"}
