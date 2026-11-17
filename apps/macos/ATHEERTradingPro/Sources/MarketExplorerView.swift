@@ -170,9 +170,18 @@ struct MarketExplorerView: View {
             .background(ATHEERDesignTokens.ColorRole.panelElevated)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            Text("Read-only REST catalogue search. Search results are instrument metadata, not live quotes.")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+            HStack {
+                Text("Read-only REST catalogue search. Search results are instrument metadata, not live quotes.")
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                Spacer(minLength: 8)
+                Text("\\(model.searchTerm.count)/100")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundColor(model.searchTerm.count > 100
+                        ? ATHEERDesignTokens.ColorRole.attention
+                        : .secondary)
+                    .accessibilityLabel("Search query length: \\(model.searchTerm.count) of 100 characters")
+            }
         }
         .padding(16)
         .background(ATHEERDesignTokens.ColorRole.panel)
