@@ -7,6 +7,7 @@ struct CommandCenterView: View {
     let onOpenAPIConnection: () -> Void
 
     @StateObject private var workspaceEngine = WorkspaceEngine()
+    @State private var isPanelManagementPresented = false
 
     private var sidebarWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.sidebarWidth) }
     private var minimumPrimaryWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.minimumPrimaryWidth) }
@@ -46,7 +47,9 @@ struct CommandCenterView: View {
             }
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
-    }
+        .sheet(isPresented: $isPanelManagementPresented) {
+            WorkspacePanelManagementView(engine: workspaceEngine)
+        }
 
     private var header: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -74,46 +77,34 @@ struct CommandCenterView: View {
             }
 
             Menu {
-                Section("Workspaces") {
-                    ForEach(workspaceEngine.snapshot.workspaces) { workspace in
-                        Button {
-                            workspaceEngine.selectWorkspace(workspace.id)
-                        } label: {
-                            if workspace.id == workspaceEngine.activeWorkspace.id {
-                                Label(workspace.name, systemImage: "checkmark")
-                            } else {
-                                Text(workspace.name)
-                            }
+                ForEach(workspaceEngine.snapshot.workspaces) { workspace in
+                    Button {
+                        workspaceEngine.selectWorkspace(workspace.id)
+                    } label: {
+                        if workspace.id == workspaceEngine.activeWorkspace.id {
+                            Label(workspace.name, systemImage: "checkmark")
+                        } else {
+                            Text(workspace.name)
                         }
                     }
-                    Button("New workspace") {
-                        _ = workspaceEngine.createWorkspace(
-                            name: "Workspace \(workspaceEngine.snapshot.workspaces.count + 1)"
-                        )
-                    }
                 }
-
                 Divider()
-
-                ForEach(WorkspacePanelID.allCases) { panel in
-                    Button {
-                        togglePanel(panel)
-                    } label: {
-                        Label(
-                            panel.title,
-                            systemImage: workspaceEngine.visiblePanels.contains(panel) ? "checkmark" : "square"
-                        )
-                    }
+                Button("New workspace") {
+                    _ = workspaceEngine.createWorkspace(
+                        name: "Workspace \(workspaceEngine.snapshot.workspaces.count + 1)"
+                    )
                 }
+            } label: {
+                Label(workspaceEngine.activeWorkspace.name, systemImage: "square.grid.2x2")
+            }
+            .help("Select or create a workspace")
 
-                Divider()
-
-                Button("Restore default panels", action: resetPanels)
-                    .disabled(workspaceEngine.visiblePanels == WorkspacePanelID.defaultVisible)
+            Button {
+                isPanelManagementPresented = true
             } label: {
                 Label("Manage panels", systemImage: "rectangle.3.group")
             }
-            .help("Show or hide command-center panels")
+            .help("Reorder, show, hide, add, or remove workspace panels")
 
             Button(action: onOpenAPIConnection) {
                 Label("Connections", systemImage: "network")
@@ -168,131 +159,159 @@ struct CommandCenterView: View {
     }
 
     private var primaryWorkspace: some View {
-        VStack(spacing: 16) {
-            if workspaceEngine.visiblePanels.contains(.charts) {
-                CommandCenterPanel(
-                    title: "Chart Workspace",
-                    subtitle: "Price action · Technical analysis",
-                    symbol: "chart.xyaxis.line",
-                    status: "NO MARKET SERIES",
-                    statusColor: ATHEERDesignTokens.ColorRole.attention,
-                    minHeight: 438
-                ) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Label("Instrument", systemImage: "waveform.path")
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("Awaiting market-data source")
-                                .font(ATHEERDesignTokens.Typography.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.bottom, 14)
-
-                        Rectangle()
-                            .fill(ATHEERDesignTokens.ColorRole.separator)
-                            .frame(height: 1)
-
-                        VStack(spacing: 12) {
-                            Image(systemName: "chart.xyaxis.line")
-                                .font(.system(size: 34, weight: .light))
-                                .foregroundColor(ATHEERDesignTokens.ColorRole.accent.opacity(0.75))
-
-                            Text("Chart data is not available")
-                                .font(.system(size: 15, weight: .semibold))
-
-                            Text("Connect a market-data provider to load instruments, timestamped candles, indicators and drawing tools. No sample prices are displayed.")
-                                .font(ATHEERDesignTokens.Typography.body)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: 430)
-
-                            Text("NO SERIES · NO SYNTHETIC DATA")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .tracking(0.8)
-                                .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
-                                .padding(.top, 4)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(24)
+        let panels = workspaceEngine.orderedPanels.filter {
+            $0.panelID.isPrimaryRegion && $0.isVisible
+        }
+        return VStack(spacing: 16) {
+            ForEach(panels) { configuration in
+                Group {
+                    switch configuration.panelID {
+                    case .charts:
+                        chartPanel
+                    case .platformHealth:
+                        BackendStatusPanel(
+                            model: backendHealthModel,
+                            accent: ATHEERDesignTokens.ColorRole.accent
+                        )
+                    case .marketWatch, .accountRisk:
+                        EmptyView()
                     }
                 }
             }
 
-            if workspaceEngine.visiblePanels.contains(.platformHealth) {
-                BackendStatusPanel(
-                    model: backendHealthModel,
-                    accent: ATHEERDesignTokens.ColorRole.accent
-                )
-            }
-
-            if !workspaceEngine.visiblePanels.contains(.charts) && !workspaceEngine.visiblePanels.contains(.platformHealth) {
+            if panels.isEmpty {
                 emptySelectionState
             }
         }
     }
 
-    private var secondaryWorkspace: some View {
-        VStack(spacing: 16) {
-            if workspaceEngine.visiblePanels.contains(.marketWatch) {
-                CommandCenterPanel(
-                    title: "Market Watch",
-                    subtitle: "Instrument discovery · Quotes",
-                    symbol: "list.bullet.rectangle",
-                    status: "NO FEED",
-                    statusColor: ATHEERDesignTokens.ColorRole.attention,
-                    minHeight: 244
-                ) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text("INSTRUMENT")
-                            Spacer()
-                            Text("LAST")
-                            Text("CHANGE")
-                        }
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .tracking(0.5)
+    private var chartPanel: some View {
+        CommandCenterPanel(
+            title: "Chart Workspace",
+            subtitle: "Price action · Technical analysis",
+            symbol: "chart.xyaxis.line",
+            status: "NO MARKET SERIES",
+            statusColor: ATHEERDesignTokens.ColorRole.attention,
+            minHeight: 438
+        ) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Label("Instrument", systemImage: "waveform.path")
                         .foregroundColor(.secondary)
+                    Spacer()
+                    Text("Awaiting market-data source")
+                        .font(ATHEERDesignTokens.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.bottom, 14)
 
-                        Rectangle()
-                            .fill(ATHEERDesignTokens.ColorRole.separator)
-                            .frame(height: 1)
+                Rectangle()
+                    .fill(ATHEERDesignTokens.ColorRole.separator)
+                    .frame(height: 1)
 
-                        VStack(spacing: 8) {
-                            Image(systemName: "antenna.radiowaves.left.and.right")
-                                .font(.system(size: 22))
-                                .foregroundColor(.secondary)
-                            Text("No instruments")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text("A connected provider is required before quotes can be shown.")
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 112)
+                VStack(spacing: 12) {
+                    Image(systemName: "chart.xyaxis.line")
+                        .font(.system(size: 34, weight: .light))
+                        .foregroundColor(ATHEERDesignTokens.ColorRole.accent.opacity(0.75))
+
+                    Text("Chart data is not available")
+                        .font(.system(size: 15, weight: .semibold))
+
+                    Text("Connect a market-data provider to load instruments, timestamped candles, indicators and drawing tools. No sample prices are displayed.")
+                        .font(ATHEERDesignTokens.Typography.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 430)
+
+                    Text("NO SERIES · NO SYNTHETIC DATA")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .tracking(0.8)
+                        .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
+                        .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(24)
+            }
+        }
+    }
+
+    private var secondaryWorkspace: some View {
+        let panels = workspaceEngine.orderedPanels.filter {
+            !$0.panelID.isPrimaryRegion && $0.isVisible
+        }
+        return VStack(spacing: 16) {
+            ForEach(panels) { configuration in
+                Group {
+                    switch configuration.panelID {
+                    case .marketWatch:
+                        marketWatchPanel
+                    case .accountRisk:
+                        accountRiskPanel
+                    case .charts, .platformHealth:
+                        EmptyView()
                     }
                 }
             }
 
-            if workspaceEngine.visiblePanels.contains(.accountRisk) {
-                CommandCenterPanel(
-                    title: "Account & Risk",
-                    subtitle: "Balances · Exposure · Controls",
-                    symbol: "shield.lefthalf.filled",
-                    status: "NO ACCOUNT",
-                    statusColor: .secondary,
-                    minHeight: 220
-                ) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        unavailableMetric("Account equity", explanation: "No broker account snapshot")
-                        unavailableMetric("Margin / exposure", explanation: "No verified account data")
-                        unavailableMetric("Risk authorization", explanation: "Trading remains disabled")
-                    }
-                }
-            }
-
-            if !workspaceEngine.visiblePanels.contains(.marketWatch) && !workspaceEngine.visiblePanels.contains(.accountRisk) {
+            if panels.isEmpty {
                 emptySelectionState
+            }
+        }
+    }
+
+    private var marketWatchPanel: some View {
+        CommandCenterPanel(
+            title: "Market Watch",
+            subtitle: "Instrument discovery · Quotes",
+            symbol: "list.bullet.rectangle",
+            status: "NO FEED",
+            statusColor: ATHEERDesignTokens.ColorRole.attention,
+            minHeight: 244
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("INSTRUMENT")
+                    Spacer()
+                    Text("LAST")
+                    Text("CHANGE")
+                }
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .tracking(0.5)
+                .foregroundColor(.secondary)
+
+                Rectangle()
+                    .fill(ATHEERDesignTokens.ColorRole.separator)
+                    .frame(height: 1)
+
+                VStack(spacing: 8) {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 22))
+                        .foregroundColor(.secondary)
+                    Text("No instruments")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text("A connected provider is required before quotes can be shown.")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, minHeight: 112)
+            }
+        }
+    }
+
+    private var accountRiskPanel: some View {
+        CommandCenterPanel(
+            title: "Account & Risk",
+            subtitle: "Balances · Exposure · Controls",
+            symbol: "shield.lefthalf.filled",
+            status: "NO ACCOUNT",
+            statusColor: .secondary,
+            minHeight: 220
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                unavailableMetric("Account equity", explanation: "No broker account snapshot")
+                unavailableMetric("Margin / exposure", explanation: "No verified account data")
+                unavailableMetric("Risk authorization", explanation: "Trading remains disabled")
             }
         }
     }
@@ -344,16 +363,6 @@ struct CommandCenterView: View {
             .clipShape(Capsule())
     }
 
-    private func togglePanel(_ panel: WorkspacePanelID) {
-        workspaceEngine.setPanelVisibility(
-            panel,
-            isVisible: !workspaceEngine.visiblePanels.contains(panel)
-        )
-    }
-
-    private func resetPanels() {
-        workspaceEngine.resetActiveWorkspace()
-    }
 }
 
 private struct CommandCenterPanel<Content: View>: View {
