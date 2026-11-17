@@ -76,9 +76,11 @@ struct BrokerManagementView: View {
 
             Divider().overlay(ATHEERDesignTokens.ColorRole.separator)
 
-            HStack(spacing: 24) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), alignment: .leading)], alignment: .leading, spacing: 14) {
                 metric("ENVIRONMENT", value: "DEMO", tint: ATHEERDesignTokens.ColorRole.attention)
                 metric("CREDENTIALS", value: model.hasSavedCredentials ? "Stored in Keychain" : "Not configured")
+                metric("AUTHENTICATION", value: model.state.title)
+                metric("SESSION", value: model.state == .connected ? "Active" : (model.state == .sessionExpired ? "Expired" : "Inactive"))
                 metric("MARKET STREAM", value: "Not connected", tint: .secondary)
                 metric("TRADING", value: "Disabled", tint: .secondary)
             }
@@ -136,14 +138,14 @@ struct BrokerManagementView: View {
                         ProgressView().controlSize(.small)
                         Text("Authenticating…")
                     } else {
-                        Label("Test Connection", systemImage: "checkmark.shield")
+                        Label(model.state == .connected ? "Test Connection" : "Connect", systemImage: "checkmark.shield")
                     }
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(ATHEERDesignTokens.ColorRole.teal)
                 .disabled(!model.hasSavedCredentials || model.isWorking)
 
-                if model.state == .connected {
+                if model.hasSavedCredentials && model.state != .credentialsSaved {
                     Button("Disconnect") {
                         Task { await model.disconnect() }
                     }
@@ -193,7 +195,7 @@ struct BrokerManagementView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Connection and permissions are separate", systemImage: "lock.shield")
                 .font(.system(size: 12, weight: .semibold))
-            Text("This DEMO-only connection test creates and verifies a read-only session. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
+            Text("This DEMO-only connection test creates an authenticated session and verifies it with a read-only GET /session request. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

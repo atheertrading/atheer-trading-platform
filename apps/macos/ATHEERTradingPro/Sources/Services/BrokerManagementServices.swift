@@ -221,8 +221,16 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
     private var cst: String?
     private var securityToken: String?
 
-    init(session: URLSession = .shared) {
-        self.session = session
+    init(session: URLSession? = nil) {
+        if let session {
+            self.session = session
+        } else {
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.urlCache = nil
+            configuration.httpCookieStorage = nil
+            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+            self.session = URLSession(configuration: configuration)
+        }
     }
 
     func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot {
@@ -233,6 +241,8 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         var request = URLRequest(url: baseURL.appendingPathComponent("session"))
         request.httpMethod = "POST"
         request.timeoutInterval = 10
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(credential.apiKey, forHTTPHeaderField: "X-CAP-API-KEY")
         let body: [String: Any] = [
@@ -257,6 +267,8 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
             var verify = URLRequest(url: baseURL.appendingPathComponent("session"))
             verify.httpMethod = "GET"
             verify.timeoutInterval = 10
+            verify.cachePolicy = .reloadIgnoringLocalCacheData
+            verify.setValue("no-store", forHTTPHeaderField: "Cache-Control")
             verify.setValue(newCST, forHTTPHeaderField: "CST")
             verify.setValue(newSecurityToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
             let (data, verifyResponse) = try await session.data(for: verify)
@@ -296,6 +308,8 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         var request = URLRequest(url: baseURL.appendingPathComponent("session"))
         request.httpMethod = "GET"
         request.timeoutInterval = 10
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue(currentCST, forHTTPHeaderField: "CST")
         request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
         do {
@@ -331,6 +345,8 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         var request = URLRequest(url: baseURL.appendingPathComponent("session"))
         request.httpMethod = "DELETE"
         request.timeoutInterval = 10
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue(currentCST, forHTTPHeaderField: "CST")
         request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
         _ = try? await session.data(for: request)
@@ -391,6 +407,10 @@ final class BrokerManagementViewModel: ObservableObject {
 
     func testConnection() async {
         guard !isWorking else { return }
+        if state == .connected {
+            await refreshSessionStatus()
+            return
+        }
         isWorking = true
         state = .connecting
         defer { isWorking = false }
@@ -425,9 +445,11 @@ final class BrokerManagementViewModel: ObservableObject {
                 state = .sessionExpired
                 account = nil
             } else {
+                account = nil
                 state = .connectionFailed(error.localizedDescription)
             }
         } catch {
+            account = nil
             state = .connectionFailed("The Capital.com session could not be verified.")
         }
     }

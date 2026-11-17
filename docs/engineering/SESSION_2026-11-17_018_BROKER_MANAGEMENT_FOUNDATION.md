@@ -40,7 +40,7 @@ Verified lifecycle:
 - Session tokens are held only in the authentication service's in-memory state and cleared locally on disconnect/failure.
 - LIVE is represented as a disabled environment and is rejected by the authentication service.
 - Capital.com currently documents API keys as trading-capable; no read-only API-key privilege is available. ATHEER therefore exposes no dealing methods in this feature and keeps trading disabled.
-- This native app-side Keychain flow is a deliberate implementation boundary for the owner-requested desktop credential workflow. It must not be copied into remote clients; future multi-client deployments should move credential ownership to a dedicated secure backend vault with explicit account-level authorization.
+- The native app-side Keychain flow is a deliberate implementation boundary for the owner-requested desktop credential workflow. Requests use an ephemeral URLSession configuration with URL caching and cookie persistence disabled; authentication/session requests carry Cache-Control: no-store. It must not be copied into remote clients; future multi-client deployments should move credential ownership to a dedicated secure backend vault with explicit account-level authorization.
 - REST authentication does not establish WebSocket market-data streaming.
 
 ## Verification status
