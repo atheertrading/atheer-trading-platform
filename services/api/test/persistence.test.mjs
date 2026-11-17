@@ -10,7 +10,7 @@ import {
 } from "../dist/domain/index.js";
 import {
   applySqlMigrations, loadSqlMigrations, PersistenceConflictError, PostgresTradingRepository,
-  runSqlMigrations,
+  runSqlMigrations, verifySqlMigrations,
 } from "../dist/persistence/postgres.js";
 
 const enabled = typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL.length > 0;
@@ -21,6 +21,10 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     const migrations = await loadSqlMigrations();
     await runSqlMigrations(pool);
     await Promise.all([runSqlMigrations(pool), runSqlMigrations(pool)]);
+    await verifySqlMigrations(pool);
+    const serverVersion = await pool.query("SHOW server_version");
+    console.info("PostgreSQL integration server version: " + serverVersion.rows[0].server_version);
+    assert.match(serverVersion.rows[0].server_version, /^17\./);
     await assert.rejects(
       applySqlMigrations(pool, [{ version: migrations[0].version, sql: migrations[0].sql + "\n-- checksum drift\n" }]),
       (error) => error instanceof PersistenceConflictError && error.message.includes("checksum"),
