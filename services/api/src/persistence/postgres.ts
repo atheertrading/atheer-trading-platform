@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import process from "node:process";
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Pool } from "pg";
