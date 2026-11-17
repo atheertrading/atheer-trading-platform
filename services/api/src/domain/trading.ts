@@ -1,0 +1,296 @@
+import {
+  type AccountBalanceSnapshot,
+  type BrokerAccountId,
+  type CorrelationId,
+  type DataProvenance,
+  type ExecutionEventId,
+  type ExecutionFillId,
+  type IdempotencyKey,
+  type InstrumentId,
+  type InstrumentSpecificationId,
+  type OrderId,
+  type OrderIntentId,
+  type PositionId,
+  type ReconciliationEventId,
+  type RiskAssessmentId,
+  type SourceId,
+  type TradingEnvironment,
+  type UtcTimestamp,
+  DomainValidationError,
+  assertPositiveDecimal,
+  deepFreeze,
+  nonEmptyString,
+} from "./shared.ts";
+import type { Price, Quantity } from "./instrument.ts";
+
+export type IntentOriginKind =
+  | "HUMAN"
+  | "STRATEGY"
+  | "ALGORITHM"
+  | "POSITION_MANAGEMENT"
+  | "RISK_MANAGEMENT"
+  | "AI_AGENT"
+  | "SYSTEM";
+
+export interface IntentOrigin {
+  readonly kind: IntentOriginKind;
+  readonly sourceId: SourceId;
+  readonly permissionProfileReference?: string;
+}
+
+export type OrderDirection = "BUY" | "SELL";
+
+export interface PriceParameter {
+  readonly code: string;
+  readonly price: Price;
+}
+
+export interface OrderIntentPayload {
+  readonly operationCode: string;
+  readonly direction?: OrderDirection;
+  readonly quantity?: Quantity;
+  readonly orderTypeCode?: string;
+  readonly priceParameters?: readonly PriceParameter[];
+  readonly timeInForceCode?: string;
+  readonly targetOrderId?: OrderId;
+  readonly targetPositionId?: PositionId;
+}
+
+export interface OrderIntentEnvelope<TPayload extends object = OrderIntentPayload> {
+  readonly id: OrderIntentId;
+  readonly commandId: import("./shared.ts").CommandId;
+  readonly correlationId: CorrelationId;
+  readonly idempotencyKey: IdempotencyKey;
+  readonly accountId: BrokerAccountId;
+  readonly instrumentId: InstrumentId;
+  readonly instrumentSpecificationId: InstrumentSpecificationId;
+  readonly environment: TradingEnvironment;
+  readonly origin: IntentOrigin;
+  readonly createdAt: UtcTimestamp;
+  readonly intentVersion: number;
+  readonly schemaVersion: string;
+  readonly marketDataReference?: string;
+  readonly payload: Readonly<TPayload>;
+}
+
+export function createOrderIntentEnvelope<TPayload extends object>(
+  input: OrderIntentEnvelope<TPayload>,
+): OrderIntentEnvelope<Readonly<TPayload>> {
+  nonEmptyString(input.id, "order_intent_id");
+  nonEmptyString(input.commandId, "command_id");
+  nonEmptyString(input.correlationId, "correlation_id");
+  nonEmptyString(input.idempotencyKey, "idempotency_key");
+  nonEmptyString(input.accountId, "broker_account_id");
+  nonEmptyString(input.instrumentId, "instrument_id");
+  nonEmptyString(input.instrumentSpecificationId, "instrument_specification_id");
+  nonEmptyString(input.origin.sourceId, "intent_origin_source_id");
+  nonEmptyString(input.schemaVersion, "intent_schema_version");
+  if (!Number.isSafeInteger(input.intentVersion) || input.intentVersion < 1) {
+    throw new DomainValidationError("invalid_intent_version", "Intent version must be a positive integer.");
+  }
+  if (input.origin.permissionProfileReference !== undefined) {
+    nonEmptyString(input.origin.permissionProfileReference, "permission_profile_reference");
+  }
+  if (input.marketDataReference !== undefined) {
+    nonEmptyString(input.marketDataReference, "market_data_reference");
+  }
+  if (input.payload === null || typeof input.payload !== "object") {
+    throw new DomainValidationError("invalid_intent_payload", "Order intent payload must be a structured object.");
+  }
+  return deepFreeze({ ...input }) as OrderIntentEnvelope<Readonly<TPayload>>;
+}
+
+export type RiskDecisionOutcome = "AUTHORIZED" | "REJECTED" | "HELD";
+
+export interface RiskAssessment {
+  readonly id: RiskAssessmentId;
+  readonly intentId: OrderIntentId;
+  readonly policyVersion: string;
+  readonly outcome: RiskDecisionOutcome;
+  readonly evaluatedAt: UtcTimestamp;
+  readonly reasonCodes: readonly string[];
+  readonly inputReferences: readonly string[];
+  readonly provenance: DataProvenance;
+}
+
+export function createRiskAssessment(input: RiskAssessment): RiskAssessment {
+  nonEmptyString(input.id, "risk_assessment_id");
+  nonEmptyString(input.intentId, "risk_intent_id");
+  nonEmptyString(input.policyVersion, "risk_policy_version");
+  if (input.outcome !== "AUTHORIZED" && input.outcome !== "REJECTED" && input.outcome !== "HELD") {
+    throw new DomainValidationError("invalid_risk_outcome", "Risk outcome must be AUTHORIZED, REJECTED, or HELD.");
+  }
+  for (const code of input.reasonCodes) nonEmptyString(code, "risk_reason_code");
+  for (const reference of input.inputReferences) nonEmptyString(reference, "risk_input_reference");
+  if (input.provenance.eventAt !== input.evaluatedAt) {
+    throw new DomainValidationError("risk_timestamp_mismatch", "Risk assessment time must match its provenance event time.");
+  }
+  return deepFreeze({ ...input, reasonCodes: [...input.reasonCodes], inputReferences: [...input.inputReferences] }) as RiskAssessment;
+}
+
+export interface StateTransitionPolicy<TState extends string> {
+  readonly initialStates: readonly TState[];
+  readonly transitions: Readonly<Partial<Record<TState, readonly TState[]>>>;
+}
+
+export interface LifecycleTransition<TEntityId extends string, TState extends string> {
+  readonly entityId: TEntityId;
+  readonly fromState: TState | null;
+  readonly toState: TState;
+  readonly occurredAt: UtcTimestamp;
+  readonly correlationId: CorrelationId;
+  readonly sourceId: SourceId;
+  readonly reasonCode?: string;
+}
+
+export function isTransitionAllowed<TState extends string>(
+  policy: StateTransitionPolicy<TState>,
+  fromState: TState | null,
+  toState: TState,
+): boolean {
+  if (fromState === null) return policy.initialStates.includes(toState);
+  return policy.transitions[fromState]?.includes(toState) ?? false;
+}
+
+export function assertTransitionAllowed<TState extends string>(
+  policy: StateTransitionPolicy<TState>,
+  fromState: TState | null,
+  toState: TState,
+): void {
+  if (!isTransitionAllowed(policy, fromState, toState)) {
+    throw new DomainValidationError("invalid_lifecycle_transition", "The requested lifecycle transition is not permitted by the supplied policy.");
+  }
+}
+
+export interface BrokerOrderRecord {
+  readonly id: OrderId;
+  readonly intentId: OrderIntentId;
+  readonly accountId: BrokerAccountId;
+  readonly instrumentId: InstrumentId;
+  readonly environment: TradingEnvironment;
+  readonly brokerOrderReference: string;
+  readonly brokerStatusCode: string;
+  readonly orderedQuantity: Quantity;
+  readonly filledQuantity: Quantity;
+  readonly observedAt: UtcTimestamp;
+  readonly provenance: DataProvenance;
+}
+
+export interface PositionSnapshot {
+  readonly id: PositionId;
+  readonly accountId: BrokerAccountId;
+  readonly instrumentId: InstrumentId;
+  readonly environment: TradingEnvironment;
+  readonly brokerPositionReference: string;
+  readonly brokerStatusCode: string;
+  readonly quantity: Quantity;
+  readonly averageOpenPrice?: Price;
+  readonly observedAt: UtcTimestamp;
+  readonly provenance: DataProvenance;
+}
+
+export interface ExecutionFill {
+  readonly id: ExecutionFillId;
+  readonly orderId: OrderId;
+  readonly brokerExecutionReference: string;
+  readonly environment: TradingEnvironment;
+  readonly quantity: Quantity;
+  readonly executionPrice: Price;
+  readonly executedAt: UtcTimestamp;
+  readonly receivedAt: UtcTimestamp;
+  readonly provenance: DataProvenance;
+}
+
+export function validateExecutionFill(fill: ExecutionFill): void {
+  nonEmptyString(fill.id, "execution_fill_id");
+  nonEmptyString(fill.orderId, "execution_order_id");
+  nonEmptyString(fill.brokerExecutionReference, "broker_execution_reference");
+  assertPositiveDecimal(fill.quantity.value, "execution_quantity");
+  if (fill.environment !== fill.provenance.environment) {
+    throw new DomainValidationError("execution_environment_mismatch", "Execution fill and provenance environments must match.");
+  }
+  if (fill.executedAt !== fill.provenance.eventAt || fill.receivedAt !== fill.provenance.receivedAt) {
+    throw new DomainValidationError("execution_timestamp_mismatch", "Execution event and receipt times must match provenance.");
+  }
+}
+
+export interface ExecutionEvent<TPayload extends object = Readonly<Record<string, unknown>>> {
+  readonly id: ExecutionEventId;
+  readonly aggregateId: OrderId | PositionId;
+  readonly eventCode: string;
+  readonly occurredAt: UtcTimestamp;
+  readonly receivedAt: UtcTimestamp;
+  readonly environment: TradingEnvironment;
+  readonly provenance: DataProvenance;
+  readonly payload: Readonly<TPayload>;
+}
+
+export function createExecutionEvent<TPayload extends object>(input: ExecutionEvent<TPayload>): ExecutionEvent<Readonly<TPayload>> {
+  nonEmptyString(input.id, "execution_event_id");
+  nonEmptyString(input.aggregateId, "execution_aggregate_id");
+  nonEmptyString(input.eventCode, "execution_event_code");
+  if (input.environment !== input.provenance.environment) {
+    throw new DomainValidationError("execution_event_environment_mismatch", "Execution event and provenance environments must match.");
+  }
+  if (input.occurredAt !== input.provenance.eventAt || input.receivedAt !== input.provenance.receivedAt) {
+    throw new DomainValidationError("execution_event_timestamp_mismatch", "Execution event timestamps must match provenance.");
+  }
+  return deepFreeze({ ...input }) as ExecutionEvent<Readonly<TPayload>>;
+}
+
+export interface ReconciliationEvent {
+  readonly id: ReconciliationEventId;
+  readonly aggregateType: "ACCOUNT" | "ORDER" | "POSITION" | "EXECUTION";
+  readonly aggregateId: string;
+  readonly outcomeCode: string;
+  readonly occurredAt: UtcTimestamp;
+  readonly environment: TradingEnvironment;
+  readonly discrepancyCodes: readonly string[];
+  readonly provenance: DataProvenance;
+}
+
+export function createReconciliationEvent(input: ReconciliationEvent): ReconciliationEvent {
+  nonEmptyString(input.id, "reconciliation_event_id");
+  nonEmptyString(input.aggregateId, "reconciliation_aggregate_id");
+  nonEmptyString(input.outcomeCode, "reconciliation_outcome_code");
+  if (input.environment !== input.provenance.environment || input.occurredAt !== input.provenance.eventAt) {
+    throw new DomainValidationError("reconciliation_provenance_mismatch", "Reconciliation event must match its source environment and event time.");
+  }
+  for (const code of input.discrepancyCodes) nonEmptyString(code, "reconciliation_discrepancy_code");
+  return deepFreeze({ ...input, discrepancyCodes: [...input.discrepancyCodes] }) as ReconciliationEvent;
+}
+
+export interface AuditEvent {
+  readonly id: import("./shared.ts").AuditEventId;
+  readonly actorKind: "USER" | "SYSTEM" | "STRATEGY" | "AI_AGENT" | "BROKER";
+  readonly actorId: SourceId;
+  readonly actionCode: string;
+  readonly subjectType: string;
+  readonly subjectId: string;
+  readonly outcomeCode: string;
+  readonly occurredAt: UtcTimestamp;
+  readonly correlationId: CorrelationId;
+  readonly environment: TradingEnvironment;
+  readonly reasonCodes: readonly string[];
+  readonly provenance?: DataProvenance;
+}
+
+export function createAuditEvent(input: AuditEvent): AuditEvent {
+  nonEmptyString(input.id, "audit_event_id");
+  nonEmptyString(input.actorId, "audit_actor_id");
+  nonEmptyString(input.actionCode, "audit_action_code");
+  nonEmptyString(input.subjectType, "audit_subject_type");
+  nonEmptyString(input.subjectId, "audit_subject_id");
+  nonEmptyString(input.outcomeCode, "audit_outcome_code");
+  nonEmptyString(input.correlationId, "audit_correlation_id");
+  if (input.provenance !== undefined && input.provenance.environment !== input.environment) {
+    throw new DomainValidationError("audit_provenance_mismatch", "Audit event and provenance environments must match.");
+  }
+  for (const code of input.reasonCodes) nonEmptyString(code, "audit_reason_code");
+  return deepFreeze({ ...input, reasonCodes: [...input.reasonCodes] }) as AuditEvent;
+}
+
+export interface OrderLifecycleTransition extends LifecycleTransition<OrderId, string> {}
+export interface PositionLifecycleTransition extends LifecycleTransition<PositionId, string> {}
+
+export type AccountSnapshotReference = AccountBalanceSnapshot;
