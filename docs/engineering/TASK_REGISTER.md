@@ -50,7 +50,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 | M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; owner runtime QA pending |
 | M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; workflow #132 passed on its exact head; full control audit and owner runtime QA pending |
-| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 `feat/macos-workspace-visual-foundation`, current head `bd629bb9a5a7736c61ab4c3c3e5c2a14f9fe57f0`; exact-head CI and owner visual QA pending |
+| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 source head `331f424d6d1180569504b725cbcaa1eece41ed46`; exact-head hosted workflow #135 passed repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Mac qualification is active on `work/local-pr18-qualification`; local build/test/launch and visual/accessibility QA remain pending. Formal IPDS source/approval reconciliation remains pending. |
 
 ## Governance notes
 
@@ -161,3 +161,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - M02-007 hosted CI #132 passed on PR #17 exact head; owner runtime QA remains pending.
 - M02-008 hosted CI #132 passed on PR #17 exact head; application-wide clipboard audit and owner runtime QA remain pending.
 - ATP-ARCH-014/037/038 and original IPDS full source/approval metadata were not surfaced by Library retrieval; do not mark product IA or IPDS as formally approved.
+
+
+## PR #18 local qualification checkpoint — 2026-11-17
+
+- Local safety branch `safety/local-pr10-checkpoint-20261117` preserves the original local PR #10 checkout at `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Remote ancestry was verified: PR #10 → PR #17 → PR #18. The local qualification branch `work/local-pr18-qualification` tracks `origin/feat/macos-workspace-visual-foundation` at source head `331f424d6d1180569504b725cbcaa1eece41ed46`; the working tree was clean at branch creation.
+- Local toolchain inventory returned Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1, and an existing generated Xcode project. This is environment discovery only; no local build, XCTest, launch, or visual result is claimed.
+- PR #18 workflow #135 passed on source head `331f424d6d1180569504b725cbcaa1eece41ed46`: repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety workflow #90 also passed.
+- Next: inspect full governing/architecture requirements and source; run local Debug → XCTest → Release with isolated DerivedData; then launch and perform visual, interaction, accessibility, and multi-display checks where supported.
