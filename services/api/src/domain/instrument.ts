@@ -43,7 +43,6 @@ export interface Price {
 
 export function quantity(value: string, unit: UnitCode): Quantity {
   const normalized = decimalValue(value);
-  assertPositiveDecimal(normalized, "quantity");
   nonEmptyString(unit, "quantity_unit");
   return Object.freeze({ value: normalized, unit });
 }

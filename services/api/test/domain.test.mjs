@@ -10,6 +10,7 @@ import {
   createAuditEvent,
   createDataProvenance,
   createExecutionEvent,
+  createExecutionFill,
   createOrderIntentEnvelope,
   createReconciliationEvent,
   createRiskAssessment,
@@ -236,6 +237,7 @@ test("execution, reconciliation and audit events retain immutable provenance", (
   const provenance = brokerProvenance();
   const fill = {
     id: "fill-001",
+    brokerId: brokerId("capital.com"),
     orderId: orderId("order-001"),
     brokerExecutionReference: "deal-001",
     environment: "DEMO",
@@ -245,7 +247,9 @@ test("execution, reconciliation and audit events retain immutable provenance", (
     receivedAt: provenance.receivedAt,
     provenance,
   };
-  validateExecutionFill(fill);
+  const immutableFill = createExecutionFill(fill);
+  validateExecutionFill(immutableFill);
+  assert.equal(Object.isFrozen(immutableFill), true);
 
   const executionEvent = createExecutionEvent({
     id: "execution-event-001",
@@ -286,4 +290,41 @@ test("execution, reconciliation and audit events retain immutable provenance", (
     provenance,
   });
   assert.equal(Object.isFrozen(audit), true);
+});
+
+test("broker order and position observations require matching broker provenance", () => {
+  const provenance = brokerProvenance();
+  const order = {
+    id: orderId("order-002"),
+    brokerId: brokerId("capital.com"),
+    intentId: orderIntentId("intent-002"),
+    accountId: brokerAccountId("account-demo-1"),
+    instrumentId: instrumentId("instrument-GOLD"),
+    environment: "DEMO",
+    brokerOrderReference: "broker-order-002",
+    brokerStatusCode: "WORKING",
+    orderedQuantity: quantity("0.2", unitCode("CONTRACT")),
+    filledQuantity: quantity("0", unitCode("CONTRACT")),
+    observedAt: provenance.eventAt,
+    provenance,
+  };
+  validateBrokerOrderRecord(order);
+
+  const position = {
+    id: positionId("position-001"),
+    brokerId: brokerId("capital.com"),
+    accountId: brokerAccountId("account-demo-1"),
+    instrumentId: instrumentId("instrument-GOLD"),
+    environment: "DEMO",
+    brokerPositionReference: "broker-position-001",
+    brokerStatusCode: "OPEN",
+    quantity: quantity("-0.2", unitCode("CONTRACT")),
+    observedAt: provenance.eventAt,
+    provenance,
+  };
+  validatePositionSnapshot(position);
+  assert.throws(
+    () => validatePositionSnapshot({ ...position, brokerId: brokerId("other-broker") }),
+    { code: "position_provenance_mismatch" },
+  );
 });
