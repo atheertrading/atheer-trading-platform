@@ -260,7 +260,7 @@ export class PostgresTradingRepository {
       if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Reconciliation event identity was reused with different content.");
       await client.query(
         "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RECONCILIATION',$3,'reconciliation.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
-        [this.environment,"reconciliation:" + event.id,event.aggregateType,event.provenance.source.sourceId,"reconciliation:" + event.id,payload],
+        [this.environment,"reconciliation:" + event.id,event.aggregateId,event.id,"reconciliation:" + event.id,payload],
       );
     });
   }
@@ -282,7 +282,7 @@ export class PostgresTradingRepository {
       if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Audit event identity was reused with different content.");
       await client.query(
         "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'AUDIT',$3,'audit.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
-        [this.environment,"audit:" + event.id,event.subjectType,event.subjectId,event.correlationId,"audit:" + event.id,payload],
+        [this.environment,"audit:" + event.id,event.subjectId,event.correlationId,"audit:" + event.id,payload],
       );
     });
   }
