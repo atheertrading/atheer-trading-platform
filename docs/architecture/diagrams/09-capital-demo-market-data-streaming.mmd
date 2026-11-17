@@ -1,0 +1,43 @@
+flowchart LR
+  subgraph Provider["Capital.com DEMO"]
+    REST["POST /session"]
+    DETAILS["GET /session"]
+    ENDPOINT["Provider streamEndpoint"]
+    SOCKET["WSS /connect"]
+    SUB["marketData.subscribe / unsubscribe"]
+    QUOTE["destination: quote"]
+    REST --> DETAILS --> ENDPOINT --> SOCKET --> SUB --> QUOTE
+  end
+
+  subgraph Backend["ATHEER API — loopback only"]
+    SESSION["Server-held CST + security token"]
+    ADAPTER["CapitalDemoClient"]
+    STREAM["CapitalDemoStreamingRuntime"]
+    NORMALIZE["Normalize Bid / Ask / provider timestamp"]
+    QUALITY["Validate prices, timestamp, instrument identity"]
+    ORDER["Reject duplicate and out-of-order updates"]
+    CACHE["Latest quote cache + subscriber fan-out"]
+    SSE["GET /market-data/stream (SSE)"]
+    STATUS["GET /market-data/status"]
+    ADAPTER --> DETAILS
+    SESSION --> SOCKET
+    QUOTE --> NORMALIZE --> QUALITY --> ORDER --> CACHE --> SSE
+    STREAM --> SOCKET
+    STREAM --> SUB
+    STREAM --> NORMALIZE
+    STREAM --> STATUS
+  end
+
+  subgraph Consumers["Native macOS application — follow-up integration"]
+    CLIENT["URLSession stream consumer"]
+    STORE["MarketDataStore / instrument state"]
+    VIEW["Existing Market Explorer"]
+    CHART["Future Charting data adapter"]
+    SSE --> CLIENT --> STORE
+    STORE --> VIEW
+    STORE -. "later vertical slice" .-> CHART
+  end
+
+  RISK["RiskEngine quote-freshness authorization — not wired by this increment"]
+  CACHE -. "data-quality input only" .-> RISK
+  SOCKET -. "CST / securityToken stay server-side" .-> SESSION
