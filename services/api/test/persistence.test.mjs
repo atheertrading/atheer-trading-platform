@@ -19,6 +19,7 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
   const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
   try {
     const migrations = await loadSqlMigrations();
+    assert.ok(migrations.length > 0, "No SQL migrations were discovered.");
     await runSqlMigrations(pool);
     await Promise.all([runSqlMigrations(pool), runSqlMigrations(pool)]);
     await verifySqlMigrations(pool);
