@@ -179,9 +179,11 @@ final class MarketExplorerViewModel: ObservableObject {
         didSet {
             guard oldValue != searchTerm else { return }
             searchGeneration &+= 1
-            if state == .searching {
-                state = .idle
+            if case .unavailable = state {
+                return
             }
+            results = []
+            state = .idle
         }
     }
 
