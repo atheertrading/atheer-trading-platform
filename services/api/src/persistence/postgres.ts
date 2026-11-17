@@ -86,7 +86,7 @@ export function createPostgresPool(connectionString: string): SqlPool {
 }
 
 export async function loadSqlMigrations(directory = resolve(dirname(fileURLToPath(import.meta.url)), "../../migrations")): Promise<SqlMigration[]> {
-  const names = (await readdir(directory)).filter((name) => /^\d{3,}_[a-z0-9-]+\.sql$/.test(name)).sort();
+  const names = (await readdir(directory)).filter((name) => /^\d{3,}_[a-z0-9_-]+\.sql$/.test(name)).sort();
   const migrations: SqlMigration[] = [];
   for (const name of names) {
     const version = name.slice(0, name.indexOf("_"));
