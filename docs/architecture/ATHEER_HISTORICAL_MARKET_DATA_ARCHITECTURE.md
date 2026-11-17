@@ -15,7 +15,7 @@ The adapter calls Capital.com DEMO `GET /prices/{epic}` with:
 
 Official provider reference: [Capital.com Public API — Historical prices](https://open-api.capital.com/).
 
-A date range must contain both bounds and `from` must precede `to`. The provider's `max` limit is enforced before and after the request. The response reports `pagination.limitReached` when the requested count is reached; this means the range may require a narrower follow-up request, not that the provider has confirmed additional records.
+A date range must contain both bounds and `from` must precede `to`. The provider's `max` limit is enforced before and after the request. The response reports `pagination.limitReached` when the raw provider record count reaches the requested `max`, before normalization and exact-duplicate removal. This preserves the provider pagination signal even when the normalized candle count is lower. A reached limit means the range may require a narrower follow-up request; it does not confirm that additional records exist.
 
 The current API does not fabricate an opaque continuation cursor. Automatic range partitioning is deferred until inclusive/exclusive boundary behavior is verified against the live DEMO provider.
 
