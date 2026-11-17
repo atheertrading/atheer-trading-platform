@@ -49,7 +49,7 @@ The owner confirms the application launches on the Mac and has been exercised ac
 
 - Source commit confirmed by GitHub: `db073848e7a80bbd4db2868faa741725698cb86c`.
 - No local Xcode build, XCTest, app launch, visual QA, accessibility test, or multi-display test was executed by engineering.
-- Hosted CI for the new follow-up branch is pending PR creation and exact-head workflow execution.
+- PR #22 was opened after the initial session report; the latest exact-head CI remains pending after documentation follow-ups.
 - Owner-confirmed runtime is not substituted for visual or accessibility acceptance.
 
 ## PR and handover
