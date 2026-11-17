@@ -241,3 +241,16 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - Existing XCTest coverage still asserts the four-panel inventory and default visibility. No new test execution is claimed in this record; exact-head CI is pending.
 - Owner confirms that the application launches on the Mac and has been exercised across two displays. This is owner-confirmed runtime evidence only; visual quality, window/panel behavior, accessibility, keyboard/focus, and VoiceOver remain unverified by engineering.
 - Formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation remains outstanding. The responsive metrics are provisional, not final design-system breakpoints.
+
+
+## PR #22 exact-head revalidation — 2026-11-17
+
+**Status: SOURCE IMPLEMENTED; EXACT-HEAD HOSTED CI PASSED; OWNER VISUAL/LOCAL QUALIFICATION PENDING.**
+
+- PR #22 remains open and unmerged; branch `feat/workspace-adaptive-layout`; exact inspected HEAD `3931c937708d4adad7a9595657015d478787f418`; base PR #18 HEAD `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- CI #160 passed repository hygiene/Markdown lint, backend toolchain/typecheck/tests, macOS Debug build, XCTest, Release build and Swift CodeQL on the exact inspected HEAD.
+- Local Sync Safety #167 passed shell syntax validation and non-destructive synchronization tests on the exact inspected HEAD.
+- PR #10/#17/#18/#22 remain open and unmerged; the required stack is intact. Exact current heads and their corresponding successful CI/safety runs are recorded in PROJECT_CONTINUITY.md.
+- The adaptive source still uses provisional 150–240 pt status-tile and 320–560 pt panel widths. No dedicated new geometry test was added by PR #22; existing XCTest covers panel inventory/default visibility. Hosted XCTest passed.
+- No owner-side local Xcode build/test, screenshot review, visual QA, accessibility, keyboard/focus, or independent two-display verification is claimed. The owner's earlier launch/two-display report remains owner-confirmed without an exact tested SHA.
+- Formal IPDS and ATP-ARCH-014/037/038 source/approval reconciliation remains open. Workspace persistence, panel resizing/docking, draggable arrangement, profiles, and Settings remain unimplemented.
