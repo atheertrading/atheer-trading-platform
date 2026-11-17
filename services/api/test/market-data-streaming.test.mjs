@@ -213,7 +213,7 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
     }, (response) => {
       try {
         assert.equal(response.statusCode, 200);
-        assert.match(response.headers["content-type"], /text\\/event-stream/);
+        assert.ok(response.headers["content-type"].startsWith("text/event-stream"));
       } catch (error) {
         reject(error);
         client.destroy();
