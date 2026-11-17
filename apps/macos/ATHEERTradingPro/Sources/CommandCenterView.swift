@@ -6,9 +6,9 @@ struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     let onOpenAPIConnection: () -> Void
 
-    @State private var visiblePanels = WorkspacePanelID.defaultVisible
+    @StateObject private var workspaceEngine = WorkspaceEngine()
 
-    private let sidebarWidth: CGFloat = 304
+    private var sidebarWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.sidebarWidth) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -73,13 +73,34 @@ struct CommandCenterView: View {
             }
 
             Menu {
+                Section("Workspaces") {
+                    ForEach(workspaceEngine.snapshot.workspaces) { workspace in
+                        Button {
+                            workspaceEngine.selectWorkspace(workspace.id)
+                        } label: {
+                            if workspace.id == workspaceEngine.activeWorkspace.id {
+                                Label(workspace.name, systemImage: "checkmark")
+                            } else {
+                                Text(workspace.name)
+                            }
+                        }
+                    }
+                    Button("New workspace") {
+                        _ = workspaceEngine.createWorkspace(
+                            name: "Workspace \(workspaceEngine.snapshot.workspaces.count + 1)"
+                        )
+                    }
+                }
+
+                Divider()
+
                 ForEach(WorkspacePanelID.allCases) { panel in
                     Button {
                         togglePanel(panel)
                     } label: {
                         Label(
                             panel.title,
-                            systemImage: visiblePanels.contains(panel) ? "checkmark" : "square"
+                            systemImage: workspaceEngine.visiblePanels.contains(panel) ? "checkmark" : "square"
                         )
                     }
                 }
@@ -87,7 +108,7 @@ struct CommandCenterView: View {
                 Divider()
 
                 Button("Restore default panels", action: resetPanels)
-                    .disabled(visiblePanels == WorkspacePanelID.defaultVisible)
+                    .disabled(workspaceEngine.visiblePanels == WorkspacePanelID.defaultVisible)
             } label: {
                 Label("Manage panels", systemImage: "rectangle.3.group")
             }
@@ -147,7 +168,7 @@ struct CommandCenterView: View {
 
     private var primaryWorkspace: some View {
         VStack(spacing: 16) {
-            if visiblePanels.contains(.charts) {
+            if workspaceEngine.visiblePanels.contains(.charts) {
                 CommandCenterPanel(
                     title: "Chart Workspace",
                     subtitle: "Price action · Technical analysis",
@@ -197,14 +218,14 @@ struct CommandCenterView: View {
                 }
             }
 
-            if visiblePanels.contains(.platformHealth) {
+            if workspaceEngine.visiblePanels.contains(.platformHealth) {
                 BackendStatusPanel(
                     model: backendHealthModel,
                     accent: ATHEERDesignTokens.ColorRole.accent
                 )
             }
 
-            if !visiblePanels.contains(.charts) && !visiblePanels.contains(.platformHealth) {
+            if !workspaceEngine.visiblePanels.contains(.charts) && !workspaceEngine.visiblePanels.contains(.platformHealth) {
                 emptySelectionState
             }
         }
@@ -212,7 +233,7 @@ struct CommandCenterView: View {
 
     private var secondaryWorkspace: some View {
         VStack(spacing: 16) {
-            if visiblePanels.contains(.marketWatch) {
+            if workspaceEngine.visiblePanels.contains(.marketWatch) {
                 CommandCenterPanel(
                     title: "Market Watch",
                     subtitle: "Instrument discovery · Quotes",
@@ -252,7 +273,7 @@ struct CommandCenterView: View {
                 }
             }
 
-            if visiblePanels.contains(.accountRisk) {
+            if workspaceEngine.visiblePanels.contains(.accountRisk) {
                 CommandCenterPanel(
                     title: "Account & Risk",
                     subtitle: "Balances · Exposure · Controls",
@@ -269,7 +290,7 @@ struct CommandCenterView: View {
                 }
             }
 
-            if !visiblePanels.contains(.marketWatch) && !visiblePanels.contains(.accountRisk) {
+            if !workspaceEngine.visiblePanels.contains(.marketWatch) && !workspaceEngine.visiblePanels.contains(.accountRisk) {
                 emptySelectionState
             }
         }
@@ -323,15 +344,14 @@ struct CommandCenterView: View {
     }
 
     private func togglePanel(_ panel: WorkspacePanelID) {
-        if visiblePanels.contains(panel) {
-            visiblePanels.remove(panel)
-        } else {
-            visiblePanels.insert(panel)
-        }
+        workspaceEngine.setPanelVisibility(
+            panel,
+            isVisible: !workspaceEngine.visiblePanels.contains(panel)
+        )
     }
 
     private func resetPanels() {
-        visiblePanels = WorkspacePanelID.defaultVisible
+        workspaceEngine.resetActiveWorkspace()
     }
 }
 
