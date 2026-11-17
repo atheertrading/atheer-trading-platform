@@ -57,3 +57,14 @@ Add a backend-owned Capital.com DEMO WebSocket quote stream and loopback Server-
 5. Normalize and persist historical candles with source lineage and gap detection.
 6. Build the Charting data adapter only after historical and streaming candle contracts are stable.
 7. Keep RiskEngine integration separate and fail-closed; no execution use until quote freshness is operation-aware and tested.
+
+## Swift 5.8 MainActor construction remediation
+
+Hosted Intel CI on the original PR head reached Xcode Debug compilation and exposed two Swift 5.8 isolation errors: the URLSessionMarketSearchClient default argument was evaluated from a synchronous nonisolated context in both MarketExplorerView and MarketExplorerViewModel.
+
+- Changed both dependency parameters to optional injection (nil by default).
+- Constructed the default URLSessionMarketSearchClient inside the MainActor-isolated view-model initializer.
+- Preserved explicit dependency injection for tests and alternate compositions.
+- No transport contract, backend behavior, broker permissions, trading gate, or risk boundary changed.
+
+The remediation is committed on the feature branch. Exact-head hosted macOS Debug/XCTest/Release/Swift CodeQL verification is still required; no pass is claimed until a new workflow run evaluates this head.
