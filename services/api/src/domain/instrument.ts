@@ -115,7 +115,7 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
   if (specification.provenance.source.sourceType !== "BROKER") {
     throw new DomainValidationError("invalid_specification_source", "Instrument specifications must retain broker provenance.");
   }
-  if (specification.provenance.source.sourceId !== specification.brokerReference.brokerId) {
+  if (String(specification.provenance.source.sourceId) !== String(specification.brokerReference.brokerId)) {
     throw new DomainValidationError("broker_provenance_mismatch", "Specification source must match its broker identity.");
   }
   if (specification.provenance.environment !== specification.brokerReference.environment) {

@@ -56,7 +56,7 @@ export function validateAccountBalanceSnapshot(
   }
   if (
     snapshot.provenance.source.sourceType !== "BROKER" ||
-    snapshot.provenance.source.sourceId !== account.brokerId
+    String(snapshot.provenance.source.sourceId) !== String(account.brokerId)
   ) {
     throw new DomainValidationError("account_provenance_mismatch", "Broker account snapshots require matching broker provenance.");
   }
