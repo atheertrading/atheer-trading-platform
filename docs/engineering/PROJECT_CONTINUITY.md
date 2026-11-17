@@ -272,3 +272,13 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - This branch is documentation-only. No application source, tests, trading configuration, broker permissions, credentials, risk limits, or production settings are changed.
 - **Current checkpoint:** PR #19 is open against `docs/atp-ui-ux-chatgpt-directive`; head at PR creation was `ff1a3df9e25f84844950fa51fcaf71fc8272f798`. The PR contains seven documentation files and is not merged.
 - **Next action:** review the complete PR diff and inspect CI on the latest exact PR head. Do not claim merge or qualification before GitHub confirms them.
+
+
+## 2026-11-17 — Sequential work queue established
+
+- Owner approved implementation of the sequential GitHub work queue discussed in the engineering session.
+- Added root `WORK.md` (ATP-WORK-001) on `docs/continuous-engineering-operating-directive`; linked it from root `AGENTS.md` and registered the queue in `docs/engineering/TASK_REGISTER.md`.
+- Opened PR #20 against `docs/atp-ui-ux-chatgpt-directive` to preserve the existing documentation dependency. PR #20 is open; latest confirmed head at this checkpoint is `0766cf0d345b51b87034c15449765b9a621455f2`; changed files are WORK.md, AGENTS.md, and TASK_REGISTER.md. Revalidate before relying on this snapshot.
+- PR #19 was found closed. The queue changes were therefore proposed in a new focused PR rather than reopening or altering the closed PR.
+- No Markdown lint, CI, or application test result is claimed. PR review and exact-head checks remain pending.
+- **Next action:** inspect PR #20's complete diff and latest checks, then continue WORK-001. Do not merge until the dependency and required checks are satisfied.
