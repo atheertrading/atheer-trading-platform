@@ -127,3 +127,21 @@ This is a dated status note; it does not silently close or mark any existing mil
 - Actual market-data, broker, account, RiskEngine, OMS, Execution Gateway, and trading service integration remain separate implementation work. Preserve the existing no-fabricated-data and no-LIVE-without-explicit-authorization rules.
 - Session report: `SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md`.
 - No task was marked DONE by this discovery session. No local Mac build, XCTest, runtime, or broker verification was performed.
+
+
+## CI qualification tracking — 2026-11-17 (ATP-2026-11-17-003)
+
+This is an evidence checkpoint, not a milestone completion.
+
+| ID | Priority | Task | Status | Latest evidence / next gate |
+|---|---|---|---|---|
+| ATP-CI-001 | P0 | Qualify Intel x86_64 macOS build, XCTest, Release, and Swift CodeQL on PR #25 exact head | BLOCKED | Run #201 job #134229424016 cancelled; obtain a valid terminal run with executed build/test evidence. |
+| ATP-CI-002 | P0 | Qualify Apple Silicon arm64 macOS build, XCTest, and Release on PR #25 exact head | IN PROGRESS | Rerun job #134229421496 is queued; queued is not pass. Poll and inspect terminal result. |
+| ATP-CI-003 | P0 | Qualify PR #24 exact-head macOS CI | BLOCKED | Run #189 has Intel and Apple Silicon jobs cancelled; revalidate exact head and recover both architecture checks. |
+| ATP-MD-001 | P0 | Resolve official Capital.com DEMO streaming hostname | BLOCKED | PR #25 records that public documentation does not explicitly identify the DEMO streaming host; obtain authoritative provider confirmation. |
+| ATP-MD-002 | P1 | Implement authenticated Capital.com streaming lifecycle | BLOCKED | Do not implement or hardcode a DEMO stream host before ATP-MD-001 and required macOS qualification are complete. |
+
+- PR #25 exact head: `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`; CI run [#201](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44124205521).
+- PR #24 exact head: `e9e7085fc7699da19fe934dfd35274e8c8217922`; CI run [#189](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44118381361).
+- Backend toolchain and repository hygiene passed on PR #25 run #201. These checks do not replace macOS qualification.
+- No source code or CI configuration changed in this checkpoint. No task is marked DONE.
