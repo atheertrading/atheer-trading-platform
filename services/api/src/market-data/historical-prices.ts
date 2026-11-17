@@ -107,7 +107,7 @@ export function normalizeCapitalHistoricalPrices(
       observedGaps.push({
         previousTimestampMs,
         nextTimestampMs,
-        nominalIntervalsMissing: Math.max(1, Math.round(elapsedMs / intervalMs) - 1),
+        nominalIntervalsMissing: Math.max(1, Math.floor(elapsedMs / intervalMs) - 1),
         classification: "requires_market_session_calendar",
       });
     }
@@ -200,7 +200,9 @@ function parseProviderUtcTimestamp(value: unknown): number {
     throw new Error("Capital.com historical candle is missing snapshotTimeUTC.");
   }
   const timestampMs = Date.parse(value + "Z");
-  if (!Number.isFinite(timestampMs)) {
+  const [whole, fraction = ""] = value.split(".");
+  const expectedIso = whole + "." + fraction.padEnd(3, "0");
+  if (!Number.isFinite(timestampMs) || new Date(timestampMs).toISOString().slice(0, 23) !== expectedIso) {
     throw new Error("Capital.com historical candle has an invalid UTC timestamp.");
   }
   return timestampMs;
@@ -230,7 +232,7 @@ export function toCapitalProviderUtcDateTime(value: string): string {
     throw new Error("Historical date bounds must use UTC ISO format YYYY-MM-DDTHH:mm:ssZ.");
   }
   const timestampMs = Date.parse(value);
-  if (!Number.isFinite(timestampMs)) {
+  if (!Number.isFinite(timestampMs) || new Date(timestampMs).toISOString().slice(0, 19) + "Z" !== value) {
     throw new Error("Historical date bound is invalid.");
   }
   return value.slice(0, -1);
