@@ -81,6 +81,9 @@ export interface OrderIntentEnvelope<TPayload extends OrderIntentPayload = Order
 export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   input: OrderIntentEnvelope<TPayload>,
 ): OrderIntentEnvelope<Readonly<TPayload>> {
+  if (input.payload === null || typeof input.payload !== "object") {
+    throw new DomainValidationError("invalid_intent_payload", "Order intent payload must be a structured object.");
+  }
   nonEmptyString(input.id, "order_intent_id");
   nonEmptyString(input.commandId, "command_id");
   nonEmptyString(input.correlationId, "correlation_id");
@@ -117,9 +120,6 @@ export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   }
   if (input.marketDataReference !== undefined) {
     nonEmptyString(input.marketDataReference, "market_data_reference");
-  }
-  if (input.payload === null || typeof input.payload !== "object") {
-    throw new DomainValidationError("invalid_intent_payload", "Order intent payload must be a structured object.");
   }
   return deepFreeze({ ...input }) as OrderIntentEnvelope<Readonly<TPayload>>;
 }
@@ -255,6 +255,11 @@ export function validateBrokerOrderRecord(order: BrokerOrderRecord): void {
   }
 }
 
+export function createBrokerOrderRecord(input: BrokerOrderRecord): BrokerOrderRecord {
+  validateBrokerOrderRecord(input);
+  return deepFreeze({ ...input }) as BrokerOrderRecord;
+}
+
 export function validatePositionSnapshot(position: PositionSnapshot): void {
   nonEmptyString(position.id, "position_id");
   nonEmptyString(position.brokerId, "position_broker_id");
@@ -271,6 +276,11 @@ export function validatePositionSnapshot(position: PositionSnapshot): void {
     throw new DomainValidationError("position_timestamp_mismatch", "Position observation time must match its broker event time.");
   }
   nonEmptyString(position.quantity.unit, "position_quantity_unit");
+}
+
+export function createPositionSnapshot(input: PositionSnapshot): PositionSnapshot {
+  validatePositionSnapshot(input);
+  return deepFreeze({ ...input }) as PositionSnapshot;
 }
 
 export function validateExecutionFill(fill: ExecutionFill): void {

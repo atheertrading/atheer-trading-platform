@@ -8,12 +8,14 @@ import {
   brokerInstrumentId,
   compareDecimal,
   createAuditEvent,
+  createBrokerOrderRecord,
   createDataProvenance,
   createExecutionEvent,
   createExecutionFill,
   createOrderIntentEnvelope,
   createReconciliationEvent,
   createRiskAssessment,
+  createPositionSnapshot,
   currencyCode,
   decimalValue,
   idempotencyKey,
@@ -32,6 +34,8 @@ import {
   validateAccountBalanceSnapshot,
   validateBrokerAccountIdentity,
   validateExecutionFill,
+  validateBrokerOrderRecord,
+  validatePositionSnapshot,
   validateInstrumentIdentity,
   validateInstrumentSpecification,
   assertTransitionAllowed,
@@ -184,6 +188,13 @@ test("order intents are immutable, versioned envelopes with a common origin and 
   assert.equal(Object.isFrozen(intent.payload), true);
   assert.equal(Object.isFrozen(intent.payload.priceParameters), true);
   assert.throws(
+    () => createOrderIntentEnvelope({
+      ...intent,
+      payload: { ...intent.payload, quantity: quantity("0", unitCode("CONTRACT")) },
+    }),
+    { code: "invalid_intent_quantity" },
+  );
+  assert.throws(
     () => createOrderIntentEnvelope({ ...intent, idempotencyKey: "" }),
     { code: "invalid_idempotency_key" },
   );
@@ -308,7 +319,9 @@ test("broker order and position observations require matching broker provenance"
     observedAt: provenance.eventAt,
     provenance,
   };
-  validateBrokerOrderRecord(order);
+  const immutableOrder = createBrokerOrderRecord(order);
+  validateBrokerOrderRecord(immutableOrder);
+  assert.equal(Object.isFrozen(immutableOrder), true);
 
   const position = {
     id: positionId("position-001"),
@@ -322,7 +335,9 @@ test("broker order and position observations require matching broker provenance"
     observedAt: provenance.eventAt,
     provenance,
   };
-  validatePositionSnapshot(position);
+  const immutablePosition = createPositionSnapshot(position);
+  validatePositionSnapshot(immutablePosition);
+  assert.equal(Object.isFrozen(immutablePosition), true);
   assert.throws(
     () => validatePositionSnapshot({ ...position, brokerId: brokerId("other-broker") }),
     { code: "position_provenance_mismatch" },
