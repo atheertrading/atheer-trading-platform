@@ -21,6 +21,19 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(WorkspacePanelID.defaultVisible, Set(WorkspacePanelID.allCases))
     }
 
+    @MainActor
+    func testCommandCenterCanBeInstantiatedWithInjectedHealthModel() {
+        let model = BackendHealthViewModel(
+            client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
+        )
+        let view = CommandCenterView(
+            backendHealthModel: model,
+            onOpenAPIConnection: {}
+        )
+
+        XCTAssertNotNil(view)
+    }
+
     func testHealthPayloadDecoderKeepsTradingDisabledWhenPlatformIsNotReady() throws {
         let liveness = Data("""
         {"status":"ok","service":"atheer-api","version":"0.1.0","timestamp":"2026-11-16T10:00:00.000Z"}
