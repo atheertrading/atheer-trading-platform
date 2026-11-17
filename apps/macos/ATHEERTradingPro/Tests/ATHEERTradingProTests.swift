@@ -110,7 +110,7 @@ final class ATHEERTradingProTests: XCTestCase {
 
     @MainActor
     func testViewModelReportsDisconnectedWhenLivenessCannotBeReached() async {
-        let model = BackendHealthViewModel(client: StubBackendHealthClient(result: .failure(.unavailable)))
+        let model = BackendHealthViewModel(client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable)))
 
         await model.refresh()
 
