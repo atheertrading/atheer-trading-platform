@@ -6,6 +6,14 @@ struct ContentView: View {
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
 
+    /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
+    private func scheduleSelectionChange(_ newSelection: AppSection?) {
+        Task { @MainActor in
+            await Task.yield()
+            selection = newSelection
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 12) {
@@ -22,7 +30,10 @@ struct ContentView: View {
                 .padding(.horizontal, 14)
                 .padding(.top, 16)
 
-                List(selection: $selection) {
+                List(selection: Binding(
+                    get: { selection },
+                    set: { newSelection in scheduleSelectionChange(newSelection) }
+                )) {
                     Section("WORKSPACE") {
                         Label(AppSection.workspace.title, systemImage: AppSection.workspace.systemImage)
                             .tag(AppSection.workspace)
