@@ -104,18 +104,35 @@ export async function applySqlMigrations(pool: SqlPool, migrations: readonly Sql
       "SELECT version, checksum FROM atheer_schema_migrations ORDER BY version",
     );
     const appliedByVersion = new Map(applied.rows.map((row) => [row.version, row.checksum]));
-    for (const migration of migrations) {
+    const seenVersions = new Set<string>();
+    const orderedMigrations = [...migrations].sort((left, right) =>
+      BigInt(left.version) < BigInt(right.version) ? -1 : BigInt(left.version) > BigInt(right.version) ? 1 : 0,
+    );
+    let highestAppliedVersion = applied.rows.reduce(
+      (highest, row) => BigInt(row.version) > highest ? BigInt(row.version) : highest,
+      0n,
+    );
+    for (const migration of orderedMigrations) {
+      if (!/^\\d{3,}$/.test(migration.version) || seenVersions.has(migration.version)) {
+        throw new PersistenceConflictError("Migration versions must be unique numeric identifiers.");
+      }
+      seenVersions.add(migration.version);
       const checksum = sha256(migration.sql);
       const existing = appliedByVersion.get(migration.version);
       if (existing !== undefined) {
         if (existing !== checksum) throw new PersistenceConflictError("Migration checksum changed for version " + migration.version + ".");
         continue;
       }
+      if (BigInt(migration.version) <= highestAppliedVersion) {
+        throw new PersistenceConflictError("A new migration cannot be inserted behind the applied migration sequence.");
+      }
       await client.query(migration.sql);
       await client.query(
         "INSERT INTO atheer_schema_migrations (version, checksum) VALUES ($1, $2)",
         [migration.version, checksum],
       );
+      appliedByVersion.set(migration.version, checksum);
+      highestAppliedVersion = BigInt(migration.version);
     }
   });
 }
