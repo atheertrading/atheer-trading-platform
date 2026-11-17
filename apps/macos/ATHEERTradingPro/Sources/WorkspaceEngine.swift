@@ -45,7 +45,7 @@ struct WorkspaceDocument: Codable, Equatable, Identifiable {
                 )
             },
             layout: .standard,
-            updatedAt: Date(timeIntervalSince1970: 0)
+            updatedAt: Date()
         )
     }
 }
@@ -232,10 +232,11 @@ final class WorkspaceEngine: ObservableObject {
     }
 
     func resetActiveWorkspace() {
-        let replacement = WorkspaceDocument.standard(
+        var replacement = WorkspaceDocument.standard(
             id: activeWorkspace.id,
             name: activeWorkspace.name
         )
+        replacement.updatedAt = Date()
         replaceActiveWorkspace(with: replacement)
     }
 
@@ -308,14 +309,29 @@ final class WorkspaceEngine: ObservableObject {
         guard activeProfile.activeWorkspaceID == snapshot.activeWorkspaceID else {
             throw WorkspacePersistenceError.invalidSnapshot("The active profile and snapshot must reference the same active workspace.")
         }
+        for profile in snapshot.profiles {
+            let profileWorkspaceIDs = profile.workspaceIDs
+            guard !profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !profileWorkspaceIDs.isEmpty,
+                  Set(profileWorkspaceIDs).count == profileWorkspaceIDs.count,
+                  profileWorkspaceIDs.allSatisfy({ workspaceIDs.contains($0) }),
+                  profileWorkspaceIDs.contains(profile.activeWorkspaceID) else {
+                throw WorkspacePersistenceError.invalidSnapshot("A workspace profile contains invalid identity or workspace references.")
+            }
+        }
 
         for workspace in snapshot.workspaces {
             guard !workspace.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 throw WorkspacePersistenceError.invalidSnapshot("Workspace names cannot be empty.")
             }
             let panelIDs = workspace.panels.map(\.panelID)
+            let panelOrders = workspace.panels.map(\.order)
             guard Set(panelIDs).count == panelIDs.count else {
                 throw WorkspacePersistenceError.invalidSnapshot("A workspace cannot contain duplicate panel identities.")
+            }
+            guard panelOrders.allSatisfy({ $0 >= 0 }),
+                  Set(panelOrders).count == panelOrders.count else {
+                throw WorkspacePersistenceError.invalidSnapshot("Panel order values must be unique and non-negative.")
             }
             guard workspace.layout.sidebarWidth >= 220,
                   workspace.layout.sidebarWidth <= 640,
