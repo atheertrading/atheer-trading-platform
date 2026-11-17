@@ -232,3 +232,6 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - ATP-BROKER-001 remains IN PROGRESS. Real Keychain restart test, normal Intel runtime/visual QA, backend integration with service running, Apple Silicon runtime QA, and real DEMO auth remain outstanding.
 - PR #26 remains Open/Draft. LIVE and dealing remain disabled; no RiskEngine, execution, or broker-permission changes.
 
+
+
+- Follow-up `f22cac58682910256049541c252b6e54bf17c682` also defers ContentView sidebar selection changes outside the NSTableView delegate callback. The reentrancy warning is not marked resolved until owner-Mac runtime confirms it no longer occurs.

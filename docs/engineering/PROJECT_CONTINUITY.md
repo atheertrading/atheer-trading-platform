@@ -489,3 +489,6 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Observed warnings and limits are recorded in the session report. Baseline exact-SHA CI #222 had hygiene/backend success but cancelled Intel/arm64 macOS jobs.
 - The PR #26 source increment isolates URLSession transport from MainActor and defers panel-manager List row mutations. This is source implementation only until new exact-head CI and owner rerun.
 - PR #26 remains Open/Draft. PR #24/#25 remain untouched. LIVE and dealing remain disabled.
+
+
+- Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers the always-visible ContentView navigation List selection update, covering both the navigation sidebar and panel-manager List mutation paths. The NSTableView warning's exact runtime origin remains unconfirmed until owner-Mac rerun.

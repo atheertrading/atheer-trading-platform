@@ -38,6 +38,8 @@ Results:
 - CI run [#222 / 44149501164](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44149501164): Repository Hygiene passed; Backend Toolchain passed; Intel x86_64 macOS job cancelled; Apple Silicon arm64 macOS job cancelled. Therefore no hosted macOS build/XCTest/Release pass is claimed for this SHA.
 
 ## Remediation in this increment
+
+- Implementation commits: `52e5b6ce105820819e9206fd5219a4641129cc31` (URLSession transport and panel row callbacks) and `f22cac58682910256049541c252b6e54bf17c682` (sidebar selection callback).
 ### URLSession concurrency boundary
 - Added a narrow `URLSessionRequestExecutor` transport wrapper, isolated from MainActor.
 - The wrapper owns one immutable URLSession reference; URLSession is thread-safe. Its request method explicitly supplies `delegate: nil` from the non-UI transport context.
@@ -46,7 +48,8 @@ Results:
 
 ### AppKit table reentrancy
 - Panel manager List row actions (add, remove, reorder, visibility toggle) now defer WorkspaceEngine mutations by one MainActor task yield.
-- This prevents synchronous mutation of the List's backing observable data while AppKit is executing its NSTableView delegate callback.
+- The always-visible navigation sidebar List now defers selection-state changes by one MainActor task yield as well. This is a separate likely reentrancy surface because its selection binding changes the detail navigation hierarchy during AppKit's List delegate callback.
+- Both changes avoid synchronous SwiftUI state/model updates from the List delegate call stack. The precise runtime origin remains a hypothesis until the owner reruns the app and confirms the warning is absent.
 - No workspace model, ordering rule, persistence contract, or user-visible capability was removed.
 
 ## Verification status after remediation

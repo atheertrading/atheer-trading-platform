@@ -311,3 +311,6 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Still pending: owner rerun with backend running; inspect the AppKit warning under normal app activation; actual Keychain persistence across app restart; Apple Silicon runtime QA; and real Capital.com DEMO auth.
 - PR #26 remains Open/Draft; no LIVE, dealing, or risk-control changes.
 
+
+
+- Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` defers the always-visible navigation sidebar List selection state update as an additional AppKit reentrancy safeguard. This is source-level mitigation; owner runtime confirmation remains pending.
