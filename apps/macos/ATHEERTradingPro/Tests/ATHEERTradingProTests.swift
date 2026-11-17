@@ -22,6 +22,58 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testWorkspaceEnginePersistsVisibilityAndRestoresActiveWorkspace() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
+        XCTAssertFalse(engine.visiblePanels.contains(.marketWatch))
+
+        let secondWorkspaceID = engine.createWorkspace(name: "Execution")!
+        XCTAssertEqual(engine.activeWorkspace.name, "Execution")
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.activeWorkspace.id, secondWorkspaceID)
+        XCTAssertEqual(restored.activeWorkspace.name, "Execution")
+        XCTAssertEqual(restored.visiblePanels, WorkspacePanelID.defaultVisible)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRecoversFromDuplicatePanelIdentity() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.workspaces[0].panels.append(invalid.workspaces[0].panels[0])
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.recoveryState, .restoredDefaults(
+            String(describing: WorkspacePersistenceError.invalidSnapshot(
+                "A workspace cannot contain duplicate panel identities."
+            ))
+        ))
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        XCTAssertEqual(persistence.snapshot?.schemaVersion, WorkspaceSnapshot.currentSchemaVersion)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRejectsUnsupportedSchemaAndUsesDefaults() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.schemaVersion = WorkspaceSnapshot.currentSchemaVersion + 1
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults = engine.recoveryState {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("Expected unsupported workspace schema to recover to defaults.")
+        }
+    }
+
+    @MainActor
     func testCommandCenterCanBeInstantiatedWithInjectedHealthModel() {
         let model = BackendHealthViewModel(
             client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
@@ -172,4 +224,16 @@ private struct StubBackendHealthClient: BackendHealthClient {
 
 private enum StubBackendHealthError: Error {
     case unavailable
+}
+
+private final class InMemoryWorkspacePersistence: WorkspacePersistence {
+    var snapshot: WorkspaceSnapshot?
+
+    func load() throws -> WorkspaceSnapshot? {
+        snapshot
+    }
+
+    func save(_ snapshot: WorkspaceSnapshot) throws {
+        self.snapshot = snapshot
+    }
 }
