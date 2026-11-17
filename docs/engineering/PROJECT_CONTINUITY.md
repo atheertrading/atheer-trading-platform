@@ -285,3 +285,14 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - Review found WORK-001 incorrectly described PR #19 as the active change. Corrected WORK-001 to qualify PR #20 and record PR #19 as its merged prerequisite; correction commit `aec4ad619a3e7e4126f697d473e21a42098f0d64` is on the PR branch.
 - Documentation lint and application tests are not claimed. Revalidate exact-head checks after the correction; do not merge while required checks are pending.
 - **Next action:** inspect PR #20's updated head, diff, and checks; finish WORK-001 only after exact-head verification.
+
+
+## 2026-11-17 — Owner-directed local Mac execution handoff
+
+- Owner instructed that whenever work requires execution on the local Mac, ChatGPT must provide ready-to-run Terminal commands rather than implying direct local-machine access.
+- Owner supplied the macOS application source directory: `/Users/enghossamalfahad/Developer/AtheerTradingPlatform/apps/macos/ATHEERTradingPro/Sources`.
+- Added `docs/development/LOCAL_MAC_EXECUTION_HANDOFF.md` and linked it from root `AGENTS.md`.
+- The procedure requires staged copy/paste-ready commands, read-only preflight checks, repository-root and worktree verification, preservation of uncommitted changes, separation of GitHub/hosted CI/local build/runtime evidence, and reporting only results supported by returned output or direct evidence.
+- The supplied path is a source directory, not presumed to be the repository root; its existence and current repository identity must be verified before local operations.
+- This is an owner-directed operating instruction. It does not authorize destructive synchronization, credential/signing access, LIVE trading, risk-policy changes, or production deployment.
+- **Current documentation branch:** `docs/continuous-engineering-operating-directive`; latest handoff commit: `46362634a1515877d4d596d4e2febb7a5d9fdd90` (AGENTS link; preceding document commit `137f0b67c826bda35228ca43fe9102f1030a8bd6`). PR #20 must be revalidated at its new exact head; no merge or CI result is inferred from these commits.
