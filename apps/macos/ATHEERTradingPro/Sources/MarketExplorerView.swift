@@ -364,7 +364,9 @@ struct MarketExplorerView: View {
 
             Text(quote.map { $0.bid.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                .foregroundColor(quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.success)
+                .foregroundColor(quote.map { $0.freshness.state == "fresh" } == true
+                    ? ATHEERDesignTokens.ColorRole.success
+                    : quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.attention)
                 .frame(width: 88, alignment: .trailing)
 
             Text(quote.map { $0.ask.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
@@ -375,12 +377,12 @@ struct MarketExplorerView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(quote.map { String(format: "%.1fs", $0.currentAgeMilliseconds / 1_000) } ?? "—")
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundColor(.primary)
+                Text(quote.map { "\($0.freshness.state.uppercased()) AT RX" } ?? (isSubscribed ? "WAITING" : ""))
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .foregroundColor(quote?.freshness.state == "fresh"
                         ? ATHEERDesignTokens.ColorRole.success
-                        : ATHEERDesignTokens.ColorRole.attention)
-                Text(quote?.providerDate.formatted(date: .omitted, time: .standard) ?? (isSubscribed ? "WAITING" : ""))
-                    .font(.system(size: 8, weight: .medium, design: .monospaced))
-                    .foregroundColor(.secondary)
+                        : quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.attention)
             }
             .frame(width: 72, alignment: .trailing)
 
