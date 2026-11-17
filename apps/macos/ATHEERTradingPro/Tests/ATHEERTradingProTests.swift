@@ -521,6 +521,65 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testMarketExplorerDisablesSearchForQueriesLongerThanOneHundredCharacters() async {
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+            results: []
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = String(repeating: "A", count: 101)
+
+        XCTAssertFalse(model.canSearch)
+        await model.search()
+        XCTAssertEqual(client.searchCallCount, 0)
+        if case .failed = model.state {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("An overlong query must be rejected before a request is sent.")
+        }
+    }
+
+    @MainActor
+    func testMarketExplorerIgnoresStaleSearchResultsAfterQueryChanges() async {
+        let gold = MarketSearchInstrument(
+            epic: "GOLD",
+            instrumentName: "Gold",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let silver = MarketSearchInstrument(
+            epic: "SILVER",
+            instrumentName: "Silver",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let client = DeferredMarketSearchClient()
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+
+        model.searchTerm = "Gold"
+        let olderSearch = Task { await model.search() }
+        await Task.yield()
+        XCTAssertEqual(client.pendingSearchCount, 1)
+
+        model.searchTerm = "Silver"
+        let newerSearch = Task { await model.search() }
+        await Task.yield()
+        XCTAssertEqual(client.pendingSearchCount, 2)
+
+        client.completeSearch(at: 1, with: [silver])
+        await newerSearch.value
+        XCTAssertEqual(model.results, [silver])
+        XCTAssertEqual(model.state, .results)
+
+        client.completeSearch(at: 0, with: [gold])
+        await olderSearch.value
+        XCTAssertEqual(model.results, [silver], "A stale response must not replace the latest query results.")
+        XCTAssertEqual(model.state, .results)
+    }
+
+    @MainActor
     func testMarketExplorerDoesNotSearchWhenBackendSessionIsDisconnected() async {
         let client = StubMarketSearchClient(
             status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .disconnected),
@@ -597,6 +656,28 @@ private final class StubMarketSearchClient: MarketSearchClient {
     func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
         searchCallCount += 1
         return instruments
+    }
+}
+
+@MainActor
+private final class DeferredMarketSearchClient: MarketSearchClient {
+    private var continuations: [CheckedContinuation<[MarketSearchInstrument], Error>] = []
+    private(set) var pendingSearchCount = 0
+
+    func fetchBackendStatus() async throws -> MarketDataBackendStatus {
+        MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected)
+    }
+
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<[MarketSearchInstrument], Error>) in
+            continuations.append(continuation)
+            pendingSearchCount += 1
+        }
+    }
+
+    func completeSearch(at index: Int, with results: [MarketSearchInstrument]) {
+        continuations[index].resume(returning: results)
     }
 }
 
