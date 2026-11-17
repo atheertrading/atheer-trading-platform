@@ -113,3 +113,11 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
 - This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
+
+## Arabic master execution directive — 2026-11-17
+
+| Work item | Priority | Status | Evidence / acceptance gate |
+|---|---|---|---|
+| Publish and integrate the Arabic master execution directive | P2 | IN REVIEW | Arabic directive and session report committed on `docs/arabic-master-execution-directive-2026-11-17`; registry and continuity references added. Review the complete PR diff and obtain applicable repository hygiene / Markdown checks before merge. |
+
+This is a documentation deliverable. It does not mark any product screen, workspace, broker integration, or application milestone as implemented or accepted. The existing task register remains the authoritative work queue; no separate `WORK.md` queue is introduced.
