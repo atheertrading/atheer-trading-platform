@@ -453,3 +453,5 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - Added real PostgreSQL 17 CI service and integration tests for migration checksum drift, concurrent migration startup, intent/risk idempotency, conflict detection, foreign-key rollback, audit/reconciliation records, and no execution-dispatch events.
 - Exact-head hosted verification has not yet been inspected. No test pass is claimed at this checkpoint.
 - No broker dealing API, execution dispatcher, production database, or LIVE capability. `CAP_ALLOW_TRADING=false` unchanged.
+
+- Startup integration now verifies schema/checksums without mutating the database. Schema application is an explicit `npm run migrate` operation; see `docs/operations/POSTGRESQL.md`.
