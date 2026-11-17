@@ -199,6 +199,7 @@ export class CapitalDemoStreamingRuntime {
     this.state = "connecting";
     this.lastError = undefined;
     const generation = this.generation;
+    let createdSocket: WebSocket | null = null;
     this.connectionPromise = (async () => {
       const info = await this.getSessionInfo();
       if (generation !== this.generation) {
@@ -218,6 +219,7 @@ export class CapitalDemoStreamingRuntime {
       }
 
       const socket = this.socketFactory(endpoint.toString());
+      createdSocket = socket;
       this.socket = socket;
       this.connectionInfo = info;
 
@@ -272,8 +274,8 @@ export class CapitalDemoStreamingRuntime {
           this.state = "degraded";
           this.lastError = safeErrorMessage(error);
         }
-        const socket = this.socket;
-        if (socket) {
+        const socket = createdSocket;
+        if (socket && this.socket === socket) {
           this.socket = null;
           this.connectionInfo = null;
           this.intentionallyClosing.add(socket);
