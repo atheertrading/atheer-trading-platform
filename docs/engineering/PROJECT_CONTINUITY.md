@@ -262,3 +262,40 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
 - Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
 - Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.
+
+## ATP-2026-11-17-004 — Arabic master execution directive
+
+### Objective and published artifacts
+
+The owner requested an Arabic translation of **ATHEER Trading Pro — MASTER EXECUTION DIRECTIVE: Screen Implementation, Application Development & Professional Trading Workstation**, with publication and traceability in GitHub.
+
+- Arabic directive: `docs/development/ATHEER_CHATGPT_MASTER_EXECUTION_DIRECTIVE_AR.md`.
+- Session record: `docs/engineering/SESSION_2026-11-17_004_ARABIC_MASTER_EXECUTION_DIRECTIVE.md`.
+- Document registry: `docs/engineering/MASTER_DOCUMENT_REGISTRY.md`.
+- Conversation index: `docs/engineering/CONVERSATION_INDEX.md`.
+- Task tracking: `docs/engineering/TASK_REGISTER.md`.
+
+### Verified repository state and change boundary
+
+- Repository: `atheertrading/atheer-trading-platform`.
+- Base: `main` at `0dc062bb620a4afa93c60e5f060ee405846e3cbc`.
+- Documentation branch: `docs/arabic-master-execution-directive-2026-11-17`.
+- Initial directive commit: `6984a2459e4c4013da391d1c35cc58646746b789`.
+- Session report commit: `5280746ef2638884c7a2f6570161245739078046`.
+
+The translation covers the reusable execution mandate, repository/source verification, 12 navigation groups, screen implementation contracts, application shell, workspace and panel management, broker management, Capital.com integration safeguards, authoritative financial data, centralized risk and execution governance, AI/agent boundaries, design and UX, acceptance gates, GitHub commit/PR discipline, local Terminal workflow, screen/workflow inventory, handover, and explicit approval boundaries.
+
+The related English continuation directive was inspected on PR #21. It is a related governance document, not the exact source text of the newer master screen-execution directive. Accordingly, the Arabic document is a scope-preserving counterpart based on the supplied directive and verified project context; it is not represented as a line-by-line translation of a separately committed English source file.
+
+### Safety and verification
+
+- This change is documentation-only.
+- No application source, build configuration, CI workflow, credentials, broker permissions, risk limits, or trading permissions were changed.
+- No existing PR or implementation branch was modified.
+- GitHub branch and file-creation operations returned successful results.
+- Repository CI, Markdown lint, local rendering, and application tests have not yet been run for this branch.
+- The directive remains subject to owner approvals, repository policy, and approved specifications. It does not authorize LIVE dealing or other separately gated operations.
+
+### Next action
+
+The focused documentation PR is [#30](https://github.com/atheertrading/atheer-trading-platform/pull/30), OPEN and not merged at this checkpoint. The branch contains six sequential commits; the latest continuity update is `22a0fd8e52b6ab0796fc2686d05dd2e7ea137c12`. PR metadata reports the branch as mergeable. Verify required checks on the exact latest PR head and review the complete diff. Do not mark the deliverable integrated until the PR is merged.

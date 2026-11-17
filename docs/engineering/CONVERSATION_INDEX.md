@@ -68,3 +68,15 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-012 | 2026-11-16 | Backend health vertical slice | Merged PR #8 Xcode configuration; inspected the current app shell and prior local qualification report; implemented a loopback-only Node 24/TypeScript health/readiness service with fail-closed readiness and six tests. | API_HEALTH_CONTRACT; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; EDL-007 |
+
+## ATP-2026-11-17-004 — Arabic master execution directive
+
+- **Date:** 2026-11-17
+- **Objective:** Publish an Arabic counterpart of the master directive for screen implementation, application development, and the professional trading workstation.
+- **Repository:** `atheertrading/atheer-trading-platform`.
+- **Branch:** `docs/arabic-master-execution-directive-2026-11-17`.
+- **Published directive:** `docs/development/ATHEER_CHATGPT_MASTER_EXECUTION_DIRECTIVE_AR.md`.
+- **Session report:** `docs/engineering/SESSION_2026-11-17_004_ARABIC_MASTER_EXECUTION_DIRECTIVE.md`.
+- **Scope:** Translation and documentation traceability only; no application source, CI, broker credentials, or trading permissions changed.
+- **Verification:** GitHub file creation and commit responses verified. CI, Markdown lint, local rendering, and application tests are pending.
+- **PR:** To be created after branch diff review.
