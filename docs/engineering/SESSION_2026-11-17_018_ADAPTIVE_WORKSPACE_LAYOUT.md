@@ -52,6 +52,13 @@ The owner confirms the application launches on the Mac and has been exercised ac
 - Hosted CI for the new follow-up branch is pending PR creation and exact-head workflow execution.
 - Owner-confirmed runtime is not substituted for visual or accessibility acceptance.
 
+## PR and handover
+
+- Opened PR #22: `https://github.com/atheertrading/atheer-trading-platform/pull/22`, from `feat/workspace-adaptive-layout` into `feat/macos-workspace-visual-foundation`.
+- The PR is stacked on PR #18. Preserve the PR #10 → #17 → #18 → #22 integration order.
+- Documentation follow-ups were committed after PR creation; re-read the live PR head and require fresh exact-head CI. Earlier workflow attempts do not qualify a later documentation-updated head.
+- Local Sync Safety passed on an earlier PR #22 revision; no exact-head CI pass is claimed.
+
 ## Next action
 
-Open a focused PR from `feat/workspace-adaptive-layout` into `feat/macos-workspace-visual-foundation`, verify the complete diff and exact-head CI, then obtain owner visual inspection of the adaptive layout on both displays. Preserve the PR #10 → #17 → #18 stack.
+Verify exact-head CI on the latest PR #22 revision, then obtain owner visual inspection of the adaptive layout at representative window widths on both displays. Preserve the PR #10 → #17 → #18 → #22 stack.
