@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum WorkspacePanelID: String, CaseIterable, Identifiable, Hashable {
+enum WorkspacePanelID: String, CaseIterable, Identifiable, Hashable, Codable {
     case marketWatch
     case charts
     case accountRisk
