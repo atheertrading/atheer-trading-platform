@@ -235,3 +235,17 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 
 
 - Follow-up `f22cac58682910256049541c252b6e54bf17c682` also defers ContentView sidebar selection changes outside the NSTableView delegate callback. The reentrancy warning is not marked resolved until owner-Mac runtime confirms it no longer occurs.
+
+## ATP-MKT-001 — Market Explorer / Instrument Search — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Implement native Market Explorer with provider-backed DEMO instrument search | P1 | IMPLEMENTED ON FEATURE BRANCH — VERIFICATION PENDING | PR #24 Workspace/Command Center; PR #25 Capital.com DEMO market search; PR #26 broker management | Review focused PR; exact-head hygiene/backend/macOS Debug/XCTest/Release/CodeQL checks; owner-Mac build/runtime/visual/accessibility QA |
+
+- Branch: feat/macos-market-explorer, stacked on PR #26 head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f.
+- Screen ID: ATP-SCR-MKT-001.
+- Prompt: docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md.
+- Screen contract: docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md.
+- Search is read-only and requires backend status connected in DEMO. No streaming, quote, chart, order, or trading capability is claimed.
+- Native app Keychain credentials are not automatically transferred to the backend session; secure handoff remains a separate task.
+- No build or XCTest execution is claimed until exact-head CI or owner-Mac evidence is available.
