@@ -262,3 +262,13 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
 - Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
 - Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.
+
+
+## Continuous Engineering Operating Directive — 2026-11-17
+
+- Owner authorized implementation of the engineering decision/approval/delegation model and the ATHEER execution mechanism.
+- CEOD v1.0 is being introduced on branch `docs/continuous-engineering-operating-directive`, based on `docs/atp-ui-ux-chatgpt-directive` to preserve the existing root `AGENTS.md` and UI/UX directive dependency.
+- The directive formalizes task recovery, inspection, bounded execution, verification, continuity records, and explicit owner approval gates. It explicitly states that normal ChatGPT sessions do not execute or monitor in the background after a response.
+- This branch is documentation-only. No application source, tests, trading configuration, broker permissions, credentials, risk limits, or production settings are changed.
+- **Current checkpoint:** branch created; documentation and continuity integration in progress. PR and exact-head checks are not yet recorded.
+- **Next action:** complete the focused documentation diff, open a PR against `docs/atp-ui-ux-chatgpt-directive`, then inspect its exact-head CI and review the complete diff. Do not claim merge or qualification before GitHub confirms them.
