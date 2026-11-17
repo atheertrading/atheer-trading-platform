@@ -331,3 +331,18 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Native Keychain broker credentials from PR #26 and backend environment credentials/session from PR #25 remain separate. No secure credential/session bridge is implemented.
 - Exact-head hosted CI, owner-Mac build/XCTest, app runtime, visual QA, accessibility, and real DEMO provider verification remain pending.
 - No streaming, charts, watchlists, orders, dealing, risk mutation, LIVE capability, or production readiness is claimed.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING  
+**Branch:** `fix/market-explorer-search-lifecycle`  
+**Base:** PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`
+
+- Search and backend-status requests use generation tracking to ignore stale completions.
+- Editing the search query invalidates the previous request and clears obsolete result state; unavailable status is retained.
+- Search eligibility and request validation both enforce 1–100 characters; the existing search UI shows an accessible length counter.
+- Added XCTest source coverage for overlong query rejection and out-of-order response handling.
+- CI and owner-Mac verification remain pending. No compilation/test success is claimed.
+- No new screen, streaming, chart, dealing, LIVE, or risk-control functionality was added.
