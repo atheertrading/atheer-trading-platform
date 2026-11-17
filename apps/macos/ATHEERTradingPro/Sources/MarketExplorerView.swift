@@ -5,8 +5,8 @@ struct MarketExplorerView: View {
     let onOpenAPIConnection: () -> Void
 
     init(
-        client: MarketSearchClient = URLSessionMarketSearchClient(),
-        streamClient: MarketDataStreamClient = URLSessionMarketDataStreamClient(),
+        client: MarketSearchClient? = nil,
+        streamClient: MarketDataStreamClient? = nil,
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(
@@ -316,9 +316,9 @@ struct MarketExplorerView: View {
                 .frame(width: 150, alignment: .leading)
             Text("CURRENCY")
                 .frame(width: 70, alignment: .leading)
-            Text("LIVE BID")
+            Text("DEMO BID")
                 .frame(width: 88, alignment: .trailing)
-            Text("LIVE ASK")
+            Text("DEMO ASK")
                 .frame(width: 88, alignment: .trailing)
             Text("QUOTE AGE")
                 .frame(width: 72, alignment: .trailing)
