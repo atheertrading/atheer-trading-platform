@@ -33,7 +33,7 @@ struct MarketExplorerView: View {
             model.resumeStreamIfNeeded()
         }
         .onDisappear {
-            model.stopStream()
+            model.pauseStream()
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
     }
@@ -79,6 +79,22 @@ struct MarketExplorerView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(model.state == .searching)
+
+                Button {
+                    if model.isStreamingRequested {
+                        model.stopStream()
+                    } else {
+                        model.startStreaming()
+                    }
+                } label: {
+                    Label(
+                        model.isStreamingRequested ? "Stop Stream" : "Start Stream",
+                        systemImage: model.isStreamingRequested ? "stop.fill" : "waveform"
+                    )
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(ATHEERDesignTokens.ColorRole.teal)
+                .disabled(!model.isStreamingRequested && !model.canStartStreaming)
             }
 
             LazyVGrid(
@@ -357,8 +373,8 @@ struct MarketExplorerView: View {
                 model.toggleStreamSubscription(for: instrument.epic)
             } label: {
                 Label(
-                    isSubscribed ? "STOP" : "ADD",
-                    systemImage: isSubscribed ? "stop.circle" : "waveform.path"
+                    isSubscribed ? "REMOVE" : "SELECT",
+                    systemImage: isSubscribed ? "minus.circle" : "plus.circle"
                 )
                 .labelStyle(.titleAndIcon)
                 .font(.system(size: 9, weight: .semibold))
@@ -368,8 +384,8 @@ struct MarketExplorerView: View {
             .frame(width: 76, alignment: .trailing)
             .accessibilityLabel(
                 isSubscribed
-                    ? "Stop live quote stream for \(instrument.epic)"
-                    : "Start live quote stream for \(instrument.epic)"
+                    ? "Remove \(instrument.epic) from live quote selection"
+                    : "Select \(instrument.epic) for live quote streaming"
             )
         }
         .padding(.horizontal, 14)
