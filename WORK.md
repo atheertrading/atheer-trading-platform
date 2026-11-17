@@ -39,19 +39,22 @@ Every active work item must identify its objective, priority, dependencies, acce
 
 ## 3. Active sequential queue
 
-### WORK-001 — Qualify and close the engineering governance documentation change
+### WORK-001 — Qualify and close the sequential work queue integration
 
 - **Priority:** P0
 - **Status:** IN PROGRESS
-- **Dependencies:** Existing UI/UX directive branch and CEOD branch history.
-- **Scope:** Review the complete current diff for PR #19 and its dependency chain; verify links, consistency, Markdown/documentation checks, and exact-head CI. Confirm the intended base/head relationship and ensure no unrelated files or claims are included.
+- **Dependencies:** PR #19 (CEOD v1.0) and the existing UI/UX directive branch. PR #19 is confirmed merged into `docs/atp-ui-ux-chatgpt-directive`.
+- **Scope:** Review PR #20, which adds this queue and integrates it with repository instructions and continuity records. Verify its complete diff, the merged PR #19 dependency, branch ancestry, links, consistency, documentation checks, and exact-head CI. Ensure no unrelated files or unsupported claims are included.
 - **Acceptance criteria:**
-  - Current PR #19 metadata, base, head SHA, changed files, and dependency are inspected directly.
+  - PR #19 is confirmed merged (merge commit `d1db130406f0d0b31a7b3f12980d9056083acda6`); PR #20 metadata, base, head SHA, changed files, and dependency are inspected directly.
   - Complete diff is reviewed against `AGENTS.md`, CEOD, and approved governance.
   - Applicable documentation checks and exact-head CI are verified; unavailable checks are explicitly recorded.
   - Required corrections are committed to the existing review branch without rewriting history.
   - PR review/merge readiness is recorded accurately; merge only when policy, dependencies, checks, and acceptance criteria permit.
-- **Next action:** Re-fetch PR #19 and its latest head, inspect the complete diff and check runs, then resolve any findings.
+- PR #20 diff reviewed: five files (`AGENTS.md`, `WORK.md`, `CONVERSATION_INDEX.md`, `PROJECT_CONTINUITY.md`, `TASK_REGISTER.md`); no inline review threads or submitted reviews were present at the review checkpoint.
+- Exact-head checks at `c4c0bf2725f9a58ce77cf760934289db86b0a92f`: `Local Sync Safety` passed; `CI` was queued; combined commit statuses returned no entries.
+- The PR base includes the merged PR #19 commit; comparison showed the head one commit behind the base and five commits ahead, while GitHub reported the PR mergeable. Preserve the dependency and revalidate the mergeability/checks before merge.
+- **Next action:** Re-fetch PR #20 head and checks after CI completes; resolve any failures and complete the final review. Do not merge while required checks are pending.
 
 ### WORK-002 — Revalidate the macOS workspace PR chain and owner-confirmed two-screen test
 
