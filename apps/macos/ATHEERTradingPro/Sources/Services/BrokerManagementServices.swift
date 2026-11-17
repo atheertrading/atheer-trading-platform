@@ -171,7 +171,7 @@ struct KeychainBrokerCredentialStore: BrokerCredentialStore {
     func load(
         brokerID: String,
         environment: BrokerEnvironment,
-        accountIdentity: String? = nil
+        accountIdentity: String?
     ) throws -> BrokerCredential? {
         guard let collection = try loadCollection(brokerID: brokerID, environment: environment) else {
             return nil
@@ -199,7 +199,7 @@ struct KeychainBrokerCredentialStore: BrokerCredentialStore {
     func delete(
         brokerID: String,
         environment: BrokerEnvironment,
-        accountIdentity: String? = nil
+        accountIdentity: String?
     ) throws {
         guard let accountIdentity else {
             try keychain.delete(service: Self.service, account: key(brokerID, environment))
