@@ -370,3 +370,15 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Added regression tests for leap-year validity, month lengths, invalid month, and clock ranges.
 - Fix commit: `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
 - Exact-head CI is pending for this commit. Prior head `34015bda...` had 46/46 backend tests and Intel x86_64 qualification passed; Apple Silicon remained queued. Do not carry those results onto the new head.
+
+## ATP-PERSISTENCE-001 — PostgreSQL durable trading journal — 2026-11-18
+
+- PR: #41, stacked on PR #40 (`feat/trading-domain-foundation`).
+- Added pinned `pg` 8.23.1 runtime dependency and generated npm lockfile.
+- Added PostgreSQL schema for instruments/specifications, broker accounts/snapshots, order intents, risk assessments, reconciliation events, audit events, and domain outbox.
+- Added transaction-scoped advisory-lock migration runner with version ledger and SHA-256 checksum drift rejection.
+- Added environment-pinned repository adapter, canonical JSON hashing, idempotent intent/risk persistence, conflict detection, and transactional audit/outbox writes.
+- Added PostgreSQL integration tests and PostgreSQL 17 CI service. Exact-head results remain pending; no local PostgreSQL, Node 24, production database, or Mac qualification is claimed.
+- Outbox event allow-list is restricted to durable domain-record events. No dispatcher, broker order submission, or execution-dispatch event is implemented.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No LIVE or production operation is enabled.
+- Remaining before batch completion: inspect exact-head CI, resolve all source/test findings, add failure/recovery and concurrency evidence, and update operational database setup/backup/restore guidance.
