@@ -441,10 +441,10 @@ final class BrokerManagementViewModel: ObservableObject {
 
     init(
         credentialStore: BrokerCredentialStore = KeychainBrokerCredentialStore(),
-        authentication: BrokerAuthenticationService = CapitalComAuthenticationService()
+        authentication: BrokerAuthenticationService? = nil
     ) {
         self.credentialStore = credentialStore
-        self.authentication = authentication
+        self.authentication = authentication ?? CapitalComAuthenticationService()
         do {
             let credential = try credentialStore.load(brokerID: brokerID, environment: environment)
             hasSavedCredentials = credential != nil

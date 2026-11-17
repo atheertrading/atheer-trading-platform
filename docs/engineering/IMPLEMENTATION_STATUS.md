@@ -274,10 +274,19 @@ Mocked tests and compilation do not prove broker connectivity. Status must be up
 | Session health monitoring | IMPLEMENTED IN SOURCE | Read-only GET /session every 60 seconds while Brokers screen is active |
 | Network/authentication contract tests | PRESENT IN SOURCE | CapitalComAuthenticationTests covers request contract, 401 redaction, and LIVE rejection |
 | Credential-store and view-model tests | PRESENT IN SOURCE | Persistence, account/environment isolation, deletion, invalid input, and connection-state coverage |
-| Hosted macOS Debug/XCTest/Release | PENDING | Exact-head PR #26 CI required |
+| Hosted macOS Debug/XCTest/Release | PENDING — remediation committed; fresh exact-head CI required | The owner-Mac log exposed a Swift 5.8 MainActor initializer error at BrokerManagementServices.swift:444; fix is committed, but no passing rebuild is claimed |
 | Local macOS build/runtime/Keychain restart QA | PENDING | Owner Mac verification required |
 | Real Capital.com DEMO authentication | NOT VERIFIED | No owner credentials supplied; no provider session claimed |
 | Market-data WebSocket streaming | NOT IMPLEMENTED BY THIS FEATURE | REST authentication and streaming remain separate |
 | LIVE dealing / trading | DISABLED | No dealing methods; risk and execution controls unchanged |
 
 PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25. Do not mark ATP-BROKER-001 complete until exact-head macOS CI, owner-side runtime/Keychain verification, and real DEMO authentication evidence are available.
+
+
+### Owner-Mac qualification finding and compile remediation — 2026-11-17
+
+- First owner-Mac qualification evidence was supplied from macOS 13.7.8, Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1.
+- `make doctor` and `make generate` completed successfully. Debug build, XCTest build, and Release build were blocked by a Swift concurrency error at `BrokerManagementServices.swift:444:55`: a `@MainActor` authentication-service initializer was invoked from a synchronous nonisolated default argument.
+- Corrected dependency construction by making the authentication initializer parameter optional and constructing the default `CapitalComAuthenticationService` inside the `@MainActor` ViewModel initializer. Added an XCTest that exercises default dependency composition without authenticating or making network requests.
+- This is a source-level remediation only. It has not yet been compiled or executed on the owner Mac or by fresh exact-head CI. URLSession `Sendable` diagnostics in the original log remain warnings requiring review after the primary compile blocker is cleared.
+- No broker credentials, provider session, trading permissions, risk policy, LIVE capability, or dealing behavior were changed.

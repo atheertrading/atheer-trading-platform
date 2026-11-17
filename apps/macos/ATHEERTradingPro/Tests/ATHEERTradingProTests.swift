@@ -411,6 +411,16 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testBrokerManagementViewModelConstructsDefaultAuthenticationDependency() {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let model = BrokerManagementViewModel(credentialStore: store)
+
+        XCTAssertEqual(model.state, .notConfigured)
+        XCTAssertFalse(model.hasSavedCredentials)
+        XCTAssertNil(model.account)
+    }
+
+    @MainActor
     func testBrokerManagementViewModelDoesNotReportConnectedBeforeAuthentication() async throws {
         let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
         let model = BrokerManagementViewModel(

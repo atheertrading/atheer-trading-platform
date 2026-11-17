@@ -60,3 +60,17 @@ Verified lifecycle:
 - Authentication requests use an ephemeral URLSession with URL caching and cookie persistence disabled, plus Cache-Control: no-store.
 
 - The workspace distinguishes the last successful authentication time from the latest session verification time. These timestamps are currently in-memory only and reset after application restart; persistence of non-secret connection metadata remains a follow-up.
+
+
+## Owner-Mac qualification and first compile remediation — 2026-11-17
+
+The owner supplied the first actual local qualification log from the Mac workstation:
+
+- Environment: macOS 13.7.8, Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1.
+- `make doctor` passed all required prerequisite checks; `make generate` generated the Xcode project.
+- Debug build and XCTest compilation failed before test execution. Release compilation also failed.
+- Root error: `BrokerManagementServices.swift:444:55` called the MainActor-isolated `CapitalComAuthenticationService.init(session:)` from the synchronous default value of a nonisolated initializer parameter.
+- Fix: `BrokerManagementViewModel` now accepts `BrokerAuthenticationService? = nil` and creates the default service inside its MainActor-isolated initializer body. This preserves test injection and keeps service construction in the correct actor context.
+- Added `testBrokerManagementViewModelConstructsDefaultAuthenticationDependency`, which constructs the ViewModel with an isolated in-memory Keychain and verifies the initial disconnected/unconfigured state without network access.
+- The original log also showed URLSession delegate Sendable warnings. They are not the reported fatal error; they remain subject to re-evaluation after compilation.
+- Fresh Debug, XCTest, Release, Intel/Apple Silicon, application launch, Keychain restart, and real DEMO authentication results are still pending. No passing result is inferred from this source change.
