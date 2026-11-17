@@ -476,6 +476,9 @@ private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
     }
 
     @MainActor
+    func validateSession() async throws -> BrokerAccountSnapshot { try result.get() }
+
+    @MainActor
     func disconnect() async {}
 }
 

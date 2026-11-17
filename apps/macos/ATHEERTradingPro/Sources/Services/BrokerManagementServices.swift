@@ -10,10 +10,13 @@ enum BrokerEnvironment: String, CaseIterable, Identifiable {
     var isEnabled: Bool { self == .demo }
 }
 
-struct BrokerCredential: Codable, Equatable {
+struct BrokerCredential: Codable, Equatable, CustomStringConvertible, CustomDebugStringConvertible {
     let apiKey: String
     let identifier: String
     let password: String
+
+    var description: String { "BrokerCredential(<redacted>)" }
+    var debugDescription: String { description }
 
     var isValid: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -200,6 +203,7 @@ enum BrokerAuthenticationError: Error, LocalizedError {
 @MainActor
 protocol BrokerAuthenticationService {
     func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot
+    func validateSession() async throws -> BrokerAccountSnapshot
     func disconnect() async
 }
 
@@ -278,6 +282,40 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
             throw error
         } catch {
             await disconnect()
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
+            throw BrokerAuthenticationError.unavailable
+        }
+    }
+
+    func validateSession() async throws -> BrokerAccountSnapshot {
+        guard let currentCST = cst, let currentToken = securityToken else {
+            throw BrokerAuthenticationError.invalidResponse
+        }
+        var request = URLRequest(url: baseURL.appendingPathComponent("session"))
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.setValue(currentCST, forHTTPHeaderField: "CST")
+        request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse else { throw BrokerAuthenticationError.invalidResponse }
+            try validate(http.statusCode)
+            let payload = try JSONDecoder().decode(SessionPayload.self, from: data)
+            guard let accountID = payload.currentAccountId ?? payload.accountId, !accountID.isEmpty else {
+                throw BrokerAuthenticationError.invalidResponse
+            }
+            return BrokerAccountSnapshot(
+                accountIdentifier: accountID,
+                currencyCode: payload.currencyIsoCode ?? payload.currency,
+                authenticatedAt: Date()
+            )
+        } catch let error as BrokerAuthenticationError {
+            if case .invalidCredentials = error { await disconnect() }
+            throw error
+        } catch {
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw CancellationError() }
             throw BrokerAuthenticationError.unavailable
         }
     }
@@ -368,6 +406,38 @@ final class BrokerManagementViewModel: ObservableObject {
             state = .authenticationFailed(error.localizedDescription)
         } catch {
             state = .connectionFailed(error.localizedDescription)
+        }
+    }
+
+    func refreshSessionStatus() async {
+        guard state == .connected else { return }
+        do {
+            let snapshot = try await authentication.validateSession()
+            account = snapshot
+            lastSuccessfulConnection = snapshot.authenticatedAt
+        } catch is CancellationError {
+            return
+        } catch let error as BrokerAuthenticationError {
+            if case .invalidCredentials = error {
+                state = .sessionExpired
+                account = nil
+            } else {
+                state = .connectionFailed(error.localizedDescription)
+            }
+        } catch {
+            state = .connectionFailed("The Capital.com session could not be verified.")
+        }
+    }
+
+    func monitorSession() async {
+        while !Task.isCancelled {
+            do {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            await refreshSessionStatus()
         }
     }
 

@@ -16,6 +16,7 @@ struct BrokerManagementView: View {
             .padding(ATHEERDesignTokens.Spacing.page)
             .frame(maxWidth: 980, alignment: .leading)
         }
+        .task { await model.monitorSession() }
         .sheet(isPresented: $showingCredentials) {
             CapitalComCredentialsView(model: model, onClose: { showingCredentials = false })
         }
