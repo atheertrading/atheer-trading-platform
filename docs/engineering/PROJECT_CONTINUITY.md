@@ -563,3 +563,36 @@ Branch `feat/historical-market-data-contracts` is based on PR #38 exact head `0d
 Observed gaps are not classified as missing until market-session calendars are integrated. Automatic range cursors are not generated because provider boundary inclusivity has not been verified against a real DEMO response. PostgreSQL persistence is not part of this increment; platform architecture records PostgreSQL as the direction, while deployment and workload qualification remain pending.
 
 New deterministic tests and architecture/Mermaid/session documentation are committed. Exact-head backend and Mermaid CI are pending. No live Capital.com request, durable storage, or Charting integration is claimed. DEMO read-only and `CAP_ALLOW_TRADING=false` remain unchanged.
+
+
+## ATP-2026-11-17-026 — Historical market-data review correction and exact-head revalidation
+
+### Repository and dependency state
+- Active implementation repository: `atheertrading/atheer-trading-platform`.
+- PR #39 remains OPEN / DRAFT and is stacked on PR #38 exact parent head `0d37f11a8f91d09c82b39c443e346622a7df3530`.
+- PR #39 current branch head after this bounded correction: `d6bca573c28ca71b38cb10c9313e86c517b68f08`.
+- No branch history was rewritten; four focused commits follow the previously qualified documentation checkpoint `5cc73cca9d42e076ebcb5e82255414710b459b5e`.
+
+### Review finding and implementation
+- Review identified a data-integrity defect: `pagination.limitReached` was computed from normalized candle count, which can be smaller than the raw provider count after exact duplicate removal.
+- Corrected the flag to use `result.prices.length === max` before normalization.
+- Added an API regression scenario with two identical provider records and `max=2`; normalized output contains one candle and one duplicate, while `pagination.limitReached` remains true.
+- Updated `ATHEER_HISTORICAL_MARKET_DATA_ARCHITECTURE.md`, Session 025, task register, implementation status, and PR #39 description.
+- Resolved the pagination review thread after the backend regression test passed.
+
+### Exact-head verification
+- Current head: `d6bca573c28ca71b38cb10c9313e86c517b68f08`.
+- Backend Toolchain: **passed** — Node 24.22.2, TypeScript type-check/build, **37/37 API tests** (CI run #44182796685, job #134391313681).
+- Repository Hygiene: **passed** (CI run #44182796685, job #134391313140).
+- Local Sync Safety: **passed** (run #44182796765).
+- Mermaid architecture validation: **in progress** (run #44182796666).
+- Intel x86_64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313683).
+- Apple Silicon arm64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313955).
+- Earlier 37/37 API evidence on `5cc73cca...` is superseded by this exact-head run; no macOS result is claimed until jobs complete.
+
+### Boundaries and next action
+- PR #39 has not been merged. No PR in the dependent market-data chain is treated as integrated solely from backend success.
+- No real Capital.com DEMO request/quote, durable PostgreSQL persistence, market-session calendar, automatic pagination cursor, OHLC streaming, or Charting integration is claimed.
+- No local Mac pull, Xcode run, app runtime, visual, accessibility, or Keychain verification was performed in this session.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no dealing, LIVE capability, or RiskEngine/OMS/Execution Gateway change.
+- Next: complete Mermaid and macOS exact-head jobs, revalidate the dependent PR chain and required owner-Mac gates, then proceed to the PostgreSQL persistence work package with explicit decimal precision, migration, retention, and idempotency contracts.
