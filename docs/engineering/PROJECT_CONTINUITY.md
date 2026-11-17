@@ -596,3 +596,13 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - No local Mac pull, Xcode run, app runtime, visual, accessibility, or Keychain verification was performed in this session.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no dealing, LIVE capability, or RiskEngine/OMS/Execution Gateway change.
 - Next: complete Mermaid and macOS exact-head jobs, revalidate the dependent PR chain and required owner-Mac gates, then proceed to the PostgreSQL persistence work package with explicit decimal precision, migration, retention, and idempotency contracts.
+
+
+## ATP-2026-11-18-027 — Swift 5.8 Market Explorer stream-test remediation
+
+- Inspected PR #38 exact-head CI run #44178484275 and confirmed XCTest compilation failures: one async test used `try await` without `throws`, and two quote events passed raw integer arguments instead of `MarketDataStreamQuote` values.
+- Applied the bounded correction to both PR #38 and PR #39 branches. PR #38 moved to source head `f07548eb0233e5113de794f69a8840b3bdd6841f`; PR #39 moved to source head `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
+- Owner-Mac evidence in PR #39 comment 6962746664 reports Intel Debug build success and 48/48 XCTest on the base plus two uncommitted local source changes. The same source changes are now committed on the PR #39 branch; this evidence remains owner-reported, not independently executed here.
+- New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation was in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
+- Both PRs remain open/draft and unmerged. `CAP_ALLOW_TRADING=false` and all risk/execution safeguards remain unchanged.
+- Detailed session: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.

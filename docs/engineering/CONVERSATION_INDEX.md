@@ -91,3 +91,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-17-026 | 2026-11-17 | Historical market-data pagination review and exact-head revalidation | Corrected `pagination.limitReached` to use raw provider record count before duplicate removal; added duplicate/max regression coverage; updated architecture/session/task/status/continuity and PR #39. Backend typecheck/build and 37/37 API tests, repository hygiene, and Local Sync Safety passed on source correction head `d6bca573...`; later documentation-only commits advanced the branch and require fresh exact-head CI. Mermaid and macOS architecture jobs remain pending. | PR #39; ATP-MKT-005; SESSION_2026-11-17_025_HISTORICAL_MARKET_DATA_CONTRACTS; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+
+| ATP-2026-11-18-027 | 2026-11-18 | Swift 5.8 Market Explorer stream-test qualification remediation | Diagnosed the PR #38 Intel XCTest compile failure, committed the async/quote-event/Foundation compatibility fixes to PR #38 and #39, recorded the owner-confirmed 48/48 Intel Debug/XCTest evidence with its exact working-tree limitations, and queued exact-head requalification. | SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
