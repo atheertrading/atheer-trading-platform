@@ -199,7 +199,10 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   const address = server.address();
   assert.ok(address && typeof address !== "string");
 
-  const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=AAPL");
+  const controller = new AbortController();
+  const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=AAPL", {
+    signal: controller.signal,
+  });
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /text\/event-stream/);
 
@@ -214,12 +217,14 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   assert.match(body, /event: quote/);
   assert.match(body, /"instrumentId":"AAPL"/);
 
-  await reader.cancel();
+  controller.abort();
+  await reader.cancel().catch(() => undefined);
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(released, true);
 
-  await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  const serverClosed = new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server.closeAllConnections();
+  await serverClosed;
 });
 
 test("local SSE endpoint rejects more than forty instrument epics", async () => {
@@ -242,6 +247,7 @@ test("local SSE endpoint rejects more than forty instrument epics", async () => 
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "invalid_stream_instruments" });
 
-  await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  const serverClosed = new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server.closeAllConnections();
+  await serverClosed;
 });
