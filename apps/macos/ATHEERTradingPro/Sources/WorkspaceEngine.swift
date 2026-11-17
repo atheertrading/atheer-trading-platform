@@ -155,7 +155,11 @@ final class WorkspaceEngine: ObservableObject {
                 } catch {
                     snapshot = .standard()
                     recoveryState = .restoredDefaults(String(describing: error))
-                    try? persistence.save(snapshot)
+                    do {
+                        try persistence.save(snapshot)
+                    } catch {
+                        recoveryState = .persistenceFailure(String(describing: error))
+                    }
                 }
             } else {
                 snapshot = .standard()
@@ -184,10 +188,12 @@ final class WorkspaceEngine: ObservableObject {
 
     func selectWorkspace(_ workspaceID: UUID) {
         guard snapshot.workspaces.contains(where: { $0.id == workspaceID }) else { return }
-        snapshot.activeWorkspaceID = workspaceID
-        if let profileIndex = snapshot.profiles.firstIndex(where: { $0.id == snapshot.activeProfileID }) {
-            snapshot.profiles[profileIndex].activeWorkspaceID = workspaceID
+        var updatedSnapshot = snapshot
+        updatedSnapshot.activeWorkspaceID = workspaceID
+        if let profileIndex = updatedSnapshot.profiles.firstIndex(where: { $0.id == updatedSnapshot.activeProfileID }) {
+            updatedSnapshot.profiles[profileIndex].activeWorkspaceID = workspaceID
         }
+        snapshot = updatedSnapshot
         persist()
     }
 
@@ -197,12 +203,14 @@ final class WorkspaceEngine: ObservableObject {
         guard !trimmedName.isEmpty else { return nil }
 
         let workspace = WorkspaceDocument.standard(name: trimmedName)
-        snapshot.workspaces.append(workspace)
-        if let profileIndex = snapshot.profiles.firstIndex(where: { $0.id == snapshot.activeProfileID }) {
-            snapshot.profiles[profileIndex].workspaceIDs.append(workspace.id)
-            snapshot.profiles[profileIndex].activeWorkspaceID = workspace.id
+        var updatedSnapshot = snapshot
+        updatedSnapshot.workspaces.append(workspace)
+        if let profileIndex = updatedSnapshot.profiles.firstIndex(where: { $0.id == updatedSnapshot.activeProfileID }) {
+            updatedSnapshot.profiles[profileIndex].workspaceIDs.append(workspace.id)
+            updatedSnapshot.profiles[profileIndex].activeWorkspaceID = workspace.id
         }
-        snapshot.activeWorkspaceID = workspace.id
+        updatedSnapshot.activeWorkspaceID = workspace.id
+        snapshot = updatedSnapshot
         persist()
         return workspace.id
     }
@@ -232,14 +240,18 @@ final class WorkspaceEngine: ObservableObject {
 
     private func updateActiveWorkspace(_ update: (inout WorkspaceDocument) -> Void) {
         guard let index = snapshot.workspaces.firstIndex(where: { $0.id == snapshot.activeWorkspaceID }) else { return }
-        update(&snapshot.workspaces[index])
-        snapshot.workspaces[index].updatedAt = Date()
+        var updatedSnapshot = snapshot
+        update(&updatedSnapshot.workspaces[index])
+        updatedSnapshot.workspaces[index].updatedAt = Date()
+        snapshot = updatedSnapshot
         persist()
     }
 
     private func replaceActiveWorkspace(with workspace: WorkspaceDocument) {
         guard let index = snapshot.workspaces.firstIndex(where: { $0.id == workspace.id }) else { return }
-        snapshot.workspaces[index] = workspace
+        var updatedSnapshot = snapshot
+        updatedSnapshot.workspaces[index] = workspace
+        snapshot = updatedSnapshot
         persist()
     }
 
