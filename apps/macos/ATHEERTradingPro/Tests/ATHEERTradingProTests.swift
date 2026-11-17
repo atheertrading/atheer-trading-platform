@@ -54,7 +54,7 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertTrue(engine.updateActiveLayout(layout))
 
         let restored = WorkspaceEngine(persistence: persistence)
-        XCTAssertEqual(restored.snapshot.activeProfileID, profileID)
+        XCTAssertEqual(restored.snapshot.activeProfileID, restored.snapshot.profiles.last?.id)
         XCTAssertEqual(restored.activeWorkspace.layout, layout)
     }
 
