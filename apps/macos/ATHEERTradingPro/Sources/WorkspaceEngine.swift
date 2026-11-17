@@ -208,6 +208,56 @@ final class WorkspaceEngine: ObservableObject {
     }
 
     @discardableResult
+    func createProfile(name: String) -> UUID? {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return nil }
+
+        let workspace = WorkspaceDocument.standard()
+        let profile = WorkspaceProfile(
+            id: UUID(),
+            name: trimmedName,
+            workspaceIDs: [workspace.id],
+            activeWorkspaceID: workspace.id
+        )
+        var updatedSnapshot = snapshot
+        updatedSnapshot.workspaces.append(workspace)
+        updatedSnapshot.profiles.append(profile)
+        updatedSnapshot.activeProfileID = profile.id
+        updatedSnapshot.activeWorkspaceID = workspace.id
+        snapshot = updatedSnapshot
+        persist()
+        return profile.id
+    }
+
+    func selectProfile(_ profileID: UUID) {
+        guard let profile = snapshot.profiles.first(where: { $0.id == profileID }),
+              profile.workspaceIDs.contains(profile.activeWorkspaceID) else { return }
+        var updatedSnapshot = snapshot
+        updatedSnapshot.activeProfileID = profile.id
+        updatedSnapshot.activeWorkspaceID = profile.activeWorkspaceID
+        snapshot = updatedSnapshot
+        persist()
+    }
+
+    @discardableResult
+    func updateActiveLayout(_ layout: WorkspaceLayoutConfiguration) -> Bool {
+        guard let index = snapshot.workspaces.firstIndex(where: { $0.id == snapshot.activeWorkspaceID }) else {
+            return false
+        }
+        var updatedSnapshot = snapshot
+        updatedSnapshot.workspaces[index].layout = layout
+        updatedSnapshot.workspaces[index].updatedAt = Date()
+        do {
+            try Self.validate(updatedSnapshot)
+        } catch {
+            return false
+        }
+        snapshot = updatedSnapshot
+        persist()
+        return recoveryState == .clean
+    }
+
+    @discardableResult
     func createWorkspace(name: String) -> UUID? {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return nil }
