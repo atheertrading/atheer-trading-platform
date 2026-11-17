@@ -6,7 +6,7 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `feat/macos-workspace-visual-foundation` (PR #18, stacked on PR #17 → PR #10) |
+| Current work branch | `work/local-pr18-qualification` (local qualification branch tracking PR #18 source branch `feat/macos-workspace-visual-foundation`; PR chain #10 → #17 → #18) |
 | Record status | Initial baseline; further source reconciliation required |
 | Last reviewed | 2026-11-17 |
 
@@ -385,3 +385,37 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #18 exact-head hosted CI is pending; PR #17's passing CI is not substituted for it.
 - Panel visibility is in-memory only. Workspace persistence, docking/resizing and Settings remain unimplemented.
 - Next acceptance: PR #18 exact-head CI and owner-side macOS visual/runtime QA.
+
+
+## Local PR #18 qualification checkpoint — 2026-11-17
+
+### Verified repository state
+
+- Local branch: `work/local-pr18-qualification`, tracking `origin/feat/macos-workspace-visual-foundation`.
+- Source head at qualification start: `331f424d6d1180569504b725cbcaa1eece41ed46`.
+- Local working tree was clean at branch creation. The safety branch `safety/local-pr10-checkpoint-20261117` preserves the original PR #10 checkout at `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Git ancestry checks passed for PR #10 → PR #17, PR #17 → PR #18, and PR #10 → PR #18. `git rev-list --left-right --count HEAD...origin/feat/macos-workspace-visual-foundation` returned `0 13` before switching, confirming no local-only commits and 13 commits on the PR #18 line beyond the PR #10 checkpoint.
+- The PR #18 source inventory contains 14 tracked project files: 12 Swift source files, one XCTest file, and `project.yml`.
+- Local toolchain discovery: Xcode 14.3.1 (14E300c), Swift 5.8.1 targeting `x86_64-apple-macosx13.0`, XcodeGen 2.36.1. The generated `.xcodeproj` exists. No local build/test/launch/visual result is claimed yet.
+
+### Hosted verification
+
+- PR #18 workflow #135 completed successfully on exact source head `331f424d6d1180569504b725cbcaa1eece41ed46`. All three jobs passed: macOS build/tests/Swift CodeQL (including Debug build, XCTest, Release build), repository hygiene/Markdown lint, and backend toolchain/typecheck/tests.
+- Local Sync Safety workflow #90 completed successfully.
+- Hosted CI does not replace local workstation acceptance.
+
+### Current implementation boundaries
+
+- PR #18 remains open and unmerged, stacked on PR #17. Its shell is a bounded visual/workspace foundation, not a completed trading workstation.
+- Market Watch, Chart Workspace, and Account & Risk are explicit unavailable states; Platform Health consumes the local API health model. Panel visibility is in-memory only.
+- Workspace persistence, profiles, docking/resizing, multiwindow/multi-display behavior, instrument/account context synchronization, full accessibility audit, and visual regression evidence remain outstanding.
+- No broker credentials, dealing operations, risk-policy changes, trading permissions, LIVE behavior, or production configuration were introduced.
+
+### Next qualification sequence
+
+1. Inspect the full governing, architecture, continuity, task, and decision records on this branch.
+2. Inspect all Swift sources, tests, and project configuration against the approved requirements and macOS 13 / Swift 5.8 compatibility.
+3. Run local XcodeGen validation and Debug build, XCTest, and Release build with isolated DerivedData; preserve complete command output and exit status.
+4. Launch the app and verify navigation, API Connection, panel visibility/reset, truthful unavailable states, and backend-health states.
+5. Record screenshots and verify accessibility, keyboard behavior, resizing, and multiple displays where the actual environment supports them.
+6. Update this record with exact local evidence and residual defects; do not mark M02-001 or M02-009 DONE prematurely.
