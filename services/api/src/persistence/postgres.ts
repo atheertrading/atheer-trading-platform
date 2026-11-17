@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import process from "node:process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { readdir, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { Pool } from "pg";
 import {
   validateBrokerAccountIdentity,
@@ -85,7 +85,7 @@ export function createPostgresPool(connectionString: string): SqlPool {
   return new Pool({ connectionString, max: 10, idleTimeoutMillis: 30_000, connectionTimeoutMillis: 5_000 });
 }
 
-export async function loadSqlMigrations(directory = resolve(process.cwd(), "migrations")): Promise<SqlMigration[]> {
+export async function loadSqlMigrations(directory = resolve(dirname(fileURLToPath(import.meta.url)), "../../migrations")): Promise<SqlMigration[]> {
   const names = (await readdir(directory)).filter((name) => /^\d{3,}_[a-z0-9-]+\.sql$/.test(name)).sort();
   const migrations: SqlMigration[] = [];
   for (const name of names) {
