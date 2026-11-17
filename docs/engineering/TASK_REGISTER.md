@@ -270,6 +270,19 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - CI run #44170771670 on `2750d272`: Backend Toolchain passed; Repository Hygiene failed on this line due an unmatched Markdown code span; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44170771652 passed. The documentation lint defect is corrected in the next commit; macOS verification remains pending.
 - Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. macOS verification remains pending.
 
-## ATP-MKT-002 MainActor build remediation — 2026-11-17
 
-The exact-head Intel macOS CI job for PR #33 failed during Debug compilation on actor-isolated URLSessionMarketSearchClient default arguments in MarketExplorerView and MarketExplorerViewModel. Both now accept optional injected dependencies and construct the default client inside the MainActor-isolated view-model initializer. Requalification on the corrected head is pending; no macOS pass is claimed.
+## ATP-MKT-003 — Capital.com DEMO Market Streaming Foundation — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Provider WebSocket quote ingestion, shared subscription manager, quote validation, and local SSE relay | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #25 DEMO REST runtime; PR #31 Market Explorer; PR #33 search lifecycle | TypeScript/API CI, stream lifecycle tests, provider DEMO verification, loopback transport security review |
+
+- Branch: `feat/capital-demo-market-streaming`, based on PR #33 head `61b0953a04047868f000709369e2a182b3db34d4`.
+- Session report: `SESSION_2026-11-17_023_CAPITAL_DEMO_STREAMING.md`.
+- Architecture: `ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE.md`; Mermaid diagram: `09-capital-demo-market-data-streaming.mmd`.
+- Implemented provider session endpoint discovery, WSS validation, server-side token handling, shared 40-instrument subscription cap, correlation acknowledgements, five-minute ping, reconnect/resubscribe, quote quality checks, in-memory cache, and loopback SSE.
+- No CI or real-provider success is claimed yet. macOS consumer, historical persistence, OHLC streaming, Charting, and RiskEngine integration remain separate follow-up work.
+
+## ATP-MKT-003 MainActor build remediation — 2026-11-17
+
+The initial Intel macOS job for PR #34 reached Debug compilation and failed because Swift 5.8 evaluates actor-isolated service default arguments from a nonisolated caller context. The Market Explorer view and view-model now accept optional injected clients and instantiate the default URLSession client inside the MainActor-isolated view-model initializer. This is a source remediation only; exact-head hosted requalification remains pending. PR #34 remains open/draft and unmerged.

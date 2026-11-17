@@ -27,6 +27,13 @@ export interface CapitalMarketSearchResult {
   readonly markets: readonly CapitalMarket[];
 }
 
+export interface CapitalDemoStreamingConnectionInfo {
+  readonly streamEndpoint: string;
+  readonly cst: string;
+  readonly securityToken: string;
+}
+
+
 export interface CapitalPriceHistoryResult {
   readonly prices: readonly Readonly<Record<string, unknown>>[];
 }
@@ -85,6 +92,35 @@ export class CapitalDemoClient {
       securityToken,
       createdAtMs: this.now(),
       environment: "DEMO",
+    };
+  }
+
+  async getStreamingConnectionInfo(
+    session: CapitalDemoSession,
+  ): Promise<CapitalDemoStreamingConnectionInfo> {
+    const response = await this.authorizedGet(session, "/session");
+    const payload: unknown = await response.json();
+    if (!isRecord(payload) || typeof payload.streamEndpoint !== "string") {
+      throw new Error("Capital.com DEMO session response omitted the streaming endpoint.");
+    }
+
+    let endpoint: URL;
+    try {
+      endpoint = new URL(payload.streamEndpoint);
+    } catch {
+      throw new Error("Capital.com DEMO session returned an invalid streaming endpoint.");
+    }
+    if (
+      endpoint.protocol !== "wss:" ||
+      endpoint.hostname !== "api-streaming-capital.backend-capital.com"
+    ) {
+      throw new Error("Capital.com DEMO session returned an untrusted streaming endpoint.");
+    }
+
+    return {
+      streamEndpoint: endpoint.toString(),
+      cst: session.cst,
+      securityToken: session.securityToken,
     };
   }
 
