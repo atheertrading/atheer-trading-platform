@@ -228,7 +228,7 @@ final class WorkspaceEngine: ObservableObject {
     func addPanel(_ panelID: WorkspacePanelID) -> Bool {
         guard !activeWorkspace.panels.contains(where: { $0.panelID == panelID }) else { return false }
         updateActiveWorkspace { workspace in
-            let nextOrder = (workspace.panels.map(\\.order).max() ?? -1) + 1
+            let nextOrder = (workspace.panels.map(\.order).max() ?? -1) + 1
             workspace.panels.append(
                 WorkspacePanelConfiguration(panelID: panelID, isVisible: true, order: nextOrder)
             )
@@ -342,6 +342,19 @@ final class WorkspaceEngine: ObservableObject {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
         updateActiveWorkspace { $0.name = trimmedName }
+    }
+
+    /// Restores the active workspace's default panel catalogue without changing its name or layout.
+    func restoreDefaultPanels() {
+        updateActiveWorkspace { workspace in
+            workspace.panels = WorkspacePanelID.allCases.enumerated().map { index, panelID in
+                WorkspacePanelConfiguration(
+                    panelID: panelID,
+                    isVisible: true,
+                    order: index
+                )
+            }
+        }
     }
 
     func resetActiveWorkspace() {
