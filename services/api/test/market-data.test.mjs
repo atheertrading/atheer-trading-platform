@@ -104,6 +104,46 @@ test("Capital DEMO session uses only the official DEMO host and returns session 
   assert.equal(body.encryptedPassword, false);
 });
 
+test("streaming connection details use the session-provided trusted WebSocket endpoint", async () => {
+  const calls = [];
+  const client = new CapitalDemoClient(async (url, init) => {
+    calls.push({ url: String(url), init });
+    return response({
+      streamEndpoint: "wss://api-streaming-capital.backend-capital.com/",
+    });
+  });
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  const info = await client.getStreamingConnectionInfo(session);
+  assert.equal(calls[0].url, demoBase + "/session");
+  assert.equal(calls[0].init.method, "GET");
+  assert.equal(calls[0].init.headers.CST, "demo-cst");
+  assert.equal(calls[0].init.headers["X-SECURITY-TOKEN"], "demo-security-token");
+  assert.equal(info.streamEndpoint, "wss://api-streaming-capital.backend-capital.com/");
+  assert.equal(info.cst, "demo-cst");
+  assert.equal(info.securityToken, "demo-security-token");
+});
+
+test("streaming connection details reject untrusted provider endpoints", async () => {
+  const client = new CapitalDemoClient(async () => response({
+    streamEndpoint: "wss://attacker.example/connect",
+  }));
+  await assert.rejects(
+    client.getStreamingConnectionInfo({
+      cst: "demo-cst",
+      securityToken: "demo-security-token",
+      createdAtMs: 1_800_000_000_000,
+      environment: "DEMO",
+    }),
+    /untrusted streaming endpoint/,
+  );
+});
+
 test("market search and history requests carry DEMO session headers", async () => {
   const calls = [];
   const client = new CapitalDemoClient(async (url, init) => {
