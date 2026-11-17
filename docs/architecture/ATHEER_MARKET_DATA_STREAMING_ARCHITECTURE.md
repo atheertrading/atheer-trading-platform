@@ -111,3 +111,13 @@ Hosted TypeScript/API and macOS qualification are pending for the integrated bra
 - No order/dealing API methods are added.
 - No RiskEngine, OMS, Execution Gateway, broker permission, credential, or LIVE behavior is changed.
 - Manual and automated order governance is unaffected.
+
+## Native presentation and selection boundary
+
+The native Market Explorer validates instrument identifiers against the backend-compatible [A-Za-z0-9_.-]{1,64} contract before adding them to a subscription. The client and backend both enforce the 40-instrument ceiling.
+
+Quote ingestion remains independent from SwiftUI rendering. The view model coalesces pending quote updates and publishes the latest per-instrument snapshot on a 100 ms presentation cadence (at most 10 UI publications per second while updates are arriving). This throttle is strictly a presentation optimization: it must not be reused for backend ingestion, quote ordering, freshness evaluation, risk authorization, or execution decisions.
+
+When the selected instrument set becomes empty or the backend session is unavailable, the native stream task and presentation throttle are both cancelled. Re-selection can resume only while the user-requested streaming intent remains active. The UI labels prices as DEMO Bid/Ask to avoid conflating the provider's DEMO environment with LIVE trading.
+
+The native view and view model also construct default URLSession clients inside the MainActor-isolated composition boundary; default arguments no longer instantiate actor-isolated services from a nonisolated context.
