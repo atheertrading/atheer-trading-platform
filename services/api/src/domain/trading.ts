@@ -1,5 +1,4 @@
 import {
-  type AccountBalanceSnapshot,
   type BrokerAccountId,
   type CorrelationId,
   type DataProvenance,
@@ -22,6 +21,7 @@ import {
   nonEmptyString,
 } from "./shared.ts";
 import type { Price, Quantity } from "./instrument.ts";
+import type { AccountBalanceSnapshot } from "./account.ts";
 
 export type IntentOriginKind =
   | "HUMAN"

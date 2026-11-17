@@ -206,6 +206,9 @@ export function utcTimestampFromIso(value: string): UtcTimestamp {
 
 export function createDataProvenance(input: DataProvenance): DataProvenance {
   nonEmptyString(input.source.sourceId, "source_id");
+  if (!["BROKER", "MARKET_DATA_PROVIDER", "INTERNAL", "USER", "STRATEGY", "AI_AGENT"].includes(input.source.sourceType)) {
+    throw new DomainValidationError("invalid_source_type", "Source type is not supported.");
+  }
   nonEmptyString(input.schemaVersion, "schema_version");
   nonEmptyString(input.normalizationVersion, "normalization_version");
   nonEmptyString(input.validationCode, "validation_code");

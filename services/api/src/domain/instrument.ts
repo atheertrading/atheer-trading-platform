@@ -8,6 +8,7 @@ import {
   type TradingEnvironment,
   type UnitCode,
   type CurrencyCode,
+  decimalValue,
   type DecimalValue,
   type UtcTimestamp,
   DomainValidationError,
@@ -38,6 +39,21 @@ export interface Price {
   readonly value: DecimalValue;
   readonly unit: UnitCode;
   readonly currency?: CurrencyCode;
+}
+
+export function quantity(value: string, unit: UnitCode): Quantity {
+  const normalized = decimalValue(value);
+  assertPositiveDecimal(normalized, "quantity");
+  nonEmptyString(unit, "quantity_unit");
+  return Object.freeze({ value: normalized, unit });
+}
+
+export function price(value: string, unit: UnitCode, currency?: CurrencyCode): Price {
+  const normalized = decimalValue(value);
+  nonEmptyString(unit, "price_unit");
+  return Object.freeze(currency === undefined
+    ? { value: normalized, unit }
+    : { value: normalized, unit, currency });
 }
 
 export interface BrokerInstrumentConstraint {
