@@ -278,7 +278,10 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 
 - Owner approved implementation of the sequential GitHub work queue discussed in the engineering session.
 - Added root `WORK.md` (ATP-WORK-001) on `docs/continuous-engineering-operating-directive`; linked it from root `AGENTS.md` and registered the queue in `docs/engineering/TASK_REGISTER.md`.
-- Opened PR #20 against `docs/atp-ui-ux-chatgpt-directive` to preserve the existing documentation dependency. PR #20 is open; latest confirmed head at this checkpoint is `0766cf0d345b51b87034c15449765b9a621455f2`; changed files are WORK.md, AGENTS.md, and TASK_REGISTER.md. Revalidate before relying on this snapshot.
+- Opened PR #20 against `docs/atp-ui-ux-chatgpt-directive` to preserve the existing documentation dependency. PR #20 is open; initial head was `0766cf0d345b51b87034c15449765b9a621455f2`; the queue and continuity updates subsequently expanded the PR to five files. The latest WORK.md correction is commit `aec4ad619a3e7e4126f697d473e21a42098f0d64`; re-fetch PR metadata for the final head.
 - PR #19 was found closed. The queue changes were therefore proposed in a new focused PR rather than reopening or altering the closed PR.
-- No Markdown lint, CI, or application test result is claimed. PR review and exact-head checks remain pending.
-- **Next action:** inspect PR #20's complete diff and latest checks, then continue WORK-001. Do not merge until the dependency and required checks are satisfied.
+- PR #19 is confirmed merged into the PR #20 base branch at `d1db130406f0d0b31a7b3f12980d9056083acda6`.
+- PR #20 complete diff was inspected: five files, no submitted reviews or inline threads. At exact head `c4c0bf2725f9a58ce77cf760934289db86b0a92f`, Local Sync Safety passed and CI was queued; no combined commit status entries were returned.
+- Review found WORK-001 incorrectly described PR #19 as the active change. Corrected WORK-001 to qualify PR #20 and record PR #19 as its merged prerequisite; correction commit `aec4ad619a3e7e4126f697d473e21a42098f0d64` is on the PR branch.
+- Documentation lint and application tests are not claimed. Revalidate exact-head checks after the correction; do not merge while required checks are pending.
+- **Next action:** inspect PR #20's updated head, diff, and checks; finish WORK-001 only after exact-head verification.
