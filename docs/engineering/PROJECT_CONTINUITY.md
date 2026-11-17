@@ -637,3 +637,16 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - On previous head `34015bda...`, backend 46/46, hygiene, Mermaid, Local Sync Safety, and Intel macOS qualification passed; arm64 was queued. These do not apply to the new head.
 - New-head Local Sync Safety passed; Mermaid was running and CI queued at last inspection. Exact-head verification remains open.
 - PR #40 remains OPEN / DRAFT and unmerged. PostgreSQL persistence follows after domain qualification. `CAP_ALLOW_TRADING=false` unchanged.
+
+## ATP-2026-11-18-029 — PostgreSQL persistence foundation
+
+- Created stacked PR #41 (`feat/postgres-persistence-foundation`) from PR #40 head `8d4afc4e59b2787a9252269cbcf11fa379bc65b6`.
+- Pinned `pg` 8.23.1 and generated the API npm lockfile using a temporary branch-scoped lockfile workflow; the temporary workflow was removed from the feature branch after the lockfile was committed.
+- Implemented versioned SQL schema for instrument identities/specifications, broker accounts and snapshots, order intents, risk assessments, reconciliation events, audit events, and a domain-event outbox.
+- Implemented transaction-scoped PostgreSQL advisory-lock migration execution, SHA-256 migration checksum verification, environment-pinned repository adapter, canonical JSON payload hashing, exact idempotent replay, conflict detection, and transactional intent/risk/audit/outbox persistence.
+- Added PostgreSQL integration tests and configured the backend CI job with an ephemeral PostgreSQL 17 service.
+- Added `ATP_PERSISTENCE_ARCHITECTURE.md`, Mermaid diagram 12, EDL-012, and task/status updates.
+- Important limitation: the outbox only contains durable domain-record events; no outbox publisher, OMS transition worker, Execution Gateway, or broker dispatch path is implemented. The repository environment pin is logical partitioning; separate database credentials/instances and database-role isolation remain deployment work.
+- Current verification: no exact-head CI result has yet been inspected for PR #41. The available container is Node 22 and has no PostgreSQL service; no local test execution is claimed.
+- No production database migration, broker dealing, credential changes, risk-limit changes, LIVE enablement, or `CAP_ALLOW_TRADING` change. The flag remains `false`.
+- Next: inspect PR #41 exact-head CI and fix every compile/migration/integration issue; then complete operational migration, backup/restore, and environment provisioning docs. In parallel, continue polling the PR #33 Apple Silicon retry and PRs #37–#40 qualification.
