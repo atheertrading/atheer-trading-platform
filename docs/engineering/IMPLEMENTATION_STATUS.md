@@ -227,3 +227,17 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - Local environment discovery: Xcode 14.3.1, Swift 5.8.1 (x86_64 macOS target), XcodeGen 2.36.1; generated Xcode project exists. These are toolchain/project observations only; local build, XCTest, app launch, visual, accessibility, and multi-display qualification have not yet been performed.
 - Workspace persistence, profiles, panel resizing/docking, multiwindow behavior, synchronized instrument/account context, and Settings remain unimplemented or unqualified. Formal IPDS source/approval reconciliation remains pending.
 - No broker, credential, order, risk-policy, trading-permission, LIVE or production behavior was changed.
+
+
+## Adaptive Workspace layout increment — 2026-11-17
+
+**Status: IMPLEMENTED IN SOURCE; hosted CI and owner visual acceptance pending.**
+
+- Branch: `feat/workspace-adaptive-layout`, based on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Commit: `db073848e7a80bbd4db2868faa741725698cb86c`.
+- Changed `apps/macos/ATHEERTradingPro/Sources/WorkspaceHomeView.swift`: replaced the fixed four-column status grid and fixed two-column panel grid with SwiftUI adaptive grids.
+- Initial provisional layout metrics: status tiles 150–240 points; workspace panels 320–560 points; existing workspace content maximum width remains 1280 points.
+- No navigation destinations, business modules, financial data, order controls, persistence, docking, or trading capabilities were added.
+- Existing XCTest coverage still asserts the four-panel inventory and default visibility. No new test execution is claimed in this record; exact-head CI is pending.
+- Owner confirms that the application launches on the Mac and has been exercised across two displays. This is owner-confirmed runtime evidence only; visual quality, window/panel behavior, accessibility, keyboard/focus, and VoiceOver remain unverified by engineering.
+- Formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation remains outstanding. The responsive metrics are provisional, not final design-system breakpoints.
