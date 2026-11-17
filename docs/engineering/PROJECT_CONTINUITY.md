@@ -650,3 +650,9 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - Current verification: no exact-head CI result has yet been inspected for PR #41. The available container is Node 22 and has no PostgreSQL service; no local test execution is claimed.
 - No production database migration, broker dealing, credential changes, risk-limit changes, LIVE enablement, or `CAP_ALLOW_TRADING` change. The flag remains `false`.
 - Next: inspect PR #41 exact-head CI and fix every compile/migration/integration issue; then complete operational migration, backup/restore, and environment provisioning docs. In parallel, continue polling the PR #33 Apple Silicon retry and PRs #37–#40 qualification.
+
+### Persistence migration safety refinement
+
+- The API now verifies the migration ledger/checksums at startup and does not apply DDL automatically. Pending migrations are applied only by explicit `npm run migrate`.
+- Added `verifySqlMigrations`, migration CLI, `docs/operations/POSTGRESQL.md`, and PostgreSQL server-version assertion in the integration suite.
+- Production backup/restore, retention, role provisioning, TLS policy, and restore drills remain unimplemented release blockers.
