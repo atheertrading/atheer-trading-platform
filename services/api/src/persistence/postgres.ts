@@ -104,6 +104,9 @@ export async function applySqlMigrations(pool: SqlPool, migrations: readonly Sql
       "SELECT version, checksum FROM atheer_schema_migrations ORDER BY version",
     );
     const appliedByVersion = new Map(applied.rows.map((row) => [row.version, row.checksum]));
+    if (migrations.some((migration) => !/^\d{3,}$/.test(migration.version))) {
+      throw new PersistenceConflictError("Migration versions must be numeric identifiers with at least three digits.");
+    }
     const seenVersions = new Set<string>();
     const orderedMigrations = [...migrations].sort((left, right) =>
       BigInt(left.version) < BigInt(right.version) ? -1 : BigInt(left.version) > BigInt(right.version) ? 1 : 0,
@@ -113,7 +116,7 @@ export async function applySqlMigrations(pool: SqlPool, migrations: readonly Sql
       0n,
     );
     for (const migration of orderedMigrations) {
-      if (!/^\d{3,}$/.test(migration.version) || seenVersions.has(migration.version)) {
+      if (seenVersions.has(migration.version)) {
         throw new PersistenceConflictError("Migration versions must be unique numeric identifiers.");
       }
       seenVersions.add(migration.version);
