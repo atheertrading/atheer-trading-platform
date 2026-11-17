@@ -73,6 +73,7 @@ export class CapitalDemoStreamingRuntime {
   private readonly intentionallyClosing = new WeakSet<WebSocket>();
   private nextSubscriptionId = 0;
   private nextCorrelationId = 0;
+  private generation = 0;
   private reconnectAttempt = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -148,6 +149,7 @@ export class CapitalDemoStreamingRuntime {
   }
 
   async disconnect(): Promise<void> {
+    this.generation += 1;
     this.subscriptions.clear();
     this.clearReconnectTimer();
     this.stopHeartbeat();
@@ -167,6 +169,7 @@ export class CapitalDemoStreamingRuntime {
   private async removeSubscription(id: number): Promise<void> {
     this.subscriptions.delete(id);
     if (this.subscriptions.size === 0) {
+      this.generation += 1;
       this.clearReconnectTimer();
       this.stopHeartbeat();
       const socket = this.socket;
@@ -195,8 +198,12 @@ export class CapitalDemoStreamingRuntime {
 
     this.state = "connecting";
     this.lastError = undefined;
+    const generation = this.generation;
     this.connectionPromise = (async () => {
       const info = await this.getSessionInfo();
+      if (generation !== this.generation) {
+        throw new Error("Capital.com DEMO stream connection was superseded.");
+      }
       let endpoint: URL;
       try {
         endpoint = new URL("connect", info.streamEndpoint);
@@ -227,6 +234,12 @@ export class CapitalDemoStreamingRuntime {
           if (settled) return;
           settled = true;
           clearTimeout(timeout);
+          if (generation !== this.generation) {
+            this.intentionallyClosing.add(socket);
+            socket.close(1000, "Superseded stream connection");
+            reject(new Error("Capital.com DEMO stream connection was superseded."));
+            return;
+          }
           this.state = "connected";
           this.lastError = undefined;
           this.reconnectAttempt = 0;
@@ -255,12 +268,14 @@ export class CapitalDemoStreamingRuntime {
       });
     })()
       .catch((error: unknown) => {
-        this.state = "degraded";
-        this.lastError = safeErrorMessage(error);
+        if (generation === this.generation) {
+          this.state = "degraded";
+          this.lastError = safeErrorMessage(error);
+        }
         const socket = this.socket;
-        this.socket = null;
-        this.connectionInfo = null;
         if (socket) {
+          this.socket = null;
+          this.connectionInfo = null;
           this.intentionallyClosing.add(socket);
           socket.close();
         }
