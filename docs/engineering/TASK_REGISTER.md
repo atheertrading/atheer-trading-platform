@@ -132,3 +132,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 | M00-022 | P0 | Establish continuous engineering execution, approvals/delegation, verification, and handover protocol | IN PROGRESS | CEOD v1.0 on PR #19; pending exact-head documentation checks and review/merge |
 
 The owner authorized implementation of sections 6 (Engineering Decision, Approvals, and Delegation) and 7 (ATHEER Execution Mechanism). Routine engineering work is delegated within the documented boundaries; explicit approval gates remain intact. This documentation change does not authorize LIVE trading, broker permission changes, production deployment, destructive repository operations, or security-sensitive actions.
+
+
+## Sequential engineering work queue — 2026-11-17
+
+- Added root `WORK.md` as the ordered active execution queue, linked from `AGENTS.md`.
+- WORK-001 is IN PROGRESS: review and qualify the governance documentation dependency and its exact-head checks.
+- WORK-002 through WORK-006 sequence the revalidation of the macOS PR chain and owner-confirmed two-screen smoke test, source/requirements reconciliation, platform architecture contracts, macOS design-system/workspace qualification, and backend/broker foundation under existing safety gates.
+- The queue is operational guidance, not evidence of task completion. Revalidate all branch, PR, issue, and CI state before acting.
+- The queue change is proposed in PR #20; do not mark the queue integration complete until its diff, required checks, and dependency relationship are reviewed and accepted.
