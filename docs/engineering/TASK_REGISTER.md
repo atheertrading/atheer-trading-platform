@@ -46,8 +46,10 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
-| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — current PR #10 head `bbe43218e4010442605befb9527907b0968dca4f` passed hosted CI #116 (macOS Debug/XCTest/Release/Swift CodeQL), Local Sync Safety #46, and Actions CodeQL #116; local Mac build/test/launch and app/backend integration remain outstanding |
+| M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — PR #10 exact head `06bd496d957b6cd2f999209cf5dc83cae54251cf` passed hosted CI #117; owner Mac XcodeGen/Debug/XCTest/launch are owner-confirmed; owner supplied /health/live 200 and /health/ready 503 expected payload. App-panel verification remains pending in PR #17. |
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
+| M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; hosted macOS CI and owner runtime QA pending |
+| M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; full control audit and owner runtime QA pending |
 
 ## Governance notes
 

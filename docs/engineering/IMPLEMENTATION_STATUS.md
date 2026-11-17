@@ -192,3 +192,21 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - PR #10 remains open and unmerged. GitHub reports mergeable. No review submissions or requested reviewers were present at inspection. Branch protection is unverified because the endpoint returned 403 to the connected integration; rulesets returned an empty list.
 - Actual owner-Mac build/test/launch and local app/backend health integration remain outstanding. M02-005 remains IN PROGRESS. Hosted CI is not physical workstation qualification.
 - Coordination request posted on PR #10 for the macOS verification worker and review/maintainer worker. No local worktree was accessed and no protected trading/security/production settings were changed.
+
+
+## 2026-11-17 — first native workspace/API connection implementation
+
+**Status: IMPLEMENTED IN SOURCE; HOSTED MACOS CI PENDING; OWNER RUNTIME QA PENDING.**
+
+- Branch: `feat/macos-workspace-api-connection`.
+- PR: [#17](https://github.com/atheertrading/atheer-trading-platform/pull/17), based on PR #10 head `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Exact PR head at this update: `45f38158b5c7e97ba1857804e585147ddf6c61cb`.
+- Added native `NavigationSplitView` with two real destinations only: Workspace and API Connection.
+- Added a dedicated read-only API Connection screen with initial check, manual refresh, separate process liveness/platform readiness, readiness HTTP status, dependency/trading fields, timestamps, and non-sensitive copy actions.
+- Improved health error classification. Transport failure of the liveness endpoint, invalid liveness response, unexpected liveness HTTP status, and readiness-only failures are distinct. A successful liveness result is retained when readiness cannot be queried.
+- Added selectable/copyable diagnostic values, contextual Copy, native text-editing commands, and focused XCTest cases.
+- Exact-head repository hygiene, backend toolchain/typecheck/tests, and Local Sync Safety #76 passed. CI #129 macOS generation/build/XCTest/Release/Swift CodeQL was still running at XcodeGen installation; no result is inferred.
+- Owner-provided curl evidence confirms the local API's expected HTTP 200 liveness and HTTP 503 not-ready behavior. The new app screen has not yet been visually verified on the owner's Mac.
+- Full workspace/panel composition, settings window, IPDS token conformance, and application-wide clipboard audit remain incomplete. Issues #14 and #16 remain open.
+- The repository contains no Capital.com adapter or credential-handoff API. No credential form or Keychain workflow is implemented; the current local health API is not a secure secret-transfer contract.
+- No broker credentials, trading operations, risk controls, LIVE capability, or production configuration were changed.

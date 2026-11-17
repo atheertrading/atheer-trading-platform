@@ -332,3 +332,42 @@ This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness 
 - Physical owner-Mac Xcode build, XCTest, app launch, and local app-to-backend health verification remain outstanding. Historical workstation values are not freshly verified. No local filesystem or worktree was accessed.
 - PR description was updated with the current-head verification and outstanding acceptance. M02-005 remains IN PROGRESS. Do not claim local qualification or merge readiness until required review/protection policy and remaining acceptance evidence are confirmed.
 - Safety state unchanged: read-only health integration, loopback-only backend, persistence/broker not configured, trading disabled; no credentials, signing identities, risk limits, broker permissions, or production state changed.
+
+
+## 2026-11-17 — first native workspace and API connection implementation
+
+**Implementation branch:** `feat/macos-workspace-api-connection`  
+**PR:** [#17](https://github.com/atheertrading/atheer-trading-platform/pull/17), stacked on PR #10.  
+**PR #17 head at this update:** `45f38158b5c7e97ba1857804e585147ddf6c61cb`  
+**Base:** PR #10 head `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+
+### Source and specification inspection
+
+- Revalidated root `AGENTS.md`, PR #10, PR #12, PR #13, issues #14–#16, and the current branch inventory.
+- Inspected the PR #10 SwiftUI shell, health client/models/view model/status panel, XcodeGen project configuration, XCTest target, and ATP-API-002.
+- Inspected the owner-directed ATP-UX-001 directive on PR #13. It permits task-oriented workspaces but does not define the final screen inventory or approve arbitrary placeholder modules.
+- The full source text and approval metadata for ATP-ARCH-014, ATP-ARCH-037, ATP-ARCH-038, and the complete IPDS specification remain unreconciled in the available repository/Library search. No final workspace inventory, settings semantics, or IPDS token system is claimed.
+- No Capital.com adapter or broker-authentication/credential-handoff contract exists in the inspected repository tree. ATP-API-002 explicitly excludes broker authentication.
+
+### Implemented
+
+- Replaced the one-destination shell with native `NavigationSplitView` navigation.
+- Added only two functional destinations: Workspace and API Connection.
+- Reused the PR #10 loopback health client and shared view model.
+- Added separate liveness and readiness reporting, manual refresh, readiness diagnostics, timestamps, and differentiated transport/contract/server failures.
+- Preserved a successful liveness result when the separate readiness request fails.
+- Added selectable/copyable non-sensitive diagnostic rows, contextual Copy, and native `TextEditingCommands`.
+- Added XCTest coverage for navigation, health payloads, readiness failure preservation, and view-model error classification.
+
+### Verification state at this update
+
+- Exact-head hosted repository hygiene: PASS.
+- Exact-head backend toolchain/typecheck/tests: PASS.
+- Exact-head Local Sync Safety #76: PASS.
+- Exact-head macOS XcodeGen/build/XCTest/Release/Swift CodeQL workflow #129: IN PROGRESS at XcodeGen installation; no macOS build/test pass is claimed yet.
+- Owner-provided local API evidence: `/health/live` HTTP 200 and `/health/ready` HTTP 503 with `not_ready`, persistence/broker `not_configured`, and trading disabled. This validates the expected endpoint behavior, not the new screen's visual integration.
+- Owner-side visual/runtime verification of PR #17, clipboard behavior, keyboard focus, accessibility, and recovery remains pending.
+
+### Boundaries and next action
+
+PR #10 remains open and unchanged. PR #17 is not merged. The API process remains external to the app; the UI refreshes and reports health but does not launch or terminate the process. No broker credentials, Keychain records, Capital.com sessions, market data, orders, risk limits, or trading permissions were introduced. Continue with exact-head CI, then owner-Mac runtime verification.
