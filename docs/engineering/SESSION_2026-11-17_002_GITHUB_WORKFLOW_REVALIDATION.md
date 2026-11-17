@@ -36,7 +36,7 @@ The following PRs were returned as open at the time of inspection. Their status,
 | #13 | ChatGPT UI/UX and SwiftUI engineering directive | Documentation baseline; shares `docs/architecture/AI_AGENT_NAVIGATION.md` with PR #21, so overlap must be reconciled without rewriting history. |
 | #17 | Native navigation and API connection diagnostics | Stacked on #10; PR body records exact-head workflow #132 as passed. |
 | #18 | Workspace visual foundation | Stacked on #17; four operational panels and in-memory visibility controls only; persistent workspace management and visual/accessibility acceptance remain outstanding. |
-| #20 | Sequential engineering work queue and local Mac execution handoff | Proposes root `WORK.md`; based on PR #19. Current main does not contain `WORK.md`. |
+| #20 | Sequential engineering work queue and local Mac execution handoff | Proposes root `WORK.md`; current main does not contain `WORK.md`. |
 | #21 | ChatGPT engineering continuation directive | Documentation continuation; overlaps navigation documentation with #13 and must be reconciled deliberately. |
 | #22 | Adaptive Workspace Layout | Stacked follow-up to #18; adaptive grids only, not a full workspace manager or finished trading workstation. |
 
@@ -95,3 +95,58 @@ The following PRs were returned as open at the time of inspection. Their status,
 7. Record every implementation commit, tests, exact workflow run, PR, owner-side result, blocker, and next action in the repository continuity system.
 
 **Handover status:** Repository/PR discovery is complete for this session. Product implementation has not yet been performed in this session. The next engineering action is exact-head PR revalidation followed by the first bounded Workspace implementation increment—not another generic planning cycle.
+
+
+---
+
+## Follow-up revalidation — 2026-11-17 (ATP-2026-11-17-002 continuation)
+
+This addendum records a second, exact-head inspection performed after the initial report above. It supersedes the earlier open-PR inventory and CI uncertainty only for the PRs explicitly listed here.
+
+### Current PR metadata and dependency chain
+
+| PR | State | Draft | Head branch | Exact head SHA | Base / base SHA |
+|---|---|---:|---|---|---|
+| #23 — workflow revalidation documentation | Open | No | `docs/engineering-session-2026-11-17-workflow-tracking` | `3c1142f7a768790be9ae30a627c38b91a2c3f59f` | `main` / `0dc062bb620a4afa93c60e5f060ee405846e3cbc` |
+| #24 — macOS Command Center / Workspace | Open | Yes | `feat/macos-command-center-ipds` | `e9e7085fc7699da19fe934dfd35274e8c8217922` | `feat/macos-workspace-visual-foundation` / `08d7b68ef14dbbce57752ce7b7f0215404a281cb` |
+| #25 — Capital.com DEMO adapter / quote contracts | Open | Yes | `feat/market-data-capital-demo-foundation` | `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b` | `feat/macos-command-center-ipds` / `e9e7085fc7699da19fe934dfd35274e8c8217922` |
+
+- PR #23 has four commits and four changed files at this inspection; no submitted review or inline review thread was returned.
+- PR #24 has 34 commits and 11 changed files; remains Draft and unmerged.
+- PR #25 has 18 commits and 14 changed files; remains Draft and unmerged.
+- The active implementation dependency chain is confirmed as #24 → #25, with #25 based on the exact #24 head. Do not retarget, merge, or rewrite either branch as part of this documentation follow-up.
+
+### Exact-head CI revalidation
+
+**PR #24 — head `e9e7085fc7699da19fe934dfd35274e8c8217922`**
+- CI run: [44118381361](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44118381361), run number 189.
+- Repository hygiene: success; project baseline and Markdown lint steps completed.
+- Backend toolchain: success; Node version validation, dependency install, API typecheck, and API tests completed.
+- Intel x86_64 macOS build/tests/Swift CodeQL job: cancelled.
+- Apple Silicon arm64 macOS build/tests/Release job: cancelled.
+- Overall CI conclusion: failure because both macOS architecture jobs were cancelled; no macOS qualification is established.
+
+**PR #25 — head `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`**
+- CI run: [44124205521](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44124205521), run number 201.
+- Repository hygiene: success; project baseline and Markdown lint steps completed.
+- Backend toolchain: success; Node version validation, dependency install, API typecheck, and API tests completed.
+- Intel x86_64 macOS build/tests/Swift CodeQL job: queued at the time of inspection; not passed.
+- Apple Silicon arm64 macOS build/tests/Release job: cancelled.
+- Overall CI qualification: incomplete / blocked. Do not infer a pass from the successful non-macOS jobs.
+
+### Cancellation investigation boundary
+
+- The inspected `.github/workflows/ci.yml` on `main` defines workflow-level concurrency with `cancel-in-progress: true`.
+- The run/job evidence confirms cancellation but does not expose executed steps or a cancellation reason for the cancelled macOS jobs.
+- The current evidence does **not** prove that the concurrency setting caused these cancellations. Root cause remains unknown.
+- No CI workflow edit, rerun, new application commit, or branch mutation was performed. Preserve the existing evidence and investigate the run event/attempt history before changing CI configuration.
+
+### Commit governance and next action
+
+- The current PR #23 head is `3c1142f7a768790be9ae30a627c38b91a2c3f59f`; its existing four-commit trail remains intact.
+- This follow-up is a bounded documentation-only continuation on the same scoped branch and PR, not a new parallel branch or duplicate PR.
+- The new commit must append this addendum to this report only; it must not modify application source, PR #24/#25 branches, CI configuration, or `main`.
+- No PR merge, force push, rebase, squash, or history rewrite is authorized or performed here.
+- **Next execution gate:** obtain a terminal outcome for the queued Intel job on PR #25, investigate the cancelled macOS job evidence, and establish passing Intel + Apple Silicon build/test/Release/Swift CodeQL results on the exact current heads before proceeding to streaming qualification.
+- Streaming remains blocked until the required macOS CI qualification is complete. Separately, PR #25 records that the official documentation does not explicitly identify a DEMO WebSocket hostname; that provider fact must be resolved with Capital.com before a streaming endpoint is hardcoded.
+
