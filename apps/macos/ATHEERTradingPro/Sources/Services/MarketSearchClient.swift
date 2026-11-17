@@ -175,6 +175,10 @@ final class MarketExplorerViewModel: ObservableObject {
     @Published private(set) var backendStatus: MarketDataBackendStatus?
     @Published private(set) var results: [MarketSearchInstrument] = []
     @Published private(set) var state: MarketExplorerViewState = .idle
+    @Published private(set) var streamingState: MarketDataStreamConnectionState = .disconnected
+    @Published private(set) var streamingQuotes: [String: MarketDataStreamQuote] = [:]
+    @Published private(set) var selectedEpics: Set<String> = []
+    @Published private(set) var streamingError: String?
     @Published var searchTerm = "" {
         didSet {
             guard oldValue != searchTerm else { return }
@@ -188,11 +192,17 @@ final class MarketExplorerViewModel: ObservableObject {
     }
 
     private let client: MarketSearchClient
+    private let streamClient: MarketDataStreamClient
+    private var streamTask: Task<Void, Never>?
     private var searchGeneration: UInt64 = 0
     private var statusRefreshGeneration: UInt64 = 0
 
-    init(client: MarketSearchClient = URLSessionMarketSearchClient()) {
+    init(
+        client: MarketSearchClient = URLSessionMarketSearchClient(),
+        streamClient: MarketDataStreamClient = URLSessionMarketDataStreamClient()
+    ) {
         self.client = client
+        self.streamClient = streamClient
     }
 
     var canSearch: Bool {
@@ -214,14 +224,19 @@ final class MarketExplorerViewModel: ObservableObject {
             backendStatus = status
             if status.state != .connected {
                 searchGeneration &+= 1
+                stopStream()
                 state = .unavailable(statusMessage(for: status.state))
-            } else if results.isEmpty && state != .searching {
-                state = .idle
+            } else {
+                if results.isEmpty && state != .searching {
+                    state = .idle
+                }
+                startStreamIfNeeded()
             }
         } catch {
             guard requestGeneration == statusRefreshGeneration else { return }
             searchGeneration &+= 1
             backendStatus = nil
+            stopStream()
             state = .unavailable(error.localizedDescription)
         }
     }
@@ -259,6 +274,112 @@ final class MarketExplorerViewModel: ObservableObject {
             } else {
                 results = []
                 state = .failed(failureMessage)
+            }
+        }
+    }
+
+    func isSubscribed(to epic: String) -> Bool {
+        selectedEpics.contains(epic)
+    }
+
+    func canSubscribe(to epic: String) -> Bool {
+        isSubscribed(to: epic) || (
+            backendStatus?.state == .connected &&
+            selectedEpics.count < 40
+        )
+    }
+
+    func toggleStreamSubscription(for epic: String) {
+        if selectedEpics.contains(epic) {
+            selectedEpics.remove(epic)
+            streamingQuotes.removeValue(forKey: epic)
+            streamingError = nil
+            restartStream()
+            return
+        }
+
+        guard backendStatus?.state == .connected else {
+            streamingError = "Connect the backend Capital.com DEMO session before subscribing to quotes."
+            return
+        }
+        guard selectedEpics.count < 40 else {
+            streamingError = "The provider stream supports a maximum of 40 selected instruments."
+            return
+        }
+
+        selectedEpics.insert(epic)
+        streamingError = nil
+        restartStream()
+    }
+
+    func resumeStreamIfNeeded() {
+        startStreamIfNeeded()
+    }
+
+    func stopStream() {
+        streamTask?.cancel()
+        streamTask = nil
+        streamingState = .disconnected
+    }
+
+    private func startStreamIfNeeded() {
+        guard streamTask == nil,
+              !selectedEpics.isEmpty,
+              backendStatus?.state == .connected else {
+            return
+        }
+        restartStream()
+    }
+
+    private func restartStream() {
+        streamTask?.cancel()
+        streamTask = nil
+
+        guard !selectedEpics.isEmpty, backendStatus?.state == .connected else {
+            streamingState = .disconnected
+            return
+        }
+
+        let epics = selectedEpics.sorted()
+        streamingState = .connecting
+        streamTask = Task { [weak self] in
+            guard let self else { return }
+            var retryDelay: UInt64 = 1_000_000_000
+
+            while !Task.isCancelled {
+                do {
+                    for try await event in streamClient.events(for: epics) {
+                        guard !Task.isCancelled else { return }
+                        switch event {
+                        case .status(let status):
+                            streamingState = status.state
+                            if status.state == .connected {
+                                streamingError = nil
+                                retryDelay = 1_000_000_000
+                            } else if let message = status.lastError {
+                                streamingError = message
+                            }
+                        case .quote(let quote):
+                            guard selectedEpics.contains(quote.instrumentId) else { continue }
+                            streamingQuotes[quote.instrumentId] = quote
+                            streamingState = .connected
+                            streamingError = nil
+                        }
+                    }
+                    if Task.isCancelled { return }
+                    streamingState = .degraded
+                } catch {
+                    if Task.isCancelled { return }
+                    streamingState = .degraded
+                    streamingError = error.localizedDescription
+                }
+
+                do {
+                    try await Task.sleep(nanoseconds: retryDelay)
+                } catch {
+                    return
+                }
+                retryDelay = min(retryDelay * 2, 30_000_000_000)
             }
         }
     }
