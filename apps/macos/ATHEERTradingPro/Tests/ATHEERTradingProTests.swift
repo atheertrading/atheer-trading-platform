@@ -668,7 +668,7 @@ final class ATHEERTradingProTests: XCTestCase {
         )
 
         for index in 0..<40 {
-            model.toggleStreamSubscription(for: "EPIC\\(index)")
+            model.toggleStreamSubscription(for: "EPIC\(index)")
         }
         model.toggleStreamSubscription(for: "EPIC40")
 
@@ -684,7 +684,7 @@ final class ATHEERTradingProTests: XCTestCase {
         {"provider":"capital.com","environment":"DEMO","state":"connected","activeInstrumentCount":1,"lastMessageAtMs":1800000000000,"invalidQuoteCount":0,"outOfOrderQuoteCount":0,"duplicateQuoteCount":0}
         """
         XCTAssertNil(try parser.consume("event: status"))
-        XCTAssertNil(try parser.consume("data: \\(statusJSON)"))
+        XCTAssertNil(try parser.consume("data: \(statusJSON)"))
         guard case .status(let status) = try parser.consume("") else {
             return XCTFail("Expected a decoded stream status event.")
         }
@@ -694,7 +694,7 @@ final class ATHEERTradingProTests: XCTestCase {
         {"provider":"capital.com","environment":"DEMO","instrumentId":"GOLD","bid":2000,"ask":2000.5,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":125,"freshness":{"state":"fresh","ageMs":0,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
         """
         XCTAssertNil(try parser.consume("event: quote"))
-        XCTAssertNil(try parser.consume("data: \\(quoteJSON)"))
+        XCTAssertNil(try parser.consume("data: \(quoteJSON)"))
         guard case .quote(let quote) = try parser.consume("") else {
             return XCTFail("Expected a decoded quote event.")
         }
