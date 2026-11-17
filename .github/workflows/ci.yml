@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, feat/postgres-persistence-foundation]
   workflow_dispatch:
 permissions:
   contents: read
