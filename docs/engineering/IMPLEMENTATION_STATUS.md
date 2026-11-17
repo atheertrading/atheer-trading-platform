@@ -388,7 +388,7 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 **Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
 **Verification status:** BACKEND VERIFIED; FULL EXACT-HEAD QUALIFICATION PENDING  
 **Branch:** `feat/historical-market-data-contracts`  
-**Current PR #39 head:** `d6bca573c28ca71b38cb10c9313e86c517b68f08`  
+**Source correction commit:** `d6bca573c28ca71b38cb10c9313e86c517b68f08`  
 **Base:** PR #38 exact head `0d37f11a8f91d09c82b39c443e346622a7df3530`
 
 - Typed provider-neutral historical candle contract added.
@@ -401,5 +401,6 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Exact-head Backend Toolchain passed Node 24.22.2 type-check/build and 37/37 API tests (run #44182796685, job #134391313681); Repository Hygiene passed; Local Sync Safety passed (run #44182796765).
 - Mermaid validation remains in progress (run #44182796666); Intel x86_64 and Apple Silicon arm64 macOS jobs remain queued (jobs #134391313683 and #134391313955).
 - Pagination review thread was resolved after the correction and regression test passed.
+- Follow-up task/status/continuity/index documentation commits were added after the source correction. The 37/37 result above applies to source correction head `d6bca573...`; the final documentation-updated PR head requires a fresh exact-head run.
 - No durable persistence, live provider verification, OHLC streaming, Charting, or market-session calendar is claimed.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE behavior.
