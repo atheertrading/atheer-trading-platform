@@ -28,13 +28,26 @@ struct BackendStatusPanel: View {
             case .idle:
                 statusRow("API", value: "Not checked", color: .secondary)
             case .checking:
-                statusRow("API", value: "Checking…", color: .secondary)
-            case .disconnected:
-                statusRow("API", value: "Disconnected", color: .secondary)
-                Text("Start the local service from services/api to connect this workspace.")
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text("Checking…")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+            case .disconnected(let message):
+                statusRow("API", value: "Disconnected", color: .red)
+                Text(message)
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            case .invalidResponse(let message):
+                statusRow("API", value: "Invalid health response", color: .orange)
+                Text(message)
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+            case .serverError(let statusCode):
+                statusRow("API", value: "HTTP \(statusCode)", color: .orange)
             case .connected(let snapshot):
                 statusRow("API", value: "Connected", color: accent)
                 statusRow("Platform readiness", value: snapshot.platformReady ? "Ready" : "Not ready", color: .secondary)
@@ -44,7 +57,8 @@ struct BackendStatusPanel: View {
                 Text("API version \(snapshot.version) · \(snapshot.lastCheckedAt)")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .textSelection(.enabled)
             }
         }
         .padding(14)
@@ -66,6 +80,7 @@ struct BackendStatusPanel: View {
             Text(value)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(color)
+                .textSelection(.enabled)
         }
     }
 

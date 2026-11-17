@@ -19,8 +19,15 @@ final class BackendHealthViewModel: ObservableObject {
 
         do {
             state = .connected(try await client.fetchSnapshot())
+        } catch let error as BackendHealthError {
+            switch error {
+            case .unexpectedHTTPStatus(let statusCode):
+                state = .serverError(statusCode)
+            case .invalidPayload:
+                state = .invalidResponse(error.localizedDescription)
+            }
         } catch {
-            state = .disconnected
+            state = .disconnected(error.localizedDescription)
         }
     }
 }

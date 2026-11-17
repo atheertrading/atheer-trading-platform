@@ -7,6 +7,8 @@ struct BackendHealthSnapshot: Equatable {
     let brokerStatus: String
     let tradingEnabled: Bool
     let tradingStatus: String
+    let livenessTimestamp: String
+    let readinessHTTPStatus: Int
     let lastCheckedAt: String
 }
 
@@ -14,12 +16,23 @@ enum BackendHealthViewState: Equatable {
     case idle
     case checking
     case connected(BackendHealthSnapshot)
-    case disconnected
+    case disconnected(String)
+    case invalidResponse(String)
+    case serverError(Int)
 }
 
-enum BackendHealthError: Error {
+enum BackendHealthError: Error, LocalizedError {
     case unexpectedHTTPStatus(Int)
     case invalidPayload
+
+    var errorDescription: String? {
+        switch self {
+        case .unexpectedHTTPStatus(let statusCode):
+            return "The health endpoint returned unexpected HTTP status \(statusCode)."
+        case .invalidPayload:
+            return "The health API returned an invalid or inconsistent response."
+        }
+    }
 }
 
 struct BackendHealthPayloadDecoder {
@@ -33,7 +46,12 @@ struct BackendHealthPayloadDecoder {
             throw BackendHealthError.unexpectedHTTPStatus(livenessStatusCode)
         }
 
-        let liveness = try JSONDecoder().decode(LivenessPayload.self, from: livenessData)
+        let liveness: LivenessPayload
+        do {
+            liveness = try JSONDecoder().decode(LivenessPayload.self, from: livenessData)
+        } catch {
+            throw BackendHealthError.invalidPayload
+        }
         guard liveness.status == "ok", liveness.service == "atheer-api" else {
             throw BackendHealthError.invalidPayload
         }
@@ -42,7 +60,12 @@ struct BackendHealthPayloadDecoder {
             throw BackendHealthError.unexpectedHTTPStatus(readinessStatusCode)
         }
 
-        let readiness = try JSONDecoder().decode(ReadinessPayload.self, from: readinessData)
+        let readiness: ReadinessPayload
+        do {
+            readiness = try JSONDecoder().decode(ReadinessPayload.self, from: readinessData)
+        } catch {
+            throw BackendHealthError.invalidPayload
+        }
         guard readiness.service == liveness.service else {
             throw BackendHealthError.invalidPayload
         }
@@ -72,6 +95,8 @@ struct BackendHealthPayloadDecoder {
             brokerStatus: readiness.dependencies.broker,
             tradingEnabled: readiness.trading.enabled,
             tradingStatus: readiness.trading.status,
+            livenessTimestamp: liveness.timestamp,
+            readinessHTTPStatus: readinessStatusCode,
             lastCheckedAt: readiness.timestamp
         )
     }

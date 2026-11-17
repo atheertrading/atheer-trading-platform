@@ -2,66 +2,53 @@ import SwiftUI
 
 struct ContentView: View {
     private let background = Color(red: 18.0 / 255.0, green: 18.0 / 255.0, blue: 18.0 / 255.0)
-    private let accent = Color(red: 0.0, green: 206.0 / 255.0, blue: 200.0 / 255.0)
+    @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("ATHEER")
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .tracking(2)
-                    .foregroundColor(accent)
-                Text("TRADING PRO")
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(1.5)
-                    .foregroundColor(.secondary)
-                Divider()
-                Label("Workspace", systemImage: "square.grid.2x2")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                Spacer()
-                Text("FOUNDATION")
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(1.2)
-                    .foregroundColor(.secondary)
-            }
-            .padding(20)
-            .frame(width: 210, alignment: .leading)
-            .background(Color(red: 9.0 / 255.0, green: 55.0 / 255.0, blue: 50.0 / 255.0).opacity(0.35))
-
+        NavigationSplitView {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Workspace")
-                        .font(.system(size: 22, weight: .semibold))
-                    Spacer()
-                    Text("DEVELOPMENT")
-                        .font(.system(size: 10, weight: .bold))
-                        .tracking(1)
-                        .foregroundColor(accent)
-                }
-                Divider()
-                BackendStatusPanel(model: backendHealthModel, accent: accent)
-                Spacer()
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Engineering foundation")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("The application shell is initialized. Market data, trading, risk, portfolio, and AI modules will be introduced only after their contracts and verification criteria are established.")
-                        .font(.system(size: 13))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("ATHEER")
+                        .font(.system(size: 19, weight: .bold, design: .rounded))
+                        .tracking(2)
+                        .foregroundColor(Color(red: 0.0, green: 206.0 / 255.0, blue: 200.0 / 255.0))
+                    Text("TRADING PRO")
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(1.5)
                         .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: 560, alignment: .leading)
-                Spacer()
-                Text("No broker connection • No order execution • Trading disabled")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
+                .padding(.horizontal, 14)
+                .padding(.top, 16)
+
+                List(selection: $selection) {
+                    Section("WORKSPACE") {
+                        Label(AppSection.workspace.title, systemImage: AppSection.workspace.systemImage)
+                            .tag(AppSection.workspace)
+                    }
+                    Section("SYSTEM") {
+                        Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
+                            .tag(AppSection.apiConnection)
+                    }
+                }
+                .listStyle(.sidebar)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(minWidth: 190)
+            .background(Color(red: 9.0 / 255.0, green: 55.0 / 255.0, blue: 50.0 / 255.0).opacity(0.22))
+        } detail: {
+            Group {
+                switch selection ?? .workspace {
+                case .workspace:
+                    WorkspaceHomeView(backendHealthModel: backendHealthModel)
+                case .apiConnection:
+                    APIConnectionView(model: backendHealthModel)
+                }
+            }
+            .frame(minWidth: 620, minHeight: 520)
+            .background(background)
+            .navigationTitle((selection ?? .workspace).title)
         }
         .frame(minWidth: 900, minHeight: 600)
-        .background(background)
         .task {
             await backendHealthModel.refresh()
         }
