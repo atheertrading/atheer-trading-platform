@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { after, test } from "node:test";
+import { request as httpRequest } from "node:http";
+import { test } from "node:test";
 import { CapitalDemoStreamingRuntime } from "../dist/market-data/capital-demo-streaming-runtime.js";
 import { createApiServer } from "../dist/server.js";
 
@@ -165,8 +166,9 @@ test("stream automatically reconnects and restores active subscriptions after in
 });
 
 test("local SSE endpoint streams normalized quote events and releases subscriptions on close", async () => {
-  let listener;
   let released = false;
+  let releaseSubscription;
+  const releasedPromise = new Promise((resolve) => { releaseSubscription = resolve; });
   const quote = {
     provider: "capital.com",
     environment: "DEMO",
@@ -186,9 +188,11 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
     latest: () => [],
     async subscribe(epics, callback) {
       assert.deepEqual(epics, ["AAPL"]);
-      listener = callback;
-      queueMicrotask(() => listener(quote));
-      return () => { released = true; };
+      queueMicrotask(() => callback(quote));
+      return () => {
+        released = true;
+        releaseSubscription();
+      };
     },
   };
   const server = createApiServer(marketData, stream);
@@ -199,29 +203,49 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   const address = server.address();
   assert.ok(address && typeof address !== "string");
 
-  const controller = new AbortController();
-  const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=AAPL", {
-    signal: controller.signal,
-  });
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type"), /text\/event-stream/);
-
-  const reader = response.body.getReader();
   let body = "";
-  while (!body.includes("event: quote")) {
-    const chunk = await reader.read();
-    if (chunk.done) break;
-    body += new TextDecoder().decode(chunk.value);
-  }
+  await new Promise((resolve, reject) => {
+    const client = httpRequest({
+      hostname: "127.0.0.1",
+      port: address.port,
+      path: "/market-data/stream?epics=AAPL",
+      method: "GET",
+    }, (response) => {
+      try {
+        assert.equal(response.statusCode, 200);
+        assert.match(response.headers["content-type"], /text\\/event-stream/);
+      } catch (error) {
+        reject(error);
+        client.destroy();
+        return;
+      }
+      response.on("data", (chunk) => {
+        body += chunk.toString();
+        if (body.includes("event: quote")) {
+          client.destroy();
+          resolve();
+        }
+      });
+      response.on("error", () => undefined);
+    });
+    client.on("error", (error) => {
+      if (body.length === 0) reject(error);
+    });
+    client.end();
+  });
+
+  await Promise.race([
+    releasedPromise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("SSE subscription was not released after client disconnect.")), 1_000)),
+  ]);
+  assert.equal(released, true);
   assert.match(body, /event: status/);
   assert.match(body, /event: quote/);
   assert.match(body, /"instrumentId":"AAPL"/);
 
-  controller.abort();
   const serverClosed = new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server.closeAllConnections();
   await serverClosed;
-  assert.equal(released, true);
 });
 
 test("local SSE endpoint rejects more than forty instrument epics", async () => {
