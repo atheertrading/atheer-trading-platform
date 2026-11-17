@@ -144,3 +144,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - Rationale: the accessible Library Q&A recommends UUIDv7 and detailed lifecycle concepts, but the original ADR-0004/0005/0006 texts are unavailable. Preserve the recommendation as evidence without silently treating it as a formally accepted implementation decision. Keep ID generation injected and backend-owned; defer concrete state lists and rounding modes until formal-source reconciliation.
 - Consequences: PostgreSQL persistence, migrations, transactional outbox, broker dealing, and concrete order/position state machines remain separate follow-up work. Domain contracts are independently testable and have no transport/database/provider SDK dependency.
 - Verification: Initial PR #40 run #44193072976 passed repository hygiene and failed backend typecheck on two branded-ID comparisons in the earlier head; corrected in subsequent commits. Current head `f295023e...` awaits exact-head CI. No current-head test pass claimed.
+
+## EDL-012 — PostgreSQL persistence implementation boundary
+
+- **Date:** 2026-11-18
+- **Status:** Accepted bounded engineering decision under delegated Head of Engineering authority; implementation in PR #41, exact-head qualification pending.
+- **Decision:** Use PostgreSQL with the pinned `pg` 8.23.1 driver and explicit SQL migrations/repository adapters. Do not introduce an ORM or database-specific types into the canonical domain package. Keep financial values as canonical decimal strings in JSONB payloads and never round or coerce them through JavaScript `number`.
+- **Consistency:** Persist intent, risk assessment, audit record, and their domain-event outbox entries transactionally. Idempotency is scoped by environment/account/key and exact canonical payload hash. Migration versions are protected by advisory locking and SHA-256 checksum verification.
+- **Boundary:** The outbox allow-list contains domain-record events only. No execution-dispatch event, broker dealing method, or publisher is introduced. A later OMS/Execution Gateway package must independently enforce current RiskEngine authorization before dispatch.
+- **Environment:** Repository instances are pinned to a single trading environment and reject mismatched records. Separate database credentials/instances and database-role isolation remain deployment configuration work.
+- **Evidence:** PR #41, `ATP_PERSISTENCE_ARCHITECTURE.md`, Mermaid diagram 12. No production database migration or broker execution is claimed.
