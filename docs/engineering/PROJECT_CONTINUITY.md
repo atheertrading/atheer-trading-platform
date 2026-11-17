@@ -620,3 +620,11 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - PR #40 remains OPEN / DRAFT on PR #39. No merge, PostgreSQL persistence, broker dealing, account mutation, LIVE, or production capability. `CAP_ALLOW_TRADING=false` unchanged.
 - Next: exact-head CI, then ATP-PERSISTENCE-001 after domain qualification and formal schema/state reconciliation.
 - Detailed session: `SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION.md`.
+
+
+## PR #40 exact-head requalification checkpoint — 2026-11-18
+
+- Domain source remediation is committed through `f295023e08774aed7a68c4f916eb14308e720593`; the subsequent architecture/task/continuity/session documentation commit is `2de4ecc84c693a89786085f71fe6d7feab419dfc`.
+- The initial PR #40 workflow #44193072976 was attached to earlier source head `13bc60e4023abcbf5b70e6a424b1a70d2befc0a8` and failed backend typecheck on two branded identifier comparisons. The corrections and expanded domain tests are included in the current branch tree.
+- This continuity update is being committed through the GitHub Contents API to generate a fresh PR synchronization event for the current source/documentation tree. The resulting workflow SHA and job outcomes must be fetched before claiming any verification result.
+- Until that exact-head run completes, TypeScript build, API tests, Mermaid validation, and Intel/arm64 macOS checks remain PENDING. No local Node 24 or owner-Mac test is claimed.
