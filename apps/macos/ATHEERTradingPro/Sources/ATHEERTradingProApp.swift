@@ -7,6 +7,9 @@ struct ATHEERTradingProApp: App {
             ContentView()
                 .preferredColorScheme(.dark)
         }
+        .commands {
+            TextEditingCommands()
+        }
         .windowStyle(.titleBar)
     }
 }
