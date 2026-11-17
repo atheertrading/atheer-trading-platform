@@ -419,3 +419,33 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 4. Launch the app and verify navigation, API Connection, panel visibility/reset, truthful unavailable states, and backend-health states.
 5. Record screenshots and verify accessibility, keyboard behavior, resizing, and multiple displays where the actual environment supports them.
 6. Update this record with exact local evidence and residual defects; do not mark M02-001 or M02-009 DONE prematurely.
+
+
+## 2026-11-17 — Workspace adaptive-layout continuation
+
+### Repository and implementation
+
+- PR #18 remains the parent workspace visual-foundation PR; its current head at branch creation was `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Created follow-up branch `feat/workspace-adaptive-layout` from that exact head.
+- Implemented adaptive status and panel grids in `WorkspaceHomeView.swift`, commit `db073848e7a80bbd4db2868faa741725698cb86c`.
+- Status tile widths are initially constrained to 150–240 points; panel widths to 320–560 points. The existing 1280-point content maximum is retained. These are provisional responsive metrics pending visual QA and formal specification reconciliation.
+- The four panel inventory, unavailable states, and in-memory visibility behavior remain unchanged. No workspace persistence, docking, panel resizing, new navigation destinations, or trading features were introduced.
+
+### Owner-confirmed local evidence
+
+- The owner confirms that the native application launches on the Mac and has been exercised across two displays.
+- Classification: OWNER-CONFIRMED. This does not mean engineering independently accessed the Mac, reproduced the test, inspected screenshots, or verified visual quality/accessibility.
+- Last recorded local qualification branch is `work/local-pr18-qualification`; exact local HEAD/worktree state has not been re-read during this remote-only update.
+
+### Source reconciliation
+
+- Current Library retrieval exposes a 517-Markdown Q&A archive and a separate Codex output archive. Neither contains the original ATP-ARCH-014/037/038 or ATP-UX-001 source documents.
+- The Codex archive's IPDS and architecture files are derived summaries; they do not replace original specifications.
+- The proposed Master Visual Design reference remains explicitly subject to owner approval. The owner-provided palette and non-conflicting design direction are retained; final IPDS and workspace/navigation mapping remain unresolved.
+- M00-021 and M02-009 remain IN PROGRESS.
+
+### Verification and next action
+
+- No local Mac command was run by engineering.
+- Adaptive layout source is committed; exact-head hosted CI and local Xcode/XCTest verification remain pending.
+- Next: open a focused PR against PR #18, verify CI on the exact follow-up head, then request owner visual inspection at representative window widths on both displays. Keep PR #10 → #17 → #18 ancestry intact.
