@@ -147,11 +147,11 @@ final class ATHEERTradingProTests: XCTestCase {
         let engine = WorkspaceEngine(persistence: persistence)
 
         XCTAssertTrue(engine.movePanel(.marketWatch, to: 0))
-        XCTAssertEqual(engine.orderedPanels.map(\\.panelID).first, .marketWatch)
-        XCTAssertEqual(engine.orderedPanels.map(\\.order), Array(0..<engine.orderedPanels.count))
+        XCTAssertEqual(engine.orderedPanels.map(\.panelID).first, .marketWatch)
+        XCTAssertEqual(engine.orderedPanels.map(\.order), Array(0..<engine.orderedPanels.count))
 
         let restored = WorkspaceEngine(persistence: persistence)
-        XCTAssertEqual(restored.orderedPanels.map(\\.panelID), engine.orderedPanels.map(\\.panelID))
+        XCTAssertEqual(restored.orderedPanels.map(\.panelID), engine.orderedPanels.map(\.panelID))
     }
 
     @MainActor
