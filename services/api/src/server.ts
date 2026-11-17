@@ -117,6 +117,7 @@ async function handleMarketDataRequest(
       return;
     }
     if (pathname === "/market-data/disconnect" && method === "POST") {
+      await streamRuntime?.disconnect();
       sendJson(response, 200, await runtime.disconnect());
       return;
     }
@@ -223,7 +224,7 @@ async function handleMarketDataRequest(
 
   const allowedMethod = pathname === "/market-data/connect" || pathname === "/market-data/disconnect"
     ? "POST"
-    : pathname === "/market-data/status" || pathname === "/market-data/markets" || pathname === "/market-data/history"
+    : pathname === "/market-data/status" || pathname === "/market-data/markets" || pathname === "/market-data/history" || pathname === "/market-data/stream"
       ? "GET"
       : undefined;
   if (allowedMethod) {
