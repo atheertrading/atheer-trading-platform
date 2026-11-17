@@ -113,3 +113,35 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
 - This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
+
+
+## GitHub workflow revalidation — 2026-11-17 (ATP-2026-11-17-002)
+
+This is a dated status note; it does not silently close or mark any existing milestone complete.
+
+- Repository discovery returned open PRs #10, #12, #13, #17, #18, #20, #21, and #22. Exact current heads, review states, and required checks remain to be revalidated before merge.
+- Preserve implementation dependency chain #10 → #17 → #18 → #22.
+- Reconcile overlapping `docs/architecture/AI_AGENT_NAVIGATION.md` changes in PR #13 and #21 using normal merge/conflict-resolution commits.
+- PR #20 proposes root `WORK.md`; that file is absent from the inspected `main` branch. The queue is not considered active main-branch governance until the PR is integrated.
+- Workspace remains an incomplete product foundation: four panels and in-memory visibility in PR #18, adaptive grids in PR #22. Persistent layouts, window/panel lifecycle, cross-display orchestration, and full product navigation remain pending.
+- Actual market-data, broker, account, RiskEngine, OMS, Execution Gateway, and trading service integration remain separate implementation work. Preserve the existing no-fabricated-data and no-LIVE-without-explicit-authorization rules.
+- Session report: `SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md`.
+- No task was marked DONE by this discovery session. No local Mac build, XCTest, runtime, or broker verification was performed.
+
+
+## CI qualification tracking — 2026-11-17 (ATP-2026-11-17-003)
+
+This is an evidence checkpoint, not a milestone completion.
+
+| ID | Priority | Task | Status | Latest evidence / next gate |
+|---|---|---|---|---|
+| ATP-CI-001 | P0 | Qualify Intel x86_64 macOS build, XCTest, Release, and Swift CodeQL on PR #25 exact head | BLOCKED | Run #201 job #134229424016 cancelled; obtain a valid terminal run with executed build/test evidence. |
+| ATP-CI-002 | P0 | Qualify Apple Silicon arm64 macOS build, XCTest, and Release on PR #25 exact head | IN PROGRESS | Rerun job #134229421496 is queued; queued is not pass. Poll and inspect terminal result. |
+| ATP-CI-003 | P0 | Qualify PR #24 exact-head macOS CI | BLOCKED | Run #189 has Intel and Apple Silicon jobs cancelled; revalidate exact head and recover both architecture checks. |
+| ATP-MD-001 | P0 | Resolve official Capital.com DEMO streaming hostname | BLOCKED | PR #25 records that public documentation does not explicitly identify the DEMO streaming host; obtain authoritative provider confirmation. |
+| ATP-MD-002 | P1 | Implement authenticated Capital.com streaming lifecycle | BLOCKED | Do not implement or hardcode a DEMO stream host before ATP-MD-001 and required macOS qualification are complete. |
+
+- PR #25 exact head: `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`; CI run [#201](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44124205521).
+- PR #24 exact head: `e9e7085fc7699da19fe934dfd35274e8c8217922`; CI run [#189](https://github.com/atheertrading/atheer-trading-platform/actions/runs/44118381361).
+- Backend toolchain and repository hygiene passed on PR #25 run #201. These checks do not replace macOS qualification.
+- No source code or CI configuration changed in this checkpoint. No task is marked DONE.

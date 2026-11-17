@@ -68,3 +68,31 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-012 | 2026-11-16 | Backend health vertical slice | Merged PR #8 Xcode configuration; inspected the current app shell and prior local qualification report; implemented a loopback-only Node 24/TypeScript health/readiness service with fail-closed readiness and six tests. | API_HEALTH_CONTRACT; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; EDL-007 |
+
+
+## ATP-2026-11-17-002 — GitHub workflow revalidation and continuation
+
+- **Date:** 2026-11-17
+- **Objective:** Revalidate the current repository and open PR inventory, document the owner's engineering continuation directive, and establish disciplined commit/PR traceability.
+- **Sources inspected:** Root `AGENTS.md`, task register, project continuity, conversation index, implementation status, engineering decision log, main-branch file availability, branch inventory, and GitHub open-PR search.
+- **Verified findings:** Canonical repository is `atheertrading/atheer-trading-platform`; `WORK.md` is absent from main and is proposed by open PR #20. Open PR search returned #10, #12, #13, #17, #18, #20, #21, and #22. Exact current head/check revalidation remains required before integration.
+- **Architecture/workflow notes:** Preserve #10 → #17 → #18 → #22 dependency chain; reconcile shared navigation documentation in #13/#21; #18/#22 are a limited Workspace foundation, not the complete workstation. See the session report for detailed findings and limitations.
+- **Changes:** Added `docs/engineering/SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md`.
+- **Branch:** `docs/engineering-session-2026-11-17-workflow-tracking`.
+- **Commit:** `63298d6ee1b7b4d6b961e11160a8a5324c9a84cf`.
+- **Verification:** GitHub Contents API confirmed the session file commit. Documentation-only; no local build, XCTest, runtime, visual, or broker tests were run.
+- **Next:** Re-fetch exact PR heads and CI; reconcile documentation overlap/dependencies; proceed to bounded Workspace implementation.
+
+
+## ATP-2026-11-17-003 — GitHub commit discipline and CI rerun tracking
+
+- **Date:** 2026-11-17
+- **Previous session:** ATP-2026-11-17-002 — GitHub workflow revalidation.
+- **Objective:** Record the owner's instruction to document engineering activity on GitHub and maintain disciplined commit/PR traceability.
+- **Repository:** `atheertrading/atheer-trading-platform`.
+- **Branch / PR:** `docs/engineering-session-2026-11-17-workflow-tracking` / PR #23.
+- **Verified CI update:** PR #25 run #201 remains incomplete. Latest attempt shows Apple Silicon arm64 job #134229421496 queued, Intel x86_64 job #134229424016 cancelled, Backend Toolchain passed, and Repository Hygiene passed. PR #24 run #189 still has both macOS jobs cancelled.
+- **Changes:** Appended the exact latest-attempt evidence and next gates to the existing session report; synchronized this index, Project Continuity, and Task Register.
+- **Commit policy:** Sequential documentation commits on the existing scoped branch, preserving existing history and using each fetched blob SHA for the corresponding update. No direct main commit, source change, CI edit, merge, or force-push.
+- **Verification limits:** Queued Apple Silicon work is not a pass. Intel and PR #24 macOS qualification remain unresolved. No local Mac, broker, or trading verification was performed.
+- **Next action:** Poll the queued Apple Silicon job, then resolve Intel and PR #24 macOS qualification before any streaming implementation or PR integration.

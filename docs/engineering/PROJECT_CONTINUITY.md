@@ -262,3 +262,43 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
 - Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
 - Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.
+
+
+## 2026-11-17 continuation — GitHub workflow revalidation
+
+**Session:** ATP-2026-11-17-002  
+**Session report:** [SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md](SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md)  
+**Branch:** `docs/engineering-session-2026-11-17-workflow-tracking`
+
+- Re-inspected root `AGENTS.md`, task register, continuity, conversation index, implementation status, and decision log on `main`.
+- Queried GitHub open PRs and branch inventory. The open-PR search returned #10, #12, #13, #17, #18, #20, #21, and #22. This is a discovery snapshot only; exact head SHAs, reviews, mergeability, and required checks must be re-fetched before integration.
+- Confirmed root `WORK.md` is absent from inspected `main`; it is proposed by open PR #20. Do not treat that queue as merged.
+- Preserved dependency chain #10 → #17 → #18 → #22 and recorded the shared navigation-document overlap between #13 and #21.
+- Recorded the bounded state of the Workspace implementation: PR #18 supplies four panels and in-memory visibility; PR #22 adds adaptive grids. Persistent layouts, panel docking/resizing, cross-display window lifecycle, full product navigation, and actual trading services remain outstanding.
+- Created session commit `63298d6ee1b7b4d6b961e11160a8a5324c9a84cf` and conversation-index commit `96b58c9a8c3e83a5f7b1ae4b3e42742d8b1159b7` on the scoped documentation branch.
+- No application source was changed; no local Mac build, XCTest, visual/runtime test, broker test, or trading verification was performed. No existing PR was merged or rewritten.
+
+**Immediate next action:** Re-fetch each relevant PR's exact current head and required checks, resolve documentation overlap without rewriting history, then begin the next bounded Workspace source implementation increment.
+
+
+## 15. GitHub engineering traceability — 2026-11-17
+
+The owner reiterated that engineering activity, commit history, and work progression must be documented and managed professionally. Continue using the existing documentation PR rather than creating duplicate records.
+
+### Current documentation checkpoint
+
+- **Repository:** `atheertrading/atheer-trading-platform`.
+- **Documentation branch:** `docs/engineering-session-2026-11-17-workflow-tracking`.
+- **Documentation PR:** [#23 — docs(engineering): record Nov 17 workflow revalidation](https://github.com/atheertrading/atheer-trading-platform/pull/23).
+- **Session record:** [SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md](SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md), including ATP-2026-11-17-003 follow-up.
+- **Latest CI evidence:** PR #25 exact head `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`, run #201. Apple Silicon arm64 job #134229421496 is queued; Intel x86_64 job #134229424016 is cancelled; backend toolchain and repository hygiene passed. PR #24 exact head `e9e7085fc7699da19fe934dfd35274e8c8217922`, run #189, has both macOS jobs cancelled.
+- **Qualification:** Phase A remains BLOCKED. No macOS CI pass is established. Local owner-side Xcode/XCTest/runtime/visual verification remains outstanding.
+- **Next action:** Poll Apple Silicon; separately recover Intel and PR #24 macOS checks; retain the existing PR dependency chain and do not proceed to streaming qualification until all required gates are satisfied.
+
+### Git controls applied
+
+- Documentation updates are made sequentially on the scoped documentation branch, using the latest fetched file blob SHA for each update.
+- Keep commits focused and attributable to the specific report/index/continuity/task-register change.
+- Never create empty or speculative commits; do not commit unrelated app changes with documentation.
+- Do not commit directly to `main`, force-push, rewrite history, or merge Draft PRs with unresolved checks.
+- Preserve explicit owner-approval gates for credentials, broker permissions, risk-limit changes, production deployment, and LIVE dealing.
