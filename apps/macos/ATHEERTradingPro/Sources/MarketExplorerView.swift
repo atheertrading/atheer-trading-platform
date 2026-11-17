@@ -378,7 +378,10 @@ struct MarketExplorerView: View {
                 Text(quote.map { String(format: "%.1fs", $0.currentAgeMilliseconds / 1_000) } ?? "—")
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundColor(.primary)
-                Text(quote.map { "\($0.freshness.state.uppercased()) AT RX" } ?? (isSubscribed ? "WAITING" : ""))
+                Text(quote?.providerDate.formatted(date: .omitted, time: .standard) ?? (isSubscribed ? "WAITING" : ""))
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .foregroundColor(.secondary)
+                Text(quote.map { "\($0.freshness.state.uppercased()) RX" } ?? "")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .foregroundColor(quote?.freshness.state == "fresh"
                         ? ATHEERDesignTokens.ColorRole.success
