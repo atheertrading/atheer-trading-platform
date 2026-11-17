@@ -199,13 +199,14 @@ final class MarketExplorerViewModel: ObservableObject {
     private var streamingRequested = false
     private var searchGeneration: UInt64 = 0
     private var statusRefreshGeneration: UInt64 = 0
+    private static let epicValidationPattern = "^[A-Za-z0-9_.-]{1,64}$"
 
     init(
-        client: MarketSearchClient = URLSessionMarketSearchClient(),
-        streamClient: MarketDataStreamClient = URLSessionMarketDataStreamClient()
+        client: MarketSearchClient? = nil,
+        streamClient: MarketDataStreamClient? = nil
     ) {
-        self.client = client
-        self.streamClient = streamClient
+        self.client = client ?? URLSessionMarketSearchClient()
+        self.streamClient = streamClient ?? URLSessionMarketDataStreamClient()
     }
 
     var canSearch: Bool {
@@ -294,10 +295,14 @@ final class MarketExplorerViewModel: ObservableObject {
     }
 
     func canSubscribe(to epic: String) -> Bool {
-        isSubscribed(to: epic) || selectedEpics.count < 40
+        isValidEpic(epic) && (isSubscribed(to: epic) || selectedEpics.count < 40)
     }
 
     func toggleStreamSubscription(for epic: String) {
+        guard isValidEpic(epic) else {
+            streamingError = "The instrument identifier contains unsupported characters or exceeds 64 characters."
+            return
+        }
         if selectedEpics.contains(epic) {
             selectedEpics.remove(epic)
             streamingQuotes.removeValue(forKey: epic)
@@ -370,7 +375,7 @@ final class MarketExplorerViewModel: ObservableObject {
         guard streamingRequested,
               !selectedEpics.isEmpty,
               backendStatus?.state == .connected else {
-            streamingState = .disconnected
+            pauseStream()
             return
         }
 
@@ -420,6 +425,10 @@ final class MarketExplorerViewModel: ObservableObject {
                 retryDelay = min(retryDelay * 2, 30_000_000_000)
             }
         }
+    }
+
+    private func isValidEpic(_ epic: String) -> Bool {
+        epic.range(of: Self.epicValidationPattern, options: .regularExpression) != nil
     }
 
     private func queueQuoteForPresentation(_ quote: MarketDataStreamQuote) {
