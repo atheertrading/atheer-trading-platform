@@ -519,3 +519,7 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Implementation is committed on the new focused branch. CI, local Xcode, owner-Mac runtime, visual, keyboard/focus, and VoiceOver verification are pending; no test pass is claimed.
 - Market Explorer remains read-only DEMO instrument metadata search. No live quotes, streaming, candles, charts, order/dealing operations, account values, positions, or fills were added. Native Keychain and backend DEMO session remain separate.
 - `CAP_ALLOW_TRADING=false` remains unchanged. No RiskEngine/OMS/Execution Gateway, broker permission, credential, LIVE, or production behavior changed.
+
+
+- Follow-up PR #33: [Market Explorer search lifecycle hardening](https://github.com/atheertrading/atheer-trading-platform/pull/33), OPEN / DRAFT; branch `fix/market-explorer-search-lifecycle`; exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; 9 ahead / 0 behind.
+- PR #33 CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS pass is claimed.
