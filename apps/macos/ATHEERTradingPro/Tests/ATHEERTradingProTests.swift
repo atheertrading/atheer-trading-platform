@@ -599,6 +599,236 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testMarketExplorerStreamsOnlyExplicitlySelectedDemoInstruments() async {
+        let quote = MarketDataStreamQuote(
+            provider: "capital.com",
+            environment: "DEMO",
+            instrumentId: "GOLD",
+            bid: 2000,
+            ask: 2000.5,
+            providerTimestampMs: 1_800_000_000_000,
+            receivedAtMs: 1_800_000_000_000,
+            receivedAtMonotonicMs: 125,
+            freshness: MarketDataQuoteFreshness(
+                state: "fresh",
+                ageMs: 0,
+                automatedDecisionsAllowed: true,
+                reason: "within_policy"
+            )
+        )
+        let streamStatus = MarketDataStreamStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: .connected,
+            activeInstrumentCount: 1,
+            lastMessageAtMs: 1_800_000_000_000,
+            lastError: nil,
+            invalidQuoteCount: 0,
+            outOfOrderQuoteCount: 0,
+            duplicateQuoteCount: 0
+        )
+        let streamClient = StubMarketDataStreamClient(events: [
+            .status(streamStatus),
+            .quote(quote)
+        ])
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: streamClient
+        )
+
+        await model.refreshBackendStatus()
+        model.toggleStreamSubscription(for: "GOLD")
+        XCTAssertEqual(model.selectedEpics, ["GOLD"])
+        XCTAssertEqual(model.streamingState, .disconnected, "Selection alone must not open a stream.")
+
+        model.startStreaming()
+        await Task.yield()
+        try await Task.sleep(nanoseconds: 150_000_000)
+
+        XCTAssertEqual(streamClient.requestedEpics, [["GOLD"]])
+        XCTAssertEqual(model.streamingState, .connected)
+        XCTAssertEqual(model.streamingQuotes["GOLD"], quote)
+
+        model.stopStream()
+        XCTAssertEqual(model.streamingState, .disconnected)
+        XCTAssertFalse(model.isStreamingRequested)
+    }
+
+    @MainActor
+    func testMarketExplorerRejectsInvalidEpicBeforeSubscription() async {
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            )
+        )
+        await model.refreshBackendStatus()
+
+        XCTAssertFalse(model.canSubscribe(to: "EUR/USD"))
+        model.toggleStreamSubscription(for: "EUR/USD")
+
+        XCTAssertTrue(model.selectedEpics.isEmpty)
+        XCTAssertNotNil(model.streamingError)
+    }
+
+    @MainActor
+    func testMarketExplorerClearingSelectionStopsPresentationThrottle() async throws {
+        let quote = MarketDataStreamQuote(
+            provider: "capital.com",
+            environment: "DEMO",
+            instrumentId: "GOLD",
+            bid: 2000,
+            ask: 2000.5,
+            providerTimestampMs: 1_800_000_000_000,
+            receivedAtMs: 1_800_000_000_000,
+            receivedAtMonotonicMs: 125,
+            freshness: MarketDataQuoteFreshness(
+                state: "fresh",
+                ageMs: 0,
+                automatedDecisionsAllowed: true,
+                reason: "within_policy"
+            )
+        )
+        let status = MarketDataStreamStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: .connected,
+            activeInstrumentCount: 1,
+            lastMessageAtMs: nil,
+            lastError: nil,
+            invalidQuoteCount: 0,
+            outOfOrderQuoteCount: 0,
+            duplicateQuoteCount: 0
+        )
+        let streamClient = StubMarketDataStreamClient(events: [.status(status), .quote(quote)])
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: streamClient
+        )
+        await model.refreshBackendStatus()
+        model.toggleStreamSubscription(for: "GOLD")
+        model.startStreaming()
+        await Task.yield()
+        await Task.yield()
+
+        model.clearStreamSelection()
+        try await Task.sleep(nanoseconds: 150_000_000)
+
+        XCTAssertTrue(model.selectedEpics.isEmpty)
+        XCTAssertTrue(model.streamingQuotes.isEmpty)
+        XCTAssertEqual(model.streamingState, .disconnected)
+        model.stopStream()
+    }
+
+    @MainActor
+    func testMarketExplorerCoalescesRapidQuoteEventsForPresentation() async throws {
+        func quote(_ bid: Double, _ timestamp: Int64) -> MarketDataStreamQuote {
+            MarketDataStreamQuote(
+                provider: "capital.com",
+                environment: "DEMO",
+                instrumentId: "GOLD",
+                bid: bid,
+                ask: bid + 0.5,
+                providerTimestampMs: timestamp,
+                receivedAtMs: timestamp,
+                receivedAtMonotonicMs: 125,
+                freshness: MarketDataQuoteFreshness(
+                    state: "fresh",
+                    ageMs: 0,
+                    automatedDecisionsAllowed: true,
+                    reason: "within_policy"
+                )
+            )
+        }
+        let status = MarketDataStreamStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: .connected,
+            activeInstrumentCount: 1,
+            lastMessageAtMs: nil,
+            lastError: nil,
+            invalidQuoteCount: 0,
+            outOfOrderQuoteCount: 0,
+            duplicateQuoteCount: 0
+        )
+        let streamClient = StubMarketDataStreamClient(events: [
+            .status(status),
+            .quote(quote(2000, 1_800_000_000_000)),
+            .quote(2001, 1_800_000_000_100),
+            .quote(2002, 1_800_000_000_200)
+        ])
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: streamClient
+        )
+        await model.refreshBackendStatus()
+        model.toggleStreamSubscription(for: "GOLD")
+        model.startStreaming()
+        await Task.yield()
+
+        XCTAssertNil(model.streamingQuotes["GOLD"], "Rapid ticks must be coalesced before UI publication.")
+        try await Task.sleep(nanoseconds: 150_000_000)
+        XCTAssertEqual(model.streamingQuotes["GOLD"]?.bid, 2002)
+
+        model.stopStream()
+    }
+
+    @MainActor
+    func testMarketExplorerEnforcesFortyInstrumentSelectionLimit() {
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: StubMarketDataStreamClient(events: [])
+        )
+
+        for index in 0..<40 {
+            model.toggleStreamSubscription(for: "EPIC\(index)")
+        }
+        model.toggleStreamSubscription(for: "EPIC40")
+
+        XCTAssertEqual(model.selectedEpics.count, 40)
+        XCTAssertFalse(model.isSubscribed(to: "EPIC40"))
+        XCTAssertNotNil(model.streamingError)
+        model.stopStream()
+    }
+
+    func testServerSentEventParserDecodesProviderStatusAndQuote() throws {
+        var parser = ServerSentEventParser()
+        let statusJSON = """
+        {"provider":"capital.com","environment":"DEMO","state":"connected","activeInstrumentCount":1,"lastMessageAtMs":1800000000000,"invalidQuoteCount":0,"outOfOrderQuoteCount":0,"duplicateQuoteCount":0}
+        """
+        XCTAssertNil(try parser.consume("event: status"))
+        XCTAssertNil(try parser.consume("data: \(statusJSON)"))
+        guard case .status(let status) = try parser.consume("") else {
+            return XCTFail("Expected a decoded stream status event.")
+        }
+        XCTAssertEqual(status.state, .connected)
+
+        let quoteJSON = """
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"GOLD","bid":2000,"ask":2000.5,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":125,"freshness":{"state":"fresh","ageMs":0,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
+        """
+        XCTAssertNil(try parser.consume("event: quote"))
+        XCTAssertNil(try parser.consume("data: \(quoteJSON)"))
+        guard case .quote(let quote) = try parser.consume("") else {
+            return XCTFail("Expected a decoded quote event.")
+        }
+        XCTAssertEqual(quote.instrumentId, "GOLD")
+        XCTAssertEqual(quote.bid, 2000)
+        XCTAssertEqual(quote.ask, 2000.5)
+    }
+
+    @MainActor
     func testMarketExplorerPublishesProviderBackedDemoSearchResults() async {
         let instruments = [
             MarketSearchInstrument(
@@ -678,6 +908,25 @@ private final class DeferredMarketSearchClient: MarketSearchClient {
 
     func completeSearch(at index: Int, with results: [MarketSearchInstrument]) {
         continuations[index].resume(returning: results)
+    }
+}
+
+@MainActor
+private final class StubMarketDataStreamClient: MarketDataStreamClient {
+    let eventsToYield: [MarketDataStreamEvent]
+    private(set) var requestedEpics: [[String]] = []
+
+    init(events: [MarketDataStreamEvent]) {
+        self.eventsToYield = events
+    }
+
+    func events(for epics: [String]) -> AsyncThrowingStream<MarketDataStreamEvent, Error> {
+        requestedEpics.append(epics)
+        return AsyncThrowingStream { continuation in
+            for event in eventsToYield {
+                continuation.yield(event)
+            }
+        }
     }
 }
 
