@@ -1,4 +1,5 @@
 import {
+  CapitalDemoApiError,
   CapitalDemoClient,
   type CapitalDemoCredentials,
   type CapitalDemoSession,
@@ -20,6 +21,7 @@ export class CapitalDemoRuntime {
   private connectedAtMs: number | undefined;
   private lastError: string | undefined;
   private connecting: Promise<CapitalDemoRuntimeStatus> | null = null;
+  private generation = 0;
 
   constructor(
     private readonly client: CapitalDemoClient,
@@ -44,21 +46,28 @@ export class CapitalDemoRuntime {
     if (!this.credentials) return this.status();
     if (this.connecting) return this.connecting;
 
+    const generation = this.generation;
     this.connectionState = "connecting";
     this.lastError = undefined;
     this.connecting = this.client.startSession(this.credentials)
-      .then((session) => {
+      .then(async (session) => {
+        if (generation !== this.generation) {
+          await this.client.endSession(session).catch(() => undefined);
+          return this.status();
+        }
         this.session = session;
         this.connectedAtMs = this.now();
         this.connectionState = "connected";
         return this.status();
       })
       .catch((error: unknown) => {
-        this.session = null;
-        this.connectedAtMs = undefined;
-        this.connectionState = "error";
-        this.lastError = error instanceof Error ? error.message : "Provider connection failed.";
-        throw new Error(this.lastError);
+        if (generation === this.generation) {
+          this.session = null;
+          this.connectedAtMs = undefined;
+          this.connectionState = "error";
+          this.lastError = error instanceof Error ? error.message : "Provider connection failed.";
+        }
+        throw new Error(error instanceof Error ? error.message : "Provider connection failed.");
       })
       .finally(() => {
         this.connecting = null;
@@ -67,6 +76,10 @@ export class CapitalDemoRuntime {
   }
 
   async disconnect(): Promise<CapitalDemoRuntimeStatus> {
+    this.generation += 1;
+    const pendingConnection = this.connecting;
+    if (pendingConnection) await pendingConnection.catch(() => undefined);
+
     const current = this.session;
     this.session = null;
     this.connectedAtMs = undefined;
@@ -77,7 +90,7 @@ export class CapitalDemoRuntime {
   }
 
   async getMarkets(searchTerm: string): Promise<CapitalMarketSearchResult> {
-    return this.client.getMarkets(this.requireSession(), searchTerm);
+    return this.withSession((session) => this.client.getMarkets(session, searchTerm));
   }
 
   async getPriceHistory(
@@ -85,20 +98,33 @@ export class CapitalDemoRuntime {
     resolution: "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
     max: number,
   ): Promise<CapitalPriceHistoryResult> {
-    return this.client.getPriceHistory(this.requireSession(), epic, resolution, max);
+    return this.withSession((session) => this.client.getPriceHistory(session, epic, resolution, max));
   }
 
   async ping(): Promise<CapitalDemoRuntimeStatus> {
-    const current = this.requireSession();
+    await this.withSession((session) => this.client.ping(session));
+    return this.status();
+  }
+
+  private async withSession<T>(
+    operation: (session: CapitalDemoSession) => Promise<T>,
+  ): Promise<T> {
+    const session = this.requireSession();
     try {
-      await this.client.ping(current);
-      return this.status();
-    } catch {
-      this.session = null;
-      this.connectedAtMs = undefined;
-      this.connectionState = "disconnected";
-      this.lastError = "Capital.com DEMO session is no longer available.";
-      return this.status();
+      return await operation(session);
+    } catch (error) {
+      const shouldInvalidate = !(error instanceof CapitalDemoApiError) ||
+        error.statusCode === 401 ||
+        error.statusCode === 403;
+      if (shouldInvalidate && this.session === session) {
+        this.session = null;
+        this.connectedAtMs = undefined;
+        this.connectionState = error instanceof CapitalDemoApiError ? "disconnected" : "error";
+        this.lastError = error instanceof CapitalDemoApiError
+          ? "Capital.com DEMO session was rejected or expired."
+          : "Capital.com DEMO connection is unavailable.";
+      }
+      throw error;
     }
   }
 
