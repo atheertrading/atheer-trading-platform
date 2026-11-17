@@ -26,8 +26,27 @@ declare module "node:http" {
 declare module "node:process" {
   export interface Process {
     on(event: "SIGINT" | "SIGTERM", listener: () => void): this;
+    cwd(): string;
+    exitCode?: number;
   }
   const process: Process;
   export default process;
   export const env: Readonly<Record<string, string | undefined>>;
+}
+
+declare module "node:crypto" {
+  export interface Hash {
+    update(data: string, inputEncoding?: "utf8"): Hash;
+    digest(encoding: "hex"): string;
+  }
+  export function createHash(algorithm: string): Hash;
+}
+
+declare module "node:fs/promises" {
+  export function readdir(path: string): Promise<string[]>;
+  export function readFile(path: string, encoding: "utf8"): Promise<string>;
+}
+
+declare module "node:path" {
+  export function resolve(...paths: string[]): string;
 }
