@@ -26,6 +26,14 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
       (error) => error instanceof PersistenceConflictError && error.message.includes("checksum"),
     );
 
+    await assert.rejects(
+      applySqlMigrations(pool, [
+        { version: "002", sql: "SELECT 1;" },
+        { version: "002", sql: "SELECT 2;" },
+      ]),
+      PersistenceConflictError,
+    );
+
     const prefix = "pg-it-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
     const account = {
       id: brokerAccountId(prefix + "-account"), brokerId: brokerId("capital.com"), environment: tradingEnvironment("DEMO"),
