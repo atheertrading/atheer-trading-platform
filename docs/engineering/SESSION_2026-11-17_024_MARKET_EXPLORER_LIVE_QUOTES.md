@@ -63,3 +63,16 @@ Connect the existing native Market Explorer to the backend DEMO SSE quote stream
 5. Implement historical candle normalization, pagination, persistence, gap recovery, and source lineage.
 6. Add OHLC streaming and Charting only after historical/live candle contracts are stable.
 7. Integrate data-quality assessment with RiskEngine only as a separately reviewed, fail-closed increment.
+
+## Qualification remediation — 2026-11-17
+
+Code review identified and corrected three lifecycle/contract issues before qualification:
+
+- Default URLSession search and stream clients are now constructed inside the MainActor-isolated view-model initializer; the view initializer accepts optional injected dependencies to avoid Swift 5.8 default-argument isolation errors.
+- Instrument epics are validated against the backend-compatible [A-Za-z0-9_.-]{1,64} contract before selection.
+- Clearing the final selected epic now cancels both the SSE task and the 100 ms presentation throttle; the throttle cannot continue running after the stream becomes ineligible.
+- UI column labels are DEMO BID / DEMO ASK, not LIVE BID / LIVE ASK.
+
+Added XCTest coverage for invalid epic rejection and presentation-throttle cleanup. The 100 ms coalescing cadence is presentation-only and does not affect backend ingestion, quote ordering, freshness evaluation, or execution authorization.
+
+Hosted exact-head requalification remains pending. No local Xcode, owner-Mac runtime, real provider authentication, or real quote receipt is claimed.
