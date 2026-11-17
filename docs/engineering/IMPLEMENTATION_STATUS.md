@@ -299,3 +299,15 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
 - Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
 - This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+### PR #26 owner-Mac qualification — 2026-11-17 (ATP-2026-11-17-020)
+
+- The owner-provided terminal report confirms baseline HEAD `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`, Intel macOS 13.7.8 / Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Debug build success, Release build success, and 35 XCTest passing with zero failures.
+- Release build output explicitly invokes `CreateUniversalBinary` for `arm64 x86_64`; this is architecture-slice build evidence only, not Apple Silicon runtime QA.
+- Runtime warnings: four URLSession Sendable diagnostics, AppKit NSTableView reentrancy, test-host window ordering, and backend loopback connection refused. The latter indicates backend health was unavailable during test launch, not a test failure.
+- Remediation source now uses a narrow non-MainActor URLSession request executor and defers mutations originating from the panel manager's SwiftUI List row callbacks.
+- Post-remediation qualification has not yet run. Exact-SHA hosted macOS jobs on the baseline were cancelled; repository hygiene and backend toolchain passed.
+- Still pending: owner rerun with backend running; inspect the AppKit warning under normal app activation; actual Keychain persistence across app restart; Apple Silicon runtime QA; and real Capital.com DEMO auth.
+- PR #26 remains Open/Draft; no LIVE, dealing, or risk-control changes.
+

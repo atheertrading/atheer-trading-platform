@@ -269,6 +269,23 @@ protocol BrokerAuthenticationService {
     func disconnect() async
 }
 
+/// Isolates URLSession's async transport API from the UI actor.
+///
+/// URLSession is thread-safe. The wrapper owns one immutable session reference and
+/// exposes only request execution, keeping URLSessionTaskDelegate's non-Sendable
+/// default argument out of the MainActor call site on the Swift 5.8 toolchain.
+private final class URLSessionRequestExecutor: @unchecked Sendable {
+    private let session: URLSession
+
+    init(session: URLSession) {
+        self.session = session
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        try await session.data(for: request, delegate: nil)
+    }
+}
+
 @MainActor
 final class CapitalComAuthenticationService: BrokerAuthenticationService {
     private struct SessionPayload: Decodable {
@@ -278,20 +295,20 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         let currencyIsoCode: String?
     }
 
-    private let session: URLSession
+    private let requestExecutor: URLSessionRequestExecutor
     private let baseURL = URL(string: "https://demo-api-capital.backend-capital.com/api/v1")!
     private var cst: String?
     private var securityToken: String?
 
     init(session: URLSession? = nil) {
         if let session {
-            self.session = session
+            self.requestExecutor = URLSessionRequestExecutor(session: session)
         } else {
             let configuration = URLSessionConfiguration.ephemeral
             configuration.urlCache = nil
             configuration.httpCookieStorage = nil
             configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-            self.session = URLSession(configuration: configuration)
+            self.requestExecutor = URLSessionRequestExecutor(session: URLSession(configuration: configuration))
         }
     }
 
@@ -315,7 +332,7 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         do {
-            let (_, response) = try await session.data(for: request)
+            let (_, response) = try await requestExecutor.data(for: request)
             guard let http = response as? HTTPURLResponse else { throw BrokerAuthenticationError.invalidResponse }
             try validate(http.statusCode)
             guard let newCST = http.value(forHTTPHeaderField: "CST"),
@@ -333,7 +350,7 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
             verify.setValue("no-store", forHTTPHeaderField: "Cache-Control")
             verify.setValue(newCST, forHTTPHeaderField: "CST")
             verify.setValue(newSecurityToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
-            let (data, verifyResponse) = try await session.data(for: verify)
+            let (data, verifyResponse) = try await requestExecutor.data(for: verify)
             guard let verifyHTTP = verifyResponse as? HTTPURLResponse else {
                 throw BrokerAuthenticationError.invalidResponse
             }
@@ -375,7 +392,7 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         request.setValue(currentCST, forHTTPHeaderField: "CST")
         request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await requestExecutor.data(for: request)
             guard let http = response as? HTTPURLResponse else { throw BrokerAuthenticationError.invalidResponse }
             try validate(http.statusCode)
             let payload = try JSONDecoder().decode(SessionPayload.self, from: data)
@@ -411,7 +428,7 @@ final class CapitalComAuthenticationService: BrokerAuthenticationService {
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue(currentCST, forHTTPHeaderField: "CST")
         request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
-        _ = try? await session.data(for: request)
+        _ = try? await requestExecutor.data(for: request)
     }
 
     private func validate(_ statusCode: Int) throws {

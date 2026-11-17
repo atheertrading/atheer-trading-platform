@@ -479,3 +479,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
 - Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
 - This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+## PR #26 owner-Mac qualification update — ATP-2026-11-17-020
+
+- The owner-provided report **The terminal on Hossam's Mac - 02** is indexed by `SESSION_2026-11-17_020_PR26_OWNER_MAC_QUALIFICATION.md`.
+- Baseline HEAD was confirmed by the terminal's `git rev-parse HEAD`: `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`; branch status was clean and tracking origin.
+- Intel workstation evidence: macOS 13.7.8, Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1; Debug and Release succeeded; XCTest 35/35 passed; Release emitted universal arm64 + x86_64 slices. App launch was requested but visual/interactive success is not established.
+- Observed warnings and limits are recorded in the session report. Baseline exact-SHA CI #222 had hygiene/backend success but cancelled Intel/arm64 macOS jobs.
+- The PR #26 source increment isolates URLSession transport from MainActor and defers panel-manager List row mutations. This is source implementation only until new exact-head CI and owner rerun.
+- PR #26 remains Open/Draft. PR #24/#25 remain untouched. LIVE and dealing remain disabled.

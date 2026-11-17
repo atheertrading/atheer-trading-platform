@@ -219,3 +219,16 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
 - Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
 - This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+## PR #26 owner-Mac qualification and AppKit/concurrency remediation — 2026-11-17
+
+- Session report: `SESSION_2026-11-17_020_PR26_OWNER_MAC_QUALIFICATION.md`.
+- Baseline owner report **The terminal on Hossam's Mac - 02** confirms exact source HEAD `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`, Intel/macOS 13.7.8/Xcode 14.3.1/Swift 5.8.1, Debug and Release build success, and 35/35 XCTest success.
+- The Release log explicitly shows a universal `arm64 x86_64` binary creation step. This is build-slice evidence, not Apple Silicon runtime qualification.
+- Baseline runtime diagnostics: four URLSession Sendable warnings; SwiftUI List-backed panel row mutations identified as the AppKit NSTableView reentrancy path; backend liveness connection refused because the local process was not listening.
+- Remediation now present in source: isolated URLSession request executor and deferred panel List row mutations. Post-remediation build/tests remain pending exact-head CI and owner-Mac rerun.
+- Baseline exact-SHA CI #222: repository hygiene and backend toolchain passed; Intel and Apple Silicon macOS jobs were cancelled. Local Sync Safety #319 passed.
+- ATP-BROKER-001 remains IN PROGRESS. Real Keychain restart test, normal Intel runtime/visual QA, backend integration with service running, Apple Silicon runtime QA, and real DEMO auth remain outstanding.
+- PR #26 remains Open/Draft. LIVE and dealing remain disabled; no RiskEngine, execution, or broker-permission changes.
+
