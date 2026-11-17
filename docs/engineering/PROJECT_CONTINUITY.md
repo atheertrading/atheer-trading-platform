@@ -270,5 +270,5 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - CEOD v1.0 is being introduced on branch `docs/continuous-engineering-operating-directive`, based on `docs/atp-ui-ux-chatgpt-directive` to preserve the existing root `AGENTS.md` and UI/UX directive dependency.
 - The directive formalizes task recovery, inspection, bounded execution, verification, continuity records, and explicit owner approval gates. It explicitly states that normal ChatGPT sessions do not execute or monitor in the background after a response.
 - This branch is documentation-only. No application source, tests, trading configuration, broker permissions, credentials, risk limits, or production settings are changed.
-- **Current checkpoint:** branch created; documentation and continuity integration in progress. PR and exact-head checks are not yet recorded.
-- **Next action:** complete the focused documentation diff, open a PR against `docs/atp-ui-ux-chatgpt-directive`, then inspect its exact-head CI and review the complete diff. Do not claim merge or qualification before GitHub confirms them.
+- **Current checkpoint:** PR #19 is open against `docs/atp-ui-ux-chatgpt-directive`; head at PR creation was `ff1a3df9e25f84844950fa51fcaf71fc8272f798`. The PR contains seven documentation files and is not merged.
+- **Next action:** review the complete PR diff and inspect CI on the latest exact PR head. Do not claim merge or qualification before GitHub confirms them.
