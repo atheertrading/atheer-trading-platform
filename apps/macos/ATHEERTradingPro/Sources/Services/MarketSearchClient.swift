@@ -220,11 +220,13 @@ final class MarketExplorerViewModel: ObservableObject {
             results = try await client.searchMarkets(query)
             state = results.isEmpty ? .empty : .results
         } catch {
+            let failureMessage = error.localizedDescription
             results = []
-            state = .failed(error.localizedDescription)
             await refreshBackendStatus()
             if backendStatus?.state != .connected {
                 state = .unavailable("The backend market-data session is no longer connected. Recheck the DEMO service status.")
+            } else {
+                state = .failed(failureMessage)
             }
         }
     }
