@@ -505,3 +505,5 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Source and tests are committed, but exact-head CI and owner-Mac build/runtime/visual/accessibility verification are pending. Real Capital.com DEMO authentication/search was not attempted.
 - ChatGPT Memory cannot be synchronously written by the assistant. The durable English prompt is committed in GitHub and remains active in the current conversation context.
 - Session report: docs/engineering/SESSION_2026-11-17_021_MARKET_EXPLORER_IMPLEMENTATION.md.
+- PR #31 is OPEN / DRAFT, based on PR #26 exact head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f; feature head at PR creation was 94766cfe98ff3238e3c42d0560335d45395df163.
+- Initial exact-head CI #44159176929: Repository Hygiene and Backend Toolchain passed; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44159176655 passed. These results apply only to that recorded SHA.
