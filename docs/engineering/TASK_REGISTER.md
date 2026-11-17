@@ -316,7 +316,7 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 
 ## ATP-MKT-005 — Historical Market Data Contracts — 2026-11-17
 
-**Status:** Implemented on focused branch; exact-head CI pending.
+**Status:** Implemented on focused branch; backend verified; full exact-head qualification pending.
 
 - Added provider-neutral historical candle normalization in `services/api/src/market-data/historical-prices.ts`.
 - Bid and Ask OHLC are represented independently; UTC provider timestamp and local receipt timestamp remain distinct.
@@ -326,6 +326,11 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Extended DEMO history requests with paired UTC `from/to` bounds and provider `max` limit 1–1000.
 - Updated `GET /market-data/history` to return normalized candles and validation/quality metadata.
 - Added normalization, provider request, and API route tests.
+- Review correction: `pagination.limitReached` now uses the raw provider record count before exact-duplicate removal. Regression coverage verifies two identical provider records at `max=2` normalize to one candle while preserving `limitReached=true`.
+- Current PR #39 head: `d6bca573c28ca71b38cb10c9313e86c517b68f08`.
+- Exact-head Backend Toolchain passed Node 24.22.2 type-check/build and **37/37 API tests** (run #44182796685, job #134391313681); Repository Hygiene passed; Local Sync Safety passed (run #44182796765).
+- Mermaid validation remains in progress (run #44182796666); Intel x86_64 and Apple Silicon arm64 macOS jobs remain queued (jobs #134391313683 and #134391313955). The prior 37/37 result on head `5cc73cca...` is superseded by this exact-head run.
+- Pagination review thread `PRRT_kwDOVv-R8M64qo9E` was resolved after the correction and regression test passed.
 - Documentation: `ATHEER_HISTORICAL_MARKET_DATA_ARCHITECTURE.md`, Mermaid diagram 10, session report 025.
 - Persistence is not implemented in this work package. PostgreSQL remains the recorded direction, with deployment/workload qualification pending.
 - No live provider test, Charting integration, market calendar, or durable storage is claimed.
