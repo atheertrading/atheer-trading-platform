@@ -1,3 +1,4 @@
+import type { HistoricalPriceResolution } from "./historical-prices.ts";
 import {
   CapitalDemoApiError,
   CapitalDemoClient,
@@ -99,10 +100,12 @@ export class CapitalDemoRuntime {
 
   async getPriceHistory(
     epic: string,
-    resolution: "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
+    resolution: HistoricalPriceResolution,
     max: number,
+    from?: string,
+    to?: string,
   ): Promise<CapitalPriceHistoryResult> {
-    return this.withSession((session) => this.client.getPriceHistory(session, epic, resolution, max));
+    return this.withSession((session) => this.client.getPriceHistory(session, epic, resolution, max, from, to));
   }
 
   async ping(): Promise<CapitalDemoRuntimeStatus> {
