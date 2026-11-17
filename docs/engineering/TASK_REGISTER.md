@@ -382,3 +382,5 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Outbox event allow-list is restricted to durable domain-record events. No dispatcher, broker order submission, or execution-dispatch event is implemented.
 - `CAP_ALLOW_TRADING=false` remains unchanged. No LIVE or production operation is enabled.
 - Remaining before batch completion: inspect exact-head CI, resolve all source/test findings, add failure/recovery and concurrency evidence, and update operational database setup/backup/restore guidance.
+
+- Operational safety refinement: API startup verifies the applied migration ledger/checksums and never auto-applies schema changes. Pending migrations are applied only through explicit `npm run migrate`; PostgreSQL setup and migration instructions are in `docs/operations/POSTGRESQL.md`.
