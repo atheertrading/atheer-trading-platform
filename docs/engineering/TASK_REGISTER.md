@@ -316,7 +316,7 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 
 ## ATP-MKT-005 — Historical Market Data Contracts — 2026-11-17
 
-**Status:** Implemented on focused branch; backend verified; full exact-head qualification pending.
+**Status:** Implemented on focused branch; source correction backend verified; final documentation-updated PR head requires exact-head revalidation.
 
 - Added provider-neutral historical candle normalization in `services/api/src/market-data/historical-prices.ts`.
 - Bid and Ask OHLC are represented independently; UTC provider timestamp and local receipt timestamp remain distinct.
