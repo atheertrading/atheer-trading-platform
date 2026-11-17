@@ -100,3 +100,11 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-029 | 2026-11-18 | PR #40 strict UTC timestamp validation remediation | Reviewed canonical domain contracts, identified `Date.parse` calendar normalization, committed strict Gregorian date/time validation and regression coverage, recorded the focused review and exact-head CI boundary; requalification pending. | PR #40; commit `7ebe46ce7abd104cb74345169e16dbe64cb87998`; SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+## 2026-11-18 — ATP-PERSISTENCE-001
+
+- PR #41: PostgreSQL durable trading journal and migration foundation.
+- Architecture: `docs/architecture/ATP_PERSISTENCE_ARCHITECTURE.md`.
+- Diagram: `docs/architecture/diagrams/12-postgres-transactional-persistence.mmd`.
+- Decision: EDL-012 in `ENGINEERING_DECISION_LOG.md`.
+- Session: `SESSION_2026-11-18_029_ATP_PERSISTENCE_001.md`.
