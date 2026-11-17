@@ -113,3 +113,17 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - The service exposes process liveness and platform readiness only. Persistence and broker dependencies are explicitly not configured; trading remains disabled.
 - This work does not implement order, account, market-data, broker, strategy, risk, or execution endpoints.
 - Acceptance remains pending current GitHub CI and subsequent local Node.js 24 verification.
+
+
+## GitHub workflow revalidation — 2026-11-17 (ATP-2026-11-17-002)
+
+This is a dated status note; it does not silently close or mark any existing milestone complete.
+
+- Repository discovery returned open PRs #10, #12, #13, #17, #18, #20, #21, and #22. Exact current heads, review states, and required checks remain to be revalidated before merge.
+- Preserve implementation dependency chain #10 → #17 → #18 → #22.
+- Reconcile overlapping `docs/architecture/AI_AGENT_NAVIGATION.md` changes in PR #13 and #21 using normal merge/conflict-resolution commits.
+- PR #20 proposes root `WORK.md`; that file is absent from the inspected `main` branch. The queue is not considered active main-branch governance until the PR is integrated.
+- Workspace remains an incomplete product foundation: four panels and in-memory visibility in PR #18, adaptive grids in PR #22. Persistent layouts, window/panel lifecycle, cross-display orchestration, and full product navigation remain pending.
+- Actual market-data, broker, account, RiskEngine, OMS, Execution Gateway, and trading service integration remain separate implementation work. Preserve the existing no-fabricated-data and no-LIVE-without-explicit-authorization rules.
+- Session report: `SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md`.
+- No task was marked DONE by this discovery session. No local Mac build, XCTest, runtime, or broker verification was performed.
