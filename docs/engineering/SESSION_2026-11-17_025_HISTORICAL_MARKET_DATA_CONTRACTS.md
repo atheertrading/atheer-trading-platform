@@ -41,3 +41,12 @@ Replace the raw historical price response with a validated, provider-neutral can
 - No account mutation, orders, dealing, or LIVE behavior.
 - `CAP_ALLOW_TRADING=false` unchanged.
 - No RiskEngine, OMS, or Execution Gateway integration.
+
+
+## Review correction — provider pagination metadata
+
+A focused data-integrity review identified that `pagination.limitReached` was initially calculated from the normalized candle count. Exact duplicate removal can reduce that count even when the raw provider response reached the requested limit, incorrectly implying that the requested range is complete.
+
+- Corrected the flag to use `result.prices.length === max` before normalization/deduplication.
+- Extended the API route test with two identical raw provider records at `max=2`; normalization returns one candle and one duplicate, while `pagination.limitReached` remains true.
+- Exact-head CI revalidation is required for the correction; no result is claimed until the workflow completes.
