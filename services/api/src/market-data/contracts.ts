@@ -31,7 +31,8 @@ export interface QuoteFreshnessResult {
     | "quote_too_old"
     | "provider_timestamp_in_future"
     | "invalid_clock"
-    | "invalid_policy";
+    | "invalid_policy"
+    | "invalid_quote";
 }
 
 /**
@@ -103,6 +104,28 @@ export function evaluateQuoteFreshness(
       ageMs: null,
       automatedDecisionsAllowed: false,
       reason: "invalid_clock",
+    };
+  }
+  if (
+    quote.provider !== "capital.com" ||
+    quote.environment !== "DEMO" ||
+    typeof quote.instrumentId !== "string" ||
+    quote.instrumentId.trim().length === 0 ||
+    !Number.isFinite(quote.bid) ||
+    quote.bid <= 0 ||
+    !Number.isFinite(quote.ask) ||
+    quote.ask < quote.bid ||
+    !Number.isSafeInteger(quote.providerTimestampMs) ||
+    quote.providerTimestampMs <= 0 ||
+    !Number.isSafeInteger(quote.receivedAtMs) ||
+    quote.receivedAtMs <= 0 ||
+    quote.receivedAtMs > nowMs + policy.maximumFutureSkewMs
+  ) {
+    return {
+      state: "invalid",
+      ageMs: null,
+      automatedDecisionsAllowed: false,
+      reason: "invalid_quote",
     };
   }
 
