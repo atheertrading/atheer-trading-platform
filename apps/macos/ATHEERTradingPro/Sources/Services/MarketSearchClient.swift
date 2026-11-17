@@ -314,6 +314,13 @@ final class MarketExplorerViewModel: ObservableObject {
         if streamingRequested { restartStream() }
     }
 
+    func clearStreamSelection() {
+        selectedEpics.removeAll()
+        streamingQuotes.removeAll()
+        streamingError = nil
+        if streamingRequested { restartStream() }
+    }
+
     func startStreaming() {
         guard canStartStreaming else {
             streamingError = "Connect the backend DEMO session and select at least one instrument."
