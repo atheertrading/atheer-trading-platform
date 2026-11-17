@@ -39,3 +39,10 @@ python3 scripts/extract-mermaid-sources.py \
 - Review architecture claims against current approved specifications and implementation evidence.
 - Render and validate every `.mmd` file in CI.
 - Keep sensitive values, real account identifiers, API keys and secrets out of diagrams.
+
+
+| `11-canonical-trading-domain.mmd` | Provider-independent canonical identities, instrument specifications, accounts, order-intent envelope, risk assessment, lifecycle-policy boundary, execution facts, reconciliation and audit |
+
+### Library archive availability re-check — 2026-11-18
+
+The exact historical archive path referenced above (`Project documents and questions and answers.zip`) was not present in the accessible Library root during this session. The available `Atheer Q&A Repository.zip` contains 517 Markdown documents and 12 fenced Mermaid blocks; `Codex.zip` contains 58 Markdown documents and five standalone `.mmd` sources. All 17 accessible Mermaid sources were inspected. The previously recorded 564-document / 52-block inventory remains historical evidence for a different archive and is not re-claimed as revalidated or fully extracted in this session.

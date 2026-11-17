@@ -1,0 +1,61 @@
+flowchart TB
+  subgraph Sources["Authorized intent sources"]
+    HUMAN["Human operator"]
+    STRATEGY["Strategy engine"]
+    AGENT["Authorized AI agent"]
+    SYSTEM["Position / risk management"]
+  end
+
+  subgraph Domain["Provider-independent trading domain"]
+    ENV["Trading environment"]
+    IDS["Typed identities and correlation"]
+    INST["Instrument identity"]
+    SPEC["Versioned instrument specification"]
+    ACCOUNT["Broker account identity and snapshots"]
+    INTENT["Immutable order-intent envelope"]
+    RISK["Risk assessment and policy version"]
+    ORDER["Broker order observation"]
+    POSITION["Position snapshot"]
+    FILL["Execution fill"]
+    EVENT["Immutable execution events"]
+    RECON["Reconciliation event"]
+    AUDIT["Audit event"]
+    LIFECYCLE["Caller-supplied lifecycle policy"]
+  end
+
+  HUMAN --> INTENT
+  STRATEGY --> INTENT
+  AGENT --> INTENT
+  SYSTEM --> INTENT
+  ENV --> INTENT
+  IDS --> INTENT
+  INST --> SPEC
+  SPEC --> INTENT
+  ACCOUNT --> INTENT
+  INTENT --> RISK
+  RISK --> EVENT
+  ORDER --> EVENT
+  POSITION --> EVENT
+  FILL --> EVENT
+  EVENT --> RECON
+  EVENT --> AUDIT
+  LIFECYCLE -. validates declared transitions .-> ORDER
+  LIFECYCLE -. validates declared transitions .-> POSITION
+
+  subgraph Adapters["Outer adapters — not domain dependencies"]
+    BROKER["Broker adapters"]
+    DB["Persistence adapters"]
+    API["HTTP / IPC adapters"]
+    UI["macOS / SwiftUI"]
+  end
+
+  BROKER --> INST
+  BROKER --> ACCOUNT
+  BROKER --> ORDER
+  BROKER --> POSITION
+  BROKER --> FILL
+  DB --> EVENT
+  API --> INTENT
+  UI --> API
+
+  RISK -. no direct dealing authority .-> BROKER

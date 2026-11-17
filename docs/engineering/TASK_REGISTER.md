@@ -346,3 +346,27 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - New exact-head CI was pending/in progress; Local Sync Safety passed on both source heads; Mermaid validation was running. Release, arm64, visual/accessibility QA and real DEMO provider verification remain outstanding.
 - PRs #38 and #39 remain OPEN / DRAFT. No merge or history rewrite. `CAP_ALLOW_TRADING=false` remains unchanged.
 - Detailed record: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.
+
+
+## ATP-DOMAIN-001 — Canonical Trading Domain Foundation — 2026-11-18
+
+**Status:** Foundational contract slice implemented on PR #40; exact-head verification pending. PR #40 remains OPEN / DRAFT and is stacked on PR #39.
+
+- Added `services/api/src/domain/` with branded identifiers, exact decimal values, UTC timestamps, environment isolation, source provenance, instrument identity/specification, broker account identity/snapshots, immutable order-intent envelopes, risk assessments, generic lifecycle-policy validation, broker order/position observations, execution fills/events, reconciliation and audit records.
+- Instrument metadata preserves broker identity + environment + exact broker instrument identifier. Price precision and tick increment remain distinct; minimum/maximum deal size, quantity increment, lot size and contract size remain separate and unit-bearing.
+- Financial values use canonical base-10 strings and BigInt comparison/alignment. No float coercion or implicit rounding.
+- Common intent envelopes include intent/command/correlation/idempotency identity, account/instrument/specification/environment, origin, optional strategy/agent provenance, signal time, and market-snapshot reference/time.
+- Risk decisions are separate records bound to intent and policy version. No domain function transmits broker commands.
+- Added `services/api/test/domain.test.mjs` and Mermaid diagram 11.
+- Original ADR-0004/ADR-0005/ADR-0006 texts were not present in the accessible Library archives. UUIDv7 remains a Q&A recommendation, not an adopted identifier implementation; detailed OMS/position states and rounding modes remain open. No unsupported state machine was invented.
+- Initial CI #44193072976 on earlier head `13bc60e...` passed Repository Hygiene but failed backend typecheck on two branded-ID comparisons. Those were corrected; current source head `f295023e...` has not yet received exact-head CI. Node 24 local verification is not claimed.
+- No PostgreSQL schema/migration/outbox, broker dealing, account mutation, LIVE, or production capability added. `CAP_ALLOW_TRADING=false` unchanged.
+- Detailed report: `SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION.md`.
+
+
+### ATP-DOMAIN-001 follow-up — strict UTC timestamp parsing (2026-11-18)
+
+- Added calendar-aware validation to `utcTimestampFromIso`; invalid dates such as February 31 can no longer normalize into a different UTC instant.
+- Added regression tests for leap-year validity, month lengths, invalid month, and clock ranges.
+- Fix commit: `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
+- Exact-head CI is pending for this commit. Prior head `34015bda...` had 46/46 backend tests and Intel x86_64 qualification passed; Apple Silicon remained queued. Do not carry those results onto the new head.

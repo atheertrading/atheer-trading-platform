@@ -606,3 +606,34 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation was in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
 - Both PRs remain open/draft and unmerged. `CAP_ALLOW_TRADING=false` and all risk/execution safeguards remain unchanged.
 - Detailed session: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.
+
+
+## ATP-2026-11-18-028 — Canonical trading domain foundation
+
+- Created stacked PR #40 from PR #39 head `b24a687482f9bfe6e8f3683e568ae7b0c394b032`, branch `feat/trading-domain-foundation`.
+- Implemented the foundational provider-independent domain package under `services/api/src/domain/`: identifiers, exact decimal value objects, UTC timestamps, source provenance, instrument specifications, broker accounts/balance snapshots, immutable order-intent envelopes, risk assessments, generic transition-policy validation, broker order/position observations, fills, execution events, reconciliation, and audit.
+- Added deterministic Node tests, architecture contract document, and Mermaid diagram 11. Existing API `npm test` includes `test/*.test.mjs`.
+- Library review: inspected 12 Mermaid blocks in the available Q&A archive and five standalone Mermaid sources in `Codex.zip`, plus repository diagrams 01–10. The separate historical `Project documents and questions and answers.zip` referenced by the diagram README was not present in the accessible Library root; the 564 Markdown / 52-block inventory is not re-claimed as revalidated.
+- Original ADR-0004/0005/0006 texts were not available. UUIDv7, concrete OMS/position state lists, detailed order types, and rounding modes remain unselected; generic lifecycle policy is implemented without inventing transitions.
+- Initial PR #40 CI #44193072976 on head `13bc60e...`: Repository Hygiene passed; Backend Toolchain failed on two TS2367 branded-ID comparisons; Intel macOS was in progress and Apple Silicon queued. The comparisons were corrected in subsequent source commits; current head `f295023e...` requires a new exact-head run. No current-head test pass is claimed.
+- The available tool container is Node 22; API manifest requires Node >=24. No local Node 24 or owner-Mac result is claimed.
+- PR #40 remains OPEN / DRAFT on PR #39. No merge, PostgreSQL persistence, broker dealing, account mutation, LIVE, or production capability. `CAP_ALLOW_TRADING=false` unchanged.
+- Next: exact-head CI, then ATP-PERSISTENCE-001 after domain qualification and formal schema/state reconciliation.
+- Detailed session: `SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION.md`.
+
+
+## PR #40 exact-head requalification checkpoint — 2026-11-18
+
+- Domain source remediation is committed through `f295023e08774aed7a68c4f916eb14308e720593`; the subsequent architecture/task/continuity/session documentation commit is `2de4ecc84c693a89786085f71fe6d7feab419dfc`.
+- The initial PR #40 workflow #44193072976 was attached to earlier source head `13bc60e4023abcbf5b70e6a424b1a70d2befc0a8` and failed backend typecheck on two branded identifier comparisons. The corrections and expanded domain tests are included in the current branch tree.
+- This continuity update is being committed through the GitHub Contents API to generate a fresh PR synchronization event for the current source/documentation tree. The resulting workflow SHA and job outcomes must be fetched before claiming any verification result.
+- Until that exact-head run completes, TypeScript build, API tests, Mermaid validation, and Intel/arm64 macOS checks remain PENDING. No local Node 24 or owner-Mac test is claimed.
+
+
+## PR #40 strict UTC parser remediation — 2026-11-18
+
+- Review finding: `Date.parse` normalized impossible calendar dates; `2026-02-31T...Z` could be interpreted as a March date.
+- Committed calendar-aware validation and deterministic regression tests in `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
+- On previous head `34015bda...`, backend 46/46, hygiene, Mermaid, Local Sync Safety, and Intel macOS qualification passed; arm64 was queued. These do not apply to the new head.
+- New-head Local Sync Safety passed; Mermaid was running and CI queued at last inspection. Exact-head verification remains open.
+- PR #40 remains OPEN / DRAFT and unmerged. PostgreSQL persistence follows after domain qualification. `CAP_ALLOW_TRADING=false` unchanged.
