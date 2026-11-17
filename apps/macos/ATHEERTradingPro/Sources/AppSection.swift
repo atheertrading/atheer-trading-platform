@@ -2,6 +2,7 @@ import Foundation
 
 enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case workspace
+    case markets
     case apiConnection
     case settings
 
@@ -10,6 +11,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .workspace: return "Workspace"
+        case .markets: return "Markets"
         case .apiConnection: return "API Connection"
         case .settings: return "Settings"
         }
@@ -18,6 +20,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var systemImage: String {
         switch self {
         case .workspace: return "square.grid.2x2"
+        case .markets: return "chart.xyaxis.line"
         case .apiConnection: return "network"
         case .settings: return "gearshape"
         }
