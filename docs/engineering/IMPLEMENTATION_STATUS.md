@@ -350,3 +350,20 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
 - Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS build or XCTest result is yet available.
+
+
+## ATP-MKT-003 — Capital.com DEMO Market Streaming Foundation — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING  
+**Branch:** `feat/capital-demo-market-streaming`  
+**Base:** PR #33 head at branch creation `61b0953a04047868f000709369e2a182b3db34d4`
+
+- Server-side DEMO stream endpoint is discovered from authenticated `GET /session`; endpoint host/protocol are validated.
+- Shared WebSocket runtime handles quote subscriptions, 40-epic limit, correlation acknowledgements, five-minute ping, bounded reconnect, and resubscription.
+- Quote events are normalized and checked for invalid, duplicate, and out-of-order updates; latest values are cached in memory.
+- Local API SSE relay exposes quote events without exposing provider tokens.
+- Backend tests and Mermaid architecture documentation added.
+- Hosted TypeScript/API tests and real DEMO provider verification remain pending. No real quote receipt is claimed.
+- macOS consumer, durable history, OHLC stream, Charting, and RiskEngine integration are not part of this increment.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE capability added.
