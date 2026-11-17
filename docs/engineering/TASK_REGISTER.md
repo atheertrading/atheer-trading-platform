@@ -243,6 +243,8 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 | Implement native Market Explorer with provider-backed DEMO instrument search | P1 | IMPLEMENTED ON FEATURE BRANCH — VERIFICATION PENDING | PR #24 Workspace/Command Center; PR #25 Capital.com DEMO market search; PR #26 broker management | Review focused PR; exact-head hygiene/backend/macOS Debug/XCTest/Release/CodeQL checks; owner-Mac build/runtime/visual/accessibility QA |
 
 - Branch: feat/macos-market-explorer, stacked on PR #26 head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f.
+- PR #31: https://github.com/atheertrading/atheer-trading-platform/pull/31 (OPEN / DRAFT; not merged).
+- Initial exact-head CI #44159176929 on 94766cfe98ff3238e3c42d0560335d45395df163: Repository Hygiene and Backend Toolchain passed; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44159176655 passed. Re-run and re-record checks after any new commit.
 - Screen ID: ATP-SCR-MKT-001.
 - Prompt: docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md.
 - Screen contract: docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md.
