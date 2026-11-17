@@ -269,3 +269,16 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - Follow-up PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), PR-creation head `a0d6164dbed794cb2d83f211146412bab7a0787f`; latest recorded branch head `2750d272e21c2cb39024f55d016dd178c2bad914`; stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
 - CI run #44170771670 on `2750d272`: Backend Toolchain passed; Repository Hygiene failed on this line due an unmatched Markdown code span; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44170771652 passed. The documentation lint defect is corrected in the next commit; macOS verification remains pending.
 - Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. macOS verification remains pending.
+
+
+## ATP-MKT-003 — Capital.com DEMO Market Streaming Foundation — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Provider WebSocket quote ingestion, shared subscription manager, quote validation, and local SSE relay | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #25 DEMO REST runtime; PR #31 Market Explorer; PR #33 search lifecycle | TypeScript/API CI, stream lifecycle tests, provider DEMO verification, loopback transport security review |
+
+- Branch: `feat/capital-demo-market-streaming`, based on PR #33 head `61b0953a04047868f000709369e2a182b3db34d4`.
+- Session report: `SESSION_2026-11-17_023_CAPITAL_DEMO_STREAMING.md`.
+- Architecture: `ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE.md`; Mermaid diagram: `09-capital-demo-market-data-streaming.mmd`.
+- Implemented provider session endpoint discovery, WSS validation, server-side token handling, shared 40-instrument subscription cap, correlation acknowledgements, five-minute ping, reconnect/resubscribe, quote quality checks, in-memory cache, and loopback SSE.
+- No CI or real-provider success is claimed yet. macOS consumer, historical persistence, OHLC streaming, Charting, and RiskEngine integration remain separate follow-up work.
