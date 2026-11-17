@@ -448,4 +448,5 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 - No local Mac command was run by engineering.
 - Adaptive layout source is committed; exact-head hosted CI and local Xcode/XCTest verification remain pending.
-- Next: open a focused PR against PR #18, verify CI on the exact follow-up head, then request owner visual inspection at representative window widths on both displays. Keep PR #10 → #17 → #18 ancestry intact.
+- PR #22 is OPEN at `https://github.com/atheertrading/atheer-trading-platform/pull/22`, with `feat/workspace-adaptive-layout` based on PR #18. The branch received documentation follow-ups after PR creation; inspect the live PR head and its exact-head CI rather than relying on an earlier run.
+- Next: verify CI on the final PR #22 head, then request owner visual inspection at representative window widths on both displays. Keep PR #10 → #17 → #18 → #22 ancestry intact.
