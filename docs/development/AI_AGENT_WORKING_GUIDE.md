@@ -13,7 +13,7 @@
 10. `docs/development/ATHEER_CHATGPT_ENGINEERING_CONTINUATION.md`
 11. Relevant source code, tests, Git history, and open PRs
 
-Do not assume a document is approved merely because it appears in a registry. Record inaccessible sources rather than inventing their contents. The ChatGPT continuation directive supplements this guide; it does not override `AGENTS.md), owner approvals, or approved specifications.
+Do not assume a document is approved merely because it appears in a registry. Record inaccessible sources rather than inventing their contents. The ChatGPT continuation directive supplements this guide; it does not override `AGENTS.md`, owner approvals, or approved specifications.
 
 ## Before editing
 Establish outcome, bounded context, acceptance criteria, and non-goals. Inspect the current default branch, working branch, working tree, recent commits, open PRs, exact head SHAs, checks, and implementation. Identify authoritative requirements and conflicts. Search for existing types and tests before creating new ones. Preserve uncommitted and untracked user work.
