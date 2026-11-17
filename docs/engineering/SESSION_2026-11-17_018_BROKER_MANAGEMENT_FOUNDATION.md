@@ -12,6 +12,8 @@
 - Added a Keychain access abstraction so persistence behavior can be tested without relying on a developer's login Keychain.
 - Added a DEMO-only Capital.com REST authentication service. It creates a session with `POST /session`, captures CST and X-SECURITY-TOKEN in memory, and verifies the session using read-only `GET /session`.
 - Added explicit connection states and account identity/currency display only when returned by the provider.
+- Added read-only session verification every 60 seconds while the Brokers screen is active; verification starts immediately when the screen opens. Provider rejection marks the session expired and clears local session tokens.
+- Credential replacement first disconnects the previous session. Credential clearing disconnects before deleting the Keychain item and reports a failure without claiming deletion.
 - The connection service contains no order, position-dealing, account mutation, or LIVE endpoint methods.
 
 ## Provider contract verification
