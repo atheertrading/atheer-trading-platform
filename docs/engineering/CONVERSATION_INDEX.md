@@ -81,3 +81,11 @@ For each new substantial session, add one row and preserve chronology. The detai
 - **Verification:** Documentation diff and exact-head CI pending; no application tests applicable to this documentation-only scope.
 - **PR:** [#19 — Continuous Engineering Operating Directive](https://github.com/atheertrading/atheer-trading-platform/pull/19), base `docs/atp-ui-ux-chatgpt-directive`; head at creation `ff1a3df9e25f84844950fa51fcaf71fc8272f798`.
 - **Next action:** Review the complete PR diff and inspect CI on the latest exact PR head.
+
+
+### ATP-2026-11-17-002 — Sequential engineering work queue
+
+- **Objective:** Implement the owner-approved sequential execution queue in GitHub.
+- **Outcome:** Added root `WORK.md`, linked it from `AGENTS.md`, registered the queue in `TASK_REGISTER.md`, and recorded the checkpoint in `PROJECT_CONTINUITY.md`.
+- **Review:** PR #20 is open against `docs/atp-ui-ux-chatgpt-directive`; exact-head documentation checks and full diff review remain pending.
+- **Next:** Continue WORK-001 from the current PR state; preserve the stacked documentation dependency.
