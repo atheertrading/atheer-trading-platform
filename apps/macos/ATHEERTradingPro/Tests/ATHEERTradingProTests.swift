@@ -646,7 +646,7 @@ final class ATHEERTradingProTests: XCTestCase {
 
         model.startStreaming()
         await Task.yield()
-        await Task.yield()
+        try await Task.sleep(nanoseconds: 150_000_000)
 
         XCTAssertEqual(streamClient.requestedEpics, [["GOLD"]])
         XCTAssertEqual(model.streamingState, .connected)
@@ -655,6 +655,62 @@ final class ATHEERTradingProTests: XCTestCase {
         model.stopStream()
         XCTAssertEqual(model.streamingState, .disconnected)
         XCTAssertFalse(model.isStreamingRequested)
+    }
+
+    @MainActor
+    func testMarketExplorerCoalescesRapidQuoteEventsForPresentation() async throws {
+        func quote(_ bid: Double, _ timestamp: Int64) -> MarketDataStreamQuote {
+            MarketDataStreamQuote(
+                provider: "capital.com",
+                environment: "DEMO",
+                instrumentId: "GOLD",
+                bid: bid,
+                ask: bid + 0.5,
+                providerTimestampMs: timestamp,
+                receivedAtMs: timestamp,
+                receivedAtMonotonicMs: 125,
+                freshness: MarketDataQuoteFreshness(
+                    state: "fresh",
+                    ageMs: 0,
+                    automatedDecisionsAllowed: true,
+                    reason: "within_policy"
+                )
+            )
+        }
+        let status = MarketDataStreamStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: .connected,
+            activeInstrumentCount: 1,
+            lastMessageAtMs: nil,
+            lastError: nil,
+            invalidQuoteCount: 0,
+            outOfOrderQuoteCount: 0,
+            duplicateQuoteCount: 0
+        )
+        let streamClient = StubMarketDataStreamClient(events: [
+            .status(status),
+            .quote(quote(2000, 1_800_000_000_000)),
+            .quote(2001, 1_800_000_000_100),
+            .quote(2002, 1_800_000_000_200)
+        ])
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: streamClient
+        )
+        await model.refreshBackendStatus()
+        model.toggleStreamSubscription(for: "GOLD")
+        model.startStreaming()
+        await Task.yield()
+
+        XCTAssertNil(model.streamingQuotes["GOLD"], "Rapid ticks must be coalesced before UI publication.")
+        try await Task.sleep(nanoseconds: 150_000_000)
+        XCTAssertEqual(model.streamingQuotes["GOLD"]?.bid, 2002)
+
+        model.stopStream()
     }
 
     @MainActor
