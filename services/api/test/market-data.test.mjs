@@ -60,6 +60,25 @@ test("stale and future-dated quotes block automated decisions", () => {
   assert.equal(future.automatedDecisionsAllowed, false);
 });
 
+test("freshness evaluator rejects forged or malformed quote objects", () => {
+  const malformed = {
+    provider: "capital.com",
+    environment: "DEMO",
+    instrumentId: "AAPL",
+    bid: 100,
+    ask: 101,
+    providerTimestampMs: Number.NaN,
+    receivedAtMs: 1_800_000_000_000,
+  };
+  const result = evaluateQuoteFreshness(malformed, 1_800_000_000_100, {
+    maximumAgeMs: 5_000,
+    maximumFutureSkewMs: 250,
+  });
+  assert.equal(result.state, "invalid");
+  assert.equal(result.automatedDecisionsAllowed, false);
+  assert.equal(result.reason, "invalid_quote");
+});
+
 test("Capital DEMO session uses only the official DEMO host and returns session headers", async () => {
   const calls = [];
   const client = new CapitalDemoClient(async (url, init) => {
