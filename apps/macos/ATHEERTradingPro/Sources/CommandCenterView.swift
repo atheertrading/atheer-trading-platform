@@ -9,6 +9,7 @@ struct CommandCenterView: View {
     @StateObject private var workspaceEngine = WorkspaceEngine()
 
     private var sidebarWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.sidebarWidth) }
+    private var minimumPrimaryWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.minimumPrimaryWidth) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,7 +25,7 @@ struct CommandCenterView: View {
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .top, spacing: 16) {
                             primaryWorkspace
-                                .frame(minWidth: 500, maxWidth: .infinity, alignment: .topLeading)
+                                .frame(minWidth: minimumPrimaryWidth, maxWidth: .infinity, alignment: .topLeading)
 
                             secondaryWorkspace
                                 .frame(width: sidebarWidth, alignment: .topLeading)
