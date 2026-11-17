@@ -1,0 +1,19 @@
+flowchart TB
+    Owner[Owner Instructions and Explicit Decisions]
+    Library[ChatGPT Library]
+    GitHub[GitHub Repository]
+    Conversations[Historical Conversations]
+    Local[Local Workstation and Xcode]
+    Continuity[Continuity, Decision and Task Records]
+
+    Owner --> Library
+    Owner --> GitHub
+    Library <--> Continuity
+    GitHub <--> Continuity
+    Conversations --> Continuity
+    Local -->|Build and runtime evidence| Continuity
+    GitHub -->|Source, tests, CI and history| Continuity
+    Library -->|Specifications and archives| Continuity
+
+    Note[No single source replaces the others]
+    Continuity --> Note

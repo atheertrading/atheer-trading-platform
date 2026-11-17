@@ -1,0 +1,69 @@
+name: ATHEERTradingPro
+options:
+  deploymentTarget:
+    macOS: "13.0"
+  bundleIdPrefix: com.atheertrading
+  createIntermediateGroups: true
+attributes:
+  ORGANIZATIONNAME: ATHEER Trading
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.atheertrading.desktop
+    GENERATE_INFOPLIST_FILE: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGNING_ALLOWED: NO
+    ARCHS: "$(ARCHS_STANDARD)"
+    CLANG_WARN_DOCUMENTATION_COMMENTS: YES
+    GCC_WARN_ABOUT_RETURN_TYPE: YES
+    SWIFT_STRICT_CONCURRENCY: targeted
+    SWIFT_EMIT_LOC_STRINGS: YES
+  configs:
+    Debug:
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      GCC_OPTIMIZATION_LEVEL: "0"
+      DEBUG_INFORMATION_FORMAT: dwarf
+      ENABLE_TESTABILITY: YES
+      ONLY_ACTIVE_ARCH: YES
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      GCC_OPTIMIZATION_LEVEL: "s"
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+      ENABLE_NS_ASSERTIONS: NO
+      ENABLE_TESTABILITY: NO
+      ONLY_ACTIVE_ARCH: NO
+      SWIFT_COMPILATION_MODE: wholemodule
+targets:
+  ATHEERTradingPro:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        INFOPLIST_KEY_CFBundleDisplayName: ATHEER Trading Pro
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        PRODUCT_NAME: ATHEERTradingPro
+  ATHEERTradingProTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.atheertrading.desktop.tests
+        GENERATE_INFOPLIST_FILE: YES
+        ENABLE_TESTABILITY: YES
+    dependencies:
+      - target: ATHEERTradingPro
+schemes:
+  ATHEERTradingPro:
+    build:
+      targets:
+        ATHEERTradingPro: all
+    test:
+      config: Debug
+      targets:
+        - ATHEERTradingProTests

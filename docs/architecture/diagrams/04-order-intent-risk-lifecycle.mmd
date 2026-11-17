@@ -1,0 +1,30 @@
+flowchart TD
+    Manual[Manual UI Intent]
+    Strategy[Strategy Intent]
+    Agent[Authorized AI Agent Intent]
+    Intake[Typed Order Intent Intake]
+    Validate[Identity, Schema and Permission Validation]
+    Policy[Strategy and Account Policy]
+    Risk[Deterministic Central RiskEngine]
+    Decision{Risk Decision}
+    Reject[Reject with Reason and Audit]
+    Approve[Authorized Order Command]
+    OMS[Durable OMS]
+    EGW[Execution Gateway]
+    Broker[Broker Adapter]
+    Reconcile[Broker-State Reconciliation]
+
+    Manual --> Intake
+    Strategy --> Intake
+    Agent --> Intake
+    Intake --> Validate
+    Validate --> Policy
+    Policy --> Risk
+    Risk --> Decision
+    Decision -->|Reject or review| Reject
+    Decision -->|Approve| Approve
+    Approve --> OMS
+    OMS --> EGW
+    EGW --> Broker
+    Broker --> Reconcile
+    Reconcile --> OMS
