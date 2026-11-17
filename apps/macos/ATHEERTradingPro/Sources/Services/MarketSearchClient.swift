@@ -194,6 +194,8 @@ final class MarketExplorerViewModel: ObservableObject {
     private let client: MarketSearchClient
     private let streamClient: MarketDataStreamClient
     private var streamTask: Task<Void, Never>?
+    private var displayThrottleTask: Task<Void, Never>?
+    private var pendingStreamingQuotes: [String: MarketDataStreamQuote] = [:]
     private var streamingRequested = false
     private var searchGeneration: UInt64 = 0
     private var statusRefreshGeneration: UInt64 = 0
@@ -299,6 +301,7 @@ final class MarketExplorerViewModel: ObservableObject {
         if selectedEpics.contains(epic) {
             selectedEpics.remove(epic)
             streamingQuotes.removeValue(forKey: epic)
+            pendingStreamingQuotes.removeValue(forKey: epic)
             streamingError = nil
             if streamingRequested { restartStream() }
             return
@@ -317,6 +320,7 @@ final class MarketExplorerViewModel: ObservableObject {
     func clearStreamSelection() {
         selectedEpics.removeAll()
         streamingQuotes.removeAll()
+        pendingStreamingQuotes.removeAll()
         streamingError = nil
         if streamingRequested { restartStream() }
     }
@@ -336,8 +340,11 @@ final class MarketExplorerViewModel: ObservableObject {
     }
 
     func pauseStream() {
+        flushPendingQuotes()
         streamTask?.cancel()
         streamTask = nil
+        displayThrottleTask?.cancel()
+        displayThrottleTask = nil
         streamingState = .disconnected
     }
 
@@ -388,9 +395,13 @@ final class MarketExplorerViewModel: ObservableObject {
                             }
                         case .quote(let quote):
                             guard selectedEpics.contains(quote.instrumentId) else { continue }
-                            streamingQuotes[quote.instrumentId] = quote
-                            streamingState = .connected
-                            streamingError = nil
+                            queueQuoteForPresentation(quote)
+                            if streamingState != .connected {
+                                streamingState = .connected
+                            }
+                            if streamingError != nil {
+                                streamingError = nil
+                            }
                         }
                     }
                     if Task.isCancelled { return }
@@ -409,6 +420,34 @@ final class MarketExplorerViewModel: ObservableObject {
                 retryDelay = min(retryDelay * 2, 30_000_000_000)
             }
         }
+    }
+
+    private func queueQuoteForPresentation(_ quote: MarketDataStreamQuote) {
+        pendingStreamingQuotes[quote.instrumentId] = quote
+        guard displayThrottleTask == nil else { return }
+
+        displayThrottleTask = Task { [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                flushPendingQuotes()
+            }
+        }
+    }
+
+    private func flushPendingQuotes() {
+        guard !pendingStreamingQuotes.isEmpty else { return }
+        var nextQuotes = streamingQuotes
+        for (epic, quote) in pendingStreamingQuotes where selectedEpics.contains(epic) {
+            nextQuotes[epic] = quote
+        }
+        pendingStreamingQuotes.removeAll(keepingCapacity: true)
+        streamingQuotes = nextQuotes
     }
 
     private func statusMessage(for state: MarketDataBackendConnectionState) -> String {
