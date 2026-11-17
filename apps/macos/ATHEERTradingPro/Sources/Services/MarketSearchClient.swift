@@ -191,8 +191,8 @@ final class MarketExplorerViewModel: ObservableObject {
     private var searchGeneration: UInt64 = 0
     private var statusRefreshGeneration: UInt64 = 0
 
-    init(client: MarketSearchClient = URLSessionMarketSearchClient()) {
-        self.client = client
+    init(client: MarketSearchClient? = nil) {
+        self.client = client ?? URLSessionMarketSearchClient()
     }
 
     var canSearch: Bool {
