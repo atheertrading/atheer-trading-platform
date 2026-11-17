@@ -555,3 +555,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 PR #34 was updated with the Swift 5.8 MainActor dependency-construction remediation. Its corrected head is 2baf8a2b026566846825a18e9b9af9a918c0d864; its base remains PR #33 exact head 61b0953a04047868f000709369e2a182b3db34d4. PR #34 Local Sync Safety and Mermaid validation passed; exact-head CI is queued.
 
 The original live-quote PR #35 was closed as superseded because it was behind/diverged after the parent remediation. Replacement PR #36 is open/draft on feat/macos-market-explorer-live-quotes-qualified, exact head 80912e8b1e80479afaa694f3bbf0e04ab5e1fce8, based on corrected PR #34 head 2baf8a2b026566846825a18e9b9af9a918c0d864 (11 ahead / 0 behind). Exact-head backend TypeScript/API tests passed 31/31; Repository Hygiene, Mermaid, and Local Sync Safety passed. Intel and Apple Silicon macOS qualification remains queued. No owner-Mac runtime or real provider quote is claimed.
+
+## ATP-MKT-005 — Historical Market Data Contracts — 2026-11-17
+
+Branch `feat/historical-market-data-contracts` is based on PR #38 exact head `0d37f11a8f91d09c82b39c443e346622a7df3530`. It adds typed normalization of Capital.com historical price records into separate Bid and Ask OHLC, explicit UTC provider timestamps and local receipt timestamps, optional raw provider volume lineage, duplicate detection, and observed-gap reporting. The history API now validates explicit UTC `from/to` pairs, supports the provider's 1–1000 `max` limit, and returns normalized candle batches.
+
+Observed gaps are not classified as missing until market-session calendars are integrated. Automatic range cursors are not generated because provider boundary inclusivity has not been verified against a real DEMO response. PostgreSQL persistence is not part of this increment; platform architecture records PostgreSQL as the direction, while deployment and workload qualification remain pending.
+
+New deterministic tests and architecture/Mermaid/session documentation are committed. Exact-head backend and Mermaid CI are pending. No live Capital.com request, durable storage, or Charting integration is claimed. DEMO read-only and `CAP_ALLOW_TRADING=false` remain unchanged.
