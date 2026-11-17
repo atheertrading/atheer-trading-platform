@@ -394,7 +394,7 @@ final class ATHEERTradingProTests: XCTestCase {
             authentication: StubBrokerAuthenticationService(result: .failure(BrokerAuthenticationError.invalidCredentials))
         )
         XCTAssertEqual(model.state, .notConfigured)
-        try model.saveCredentials(BrokerCredential(apiKey: "key", identifier: "login", password: "password"))
+        try await model.saveCredentials(BrokerCredential(apiKey: "key", identifier: "login", password: "password"))
         XCTAssertEqual(model.state, .credentialsSaved)
         XCTAssertNotEqual(model.state, .connected)
     }

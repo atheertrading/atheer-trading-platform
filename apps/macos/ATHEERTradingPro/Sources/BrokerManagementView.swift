@@ -296,19 +296,21 @@ private struct CapitalComCredentialsView: View {
 
     private func save() {
         isSaving = true
-        defer { isSaving = false }
-        do {
-            try model.saveCredentials(BrokerCredential(
-                apiKey: apiKey,
-                identifier: identifier,
-                password: password
-            ))
-            apiKey = ""
-            identifier = ""
-            password = ""
-            onClose()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task { @MainActor in
+            do {
+                try await model.saveCredentials(BrokerCredential(
+                    apiKey: apiKey,
+                    identifier: identifier,
+                    password: password
+                ))
+                apiKey = ""
+                identifier = ""
+                password = ""
+                onClose()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isSaving = false
         }
     }
 }

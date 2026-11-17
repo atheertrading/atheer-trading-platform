@@ -378,7 +378,10 @@ final class BrokerManagementViewModel: ObservableObject {
         }
     }
 
-    func saveCredentials(_ credential: BrokerCredential) throws {
+    func saveCredentials(_ credential: BrokerCredential) async throws {
+        await authentication.disconnect()
+        account = nil
+        state = hasSavedCredentials ? .credentialsSaved : .notConfigured
         try credentialStore.save(credential, brokerID: brokerID, environment: environment)
         hasSavedCredentials = true
         maskedAPIKey = credential.maskedAPIKey
@@ -430,6 +433,7 @@ final class BrokerManagementViewModel: ObservableObject {
     }
 
     func monitorSession() async {
+        await refreshSessionStatus()
         while !Task.isCancelled {
             do {
                 try await Task.sleep(nanoseconds: 60_000_000_000)
@@ -449,7 +453,14 @@ final class BrokerManagementViewModel: ObservableObject {
 
     func clearCredentials() async throws {
         await authentication.disconnect()
-        try credentialStore.delete(brokerID: brokerID, environment: environment)
+        account = nil
+        state = hasSavedCredentials ? .credentialsSaved : .disconnected
+        do {
+            try credentialStore.delete(brokerID: brokerID, environment: environment)
+        } catch {
+            state = .connectionFailed("Credentials could not be removed from Keychain and remain configured.")
+            throw error
+        }
         hasSavedCredentials = false
         maskedAPIKey = nil
         account = nil
