@@ -153,25 +153,25 @@ async function handleMarketDataRequest(
         connection: "keep-alive",
         "x-accel-buffering": "no",
       });
-      response.write("event: status\\ndata: " + JSON.stringify(streamRuntime.status()) + "\\n\\n");
+      response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
 
       let unsubscribe: (() => void) | undefined;
       let keepAlive: ReturnType<typeof setInterval> | undefined;
       try {
         unsubscribe = await streamRuntime.subscribe(epics, (quote: MarketDataStreamQuote) => {
           if (!response.destroyed) {
-            response.write("event: quote\\ndata: " + JSON.stringify(quote) + "\\n\\n");
+            response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
           }
         });
         for (const quote of streamRuntime.latest(epics)) {
-          response.write("event: quote\\ndata: " + JSON.stringify(quote) + "\\n\\n");
+          response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
         }
         keepAlive = setInterval(() => {
-          if (!response.destroyed) response.write(": keep-alive\\n\\n");
+          if (!response.destroyed) response.write(": keep-alive\n\n");
         }, 15_000);
       } catch {
         if (!response.destroyed) {
-          response.write("event: error\\ndata: " + JSON.stringify({ error: "market_data_stream_connection_failed" }) + "\\n\\n");
+          response.write("event: error\ndata: " + JSON.stringify({ error: "market_data_stream_connection_failed" }) + "\n\n");
           response.end();
         }
         return;
