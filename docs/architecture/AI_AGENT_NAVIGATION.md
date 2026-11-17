@@ -9,6 +9,7 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 | Project purpose and status | README.md |
 | Mandatory engineering policy | AGENTS.md |
 | Current state and next action | docs/engineering/PROJECT_CONTINUITY.md |
+| Continuous execution, approvals, and handover | docs/engineering/ATHEER_CONTINUOUS_ENGINEERING_OPERATING_DIRECTIVE.md |
 | Active work | docs/engineering/TASK_REGISTER.md |
 | Verified vs historical implementation | docs/engineering/IMPLEMENTATION_STATUS.md |
 | Source and document provenance | docs/engineering/MASTER_DOCUMENT_REGISTRY.md and SOURCE_RECONCILIATION_REGISTER.md |
@@ -20,6 +21,8 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 | Governance and repository topology | docs/governance/ |
 
 ## Task execution protocol
+
+Apply the Continuous Engineering Operating Directive for recovery, delegated decision-making, approval gates, exact-head verification, and session handover.
 1. Resolve task scope and acceptance criteria.
 2. Inspect latest main, current branch, working tree, relevant code, tests, and PR state.
 3. Search Library sources by exact document ID and verify version, approval, and implementation status.

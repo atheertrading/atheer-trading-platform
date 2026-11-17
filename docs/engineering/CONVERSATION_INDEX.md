@@ -68,3 +68,16 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-012 | 2026-11-16 | Backend health vertical slice | Merged PR #8 Xcode configuration; inspected the current app shell and prior local qualification report; implemented a loopback-only Node 24/TypeScript health/readiness service with fail-closed readiness and six tests. | API_HEALTH_CONTRACT; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; EDL-007 |
+
+
+## ATP-2026-11-17-001 — Continuous engineering operating directive
+
+- **Date:** 2026-11-17
+- **Objective:** Implement owner-authorized engineering decision, approval/delegation, and ATHEER execution mechanisms as a durable repository directive.
+- **Authorization:** Owner requested execution of sections 6 and 7. Routine engineering delegation is documented with explicit separate approval gates for consequential actions.
+- **Sources inspected:** README, Project Continuity, Task Register, Implementation Status, AI Agent Navigation, Conversation Recovery Protocol, AI Agent Working Guide, Engineering Decision Log, repository AGENTS.md on the existing UI/UX directive branch, and open PR summaries.
+- **Changes in progress:** CEOD v1.0, AGENTS.md cross-reference, AI navigation, task/continuity/conversation/decision records.
+- **Branch:** `docs/continuous-engineering-operating-directive`, based on `docs/atp-ui-ux-chatgpt-directive`.
+- **Verification:** Documentation diff and exact-head CI pending; no application tests applicable to this documentation-only scope.
+- **PR:** [#19 — Continuous Engineering Operating Directive](https://github.com/atheertrading/atheer-trading-platform/pull/19), base `docs/atp-ui-ux-chatgpt-directive`; head at creation `ff1a3df9e25f84844950fa51fcaf71fc8272f798`.
+- **Next action:** Review the complete PR diff and inspect CI on the latest exact PR head.

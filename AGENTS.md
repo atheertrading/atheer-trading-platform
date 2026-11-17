@@ -49,6 +49,10 @@ Extensibility does not mean ungoverned permissions. Every agent and tool integra
 - Keep DEMO, SIMULATION, BACKTEST, and LIVE isolated in configuration, persistence, authorization, and reporting.
 - The recorded trading gate is disabled by default until the required DEMO reconciliation and risk-gateway validation are complete. LIVE requires explicit owner authorization and risk acknowledgement.
 
+## Continuous engineering operating directive
+
+Follow `docs/engineering/ATHEER_CONTINUOUS_ENGINEERING_OPERATING_DIRECTIVE.md` for task recovery, execution, approval/delegation boundaries, verification, and handover. It supplements this file and cannot override owner approvals, accepted decisions, or approved Library specifications.
+
 ## Engineering workflow
 
 For substantial work, follow: discovery → source reconciliation → design → bounded implementation → tests → verification → documentation → review → handover.
