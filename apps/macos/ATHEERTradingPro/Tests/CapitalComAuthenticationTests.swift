@@ -31,8 +31,12 @@ final class CapitalComAuthenticationTests: XCTestCase {
                 return (response, Data())
             }
         }
+        StubURLProtocol.requestObserver = { request, body in
+            recorder.append(request, body: body)
+        }
         defer {
             StubURLProtocol.handler = nil
+            StubURLProtocol.requestObserver = nil
             session.invalidateAndCancel()
         }
 
@@ -50,23 +54,24 @@ final class CapitalComAuthenticationTests: XCTestCase {
 
         let requests = recorder.requests
         XCTAssertEqual(requests.count, 2)
-        let createRequest = try XCTUnwrap(requests.first)
+        let createRecord = try XCTUnwrap(requests.first)
+        let createRequest = createRecord.request
         XCTAssertEqual(createRequest.httpMethod, "POST")
         XCTAssertEqual(createRequest.url?.absoluteString, "https://demo-api-capital.backend-capital.com/api/v1/session")
         XCTAssertEqual(createRequest.value(forHTTPHeaderField: "X-CAP-API-KEY"), "test-api-key")
-        let bodyData = try XCTUnwrap(createRequest.httpBody)
+        let bodyData = try XCTUnwrap(createRecord.body, "The URLProtocol recorder must capture the outgoing POST body.")
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
         XCTAssertEqual(body["identifier"] as? String, "demo@example.invalid")
         XCTAssertEqual(body["password"] as? String, "test-api-password")
         XCTAssertEqual(body["encryptedPassword"] as? Bool, false)
 
-        let verifyRequest = try XCTUnwrap(requests.last)
+        let verifyRequest = try XCTUnwrap(requests.last?.request)
         XCTAssertEqual(verifyRequest.httpMethod, "GET")
         XCTAssertEqual(verifyRequest.value(forHTTPHeaderField: "CST"), "test-cst")
         XCTAssertEqual(verifyRequest.value(forHTTPHeaderField: "X-SECURITY-TOKEN"), "test-security-token")
 
         await service.disconnect()
-        XCTAssertEqual(recorder.requests.last?.httpMethod, "DELETE")
+        XCTAssertEqual(recorder.requests.last?.request.httpMethod, "DELETE")
     }
 
     @MainActor
@@ -109,7 +114,7 @@ final class CapitalComAuthenticationTests: XCTestCase {
         let session = URLSession(configuration: configuration)
         let recorder = RequestRecorder()
         StubURLProtocol.handler = { request in
-            recorder.append(request)
+            recorder.append(request, body: nil)
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, Data())
         }
@@ -138,24 +143,30 @@ final class CapitalComAuthenticationTests: XCTestCase {
 }
 
 private final class RequestRecorder {
-    private let lock = NSLock()
-    private var storage: [URLRequest] = []
+    struct RecordedRequest {
+        let request: URLRequest
+        let body: Data?
+    }
 
-    var requests: [URLRequest] {
+    private let lock = NSLock()
+    private var storage: [RecordedRequest] = []
+
+    var requests: [RecordedRequest] {
         lock.lock()
         defer { lock.unlock() }
         return storage
     }
 
-    func append(_ request: URLRequest) {
+    func append(_ request: URLRequest, body: Data?) {
         lock.lock()
         defer { lock.unlock() }
-        storage.append(request)
+        storage.append(RecordedRequest(request: request, body: body))
     }
 }
 
 private final class StubURLProtocol: URLProtocol {
     static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    static var requestObserver: ((URLRequest, Data?) -> Void)?
 
     override class func canInit(with request: URLRequest) -> Bool { true }
 
@@ -166,6 +177,7 @@ private final class StubURLProtocol: URLProtocol {
             guard let handler = Self.handler else {
                 throw URLError(.badServerResponse)
             }
+            Self.requestObserver?(request, try Self.bodyData(from: request))
             let (response, data) = try handler(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
@@ -176,4 +188,30 @@ private final class StubURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {}
+
+    private static func bodyData(from request: URLRequest) throws -> Data? {
+        if let body = request.httpBody {
+            return body
+        }
+        guard let stream = request.httpBodyStream else {
+            return nil
+        }
+
+        stream.open()
+        defer { stream.close() }
+
+        var data = Data()
+        var buffer = [UInt8](repeating: 0, count: 4_096)
+        while true {
+            let bytesRead = stream.read(&buffer, maxLength: buffer.count)
+            if bytesRead < 0 {
+                throw stream.streamError ?? URLError(.cannotDecodeContentData)
+            }
+            if bytesRead == 0 {
+                break
+            }
+            data.append(contentsOf: buffer.prefix(bytesRead))
+        }
+        return data
+    }
 }
