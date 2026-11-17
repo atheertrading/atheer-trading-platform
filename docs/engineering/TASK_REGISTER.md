@@ -42,7 +42,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 
 | ID | Priority | Task | Status |
 |---|---|---|---|
-| M02-001 | P2 | Qualify macOS/Xcode/Swift compatibility and app structure | IN PROGRESS |
+| M02-001 | P2 | Qualify macOS/Xcode/Swift compatibility and app structure | IN PROGRESS — Xcode 14.3.1 / Swift 5.8.1 / XcodeGen 2.36.1 and generated project were inventoried; owner confirms application launch and use across two displays. This is owner-confirmed, not independent runtime/visual verification. Local Debug/Release/XCTest logs and exact current local HEAD/worktree evidence remain outstanding. |
 | M02-002 | P2 | Specify and implement IPDS primitives and semantic tokens | PENDING |
 | M02-003 | P2 | Establish backend service foundation and API contracts | IN PROGRESS |
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
@@ -50,7 +50,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 | M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; owner runtime QA pending |
 | M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; workflow #132 passed on its exact head; full control audit and owner runtime QA pending |
-| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 source head `331f424d6d1180569504b725cbcaa1eece41ed46`; exact-head hosted workflow #135 passed repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Mac qualification is active on `work/local-pr18-qualification`; local build/test/launch and visual/accessibility QA remain pending. Formal IPDS source/approval reconciliation remains pending. |
+| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 provides the initial shared tokens and four panels. Follow-up branch `feat/workspace-adaptive-layout` at `db073848e7a80bbd4db2868faa741725698cb86c` replaces fixed grids with adaptive status/panel widths. CI and owner visual acceptance for this follow-up remain pending. Owner confirms application launch and two-display use; this does not establish visual/accessibility acceptance. Formal IPDS source/approval reconciliation remains pending. |
 
 ## Governance notes
 
@@ -85,7 +85,7 @@ The local Mac has not been freshly qualified in this session. The XcodeGen pin r
 | M00-019 | P0 | Correct continuity records for PR #2 merge and active repository identity | IN PROGRESS | Session 008 addendum; update stale implementation and decision snapshots |
 | M00-020 | P0 | Recover and migrate all original Mermaid blocks from the Library archive | IN PROGRESS | 31 source Markdown documents / 52 blocks; extractor committed; generated files, provenance manifest, rendering and review still pending |
 | M01-007 | P1 | Establish canonical architecture diagram sources and Mermaid CI rendering | DONE | PR #6 merged at 70794e7f20f129c17ba64bcf4b1eba0df32999df; Mermaid rendering, repository hygiene, backend, macOS build/tests/Swift CodeQL, and Actions analysis passed |
-| M00-021 | P1 | Reconcile the 47 formal documents, 517 Q&A sources and approval metadata | IN PROGRESS | Existing source inventory; document-level authority/revision/approval traceability pending |
+| M00-021 | P1 | Reconcile the 47 formal documents, 517 Q&A sources and approval metadata | IN PROGRESS | Historical registry lists 47 formal documents; current accessible Q&A archive contains 517 Markdown files but no formal-specification directory. Codex.zip contains derived summaries, not original ATP-ARCH-014/037/038/IPDS sources. Exact revisions and approval traceability remain blocked on original source retrieval. |
 
 The historical Mermaid count is 31 source documents containing 52 Mermaid blocks, not 31 individual diagrams. Do not mark M00-020 or M01-007 DONE until generated legacy sources are committed, all Mermaid files render in CI, and provenance is verified.
 
@@ -170,3 +170,12 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Local toolchain inventory returned Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1, and an existing generated Xcode project. This is environment discovery only; no local build, XCTest, launch, or visual result is claimed.
 - PR #18 workflow #135 passed on source head `331f424d6d1180569504b725cbcaa1eece41ed46`: repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety workflow #90 also passed.
 - Next: inspect full governing/architecture requirements and source; run local Debug → XCTest → Release with isolated DerivedData; then launch and perform visual, interaction, accessibility, and multi-display checks where supported.
+
+
+## 2026-11-17 — Adaptive workspace layout and source-retrieval checkpoint
+
+- The initial Workspace used a fixed four-column status grid and fixed two-column panel grid. The follow-up implementation changes both to adaptive grids with bounded item widths: status 150–240 points; panels 320–560 points. These are provisional responsive metrics, not final IPDS breakpoints.
+- Branch: `feat/workspace-adaptive-layout`; base: PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`; implementation commit: `db073848e7a80bbd4db2868faa741725698cb86c`.
+- Owner confirms the app launches on the Mac and has been exercised across two displays. Record this as OWNER-CONFIRMED; it is not independent visual QA or evidence of accessibility acceptance.
+- Current Library retrieval did not surface the original ATP-ARCH-014/037/038 or IPDS files. The Q&A and Codex archives are not substitutes; M00-021 and M02-009 remain IN PROGRESS.
+- No trading, broker, risk, credential, or LIVE behavior was introduced.
