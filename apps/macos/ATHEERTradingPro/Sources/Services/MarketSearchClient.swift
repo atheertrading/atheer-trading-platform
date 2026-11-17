@@ -225,7 +225,7 @@ final class MarketExplorerViewModel: ObservableObject {
             backendStatus = status
             if status.state != .connected {
                 searchGeneration &+= 1
-                stopStream()
+                pauseStream()
                 state = .unavailable(statusMessage(for: status.state))
             } else {
                 if results.isEmpty && state != .searching {
@@ -237,7 +237,7 @@ final class MarketExplorerViewModel: ObservableObject {
             guard requestGeneration == statusRefreshGeneration else { return }
             searchGeneration &+= 1
             backendStatus = nil
-            stopStream()
+            pauseStream()
             state = .unavailable(error.localizedDescription)
         }
     }
