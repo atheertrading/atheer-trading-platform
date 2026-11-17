@@ -570,7 +570,7 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 ### Repository and dependency state
 - Active implementation repository: `atheertrading/atheer-trading-platform`.
 - PR #39 remains OPEN / DRAFT and is stacked on PR #38 exact parent head `0d37f11a8f91d09c82b39c443e346622a7df3530`.
-- PR #39 current branch head after this bounded correction: `d6bca573c28ca71b38cb10c9313e86c517b68f08`.
+- PR #39 source correction commit: `d6bca573c28ca71b38cb10c9313e86c517b68f08`; subsequent task/status/continuity/index documentation commits advanced the branch. The final PR head must be re-fetched from GitHub and revalidated.
 - No branch history was rewritten; four focused commits follow the previously qualified documentation checkpoint `5cc73cca9d42e076ebcb5e82255414710b459b5e`.
 
 ### Review finding and implementation
@@ -588,7 +588,7 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - Mermaid architecture validation: **in progress** (run #44182796666).
 - Intel x86_64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313683).
 - Apple Silicon arm64 macOS Debug/XCTest/Release/Swift CodeQL: **queued** (job #134391313955).
-- Earlier 37/37 API evidence on `5cc73cca...` is superseded by this exact-head run; no macOS result is claimed until jobs complete.
+- The 37/37 API evidence applies to source correction head `d6bca573...`; subsequent documentation-only commits require a fresh exact-head CI run. No macOS result is claimed until jobs complete.
 
 ### Boundaries and next action
 - PR #39 has not been merged. No PR in the dependent market-data chain is treated as integrated solely from backend success.
