@@ -86,6 +86,7 @@ struct WorkspaceSnapshot: Codable, Equatable {
 
 enum WorkspacePersistenceError: Error, Equatable {
     case unsupportedSchema(Int)
+    case corruptData(String)
     case invalidSnapshot(String)
 }
 
@@ -108,7 +109,11 @@ struct UserDefaultsWorkspacePersistence: WorkspacePersistence {
 
     func load() throws -> WorkspaceSnapshot? {
         guard let data = defaults.data(forKey: key) else { return nil }
-        return try JSONDecoder().decode(WorkspaceSnapshot.self, from: data)
+        do {
+            return try JSONDecoder().decode(WorkspaceSnapshot.self, from: data)
+        } catch {
+            throw WorkspacePersistenceError.corruptData(String(describing: error))
+        }
     }
 
     func save(_ snapshot: WorkspaceSnapshot) throws {
@@ -155,6 +160,14 @@ final class WorkspaceEngine: ObservableObject {
             } else {
                 snapshot = .standard()
                 try persistence.save(snapshot)
+            }
+        } catch WorkspacePersistenceError.corruptData(let reason) {
+            snapshot = .standard()
+            recoveryState = .restoredDefaults("Stored workspace data was unreadable: \(reason)")
+            do {
+                try persistence.save(snapshot)
+            } catch {
+                recoveryState = .persistenceFailure(String(describing: error))
             }
         } catch {
             snapshot = .standard()
@@ -247,6 +260,14 @@ final class WorkspaceEngine: ObservableObject {
         guard !snapshot.profiles.isEmpty, !snapshot.workspaces.isEmpty else {
             throw WorkspacePersistenceError.invalidSnapshot("A workspace snapshot must contain a profile and workspace.")
         }
+        let workspaceIDs = snapshot.workspaces.map(\.id)
+        guard Set(workspaceIDs).count == workspaceIDs.count else {
+            throw WorkspacePersistenceError.invalidSnapshot("Workspace identities must be unique.")
+        }
+        let profileIDs = snapshot.profiles.map(\.id)
+        guard Set(profileIDs).count == profileIDs.count else {
+            throw WorkspacePersistenceError.invalidSnapshot("Profile identities must be unique.")
+        }
         guard snapshot.workspaces.contains(where: { $0.id == snapshot.activeWorkspaceID }) else {
             throw WorkspacePersistenceError.invalidSnapshot("The active workspace reference is missing.")
         }
@@ -255,6 +276,15 @@ final class WorkspaceEngine: ObservableObject {
         }
         guard activeProfile.workspaceIDs.contains(snapshot.activeWorkspaceID) else {
             throw WorkspacePersistenceError.invalidSnapshot("The active workspace is not part of the active profile.")
+        }
+        guard !activeProfile.workspaceIDs.isEmpty,
+              activeProfile.workspaceIDs.allSatisfy({ workspaceIDs.contains($0) }),
+              activeProfile.workspaceIDs.contains(activeProfile.activeWorkspaceID),
+              snapshot.workspaces.contains(where: { $0.id == activeProfile.activeWorkspaceID }) else {
+            throw WorkspacePersistenceError.invalidSnapshot("The active profile contains invalid workspace references.")
+        }
+        guard activeProfile.activeWorkspaceID == snapshot.activeWorkspaceID else {
+            throw WorkspacePersistenceError.invalidSnapshot("The active profile and snapshot must reference the same active workspace.")
         }
 
         for workspace in snapshot.workspaces {
