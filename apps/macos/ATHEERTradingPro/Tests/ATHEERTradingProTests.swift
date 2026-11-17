@@ -58,6 +58,23 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testWorkspaceEngineRecoversFromInvalidPanelOrdering() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.workspaces[0].panels[0].order = -1
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("Panel order values"))
+        } else {
+            XCTFail("Invalid panel ordering should recover to the default workspace.")
+        }
+    }
+
+    @MainActor
     func testWorkspaceEngineRejectsUnsupportedSchemaAndUsesDefaults() {
         let persistence = InMemoryWorkspacePersistence()
         var invalid = WorkspaceSnapshot.standard()
