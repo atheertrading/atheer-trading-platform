@@ -68,3 +68,17 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-012 | 2026-11-16 | Backend health vertical slice | Merged PR #8 Xcode configuration; inspected the current app shell and prior local qualification report; implemented a loopback-only Node 24/TypeScript health/readiness service with fail-closed readiness and six tests. | API_HEALTH_CONTRACT; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; EDL-007 |
+
+
+## ATP-2026-11-17-002 — GitHub workflow revalidation and continuation
+
+- **Date:** 2026-11-17
+- **Objective:** Revalidate the current repository and open PR inventory, document the owner's engineering continuation directive, and establish disciplined commit/PR traceability.
+- **Sources inspected:** Root `AGENTS.md`, task register, project continuity, conversation index, implementation status, engineering decision log, main-branch file availability, branch inventory, and GitHub open-PR search.
+- **Verified findings:** Canonical repository is `atheertrading/atheer-trading-platform`; `WORK.md` is absent from main and is proposed by open PR #20. Open PR search returned #10, #12, #13, #17, #18, #20, #21, and #22. Exact current head/check revalidation remains required before integration.
+- **Architecture/workflow notes:** Preserve #10 → #17 → #18 → #22 dependency chain; reconcile shared navigation documentation in #13/#21; #18/#22 are a limited Workspace foundation, not the complete workstation. See the session report for detailed findings and limitations.
+- **Changes:** Added `docs/engineering/SESSION_2026-11-17_002_GITHUB_WORKFLOW_REVALIDATION.md`.
+- **Branch:** `docs/engineering-session-2026-11-17-workflow-tracking`.
+- **Commit:** `63298d6ee1b7b4d6b961e11160a8a5324c9a84cf`.
+- **Verification:** GitHub Contents API confirmed the session file commit. Documentation-only; no local build, XCTest, runtime, visual, or broker tests were run.
+- **Next:** Re-fetch exact PR heads and CI; reconcile documentation overlap/dependencies; proceed to bounded Workspace implementation.
