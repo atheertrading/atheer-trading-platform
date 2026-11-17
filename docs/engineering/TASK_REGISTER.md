@@ -313,3 +313,20 @@ The initial Intel macOS job for PR #34 reached Debug compilation and failed beca
 ## PR chain consolidation — 2026-11-17
 
 PR #33 now consolidates the original Market Explorer and search-lifecycle hardening directly on PR #26, including the Swift 5.8 MainActor dependency-construction fix. PR #31 is closed as superseded. PR #37 is the replacement Capital.com DEMO streaming backend, based directly on corrected PR #33 head 3b609eb259f8961d1e4c1b350a7e8edce1cf1ef1 (16 ahead / 0 behind). Exact-head verification is pending.
+
+## ATP-MKT-005 — Historical Market Data Contracts — 2026-11-17
+
+**Status:** Implemented on focused branch; exact-head CI pending.
+
+- Added provider-neutral historical candle normalization in `services/api/src/market-data/historical-prices.ts`.
+- Bid and Ask OHLC are represented independently; UTC provider timestamp and local receipt timestamp remain distinct.
+- Preserved optional `lastTradedVolume` as provider lineage without assigning unsupported volume semantics.
+- Exact duplicate candles are counted/dropped; conflicting duplicate timestamps are rejected.
+- Observed time gaps are reported but remain unclassified until an authoritative market-session calendar is available.
+- Extended DEMO history requests with paired UTC `from/to` bounds and provider `max` limit 1–1000.
+- Updated `GET /market-data/history` to return normalized candles and validation/quality metadata.
+- Added normalization, provider request, and API route tests.
+- Documentation: `ATHEER_HISTORICAL_MARKET_DATA_ARCHITECTURE.md`, Mermaid diagram 10, session report 025.
+- Persistence is not implemented in this work package. PostgreSQL remains the recorded direction, with deployment/workload qualification pending.
+- No live provider test, Charting integration, market calendar, or durable storage is claimed.
+- Safety: DEMO read-only; `CAP_ALLOW_TRADING=false` unchanged; no order/dealing or RiskEngine/OMS integration.
