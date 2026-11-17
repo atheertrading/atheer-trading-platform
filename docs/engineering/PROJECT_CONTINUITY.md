@@ -507,3 +507,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Session report: docs/engineering/SESSION_2026-11-17_021_MARKET_EXPLORER_IMPLEMENTATION.md.
 - PR #31 is OPEN / DRAFT, based on PR #26 exact head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f; feature head at PR creation was 94766cfe98ff3238e3c42d0560335d45395df163.
 - Initial exact-head CI #44159176929: Repository Hygiene and Backend Toolchain passed; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44159176655 passed. These results apply only to that recorded SHA.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+- Created `fix/market-explorer-search-lifecycle` from PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; parent PR #31 and its branch were not modified.
+- Hardened the existing Market Explorer search lifecycle: monotonically increasing request generations suppress stale/out-of-order search results; query edits invalidate prior searches and clear obsolete results; status refresh generations suppress stale status responses; non-connected status invalidates in-flight search.
+- Aligned search-button eligibility with the 1–100 character request contract and added an accessible query-length counter.
+- Added deterministic XCTest source coverage for overlong query rejection and out-of-order response suppression.
+- Session report: `SESSION_2026-11-17_022_MARKET_EXPLORER_SEARCH_LIFECYCLE.md`.
+- Implementation is committed on the new focused branch. CI, local Xcode, owner-Mac runtime, visual, keyboard/focus, and VoiceOver verification are pending; no test pass is claimed.
+- Market Explorer remains read-only DEMO instrument metadata search. No live quotes, streaming, candles, charts, order/dealing operations, account values, positions, or fills were added. Native Keychain and backend DEMO session remain separate.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No RiskEngine/OMS/Execution Gateway, broker permission, credential, LIVE, or production behavior changed.
