@@ -196,6 +196,69 @@ final class WorkspaceEngine: ObservableObject {
         }
     }
 
+    /// Panels are returned in persisted visual order, including hidden panels.
+    var orderedPanels: [WorkspacePanelConfiguration] {
+        activeWorkspace.panels.sorted { $0.order < $1.order }
+    }
+
+    /// Moves an existing panel to a zero-based position and normalizes all order values.
+    @discardableResult
+    func movePanel(_ panelID: WorkspacePanelID, to targetIndex: Int) -> Bool {
+        var panels = orderedPanels
+        guard let sourceIndex = panels.firstIndex(where: { $0.panelID == panelID }),
+              !panels.isEmpty else { return false }
+
+        let destination = min(max(0, targetIndex), panels.count - 1)
+        guard sourceIndex != destination else { return true }
+
+        let movingPanel = panels.remove(at: sourceIndex)
+        panels.insert(movingPanel, at: destination)
+        updateActiveWorkspace { workspace in
+            workspace.panels = panels.enumerated().map { index, configuration in
+                var updated = configuration
+                updated.order = index
+                return updated
+            }
+        }
+        return recoveryState == .clean
+    }
+
+    /// Adds a panel from the supported panel catalogue. Existing identities are left unchanged.
+    @discardableResult
+    func addPanel(_ panelID: WorkspacePanelID) -> Bool {
+        guard !activeWorkspace.panels.contains(where: { $0.panelID == panelID }) else { return false }
+        updateActiveWorkspace { workspace in
+            let nextOrder = (workspace.panels.map(\\.order).max() ?? -1) + 1
+            workspace.panels.append(
+                WorkspacePanelConfiguration(panelID: panelID, isVisible: true, order: nextOrder)
+            )
+        }
+        return recoveryState == .clean
+    }
+
+    /// Removes a panel configuration from the active workspace without affecting other workspaces.
+    @discardableResult
+    func removePanel(_ panelID: WorkspacePanelID) -> Bool {
+        guard activeWorkspace.panels.contains(where: { $0.panelID == panelID }) else { return false }
+        updateActiveWorkspace { workspace in
+            workspace.panels.removeAll { $0.panelID == panelID }
+            workspace.panels.sort { $0.order < $1.order }
+            for index in workspace.panels.indices {
+                workspace.panels[index].order = index
+            }
+        }
+        return recoveryState == .clean
+    }
+
+    /// Resizes the Command Center sidebar while enforcing the engine's supported width range.
+    @discardableResult
+    func resizeSidebar(to proposedWidth: Double) -> Bool {
+        guard proposedWidth.isFinite else { return false }
+        var layout = activeWorkspace.layout
+        layout.sidebarWidth = min(max(proposedWidth, 220), 640)
+        return updateActiveLayout(layout)
+    }
+
     func selectWorkspace(_ workspaceID: UUID) {
         guard snapshot.workspaces.contains(where: { $0.id == workspaceID }) else { return }
         var updatedSnapshot = snapshot
