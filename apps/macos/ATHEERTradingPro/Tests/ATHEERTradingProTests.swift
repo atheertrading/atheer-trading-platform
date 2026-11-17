@@ -380,6 +380,30 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .live), live)
     }
 
+    func testBrokerCredentialStoreSeparatesAccountsWithinTheSameEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let first = BrokerCredential(apiKey: "first-key", identifier: "first-login@example.invalid", password: "first-password")
+        let second = BrokerCredential(apiKey: "second-key", identifier: "second-login@example.invalid", password: "second-password")
+
+        try store.save(first, brokerID: "capital.com", environment: .demo)
+        try store.save(second, brokerID: "capital.com", environment: .demo)
+
+        XCTAssertEqual(
+            try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid"),
+            first
+        )
+        XCTAssertEqual(
+            try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "second-login@example.invalid"),
+            second
+        )
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), second)
+
+        try store.delete(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid")
+        XCTAssertNil(try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid"))
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), second)
+    }
+
     func testBrokerCredentialStoreRejectsIncompleteCredentials() {
         let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
         let invalid = BrokerCredential(apiKey: "", identifier: "demo-user", password: "secret")

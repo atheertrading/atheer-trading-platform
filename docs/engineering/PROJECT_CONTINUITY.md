@@ -457,3 +457,16 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Exact-head CI must be revalidated after every subsequent commit. The previous hosted backend pass on f5a388dbe5b91df7b4cad086ba3504ed7e928bf3 does not qualify later source changes.
 - Next: complete exact-head CI, resolve official DEMO WebSocket endpoint, implement stream lifecycle/recovery, then bind Market Watch/Charting only to validated provider data.
 - LIVE endpoints, dealing methods, order routes, and trading permissions remain absent; CAP_ALLOW_TRADING=false is unchanged.
+
+
+## ATP-BROKER-001 — Broker Management and Capital.com DEMO credential/authentication slice (2026-11-17)
+
+- Owner directive: implement functional broker management in the existing native macOS app, reachable through Settings → Brokers, with secure local credential entry, Keychain persistence, actual Capital.com DEMO authentication, and no LIVE or dealing capability.
+- Created feature branch `feat/broker-management-keychain-demo` from PR #25 head `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`. PR #26 is Draft and targets PR #25's feature branch to preserve the dependency chain.
+- PR #26 source adds Settings navigation, a Capital.com management workspace, broker credential and authentication abstractions, Keychain storage, account/environment credential isolation, DEMO REST session creation/verification/termination, and periodic session verification while the Brokers view is active.
+- Capital.com contract verified against the official API documentation: POST /session requires X-CAP-API-KEY, identifier, password, and encryptedPassword=false for the selected flow; CST and X-SECURITY-TOKEN are response headers; GET /session provides account/session context; DELETE /session ends the session.
+- The app does not call order, position-dealing, account-mutation, or LIVE endpoints. Market streaming is shown independently and remains disconnected. Trading remains disabled and centralized execution/risk governance is unchanged.
+- EDL-010 records the owner-directed local macOS Keychain/native authentication boundary. The existing backend-owned credential policy remains for remote clients and future multi-user services.
+- XCTest source includes Keychain store isolation/deletion and view-model state tests, plus URLProtocol-based tests for the official DEMO request contract, unauthorized response redaction, and LIVE rejection.
+- No owner credentials were supplied. No real Capital.com DEMO session is claimed. No Xcode build, XCTest execution, or owner-side runtime/Keychain restart QA is claimed until exact evidence is recorded.
+- PR #24 and PR #25 remain OPEN / DRAFT and their HEAD SHAs are unchanged. Phase A CI qualification remains a separate workstream.

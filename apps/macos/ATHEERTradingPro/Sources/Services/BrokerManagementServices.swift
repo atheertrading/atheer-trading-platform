@@ -87,9 +87,24 @@ enum BrokerCredentialStoreError: Error, LocalizedError {
 }
 
 protocol BrokerCredentialStore {
-    func load(brokerID: String, environment: BrokerEnvironment) throws -> BrokerCredential?
+    func load(brokerID: String, environment: BrokerEnvironment, accountIdentity: String?) throws -> BrokerCredential?
     func save(_ credential: BrokerCredential, brokerID: String, environment: BrokerEnvironment) throws
-    func delete(brokerID: String, environment: BrokerEnvironment) throws
+    func delete(brokerID: String, environment: BrokerEnvironment, accountIdentity: String?) throws
+}
+
+extension BrokerCredentialStore {
+    func load(brokerID: String, environment: BrokerEnvironment) throws -> BrokerCredential? {
+        try load(brokerID: brokerID, environment: environment, accountIdentity: nil)
+    }
+
+    func delete(brokerID: String, environment: BrokerEnvironment) throws {
+        try delete(brokerID: brokerID, environment: environment, accountIdentity: nil)
+    }
+}
+
+private struct StoredBrokerCredentials: Codable {
+    var activeAccountIdentity: String?
+    var credentialsByIdentity: [String: BrokerCredential]
 }
 
 protocol KeychainAccessing {
@@ -153,26 +168,73 @@ struct KeychainBrokerCredentialStore: BrokerCredentialStore {
         self.keychain = keychain
     }
 
-    func load(brokerID: String, environment: BrokerEnvironment) throws -> BrokerCredential? {
-        guard let data = try keychain.read(service: Self.service, account: key(brokerID, environment)) else {
+    func load(
+        brokerID: String,
+        environment: BrokerEnvironment,
+        accountIdentity: String? = nil
+    ) throws -> BrokerCredential? {
+        guard let collection = try loadCollection(brokerID: brokerID, environment: environment) else {
             return nil
         }
-        guard let credential = try? JSONDecoder().decode(BrokerCredential.self, from: data) else {
-            throw BrokerCredentialStoreError.encodingFailure
-        }
-        return credential
+        let identity = accountIdentity.map(normalizedIdentity) ?? collection.activeAccountIdentity
+        guard let identity else { return nil }
+        return collection.credentialsByIdentity[identity]
     }
 
     func save(_ credential: BrokerCredential, brokerID: String, environment: BrokerEnvironment) throws {
         guard credential.isValid else { throw BrokerCredentialStoreError.invalidCredential }
-        guard let data = try? JSONEncoder().encode(credential) else {
+        var collection = try loadCollection(brokerID: brokerID, environment: environment) ?? StoredBrokerCredentials(
+            activeAccountIdentity: nil,
+            credentialsByIdentity: [:]
+        )
+        let identity = normalizedIdentity(credential.identifier)
+        collection.credentialsByIdentity[identity] = credential
+        collection.activeAccountIdentity = identity
+        guard let data = try? JSONEncoder().encode(collection) else {
             throw BrokerCredentialStoreError.encodingFailure
         }
         try keychain.write(data, service: Self.service, account: key(brokerID, environment))
     }
 
-    func delete(brokerID: String, environment: BrokerEnvironment) throws {
-        try keychain.delete(service: Self.service, account: key(brokerID, environment))
+    func delete(
+        brokerID: String,
+        environment: BrokerEnvironment,
+        accountIdentity: String? = nil
+    ) throws {
+        guard let accountIdentity else {
+            try keychain.delete(service: Self.service, account: key(brokerID, environment))
+            return
+        }
+        guard var collection = try loadCollection(brokerID: brokerID, environment: environment) else {
+            return
+        }
+        let identity = normalizedIdentity(accountIdentity)
+        collection.credentialsByIdentity.removeValue(forKey: identity)
+        if collection.activeAccountIdentity == identity {
+            collection.activeAccountIdentity = collection.credentialsByIdentity.keys.sorted().first
+        }
+        if collection.credentialsByIdentity.isEmpty {
+            try keychain.delete(service: Self.service, account: key(brokerID, environment))
+        } else {
+            guard let data = try? JSONEncoder().encode(collection) else {
+                throw BrokerCredentialStoreError.encodingFailure
+            }
+            try keychain.write(data, service: Self.service, account: key(brokerID, environment))
+        }
+    }
+
+    private func loadCollection(brokerID: String, environment: BrokerEnvironment) throws -> StoredBrokerCredentials? {
+        guard let data = try keychain.read(service: Self.service, account: key(brokerID, environment)) else {
+            return nil
+        }
+        guard let collection = try? JSONDecoder().decode(StoredBrokerCredentials.self, from: data) else {
+            throw BrokerCredentialStoreError.encodingFailure
+        }
+        return collection
+    }
+
+    private func normalizedIdentity(_ identity: String) -> String {
+        identity.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     private func key(_ brokerID: String, _ environment: BrokerEnvironment) -> String {

@@ -260,3 +260,24 @@ The health client destination is fixed to loopback rather than accepting an arbi
 | LIVE trading / dealing | DISABLED / NOT IMPLEMENTED | No LIVE or dealing routes introduced |
 
 Mocked tests and compilation do not prove broker connectivity. Status must be upgraded only with exact-head CI and provider-side integration evidence.
+
+
+## ATP-BROKER-001 — Native Broker Management and Capital.com DEMO (2026-11-17)
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Settings → Brokers navigation | IMPLEMENTED IN SOURCE | PR #26, existing ContentView/AppSection/SettingsHomeView |
+| Capital.com broker workspace | IMPLEMENTED IN SOURCE | PR #26, explicit DEMO/auth/session/stream/trading states |
+| Credential entry/edit/clear | IMPLEMENTED IN SOURCE | SecureField, validation, confirmation-based clear |
+| Keychain credential storage | IMPLEMENTED IN SOURCE | KeychainBrokerCredentialStore; device-only accessibility; broker/environment/account-login isolation |
+| Capital.com DEMO authentication | IMPLEMENTED IN SOURCE | POST /session, CST/X-SECURITY-TOKEN memory-only, GET /session verification |
+| Session health monitoring | IMPLEMENTED IN SOURCE | Read-only GET /session every 60 seconds while Brokers screen is active |
+| Network/authentication contract tests | PRESENT IN SOURCE | CapitalComAuthenticationTests covers request contract, 401 redaction, and LIVE rejection |
+| Credential-store and view-model tests | PRESENT IN SOURCE | Persistence, account/environment isolation, deletion, invalid input, and connection-state coverage |
+| Hosted macOS Debug/XCTest/Release | PENDING | Exact-head PR #26 CI required |
+| Local macOS build/runtime/Keychain restart QA | PENDING | Owner Mac verification required |
+| Real Capital.com DEMO authentication | NOT VERIFIED | No owner credentials supplied; no provider session claimed |
+| Market-data WebSocket streaming | NOT IMPLEMENTED BY THIS FEATURE | REST authentication and streaming remain separate |
+| LIVE dealing / trading | DISABLED | No dealing methods; risk and execution controls unchanged |
+
+PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25. Do not mark ATP-BROKER-001 complete until exact-head macOS CI, owner-side runtime/Keychain verification, and real DEMO authentication evidence are available.

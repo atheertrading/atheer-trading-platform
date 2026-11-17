@@ -49,3 +49,12 @@ Verified lifecycle:
 - Automated tests and Xcode builds have not yet been executed by this GitHub-only implementation session.
 - Live Capital.com DEMO authentication has not been performed; no owner credentials were supplied.
 - Phase A CI qualification remains separate and blocked as previously recorded.
+
+## Additional account isolation and authentication tests
+
+- Credential collections are stored in one Keychain item per broker/environment and keyed internally by normalized account login identity. The most recently saved identity is selected by default; account-specific load/delete operations preserve other stored identities.
+- Added URLProtocol-based authentication tests:
+  - `testDemoAuthenticationUsesOfficialRequestContractAndVerifiesSession`
+  - `testDemoAuthenticationMapsUnauthorizedResponseWithoutExposingSecrets`
+  - `testLiveEnvironmentIsRejectedBeforeNetworkAccess`
+- Authentication requests use an ephemeral URLSession with URL caching and cookie persistence disabled, plus Cache-Control: no-store.
