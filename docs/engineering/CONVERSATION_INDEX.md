@@ -81,3 +81,21 @@ For each new substantial session, add one row and preserve chronology. The detai
 - **Verification:** Documentation diff and exact-head CI pending; no application tests applicable to this documentation-only scope.
 - **PR:** [#19 — Continuous Engineering Operating Directive](https://github.com/atheertrading/atheer-trading-platform/pull/19), base `docs/atp-ui-ux-chatgpt-directive`; head at creation `ff1a3df9e25f84844950fa51fcaf71fc8272f798`.
 - **Next action:** Review the complete PR diff and inspect CI on the latest exact PR head.
+
+
+### ATP-2026-11-17-002 — Sequential engineering work queue
+
+- **Objective:** Implement the owner-approved sequential execution queue in GitHub.
+- **Outcome:** Added root `WORK.md`, linked it from `AGENTS.md`, registered the queue in `TASK_REGISTER.md`, and recorded the checkpoint in `PROJECT_CONTINUITY.md`.
+- **Review:** PR #20 diff inspected (five files); PR #19 confirmed merged into its base. Review corrected WORK-001 to target PR #20. Exact-head CI was queued on the previously inspected SHA; a new exact-head run is required after the correction commits.
+- **Next:** Revalidate latest PR #20 head/checks and finish WORK-001 without merging before required checks pass.
+
+
+### ATP-2026-11-17-003 — Local Mac execution handoff
+
+- **Owner instruction:** Whenever a task requires the owner's local Mac, provide ready-to-run Terminal commands.
+- **Owner-provided source path:** `/Users/enghossamalfahad/Developer/AtheerTradingPlatform/apps/macos/ATHEERTradingPro/Sources`.
+- **Repository changes:** Added `docs/development/LOCAL_MAC_EXECUTION_HANDOFF.md` and linked it from root `AGENTS.md` on `docs/continuous-engineering-operating-directive`.
+- **Operating requirements:** Verify the path and Git root; inspect branch and dirty worktree before changes; use staged commands and checkpoints; preserve local work; distinguish hosted CI from local build, tests, runtime, and visual evidence; never claim local execution without returned output or direct evidence.
+- **Verification:** Documentation commits created; exact-head CI and PR #20 review must be revalidated after these changes. No local Mac command has been executed by ChatGPT.
+- **Next:** Re-fetch PR #20 metadata and changed files, then inspect exact-head Actions results before any merge decision.

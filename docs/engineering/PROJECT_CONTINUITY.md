@@ -272,3 +272,27 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - This branch is documentation-only. No application source, tests, trading configuration, broker permissions, credentials, risk limits, or production settings are changed.
 - **Current checkpoint:** PR #19 is open against `docs/atp-ui-ux-chatgpt-directive`; head at PR creation was `ff1a3df9e25f84844950fa51fcaf71fc8272f798`. The PR contains seven documentation files and is not merged.
 - **Next action:** review the complete PR diff and inspect CI on the latest exact PR head. Do not claim merge or qualification before GitHub confirms them.
+
+
+## 2026-11-17 — Sequential work queue established
+
+- Owner approved implementation of the sequential GitHub work queue discussed in the engineering session.
+- Added root `WORK.md` (ATP-WORK-001) on `docs/continuous-engineering-operating-directive`; linked it from root `AGENTS.md` and registered the queue in `docs/engineering/TASK_REGISTER.md`.
+- Opened PR #20 against `docs/atp-ui-ux-chatgpt-directive` to preserve the existing documentation dependency. PR #20 is open; initial head was `0766cf0d345b51b87034c15449765b9a621455f2`; the queue and continuity updates subsequently expanded the PR to five files. The latest WORK.md correction is commit `aec4ad619a3e7e4126f697d473e21a42098f0d64`; re-fetch PR metadata for the final head.
+- PR #19 was found closed. The queue changes were therefore proposed in a new focused PR rather than reopening or altering the closed PR.
+- PR #19 is confirmed merged into the PR #20 base branch at `d1db130406f0d0b31a7b3f12980d9056083acda6`.
+- PR #20 complete diff was inspected: five files, no submitted reviews or inline threads. At exact head `c4c0bf2725f9a58ce77cf760934289db86b0a92f`, Local Sync Safety passed and CI was queued; no combined commit status entries were returned.
+- Review found WORK-001 incorrectly described PR #19 as the active change. Corrected WORK-001 to qualify PR #20 and record PR #19 as its merged prerequisite; correction commit `aec4ad619a3e7e4126f697d473e21a42098f0d64` is on the PR branch.
+- Documentation lint and application tests are not claimed. Revalidate exact-head checks after the correction; do not merge while required checks are pending.
+- **Next action:** inspect PR #20's updated head, diff, and checks; finish WORK-001 only after exact-head verification.
+
+
+## 2026-11-17 — Owner-directed local Mac execution handoff
+
+- Owner instructed that whenever work requires execution on the local Mac, ChatGPT must provide ready-to-run Terminal commands rather than implying direct local-machine access.
+- Owner supplied the macOS application source directory: `/Users/enghossamalfahad/Developer/AtheerTradingPlatform/apps/macos/ATHEERTradingPro/Sources`.
+- Added `docs/development/LOCAL_MAC_EXECUTION_HANDOFF.md` and linked it from root `AGENTS.md`.
+- The procedure requires staged copy/paste-ready commands, read-only preflight checks, repository-root and worktree verification, preservation of uncommitted changes, separation of GitHub/hosted CI/local build/runtime evidence, and reporting only results supported by returned output or direct evidence.
+- The supplied path is a source directory, not presumed to be the repository root; its existence and current repository identity must be verified before local operations.
+- This is an owner-directed operating instruction. It does not authorize destructive synchronization, credential/signing access, LIVE trading, risk-policy changes, or production deployment.
+- **Current documentation branch:** `docs/continuous-engineering-operating-directive`; latest handoff commit: `46362634a1515877d4d596d4e2febb7a5d9fdd90` (AGENTS link; preceding document commit `137f0b67c826bda35228ca43fe9102f1030a8bd6`). PR #20 must be revalidated at its new exact head; no merge or CI result is inferred from these commits.
