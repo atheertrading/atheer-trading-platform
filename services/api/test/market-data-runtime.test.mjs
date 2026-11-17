@@ -31,16 +31,15 @@ function createMockClient() {
     },
     async getPriceHistory(session, epic, resolution, max, from, to) {
       calls.push(["history", session, epic, resolution, max, from, to]);
-      return {
-        prices: [{
-          snapshotTimeUTC: "2026-11-17T10:00:00",
-          openPrice: { bid: 100, ask: 100.2 },
-          highPrice: { bid: 103, ask: 103.2 },
-          lowPrice: { bid: 99, ask: 99.2 },
-          closePrice: { bid: 102, ask: 102.2 },
-          lastTradedVolume: 18,
-        }],
+      const candle = {
+        snapshotTimeUTC: "2026-11-17T10:00:00",
+        openPrice: { bid: 100, ask: 100.2 },
+        highPrice: { bid: 103, ask: 103.2 },
+        lowPrice: { bid: 99, ask: 99.2 },
+        closePrice: { bid: 102, ask: 102.2 },
+        lastTradedVolume: 18,
       };
+      return { prices: epic === "AAPL-DUPLICATE" ? [candle, { ...candle }] : [candle] };
     },
     async ping(session) {
       calls.push(["ping", session]);
@@ -155,6 +154,15 @@ test("loopback market-data routes connect and return DEMO market results only", 
   assert.deepEqual(serverClient.calls.filter((call) => call[0] === "history")[0].slice(2), [
     "AAPL", "MINUTE", 10, from, to,
   ]);
+
+  const duplicateResponse = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL-DUPLICATE&resolution=MINUTE&max=2",
+  );
+  const duplicateHistory = await duplicateResponse.json();
+  assert.equal(duplicateResponse.status, 200);
+  assert.equal(duplicateHistory.candles.length, 1);
+  assert.equal(duplicateHistory.quality.duplicateCount, 1);
+  assert.equal(duplicateHistory.pagination.limitReached, true);
 
   const disconnect = await fetch(baseUrl + "/market-data/disconnect", { method: "POST" });
   assert.equal(disconnect.status, 200);
