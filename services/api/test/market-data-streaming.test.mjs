@@ -218,13 +218,10 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   assert.match(body, /"instrumentId":"AAPL"/);
 
   controller.abort();
-  await reader.cancel().catch(() => undefined);
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  assert.equal(released, true);
-
   const serverClosed = new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server.closeAllConnections();
   await serverClosed;
+  assert.equal(released, true);
 });
 
 test("local SSE endpoint rejects more than forty instrument epics", async () => {
