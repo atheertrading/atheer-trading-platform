@@ -124,7 +124,16 @@ export async function runSqlMigrations(pool: SqlPool, directory?: string): Promi
   await applySqlMigrations(pool, await loadSqlMigrations(directory));
 }
 
-export class PostgresTradingRepository {
+export interface TradingPersistenceRepository {
+  registerInstrument(instrument: InstrumentIdentity, specification: InstrumentSpecification): Promise<void>;
+  registerBrokerAccount(account: BrokerAccountIdentity): Promise<void>;
+  recordAccountSnapshot(account: BrokerAccountIdentity, snapshot: AccountBalanceSnapshot): Promise<void>;
+  persistIntentAndRiskAssessment(intent: OrderIntentEnvelope, assessment: RiskAssessment): Promise<PersistIntentResult>;
+  recordReconciliationEvent(event: ReconciliationEvent): Promise<void>;
+  recordAuditEvent(event: AuditEvent): Promise<void>;
+}
+
+export class PostgresTradingRepository implements TradingPersistenceRepository {
   constructor(private readonly pool: SqlPool, private readonly environment: TradingEnvironment) {}
 
   private assertEnvironment(value: TradingEnvironment): void {
