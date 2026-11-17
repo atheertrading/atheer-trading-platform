@@ -54,3 +54,12 @@ Harden the existing Market Explorer search workflow without adding a new screen 
 PR #24 → PR #25 → PR #26 → PR #31 → ATP-MKT-002.
 
 All parent PRs remain open and unmerged at this report's creation. No parent branch or SHA was changed.
+
+
+## Pull request and first hosted CI dispatch
+
+- PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT).
+- PR #33 exact head: `a0d6164dbed794cb2d83f211146412bab7a0787f`; base PR #31 exact head: `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; comparison is 9 commits ahead / 0 behind.
+- CI run #44170652406 on the exact PR #33 head: Repository Hygiene **passed**; Backend Toolchain **in progress**; Intel macOS and Apple Silicon macOS jobs **queued**.
+- Local Sync Safety run #44170652465 on the same exact head: **passed**.
+- These are dispatch-time results only. No macOS compile/XCTest/Release/CodeQL result is claimed.
