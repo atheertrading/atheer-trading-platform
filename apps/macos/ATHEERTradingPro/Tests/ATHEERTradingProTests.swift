@@ -346,6 +346,95 @@ final class ATHEERTradingProTests: XCTestCase {
 
         XCTAssertEqual(model.state, .serverError(502))
     }
+
+    func testBrokerCredentialStorePersistsAndRetrievesCredentials() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let credential = BrokerCredential(apiKey: "api-key-value", identifier: "demo-login", password: "secret")
+        try store.save(credential, brokerID: "capital.com", environment: .demo)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), credential)
+        XCTAssertEqual(keychain.itemCount, 1)
+    }
+
+    func testBrokerCredentialStoreIsolatesBrokerAndEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let demo = BrokerCredential(apiKey: "demo-key", identifier: "demo-user", password: "demo-password")
+        let live = BrokerCredential(apiKey: "live-key", identifier: "live-user", password: "live-password")
+        try store.save(demo, brokerID: "capital.com", environment: .demo)
+        try store.save(live, brokerID: "capital.com", environment: .live)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), demo)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .live), live)
+        XCTAssertEqual(keychain.itemCount, 2)
+    }
+
+    func testBrokerCredentialStoreDeletesOnlySelectedEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let demo = BrokerCredential(apiKey: "demo-key", identifier: "demo-user", password: "demo-password")
+        let live = BrokerCredential(apiKey: "live-key", identifier: "live-user", password: "live-password")
+        try store.save(demo, brokerID: "capital.com", environment: .demo)
+        try store.save(live, brokerID: "capital.com", environment: .live)
+        try store.delete(brokerID: "capital.com", environment: .demo)
+        XCTAssertNil(try store.load(brokerID: "capital.com", environment: .demo))
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .live), live)
+    }
+
+    func testBrokerCredentialStoreRejectsIncompleteCredentials() {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let invalid = BrokerCredential(apiKey: "", identifier: "demo-user", password: "secret")
+        XCTAssertThrowsError(try store.save(invalid, brokerID: "capital.com", environment: .demo))
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelDoesNotReportConnectedBeforeAuthentication() throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .failure(BrokerAuthenticationError.invalidCredentials))
+        )
+        XCTAssertEqual(model.state, .notConfigured)
+        try model.saveCredentials(BrokerCredential(apiKey: "key", identifier: "login", password: "password"))
+        XCTAssertEqual(model.state, .credentialsSaved)
+        XCTAssertNotEqual(model.state, .connected)
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelReportsAuthenticationFailure() async throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        try store.save(
+            BrokerCredential(apiKey: "key", identifier: "login", password: "password"),
+            brokerID: "capital.com",
+            environment: .demo
+        )
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .failure(BrokerAuthenticationError.invalidCredentials))
+        )
+        await model.testConnection()
+        XCTAssertEqual(model.state, .authenticationFailed(BrokerAuthenticationError.invalidCredentials.localizedDescription))
+        XCTAssertNil(model.account)
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelPublishesAccountOnlyAfterAuthentication() async throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        try store.save(
+            BrokerCredential(apiKey: "key", identifier: "login", password: "password"),
+            brokerID: "capital.com",
+            environment: .demo
+        )
+        let account = BrokerAccountSnapshot(accountIdentifier: "DEMO-ACCOUNT-123", currencyCode: "USD", authenticatedAt: Date())
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .success(account))
+        )
+        await model.testConnection()
+        XCTAssertEqual(model.state, .connected)
+        XCTAssertEqual(model.account, account)
+        XCTAssertEqual(model.lastSuccessfulConnection, account.authenticatedAt)
+    }
+
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {

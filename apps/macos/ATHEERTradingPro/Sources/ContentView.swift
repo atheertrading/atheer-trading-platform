@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
+    @StateObject private var brokerManagementModel = BrokerManagementViewModel()
+    @State private var showingBrokers = false
 
     var body: some View {
         NavigationSplitView {
@@ -29,6 +31,10 @@ struct ContentView: View {
                         Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
                             .tag(AppSection.apiConnection)
                     }
+                    Section("PREFERENCES") {
+                        Label(AppSection.settings.title, systemImage: AppSection.settings.systemImage)
+                            .tag(AppSection.settings)
+                    }
                 }
                 .listStyle(.sidebar)
             }
@@ -44,6 +50,12 @@ struct ContentView: View {
                     )
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
+                case .settings:
+                    SettingsHomeView(onOpenBrokers: { showingBrokers = true })
+                        .sheet(isPresented: $showingBrokers) {
+                            BrokerManagementView(model: brokerManagementModel)
+                                .frame(minWidth: 760, minHeight: 560)
+                        }
                 }
             }
             .frame(minWidth: 620, minHeight: 520)

@@ -195,3 +195,17 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 | ATP-MD-001F | P1 | Bind Charting Engine to validated provider candles | BLOCKED | Requires streaming/candle contracts and provider integration evidence |
 
 PR #25 is stacked on PR #24 to preserve the existing Command Center and Workspace. No synthetic market data or dealing capability is permitted.
+
+
+## Broker Management and Capital.com DEMO Authentication — 2026-11-17
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-BROKER-001A | P0 | Add Settings → Brokers native navigation and broker-management screen | IN PROGRESS | Feature branch `feat/broker-management-keychain-demo`; runtime verification pending |
+| ATP-BROKER-001B | P0 | Add Keychain-backed broker/environment credential storage | IN PROGRESS | Keychain implementation and deterministic storage tests added; macOS execution pending |
+| ATP-BROKER-001C | P0 | Add Capital.com DEMO REST authentication and session verification | IN PROGRESS | POST /session + GET /session implemented from official contract; no owner credentials or live DEMO result |
+| ATP-BROKER-001D | P1 | Add session expiry monitoring and safe re-authentication | PENDING | Requires explicit session health/lifecycle implementation and tests |
+| ATP-BROKER-001E | P1 | Complete credential deletion, failure, cancellation, and persistence qualification | IN PROGRESS | Source paths and tests added; Xcode execution pending |
+| ATP-BROKER-001F | P1 | Perform real Capital.com DEMO authentication and capture sanitized evidence | BLOCKED | Requires owner-provided DEMO credentials through local Keychain only |
+
+The implementation branch is stacked on PR #25 head to retain the existing app and DEMO provider baseline. PR #24 and PR #25 source branches and HEADs are not modified. LIVE remains blocked; market streaming and trading remain separate and disabled.
