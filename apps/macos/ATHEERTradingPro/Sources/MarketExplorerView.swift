@@ -69,7 +69,11 @@ struct MarketExplorerView: View {
                 .disabled(model.state == .searching)
             }
 
-            HStack(spacing: 18) {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 112), alignment: .leading)],
+                alignment: .leading,
+                spacing: 14
+            ) {
                 statusMetric(
                     title: "PROVIDER",
                     value: model.backendStatus?.provider.uppercased() ?? "UNAVAILABLE"
@@ -96,7 +100,6 @@ struct MarketExplorerView: View {
                     value: "DISABLED",
                     tint: .secondary
                 )
-                Spacer(minLength: 0)
             }
 
             if model.backendStatus?.state != .connected {
@@ -205,8 +208,8 @@ struct MarketExplorerView: View {
             case .results:
                 VStack(spacing: 0) {
                     resultHeader
-                    ForEach(Array(model.results.enumerated()), id: \.element.id) { index, instrument in
-                        instrumentRow(instrument)
+                    ForEach(model.results.indices, id: \.self) { index in
+                        instrumentRow(model.results[index])
                         if index < model.results.count - 1 {
                             Divider().overlay(ATHEERDesignTokens.ColorRole.separator)
                         }
@@ -316,7 +319,7 @@ struct MarketExplorerView: View {
                 .foregroundColor(tint)
                 .lineLimit(1)
         }
-        .fixedSize(horizontal: true, vertical: false)
+        .frame(maxWidth: 150, alignment: .leading)
     }
 
     private func emptyState(title: String, message: String, symbol: String) -> some View {
