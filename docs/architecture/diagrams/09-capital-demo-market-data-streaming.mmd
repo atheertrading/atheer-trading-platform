@@ -28,14 +28,13 @@ flowchart LR
     STREAM --> STATUS
   end
 
-  subgraph Consumers["Native macOS application — follow-up integration"]
-    CLIENT["URLSession stream consumer"]
-    STORE["MarketDataStore / instrument state"]
-    VIEW["Existing Market Explorer"]
+  subgraph Consumers["Native macOS application — existing screen integration"]
+    CLIENT["URLSessionMarketDataStreamClient"]
+    MODEL["MarketExplorerViewModel — selected epics + quote state"]
+    VIEW["Existing Market Explorer — explicit select / start / stop; timestamped Bid / Ask"]
     CHART["Future Charting data adapter"]
-    SSE --> CLIENT --> STORE
-    STORE --> VIEW
-    STORE -. "later vertical slice" .-> CHART
+    SSE --> CLIENT --> MODEL --> VIEW
+    MODEL -. "later vertical slice" .-> CHART
   end
 
   RISK["RiskEngine quote-freshness authorization — not wired by this increment"]
