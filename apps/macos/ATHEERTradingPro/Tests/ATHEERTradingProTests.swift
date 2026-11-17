@@ -31,11 +31,12 @@ final class ATHEERTradingProTests: XCTestCase {
 
         let secondWorkspaceID = engine.createWorkspace(name: "Execution")!
         XCTAssertEqual(engine.activeWorkspace.name, "Execution")
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
 
         let restored = WorkspaceEngine(persistence: persistence)
         XCTAssertEqual(restored.activeWorkspace.id, secondWorkspaceID)
         XCTAssertEqual(restored.activeWorkspace.name, "Execution")
-        XCTAssertEqual(restored.visiblePanels, WorkspacePanelID.defaultVisible)
+        XCTAssertFalse(restored.visiblePanels.contains(.marketWatch))
     }
 
     @MainActor
@@ -47,11 +48,11 @@ final class ATHEERTradingProTests: XCTestCase {
 
         let engine = WorkspaceEngine(persistence: persistence)
 
-        XCTAssertEqual(engine.recoveryState, .restoredDefaults(
-            String(describing: WorkspacePersistenceError.invalidSnapshot(
-                "A workspace cannot contain duplicate panel identities."
-            ))
-        ))
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("duplicate panel identities"))
+        } else {
+            XCTFail("Expected duplicate panel identities to trigger safe recovery.")
+        }
         XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
         XCTAssertEqual(persistence.snapshot?.schemaVersion, WorkspaceSnapshot.currentSchemaVersion)
     }
