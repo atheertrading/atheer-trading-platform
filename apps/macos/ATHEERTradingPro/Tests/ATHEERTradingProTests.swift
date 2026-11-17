@@ -411,7 +411,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
-    func testBrokerManagementViewModelDoesNotReportConnectedBeforeAuthentication() throws {
+    func testBrokerManagementViewModelDoesNotReportConnectedBeforeAuthentication() async throws {
         let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
         let model = BrokerManagementViewModel(
             credentialStore: store,
