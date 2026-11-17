@@ -5,8 +5,8 @@ import { createApiServer } from "../dist/server.js";
 
 class FakeWebSocket {
   readyState = 0;
-  readonly sent = [];
-  readonly listeners = new Map();
+  sent = [];
+  listeners = new Map();
 
   constructor(url) {
     this.url = url;
