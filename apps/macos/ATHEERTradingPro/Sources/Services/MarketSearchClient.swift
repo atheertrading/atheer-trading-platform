@@ -175,30 +175,50 @@ final class MarketExplorerViewModel: ObservableObject {
     @Published private(set) var backendStatus: MarketDataBackendStatus?
     @Published private(set) var results: [MarketSearchInstrument] = []
     @Published private(set) var state: MarketExplorerViewState = .idle
-    @Published var searchTerm = ""
+    @Published var searchTerm = "" {
+        didSet {
+            guard oldValue != searchTerm else { return }
+            searchGeneration &+= 1
+            if state == .searching {
+                state = .idle
+            }
+        }
+    }
 
     private let client: MarketSearchClient
+    private var searchGeneration: UInt64 = 0
+    private var statusRefreshGeneration: UInt64 = 0
 
     init(client: MarketSearchClient = URLSessionMarketSearchClient()) {
         self.client = client
     }
 
     var canSearch: Bool {
-        backendStatus?.state == .connected &&
-        !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        state != .searching
+        let query = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
+        return backendStatus?.state == .connected &&
+            !query.isEmpty &&
+            query.count <= 100 &&
+            state != .searching
     }
 
     func refreshBackendStatus() async {
+        statusRefreshGeneration &+= 1
+        let requestGeneration = statusRefreshGeneration
+
         do {
             let status = try await client.fetchBackendStatus()
+            guard requestGeneration == statusRefreshGeneration else { return }
+
             backendStatus = status
             if status.state != .connected {
+                searchGeneration &+= 1
                 state = .unavailable(statusMessage(for: status.state))
-            } else if results.isEmpty {
+            } else if results.isEmpty && state != .searching {
                 state = .idle
             }
         } catch {
+            guard requestGeneration == statusRefreshGeneration else { return }
+            searchGeneration &+= 1
             backendStatus = nil
             state = .unavailable(error.localizedDescription)
         }
@@ -215,17 +235,27 @@ final class MarketExplorerViewModel: ObservableObject {
             return
         }
 
+        searchGeneration &+= 1
+        let requestGeneration = searchGeneration
         state = .searching
+
         do {
-            results = try await client.searchMarkets(query)
+            let fetchedResults = try await client.searchMarkets(query)
+            guard requestGeneration == searchGeneration else { return }
+
+            results = fetchedResults
             state = results.isEmpty ? .empty : .results
         } catch {
+            guard requestGeneration == searchGeneration else { return }
+
             let failureMessage = error.localizedDescription
-            results = []
             await refreshBackendStatus()
+            guard requestGeneration == searchGeneration else { return }
+
             if backendStatus?.state != .connected {
                 state = .unavailable("The backend market-data session is no longer connected. Recheck the DEMO service status.")
             } else {
+                results = []
                 state = .failed(failureMessage)
             }
         }
