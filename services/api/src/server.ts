@@ -249,7 +249,7 @@ async function handleMarketDataRequest(
       sendJson(response, 200, {
         ...batch,
         request: { from: from ?? null, to: to ?? null, max },
-        pagination: { limitReached: batch.candles.length === max },
+        pagination: { limitReached: result.prices.length === max },
       });
       return;
     }
