@@ -79,4 +79,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 - **Changes in progress:** CEOD v1.0, AGENTS.md cross-reference, AI navigation, task/continuity/conversation/decision records.
 - **Branch:** `docs/continuous-engineering-operating-directive`, based on `docs/atp-ui-ux-chatgpt-directive`.
 - **Verification:** Documentation diff and exact-head CI pending; no application tests applicable to this documentation-only scope.
-- **Next action:** Open focused PR against the UI/UX directive branch and inspect exact-head checks.
+- **PR:** [#19 — Continuous Engineering Operating Directive](https://github.com/atheertrading/atheer-trading-platform/pull/19), base `docs/atp-ui-ux-chatgpt-directive`; head at creation `ff1a3df9e25f84844950fa51fcaf71fc8272f798`.
+- **Next action:** Review the complete PR diff and inspect CI on the latest exact PR head.
