@@ -38,6 +38,10 @@ struct ContentView: View {
                         Label(AppSection.workspace.title, systemImage: AppSection.workspace.systemImage)
                             .tag(AppSection.workspace)
                     }
+                    Section("MARKETS") {
+                        Label(AppSection.markets.title, systemImage: AppSection.markets.systemImage)
+                            .tag(AppSection.markets)
+                    }
                     Section("SYSTEM") {
                         Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
                             .tag(AppSection.apiConnection)
@@ -59,6 +63,8 @@ struct ContentView: View {
                         backendHealthModel: backendHealthModel,
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
+                case .markets:
+                    MarketExplorerView(onOpenAPIConnection: { selection = .apiConnection })
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
                 case .settings:
