@@ -8,6 +8,13 @@ enum WorkspacePanelID: String, CaseIterable, Identifiable, Hashable, Codable {
 
     var id: String { rawValue }
 
+    var isPrimaryRegion: Bool {
+        switch self {
+        case .charts, .platformHealth: return true
+        case .marketWatch, .accountRisk: return false
+        }
+    }
+
     var title: String {
         switch self {
         case .marketWatch: return "Market Watch"
