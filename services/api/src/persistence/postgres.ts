@@ -195,10 +195,20 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const payload = canonicalJson(specification);
     const payloadHash = sha256(payload);
     await inTransaction(this.pool, async (client) => {
-      await client.query(
-        "INSERT INTO instruments (environment, instrument_id, canonical_code, display_name, asset_class_code) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,instrument_id) DO UPDATE SET canonical_code=EXCLUDED.canonical_code, display_name=EXCLUDED.display_name, asset_class_code=EXCLUDED.asset_class_code",
+      const insertedInstrument = await client.query(
+        "INSERT INTO instruments (environment, instrument_id, canonical_code, display_name, asset_class_code) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,instrument_id) DO NOTHING RETURNING instrument_id",
         [this.environment, instrument.id, instrument.canonicalCode, instrument.displayName, instrument.assetClassCode],
       );
+      if (insertedInstrument.rowCount === 0) {
+        const existingInstrument = await client.query<{ canonical_code: string; display_name: string; asset_class_code: string }>(
+          "SELECT canonical_code,display_name,asset_class_code FROM instruments WHERE environment=$1 AND instrument_id=$2 FOR UPDATE",
+          [this.environment, instrument.id],
+        );
+        const row = existingInstrument.rows[0];
+        if (!row || row.canonical_code !== instrument.canonicalCode || row.display_name !== instrument.displayName || row.asset_class_code !== instrument.assetClassCode) {
+          throw new PersistenceConflictError("Canonical instrument identity is immutable and conflicts with the persisted record.");
+        }
+      }
       const inserted = await client.query(
         "INSERT INTO instrument_specifications (environment,specification_id,instrument_id,broker_id,broker_instrument_id,specification_version,retrieved_at,payload_hash,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb) ON CONFLICT (environment,specification_id) DO NOTHING RETURNING specification_id",
         [this.environment, specification.id, instrument.id, specification.brokerReference.brokerId, specification.brokerReference.brokerInstrumentId, specification.version, isoTimestamp(specification.retrievedAt), payloadHash, canonicalJson(specification.provenance), payload],
