@@ -599,7 +599,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
-    func testMarketExplorerStreamsOnlyExplicitlySelectedDemoInstruments() async {
+    func testMarketExplorerStreamsOnlyExplicitlySelectedDemoInstruments() async throws {
         let quote = MarketDataStreamQuote(
             provider: "capital.com",
             environment: "DEMO",
@@ -760,8 +760,8 @@ final class ATHEERTradingProTests: XCTestCase {
         let streamClient = StubMarketDataStreamClient(events: [
             .status(status),
             .quote(quote(2000, 1_800_000_000_000)),
-            .quote(2001, 1_800_000_000_100),
-            .quote(2002, 1_800_000_000_200)
+            .quote(quote(2001, 1_800_000_000_100)),
+            .quote(quote(2002, 1_800_000_000_200))
         ])
         let model = MarketExplorerViewModel(
             client: StubMarketSearchClient(

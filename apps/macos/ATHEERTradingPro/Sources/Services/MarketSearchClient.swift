@@ -1,5 +1,5 @@
 import Combine
-import Foundation
+@preconcurrency import Foundation
 
 enum MarketDataBackendConnectionState: String, Decodable, Equatable {
     case notConfigured = "not_configured"
