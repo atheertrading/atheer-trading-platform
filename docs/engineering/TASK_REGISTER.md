@@ -181,3 +181,17 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Added deterministic in-memory persistence XCTest coverage for visibility persistence/restoration, workspace creation, duplicate panel identity, unsupported schema, and unreadable stored data recovery.
 - Latest implementation head at this record: `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`. Local Sync Safety #207 passed. Exact-head CI #174 is queued; no macOS build/XCTest result is claimed.
 - Owner Mac build, runtime, and visual qualification for PR #24 remain pending. Do not mark M02-009 or ATP-WORKSPACE-001 DONE before exact-head CI and owner-side qualification.
+
+
+## ATP-MD-001 — Capital.com DEMO and Market Data Infrastructure (2026-11-17)
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-MD-001A | P0 | Implement Capital.com DEMO REST session and read-only market endpoints | IN PROGRESS | PR #25 source; exact-head CI and real DEMO auth still required |
+| ATP-MD-001B | P0 | Implement backend session lifecycle and loopback market-data API | IN PROGRESS | PR #25 source; exact-head tests and local integration qualification required |
+| ATP-MD-001C | P0 | Resolve and implement Capital.com DEMO WebSocket streaming | BLOCKED | Official provider confirmation of DEMO streaming host required |
+| ATP-MD-001D | P0 | Implement quote validation, freshness, disconnect and recovery contracts | IN PROGRESS | Initial quote/freshness contracts in PR #25; stream lifecycle and approved thresholds pending |
+| ATP-MD-001E | P1 | Bind Market Watch to authenticated provider stream | BLOCKED | Requires ATP-MD-001C and real DEMO integration evidence |
+| ATP-MD-001F | P1 | Bind Charting Engine to validated provider candles | BLOCKED | Requires streaming/candle contracts and provider integration evidence |
+
+PR #25 is stacked on PR #24 to preserve the existing Command Center and Workspace. No synthetic market data or dealing capability is permitted.
