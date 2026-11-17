@@ -183,6 +183,6 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 
 ### PR #22 adaptive Workspace layout — current checkpoint
 
-- PR #22 is OPEN and stacked on PR #18; base head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`; current head `35f18277bafa48f37c17ec5888317cd6af8bf2b2`.
-- CI #156 is queued and Local Sync Safety #155 is in progress. No exact-head pass is claimed.
+- PR #22 is OPEN and stacked on PR #18; base head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`. The branch received documentation follow-ups after PR creation, so use the live PR metadata for the current head.
+- Exact-head CI on the final revision is pending; earlier workflow attempts on prior heads do not qualify. No exact-head pass is claimed.
 - Owner-confirmed application launch and two-display use are recorded separately from independent visual/accessibility acceptance.
