@@ -89,6 +89,10 @@ export class CapitalDemoRuntime {
     return this.status();
   }
 
+  async getStreamingConnectionInfo() {
+    return this.withSession((session) => this.client.getStreamingConnectionInfo(session));
+  }
+
   async getMarkets(searchTerm: string): Promise<CapitalMarketSearchResult> {
     return this.withSession((session) => this.client.getMarkets(session, searchTerm));
   }
