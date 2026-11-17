@@ -138,6 +138,21 @@ struct MarketExplorerView: View {
                 )
             }
 
+            if !model.selectedEpics.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Text("SELECTED: " + model.selectedEpics.sorted().joined(separator: ", "))
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button("Clear Selection") {
+                        model.clearStreamSelection()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 10, weight: .medium))
+                }
+            }
+
             if let message = model.streamingError {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .font(.system(size: 11))
