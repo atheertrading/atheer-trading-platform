@@ -13,6 +13,29 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(AppSection.apiConnection.title, "API Connection")
     }
 
+    @MainActor
+    func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let originalName = engine.activeWorkspace.name
+        let customLayout = WorkspaceLayoutConfiguration(
+            style: .stacked,
+            sidebarWidth: 420,
+            minimumPrimaryWidth: 560
+        )
+        XCTAssertTrue(engine.updateActiveLayout(customLayout))
+        XCTAssertTrue(engine.removePanel(.platformHealth))
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
+
+        engine.restoreDefaultPanels()
+
+        XCTAssertEqual(engine.activeWorkspace.name, originalName)
+        XCTAssertEqual(engine.activeWorkspace.layout, customLayout)
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        XCTAssertEqual(engine.orderedPanels.map(\.panelID), WorkspacePanelID.allCases)
+        XCTAssertEqual(engine.orderedPanels.map(\.order), Array(0..<WorkspacePanelID.allCases.count))
+    }
+
     func testWorkspacePanelInventoryAndDefaultVisibility() {
         XCTAssertEqual(
             WorkspacePanelID.allCases,
