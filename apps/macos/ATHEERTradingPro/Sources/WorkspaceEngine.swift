@@ -147,36 +147,46 @@ final class WorkspaceEngine: ObservableObject {
     init(persistence: WorkspacePersistence = UserDefaultsWorkspacePersistence()) {
         self.persistence = persistence
 
+        var initialSnapshot: WorkspaceSnapshot
+        var initialRecoveryState: RecoveryState = .clean
+
         do {
             if let stored = try persistence.load() {
                 do {
                     try Self.validate(stored)
-                    snapshot = stored
+                    initialSnapshot = stored
                 } catch {
-                    snapshot = .standard()
-                    recoveryState = .restoredDefaults(String(describing: error))
+                    initialSnapshot = .standard()
+                    initialRecoveryState = .restoredDefaults(String(describing: error))
                     do {
-                        try persistence.save(snapshot)
+                        try persistence.save(initialSnapshot)
                     } catch {
-                        recoveryState = .persistenceFailure(String(describing: error))
+                        initialRecoveryState = .persistenceFailure(String(describing: error))
                     }
                 }
             } else {
-                snapshot = .standard()
-                try persistence.save(snapshot)
+                initialSnapshot = .standard()
+                do {
+                    try persistence.save(initialSnapshot)
+                } catch {
+                    initialRecoveryState = .persistenceFailure(String(describing: error))
+                }
             }
         } catch WorkspacePersistenceError.corruptData(let reason) {
-            snapshot = .standard()
-            recoveryState = .restoredDefaults("Stored workspace data was unreadable: \(reason)")
+            initialSnapshot = .standard()
+            initialRecoveryState = .restoredDefaults("Stored workspace data was unreadable: \(reason)")
             do {
-                try persistence.save(snapshot)
+                try persistence.save(initialSnapshot)
             } catch {
-                recoveryState = .persistenceFailure(String(describing: error))
+                initialRecoveryState = .persistenceFailure(String(describing: error))
             }
         } catch {
-            snapshot = .standard()
-            recoveryState = .persistenceFailure(String(describing: error))
+            initialSnapshot = .standard()
+            initialRecoveryState = .persistenceFailure(String(describing: error))
         }
+
+        snapshot = initialSnapshot
+        recoveryState = initialRecoveryState
     }
 
     func setPanelVisibility(_ panelID: WorkspacePanelID, isVisible: Bool) {
