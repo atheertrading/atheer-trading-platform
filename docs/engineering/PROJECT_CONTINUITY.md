@@ -6,9 +6,9 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `engineering/bootstrap-governance` |
+| Current work branch | `feat/macos-workspace-api-connection` (PR #17, stacked on PR #10) |
 | Record status | Initial baseline; further source reconciliation required |
-| Last reviewed | 2026-11-16 |
+| Last reviewed | 2026-11-17 |
 
 ## 1. Current verified state
 

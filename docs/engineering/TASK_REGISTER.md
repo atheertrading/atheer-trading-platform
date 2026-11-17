@@ -1,6 +1,6 @@
 # ATHEER Trading — Task Register
 
-**Snapshot date:** 2026-11-16  
+**Snapshot date:** 2026-11-17  
 **Active milestone:** M00 — Governance baseline merged; M01 — Platform architecture and toolchain foundation
 
 Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = not started; `BLOCKED` = dependency prevents progress; `OWNER DECISION` = requires explicit owner direction.
