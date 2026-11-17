@@ -130,3 +130,17 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - Mandatory constraints: DEMO only; LIVE rejected; no dealing, order, position mutation, or account mutation methods; no secrets in UserDefaults, logs, diagnostics, source control, or network response payloads; no trading authorization or risk-control changes. Capital.com API keys are trading-capable and are not read-only, so the native feature must remain capability-restricted and trading-disabled.
 - Consequences: API credentials are present in the native process memory while authenticating and are transmitted only to the fixed official DEMO HTTPS endpoint. This local trust boundary is not appropriate for remote or multi-user clients. REST session authentication does not establish streaming or trading readiness.
 - Verification: Official Capital.com API documentation and the existing backend adapter/specification were inspected. Hosted macOS build/XCTest and real provider authentication remain pending.
+
+
+## EDL-011 — Provider-independent canonical trading domain foundation
+
+- Date: 2026-11-18
+- Status: Accepted bounded engineering decision under the owner's delegated engineering authority; does not replace unavailable historical formal ADRs.
+- Decision: Introduce a provider-independent TypeScript domain layer for strongly typed identities, exact decimal values, UTC timestamps, explicit environments/provenance, instrument specifications, broker accounts/snapshots, immutable intent envelopes, policy-versioned risk decisions, generic lifecycle-policy validation, broker order/position observations, execution fills/events, reconciliation, and audit.
+- Financial values are canonical base-10 strings; comparisons and increment alignment use integer arithmetic. The domain does not round values or convert JavaScript numbers into financial values.
+- Instrument specification preserves price precision separately from price increment, and preserves minimum/maximum quantity, quantity increment, lot size, contract size, and their units as separate fields.
+- Every intent source uses one envelope. Intent identity, command/correlation/idempotency identity, account, instrument/specification, environment, origin, signal and market-snapshot provenance are recorded. Intent is not authorization and cannot transmit a broker command.
+- Risk assessments are separate, immutable, and bound to the intent and policy version. Lifecycle validation requires an explicitly supplied transition policy; no concrete OMS or position states are invented.
+- Rationale: the accessible Library Q&A recommends UUIDv7 and detailed lifecycle concepts, but the original ADR-0004/0005/0006 texts are unavailable. Preserve the recommendation as evidence without silently treating it as a formally accepted implementation decision. Keep ID generation injected and backend-owned; defer concrete state lists and rounding modes until formal-source reconciliation.
+- Consequences: PostgreSQL persistence, migrations, transactional outbox, broker dealing, and concrete order/position state machines remain separate follow-up work. Domain contracts are independently testable and have no transport/database/provider SDK dependency.
+- Verification: Initial PR #40 run #44193072976 passed repository hygiene and failed backend typecheck on two branded-ID comparisons in the earlier head; corrected in subsequent commits. Current head `f295023e...` awaits exact-head CI. No current-head test pass claimed.

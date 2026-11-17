@@ -418,3 +418,21 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 | Apple Silicon / Release / runtime / accessibility / provider verification | NOT VERIFIED | Explicitly outside the owner-reported local run |
 
 The hosted PR #38 failure on its previous head was a source-level XCTest compile failure, not a demonstrated application runtime failure. Do not mark the streaming integration accepted or merge-qualified until exact-head CI and the remaining architecture/runtime gates complete.
+
+
+## ATP-DOMAIN-001 — Canonical Trading Domain Foundation — 2026-11-18
+
+| Capability | Implementation status | Verification status |
+|---|---|---|
+| Strong identifiers, environment and provenance | Implemented in `services/api/src/domain/shared.ts` | Exact-head typecheck pending |
+| Exact decimal values and increment alignment | Implemented; no binary float coercion or implicit rounding | API tests pending |
+| Instrument identity and broker specification | Implemented; broker/environment identity and unit-bearing constraints preserved | API tests pending |
+| Broker account and balance snapshots | Implemented with source/environment validation | API tests pending |
+| Immutable order-intent envelope | Implemented with intent/command/correlation/idempotency and origin/market-data provenance | API tests pending |
+| Risk assessment and lifecycle policy | Implemented as policy-versioned decision record and caller-supplied transition policy | API tests pending; concrete OMS state machine intentionally not selected |
+| Broker order/position observations, fills, execution events, reconciliation and audit | Implemented as provenance-bearing contracts | API tests pending |
+| PostgreSQL persistence / transactional outbox | Not implemented in this package | Next work package after domain qualification |
+
+**PR:** #40, branch `feat/trading-domain-foundation`, based on PR #39. Initial CI run #44193072976 failed backend typecheck on two branded-identifier comparisons in the earlier head; the code was corrected in subsequent commits. The current source head `f295023e...` requires exact-head revalidation. Repository Hygiene passed on the earlier head. No current-head backend test pass is claimed.
+
+No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEngine bypass, LIVE capability, or change to `CAP_ALLOW_TRADING=false`.

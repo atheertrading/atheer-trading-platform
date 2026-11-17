@@ -606,3 +606,17 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - New exact-head CI runs #44190351651 (PR #38) and #44190373646 (PR #39) require completion. Local Sync Safety passed on both branches; Mermaid validation was in progress. No Release, arm64, visual/accessibility, or real provider verification is claimed.
 - Both PRs remain open/draft and unmerged. `CAP_ALLOW_TRADING=false` and all risk/execution safeguards remain unchanged.
 - Detailed session: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.
+
+
+## ATP-2026-11-18-028 — Canonical trading domain foundation
+
+- Created stacked PR #40 from PR #39 head `b24a687482f9bfe6e8f3683e568ae7b0c394b032`, branch `feat/trading-domain-foundation`.
+- Implemented the foundational provider-independent domain package under `services/api/src/domain/`: identifiers, exact decimal value objects, UTC timestamps, source provenance, instrument specifications, broker accounts/balance snapshots, immutable order-intent envelopes, risk assessments, generic transition-policy validation, broker order/position observations, fills, execution events, reconciliation, and audit.
+- Added deterministic Node tests, architecture contract document, and Mermaid diagram 11. Existing API `npm test` includes `test/*.test.mjs`.
+- Library review: inspected 12 Mermaid blocks in the available Q&A archive and five standalone Mermaid sources in `Codex.zip`, plus repository diagrams 01–10. The separate historical `Project documents and questions and answers.zip` referenced by the diagram README was not present in the accessible Library root; the 564 Markdown / 52-block inventory is not re-claimed as revalidated.
+- Original ADR-0004/0005/0006 texts were not available. UUIDv7, concrete OMS/position state lists, detailed order types, and rounding modes remain unselected; generic lifecycle policy is implemented without inventing transitions.
+- Initial PR #40 CI #44193072976 on head `13bc60e...`: Repository Hygiene passed; Backend Toolchain failed on two TS2367 branded-ID comparisons; Intel macOS was in progress and Apple Silicon queued. The comparisons were corrected in subsequent source commits; current head `f295023e...` requires a new exact-head run. No current-head test pass is claimed.
+- The available tool container is Node 22; API manifest requires Node >=24. No local Node 24 or owner-Mac result is claimed.
+- PR #40 remains OPEN / DRAFT on PR #39. No merge, PostgreSQL persistence, broker dealing, account mutation, LIVE, or production capability. `CAP_ALLOW_TRADING=false` unchanged.
+- Next: exact-head CI, then ATP-PERSISTENCE-001 after domain qualification and formal schema/state reconciliation.
+- Detailed session: `SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION.md`.

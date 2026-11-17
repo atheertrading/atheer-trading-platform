@@ -94,3 +94,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-027 | 2026-11-18 | Swift 5.8 Market Explorer stream-test qualification remediation | Diagnosed the PR #38 Intel XCTest compile failure, committed the async/quote-event/Foundation compatibility fixes to PR #38 and #39, recorded the owner-confirmed 48/48 Intel Debug/XCTest evidence with its exact working-tree limitations, and queued exact-head requalification. | SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+
+| ATP-2026-11-18-028 | 2026-11-18 | ATP-DOMAIN-001 canonical trading domain foundation | Inspected Library Q&A and accessible Mermaid sources, reconciled unavailable formal ADRs, implemented provider-independent trading domain contracts and deterministic tests, documented explicit non-decisions and opened stacked Draft PR #40; exact-head CI remains pending. | ATP_DOMAIN_MODEL_AND_CONTRACTS; SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION; EDL-011; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
