@@ -628,3 +628,12 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - The initial PR #40 workflow #44193072976 was attached to earlier source head `13bc60e4023abcbf5b70e6a424b1a70d2befc0a8` and failed backend typecheck on two branded identifier comparisons. The corrections and expanded domain tests are included in the current branch tree.
 - This continuity update is being committed through the GitHub Contents API to generate a fresh PR synchronization event for the current source/documentation tree. The resulting workflow SHA and job outcomes must be fetched before claiming any verification result.
 - Until that exact-head run completes, TypeScript build, API tests, Mermaid validation, and Intel/arm64 macOS checks remain PENDING. No local Node 24 or owner-Mac test is claimed.
+
+
+## PR #40 strict UTC parser remediation — 2026-11-18
+
+- Review finding: `Date.parse` normalized impossible calendar dates; `2026-02-31T...Z` could be interpreted as a March date.
+- Committed calendar-aware validation and deterministic regression tests in `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
+- On previous head `34015bda...`, backend 46/46, hygiene, Mermaid, Local Sync Safety, and Intel macOS qualification passed; arm64 was queued. These do not apply to the new head.
+- New-head Local Sync Safety passed; Mermaid was running and CI queued at last inspection. Exact-head verification remains open.
+- PR #40 remains OPEN / DRAFT and unmerged. PostgreSQL persistence follows after domain qualification. `CAP_ALLOW_TRADING=false` unchanged.

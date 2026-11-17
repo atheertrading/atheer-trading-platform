@@ -97,3 +97,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-028 | 2026-11-18 | ATP-DOMAIN-001 canonical trading domain foundation | Inspected Library Q&A and accessible Mermaid sources, reconciled unavailable formal ADRs, implemented provider-independent trading domain contracts and deterministic tests, documented explicit non-decisions and opened stacked Draft PR #40; exact-head CI remains pending. | ATP_DOMAIN_MODEL_AND_CONTRACTS; SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION; EDL-011; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+
+| ATP-2026-11-18-029 | 2026-11-18 | PR #40 strict UTC timestamp validation remediation | Reviewed canonical domain contracts, identified `Date.parse` calendar normalization, committed strict Gregorian date/time validation and regression coverage, recorded the focused review and exact-head CI boundary; requalification pending. | PR #40; commit `7ebe46ce7abd104cb74345169e16dbe64cb87998`; SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |

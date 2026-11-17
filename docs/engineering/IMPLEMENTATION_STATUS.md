@@ -436,3 +436,12 @@ The hosted PR #38 failure on its previous head was a source-level XCTest compile
 **PR:** #40, branch `feat/trading-domain-foundation`, based on PR #39. Initial CI run #44193072976 failed backend typecheck on two branded-identifier comparisons in the earlier head; the code was corrected in subsequent commits. The current source head `f295023e...` requires exact-head revalidation. Repository Hygiene passed on the earlier head. No current-head backend test pass is claimed.
 
 No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEngine bypass, LIVE capability, or change to `CAP_ALLOW_TRADING=false`.
+
+
+## ATP-DOMAIN-001 strict UTC parser follow-up — 2026-11-18
+
+- Current code correction: commit `7ebe46ce7abd104cb74345169e16dbe64cb87998` rejects impossible calendar dates and out-of-range clock components before `Date.parse`.
+- Regression coverage added for leap-year validity, impossible month lengths, invalid month, hour 24, and minute 60.
+- Previous head `34015bda...`: backend 46/46 tests, Repository Hygiene, Mermaid, Local Sync Safety, and Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 queued.
+- New fix head `7ebe46ce...`: Local Sync Safety passed; Mermaid in progress and CI queued at last inspection. Previous-head results are not carried forward.
+- PostgreSQL persistence remains the next package after exact-head domain qualification and formal schema/state reconciliation. No dealing or LIVE capability; `CAP_ALLOW_TRADING=false`.

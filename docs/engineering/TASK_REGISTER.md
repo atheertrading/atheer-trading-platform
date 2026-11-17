@@ -362,3 +362,11 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Initial CI #44193072976 on earlier head `13bc60e...` passed Repository Hygiene but failed backend typecheck on two branded-ID comparisons. Those were corrected; current source head `f295023e...` has not yet received exact-head CI. Node 24 local verification is not claimed.
 - No PostgreSQL schema/migration/outbox, broker dealing, account mutation, LIVE, or production capability added. `CAP_ALLOW_TRADING=false` unchanged.
 - Detailed report: `SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION.md`.
+
+
+### ATP-DOMAIN-001 follow-up — strict UTC timestamp parsing (2026-11-18)
+
+- Added calendar-aware validation to `utcTimestampFromIso`; invalid dates such as February 31 can no longer normalize into a different UTC instant.
+- Added regression tests for leap-year validity, month lengths, invalid month, and clock ranges.
+- Fix commit: `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
+- Exact-head CI is pending for this commit. Prior head `34015bda...` had 46/46 backend tests and Intel x86_64 qualification passed; Apple Silicon remained queued. Do not carry those results onto the new head.

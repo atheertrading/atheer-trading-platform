@@ -80,3 +80,10 @@ Next:
 4. Begin PostgreSQL persistence as the next bounded vertical slice only after domain contracts qualify.
 
 `CAP_ALLOW_TRADING=false` remains unchanged. No RiskEngine bypass, OMS dispatch, Execution Gateway dealing call, broker permission, LIVE capability, or production configuration was introduced.
+
+
+## Follow-up — strict UTC timestamp validation remediation (2026-11-18)
+
+Focused review identified that JavaScript `Date.parse` normalizes some impossible calendar dates (for example, February 31) instead of rejecting them. Commit `7ebe46ce7abd104cb74345169e16dbe64cb87998` updates `utcTimestampFromIso` to validate Gregorian month/day combinations, leap years, and clock ranges before parsing. Regression tests cover a valid leap day with milliseconds, a non-leap February 29, February 31, April 31, invalid month, hour 24, and minute 60.
+
+The prior head `34015bda...` had 46/46 backend tests, Repository Hygiene, Mermaid, Local Sync Safety, and Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 remained queued. Those results do not qualify the new fix commit. On `7ebe46ce...`, Local Sync Safety passed, Mermaid validation was in progress, and the full CI run was queued at the time of this record. Exact-head revalidation remains required. No local Node 24 or owner-Mac result is claimed.
