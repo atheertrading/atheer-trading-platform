@@ -21,12 +21,21 @@ struct CommandCenterView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     operationalStatus
 
-                    HStack(alignment: .top, spacing: 16) {
-                        primaryWorkspace
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 16) {
+                            primaryWorkspace
+                                .frame(minWidth: 500, maxWidth: .infinity, alignment: .topLeading)
 
-                        secondaryWorkspace
-                            .frame(width: sidebarWidth, alignment: .topLeading)
+                            secondaryWorkspace
+                                .frame(width: sidebarWidth, alignment: .topLeading)
+                        }
+                        .frame(minWidth: 820, alignment: .topLeading)
+
+                        VStack(spacing: 16) {
+                            primaryWorkspace
+                            secondaryWorkspace
+                                .frame(maxWidth: .infinity, alignment: .topLeading)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
@@ -97,7 +106,11 @@ struct CommandCenterView: View {
     }
 
     private var operationalStatus: some View {
-        HStack(spacing: 10) {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 180), spacing: 10)],
+            alignment: .leading,
+            spacing: 10
+        ) {
             CommandCenterStatusItem(
                 title: "MARKET DATA",
                 value: "UNAVAILABLE",
