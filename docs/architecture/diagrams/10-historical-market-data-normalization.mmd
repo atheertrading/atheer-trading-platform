@@ -1,0 +1,22 @@
+flowchart TD
+    A["Market Explorer / Charting Consumer"] --> B["GET /market-data/history"]
+    B --> C{"Validate Epic, Resolution, Max, UTC Range"}
+    C -->|Invalid| D["HTTP 400"]
+    C -->|Valid| E["CapitalDemoRuntime"]
+    E --> F["CapitalDemoClient"]
+    F --> G["Capital.com DEMO /prices/{epic}"]
+    G --> H["Raw Provider Price Records"]
+    H --> I["Historical Price Normalizer"]
+    I --> J["Bid OHLC + Ask OHLC"]
+    I --> K["UTC Timestamp + Receipt Lineage"]
+    I --> L["Duplicate and OHLC Validation"]
+    I --> M["Observed Gap Report"]
+    J --> N["Normalized Candle Batch"]
+    K --> N
+    L --> N
+    M --> N
+    N --> O["HTTP Response"]
+    O --> P["Future Charting / Repository Consumer"]
+
+    Q["Market Session Calendar"] -. "required before classifying gaps" .-> M
+    R["PostgreSQL Repository"] -. "separate future work package" .-> P
