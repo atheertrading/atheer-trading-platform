@@ -129,6 +129,6 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 
 | ID | Priority | Task | Status | Acceptance evidence / dependency |
 |---|---|---|---|---|
-| M00-022 | P0 | Establish continuous engineering execution, approvals/delegation, verification, and handover protocol | IN PROGRESS | CEOD v1.0 on `docs/continuous-engineering-operating-directive`; pending PR review/merge and exact-head documentation checks |
+| M00-022 | P0 | Establish continuous engineering execution, approvals/delegation, verification, and handover protocol | IN PROGRESS | CEOD v1.0 on PR #19; pending exact-head documentation checks and review/merge |
 
 The owner authorized implementation of sections 6 (Engineering Decision, Approvals, and Delegation) and 7 (ATHEER Execution Mechanism). Routine engineering work is delegated within the documented boundaries; explicit approval gates remain intact. This documentation change does not authorize LIVE trading, broker permission changes, production deployment, destructive repository operations, or security-sensitive actions.
