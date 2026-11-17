@@ -492,3 +492,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers the always-visible ContentView navigation List selection update, covering both the navigation sidebar and panel-manager List mutation paths. The NSTableView warning's exact runtime origin remains unconfirmed until owner-Mac rerun.
+
+
+## PR #26 owner-Mac post-remediation test qualification — ATP-2026-11-17-022
+
+- Owner reports the post-remediation local XCTest session completed successfully with no test errors or warnings; the supplied terminal output includes `TEST SUCCEEDED` and identifies result bundle `.build/DerivedData/Logs/Test/Test-ATHEERTradingPro-2026.11.17_21-39-15-+0200.xcresult`.
+- The local checkout was previously confirmed clean and synchronized at source head `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`; exact result-bundle-to-SHA binding was not independently extracted, so the report preserves this as owner-reported qualification.
+- Exact-head hosted CI run `44154785186` on `9f46a5c`: Intel macOS build/XCTest/Release/Swift CodeQL passed; Repository Hygiene passed; Backend Toolchain passed; Apple Silicon arm64 remained queued at review time. Local Sync Safety run `44154785520` passed.
+- `xccov` could not produce a coverage report because the result bundle contains no coverage data. This is not a 0% coverage result and does not invalidate XCTest success. No coverage percentage is claimed.
+- Detailed evidence and limitations: `SESSION_2026-11-17_022_PR26_OWNER_MAC_POST_REMEDIATION_TEST.md`.
+- PR #26 remains Open/Draft. Outstanding gates include arm64 CI, exact-head CI after this documentation commit, owner runtime/visual and AppKit warning check, backend-running integration, real Keychain restart persistence, and real Capital.com DEMO authentication. PR #24/#25 qualification and dependency ordering remain unchanged. LIVE/dealing and risk controls remain untouched.

@@ -235,3 +235,12 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 
 
 - Follow-up `f22cac58682910256049541c252b6e54bf17c682` also defers ContentView sidebar selection changes outside the NSTableView delegate callback. The reentrancy warning is not marked resolved until owner-Mac runtime confirms it no longer occurs.
+
+
+## PR #26 post-remediation owner-Mac test checkpoint — 2026-11-17
+
+- Owner-reported local XCTest result: `TEST SUCCEEDED`; owner confirms no test errors or warnings. Result bundle: `.build/DerivedData/Logs/Test/Test-ATHEERTradingPro-2026.11.17_21-39-15-+0200.xcresult`. Exact result-bundle-to-source-SHA binding was not independently extracted.
+- Exact source head `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`: Intel hosted macOS Debug/XCTest/Release/Swift CodeQL passed; hygiene and backend toolchain passed; arm64 job remained queued at inspection. Local Sync Safety passed.
+- Coverage remains UNKNOWN: `xccov` reports no coverage data in the result bundle. Do not interpret this as 0%.
+- ATP-BROKER-001 remains IN PROGRESS. This test result does not complete real Keychain restart persistence, normal app visual/runtime QA, backend-running integration, arm64 runtime/CI, or real DEMO authentication. PR #26 remains Open/Draft and stacked on PR #25.
+- Evidence: `SESSION_2026-11-17_022_PR26_OWNER_MAC_POST_REMEDIATION_TEST.md`.
