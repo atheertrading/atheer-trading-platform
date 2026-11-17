@@ -6,9 +6,13 @@ struct MarketExplorerView: View {
 
     init(
         client: MarketSearchClient? = nil,
+        streamClient: MarketDataStreamClient? = nil,
         onOpenAPIConnection: @escaping () -> Void
     ) {
-        _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
+        _model = StateObject(wrappedValue: MarketExplorerViewModel(
+            client: client,
+            streamClient: streamClient
+        ))
         self.onOpenAPIConnection = onOpenAPIConnection
     }
 
@@ -26,6 +30,10 @@ struct MarketExplorerView: View {
         }
         .task {
             await model.refreshBackendStatus()
+            model.resumeStreamIfNeeded()
+        }
+        .onDisappear {
+            model.pauseStream()
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
     }
@@ -71,6 +79,22 @@ struct MarketExplorerView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(model.state == .searching)
+
+                Button {
+                    if model.isStreamingRequested {
+                        model.stopStream()
+                    } else {
+                        model.startStreaming()
+                    }
+                } label: {
+                    Label(
+                        model.isStreamingRequested ? "Stop Stream" : "Start Stream",
+                        systemImage: model.isStreamingRequested ? "stop.fill" : "waveform"
+                    )
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(ATHEERDesignTokens.ColorRole.teal)
+                .disabled(!model.isStreamingRequested && !model.canStartStreaming)
             }
 
             LazyVGrid(
@@ -96,14 +120,44 @@ struct MarketExplorerView: View {
                 )
                 statusMetric(
                     title: "STREAMING",
-                    value: "NOT CONNECTED",
-                    tint: .secondary
+                    value: model.streamingState.rawValue.uppercased(),
+                    tint: model.streamingState == .connected
+                        ? ATHEERDesignTokens.ColorRole.success
+                        : model.streamingState == .degraded
+                            ? ATHEERDesignTokens.ColorRole.attention
+                            : .secondary
+                )
+                statusMetric(
+                    title: "SUBSCRIBED",
+                    value: "\(model.selectedEpics.count)/40"
                 )
                 statusMetric(
                     title: "TRADING",
                     value: "DISABLED",
                     tint: .secondary
                 )
+            }
+
+            if !model.selectedEpics.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Text("SELECTED: " + model.selectedEpics.sorted().joined(separator: ", "))
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button("Clear Selection") {
+                        model.clearStreamSelection()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 10, weight: .medium))
+                }
+            }
+
+            if let message = model.streamingError {
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .font(.system(size: 11))
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if model.backendStatus?.state != .connected {
@@ -171,7 +225,7 @@ struct MarketExplorerView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             HStack {
-                Text("Read-only REST catalogue search. Search results are instrument metadata, not live quotes.")
+                Text("Read-only catalogue search. Select instruments below to receive timestamped DEMO Bid/Ask quotes.")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                 Spacer(minLength: 8)
@@ -197,7 +251,7 @@ struct MarketExplorerView: View {
                     .foregroundColor(.secondary)
                 Spacer()
                 if !model.results.isEmpty {
-                    Text("\(model.results.count) results")
+                    Text("\(model.results.count) results · \(model.selectedEpics.count) streaming")
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
@@ -261,7 +315,15 @@ struct MarketExplorerView: View {
             Text("MARKET STATUS")
                 .frame(width: 150, alignment: .leading)
             Text("CURRENCY")
-                .frame(width: 90, alignment: .leading)
+                .frame(width: 70, alignment: .leading)
+            Text("DEMO BID")
+                .frame(width: 88, alignment: .trailing)
+            Text("DEMO ASK")
+                .frame(width: 88, alignment: .trailing)
+            Text("QUOTE AGE")
+                .frame(width: 72, alignment: .trailing)
+            Text("STREAM")
+                .frame(width: 76, alignment: .trailing)
         }
         .font(.system(size: 9, weight: .semibold))
         .tracking(0.6)
@@ -272,7 +334,10 @@ struct MarketExplorerView: View {
     }
 
     private func instrumentRow(_ instrument: MarketSearchInstrument) -> some View {
-        HStack(spacing: 12) {
+        let quote = model.streamingQuotes[instrument.epic]
+        let isSubscribed = model.isSubscribed(to: instrument.epic)
+
+        return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(instrument.instrumentName ?? instrument.epic)
                     .font(.system(size: 12, weight: .semibold))
@@ -295,12 +360,58 @@ struct MarketExplorerView: View {
 
             Text(instrument.currency ?? "—")
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .frame(width: 90, alignment: .leading)
+                .frame(width: 70, alignment: .leading)
+
+            Text(quote.map { $0.bid.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundColor(quote.map { $0.freshness.state == "fresh" } == true
+                    ? ATHEERDesignTokens.ColorRole.success
+                    : quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.attention)
+                .frame(width: 88, alignment: .trailing)
+
+            Text(quote.map { $0.ask.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundColor(quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.success)
+                .frame(width: 88, alignment: .trailing)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(quote.map { String(format: "%.1fs", $0.currentAgeMilliseconds / 1_000) } ?? "—")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundColor(.primary)
+                Text(quote?.providerDate.formatted(date: .omitted, time: .standard) ?? (isSubscribed ? "WAITING" : ""))
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .foregroundColor(.secondary)
+                Text(quote.map { "\($0.freshness.state.uppercased()) RX" } ?? "")
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .foregroundColor(quote?.freshness.state == "fresh"
+                        ? ATHEERDesignTokens.ColorRole.success
+                        : quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.attention)
+            }
+            .frame(width: 72, alignment: .trailing)
+
+            Button {
+                model.toggleStreamSubscription(for: instrument.epic)
+            } label: {
+                Label(
+                    isSubscribed ? "REMOVE" : "SELECT",
+                    systemImage: isSubscribed ? "minus.circle" : "plus.circle"
+                )
+                .labelStyle(.titleAndIcon)
+                .font(.system(size: 9, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .disabled(!model.canSubscribe(to: instrument.epic))
+            .frame(width: 76, alignment: .trailing)
+            .accessibilityLabel(
+                isSubscribed
+                    ? "Remove \(instrument.epic) from live quote selection"
+                    : "Select \(instrument.epic) for live quote streaming"
+            )
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
     private var integrationBoundary: some View {
@@ -310,7 +421,7 @@ struct MarketExplorerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Data and execution boundary")
                     .font(.system(size: 11, weight: .semibold))
-                Text("This screen does not display bid/ask values from an untimestamped search response, does not establish a streaming connection, and exposes no order or dealing action. Market streaming, charting, and trading remain separate qualification milestones.")
+                Text("Bid/Ask values are shown only after an explicit instrument subscription and a timestamped Capital.com DEMO quote. Streaming is read-only; no order or dealing action is exposed. Charting and RiskEngine integration remain separate qualification milestones.")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
