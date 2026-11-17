@@ -56,6 +56,10 @@ Follow `docs/engineering/ATHEER_CONTINUOUS_ENGINEERING_OPERATING_DIRECTIVE.md` f
 
 Use the root `WORK.md` as the ordered active execution queue. At the start of each material work session, revalidate its first eligible item against current repository and GitHub evidence; execute in dependency order; and update the queue plus the relevant task and continuity records at each material checkpoint. `WORK.md` defines what to execute next; it does not replace this file, the CEOD, the task register, or the project continuity record.
 
+## Local Mac execution handoff
+
+When work requires the owner's local Mac, Terminal, Xcode, local filesystem, application runtime, or connected displays, follow [`docs/development/LOCAL_MAC_EXECUTION_HANDOFF.md`](docs/development/LOCAL_MAC_EXECUTION_HANDOFF.md). Provide complete, staged, copy/paste-ready Terminal commands; begin with safe preflight checks; preserve local user changes; and report local results only from owner-returned output or direct evidence. The owner-provided macOS application source directory is `/Users/enghossamalfahad/Developer/AtheerTradingPlatform/apps/macos/ATHEERTradingPro/Sources`; verify it before use and do not assume it is the repository root.
+
 ## Engineering workflow
 
 For substantial work, follow: discovery → source reconciliation → design → bounded implementation → tests → verification → documentation → review → handover.
