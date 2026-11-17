@@ -9,7 +9,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
@@ -469,6 +469,100 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(model.lastSuccessfulConnection, account.authenticatedAt)
     }
 
+    func testMarketSearchStatusDecoderAcceptsOnlyCapitalComDemo() throws {
+        let valid = Data("""
+        {"provider":"capital.com","environment":"DEMO","state":"connected"}
+        """.utf8)
+        let status = try MarketSearchPayloadDecoder().decodeStatus(valid)
+        XCTAssertEqual(status.provider, "capital.com")
+        XCTAssertEqual(status.environment, "DEMO")
+        XCTAssertEqual(status.state, .connected)
+
+        let live = Data("""
+        {"provider":"capital.com","environment":"LIVE","state":"connected"}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(live))
+    }
+
+    func testMarketSearchDecoderPreservesProviderInstrumentMetadata() throws {
+        let payload = Data("""
+        {
+          "provider":"capital.com",
+          "environment":"DEMO",
+          "markets":[
+            {
+              "epic":"GOLD",
+              "instrumentName":"Gold",
+              "marketStatus":"TRADEABLE",
+              "currency":"USD"
+            }
+          ]
+        }
+        """.utf8)
+
+        let instruments = try MarketSearchPayloadDecoder().decodeMarkets(payload)
+        XCTAssertEqual(instruments.count, 1)
+        XCTAssertEqual(instruments[0].epic, "GOLD")
+        XCTAssertEqual(instruments[0].instrumentName, "Gold")
+        XCTAssertEqual(instruments[0].marketStatus, "TRADEABLE")
+        XCTAssertEqual(instruments[0].currency, "USD")
+    }
+
+    func testMarketSearchDecoderRejectsNonDemoAndInvalidInstrumentIdentity() {
+        let livePayload = Data("""
+        {"provider":"capital.com","environment":"LIVE","markets":[]}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeMarkets(livePayload))
+
+        let invalidInstrument = Data("""
+        {"provider":"capital.com","environment":"DEMO","markets":[{"epic":" "}]}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeMarkets(invalidInstrument))
+    }
+
+    @MainActor
+    func testMarketExplorerDoesNotSearchWhenBackendSessionIsDisconnected() async {
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .disconnected),
+            results: []
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = "Gold"
+        await model.search()
+
+        XCTAssertEqual(client.searchCallCount, 0)
+        if case .unavailable = model.state {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("A disconnected backend market-data session must block search.")
+        }
+    }
+
+    @MainActor
+    func testMarketExplorerPublishesProviderBackedDemoSearchResults() async {
+        let instruments = [
+            MarketSearchInstrument(
+                epic: "GOLD",
+                instrumentName: "Gold",
+                marketStatus: "TRADEABLE",
+                currency: "USD"
+            )
+        ]
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+            results: instruments
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = "Gold"
+        await model.search()
+
+        XCTAssertEqual(client.searchCallCount, 1)
+        XCTAssertEqual(model.results, instruments)
+        XCTAssertEqual(model.state, .results)
+    }
+
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {
@@ -482,6 +576,28 @@ private struct StubBackendHealthClient: BackendHealthClient {
 
 private enum StubBackendHealthError: Error {
     case unavailable
+}
+
+
+@MainActor
+private final class StubMarketSearchClient: MarketSearchClient {
+    private let status: MarketDataBackendStatus
+    private let instruments: [MarketSearchInstrument]
+    private(set) var searchCallCount = 0
+
+    init(status: MarketDataBackendStatus, results: [MarketSearchInstrument]) {
+        self.status = status
+        self.instruments = results
+    }
+
+    func fetchBackendStatus() async throws -> MarketDataBackendStatus {
+        status
+    }
+
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
+        searchCallCount += 1
+        return instruments
+    }
 }
 
 private final class InMemoryWorkspacePersistence: WorkspacePersistence {
