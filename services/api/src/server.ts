@@ -157,12 +157,23 @@ async function handleMarketDataRequest(
 
       let unsubscribe: (() => void) | undefined;
       let keepAlive: ReturnType<typeof setInterval> | undefined;
+      let closed = false;
+      response.on("close", () => {
+        closed = true;
+        if (keepAlive) clearInterval(keepAlive);
+        unsubscribe?.();
+      });
+
       try {
         unsubscribe = await streamRuntime.subscribe(epics, (quote: MarketDataStreamQuote) => {
           if (!response.destroyed) {
             response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
           }
         });
+        if (closed) {
+          unsubscribe();
+          return;
+        }
         for (const quote of streamRuntime.latest(epics)) {
           response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
         }
@@ -176,11 +187,6 @@ async function handleMarketDataRequest(
         }
         return;
       }
-
-      response.on("close", () => {
-        if (keepAlive) clearInterval(keepAlive);
-        unsubscribe?.();
-      });
       return;
     }
 
