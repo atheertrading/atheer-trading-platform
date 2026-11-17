@@ -115,3 +115,11 @@ For every formal document, add:
 - Source archive path and content hash where required.
 
 For every Q&A document, capture its original path, topic, related formal specification, requirement/decision references, and whether its conclusion remains current. Resolve conflicts without deleting source history.
+
+## 6. Execution directives and reusable working prompts
+
+| Document | Language | Purpose | Status |
+|---|---|---|---|
+| `docs/development/ATHEER_CHATGPT_MASTER_EXECUTION_DIRECTIVE_AR.md` | Arabic | Arabic counterpart of the master directive for screen implementation, application development, and the professional trading workstation | Published on a documentation branch; PR review and default-branch integration pending |
+
+The Arabic directive preserves the English technical names for product modules, architectural boundaries, and engineering controls where retaining the canonical term improves precision. Its status as a published branch document does not imply approval of every referenced historical specification or completion of the implementation work.
