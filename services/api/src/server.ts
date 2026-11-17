@@ -217,7 +217,7 @@ async function handleMarketDataRequest(
       }
 
       const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\\d+$/.test(rawMax) || Number(rawMax) < 1 || Number(rawMax) > 1000) {
+      if (!/^\d+$/.test(rawMax) || Number(rawMax) < 1 || Number(rawMax) > 1000) {
         sendJson(response, 400, { error: "invalid_max" });
         return;
       }
