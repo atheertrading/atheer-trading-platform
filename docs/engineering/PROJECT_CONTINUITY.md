@@ -492,3 +492,16 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers the always-visible ContentView navigation List selection update, covering both the navigation sidebar and panel-manager List mutation paths. The NSTableView warning's exact runtime origin remains unconfirmed until owner-Mac rerun.
+
+## ATP-2026-11-17-021 — Master Screen Execution Prompt and Market Explorer
+
+- Published the reusable English prompt at docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md (ATP-PROMPT-SCREEN-EXEC-001).
+- The owner-provided Library URL for “Screen Implementation, Application Development & Professional Trading Workstation” is recorded in the prompt. The exact Library item was not resolved through the accessible Library index/search during this session; its content is not claimed as inspected.
+- Created feat/macos-market-explorer from exact PR #26 head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f. PR #24, #25, and #26 were not modified.
+- Implemented ATP-SCR-MKT-001: native Markets navigation and Market Explorer / Instrument Search; typed read-only backend market-data status/search client; DEMO/provider validation; session-gated search; explicit streaming-not-connected and trading-disabled state; and deterministic XCTest source cases.
+- Added docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md and updated ATP-PRODUCT-IA-001, TASK_REGISTER, IMPLEMENTATION_STATUS, and MASTER_DOCUMENT_REGISTRY.
+- Critical integration gap: PR #26 native Keychain credentials/session are not automatically shared with PR #25 backend environment credentials/session. Market Explorer reports the backend status independently and does not claim native credentials enable backend search.
+- No quote/candle/account/order/position/P&L data is fabricated. Untimestamped bid/offer fields are not displayed. No streaming, charts, trading, or dealing capability is added.
+- Source and tests are committed, but exact-head CI and owner-Mac build/runtime/visual/accessibility verification are pending. Real Capital.com DEMO authentication/search was not attempted.
+- ChatGPT Memory cannot be synchronously written by the assistant. The durable English prompt is committed in GitHub and remains active in the current conversation context.
+- Session report: docs/engineering/SESSION_2026-11-17_021_MARKET_EXPLORER_IMPLEMENTATION.md.
