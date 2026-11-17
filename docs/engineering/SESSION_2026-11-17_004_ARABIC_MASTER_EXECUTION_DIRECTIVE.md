@@ -65,4 +65,14 @@ Initial Arabic directive commit:
 
 - `6984a2459e4c4013da391d1c35cc58646746b789` — `docs(development): add Arabic master execution directive`.
 
-Subsequent commits and the PR URL will be added after GitHub confirms each operation.
+Documentation PR: [#30 — docs(development): publish Arabic master execution directive](https://github.com/atheertrading/atheer-trading-platform/pull/30). The PR is OPEN and not merged.
+
+Sequential commit trail on this branch:
+1. `6984a2459e4c4013da391d1c35cc58646746b789` — add Arabic directive.
+2. `5280746ef2638884c7a2f6570161245739078046` — add session report.
+3. `f21267e51a882817e4d68fa108b545484462110c` — update master document registry.
+4. `1edeae9d03001c1db0f9307f89fbb5d164b58210` — update conversation index.
+5. `5f8a4fc4a7dc6d3dee8caec258676bf26d520619` — track documentation review in task register.
+6. `170312bfc3403e590a493e88e416b0b6258b046c` — update project continuity.
+
+The branch comparison against `main` confirmed six commits and six intended documentation files. PR metadata subsequently reported the branch as mergeable; required checks remain to be verified on the exact PR head.
