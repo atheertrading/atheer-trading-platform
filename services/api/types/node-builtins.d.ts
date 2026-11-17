@@ -5,12 +5,17 @@ declare module "node:http" {
   }
   export interface ServerResponse {
     statusCode: number;
+    readonly destroyed: boolean;
     setHeader(name: string, value: string): void;
+    writeHead(statusCode: number, headers?: Readonly<Record<string, string>>): this;
+    write(body: string): boolean;
+    on(event: "close", listener: () => void): this;
     end(body?: string): void;
   }
   export interface Server {
     listen(port: number, hostname: string, callback?: () => void): this;
     close(callback?: (error?: Error) => void): this;
+    closeAllConnections(): void;
     address(): { port: number } | string | null;
   }
   export function createServer(
