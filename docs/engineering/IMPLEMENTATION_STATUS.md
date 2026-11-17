@@ -382,3 +382,21 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Backend sends post-subscription and periodic status events.
 - Hosted macOS Intel/Apple Silicon and owner-Mac QA are pending. No live Capital.com quote is claimed.
 - No new screen or trading capability. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## ATP-MKT-005 — Historical Market Data Contracts
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING EXACT-HEAD CI  
+**Branch:** `feat/historical-market-data-contracts`  
+**Base:** PR #38 exact head `0d37f11a8f91d09c82b39c443e346622a7df3530`
+
+- Typed provider-neutral historical candle contract added.
+- Bid and Ask OHLC remain separate; provider UTC timestamp and local receive time are preserved independently.
+- Optional `lastTradedVolume` is retained with explicit provider-field lineage; no unsupported volume interpretation is assigned.
+- Exact duplicates are dropped/countable; conflicting duplicates are rejected.
+- Time gaps are reported as observed and require a market-session calendar before classification.
+- DEMO historical endpoint accepts paired UTC `from/to` bounds and max 1–1000, and returns normalized data.
+- Deterministic normalizer, request-contract, and route tests added.
+- Exact-head Backend Toolchain, Repository Hygiene, Mermaid, and Local Sync Safety runs pending.
+- No durable persistence, live provider verification, OHLC streaming, Charting, or market-session calendar is claimed.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE behavior.
