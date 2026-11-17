@@ -1,9 +1,11 @@
 import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
+import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
 import { createApiServer } from "./server.ts";
 
 const config = loadRuntimeConfig(env);
-const server = createApiServer();
+const marketDataRuntime = createCapitalDemoRuntime(env);
+const server = createApiServer(marketDataRuntime);
 let shuttingDown = false;
 
 server.listen(config.port, config.host, () => {
@@ -13,6 +15,7 @@ server.listen(config.port, config.host, () => {
 function shutdown(): void {
   if (shuttingDown) return;
   shuttingDown = true;
+  void marketDataRuntime.disconnect().catch(() => undefined);
   server.close((error) => {
     if (error) {
       console.error("ATHEER API shutdown failed.", error.message);
