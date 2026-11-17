@@ -251,3 +251,16 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - Search is read-only and requires backend status connected in DEMO. No streaming, quote, chart, order, or trading capability is claimed.
 - Native app Keychain credentials are not automatically transferred to the backend session; secure handoff remains a separate task.
 - No build or XCTest execution is claimed until exact-head CI or owner-Mac evidence is available.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Prevent stale/out-of-order Market Explorer search responses; align query validation and add deterministic race tests | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #31 Market Explorer | Exact-head hygiene/backend/macOS Debug/XCTest/Release/CodeQL; owner-Mac runtime, keyboard/focus, visual and VoiceOver QA |
+
+- Branch: `fix/market-explorer-search-lifecycle`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
+- Session report: `SESSION_2026-11-17_022_MARKET_EXPLORER_SEARCH_LIFECYCLE.md`.
+- Added generation guards for search and status requests; query edits invalidate prior responses; search eligibility enforces 1–100 characters; accessible query-length counter added.
+- Added XCTest cases for 101-character query rejection and out-of-order completion.
+- No CI, local build, or runtime result is claimed yet. Follow with HTTP contract tests after this increment is qualified.
