@@ -172,7 +172,7 @@ export class CapitalDemoClient {
       session,
       `/prices/${encodeURIComponent(normalizedEpic)}?${query.toString()}`,
     );
-    const payload: unknown = await response.json();
+    const payload: unknown = parseJsonPreservingNumbers(await response.text());
     if (!isRecord(payload) || !Array.isArray(payload.prices) || !payload.prices.every(isRecord)) {
       throw new Error("Capital.com returned an invalid price history response.");
     }

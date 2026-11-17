@@ -348,7 +348,7 @@ export class CapitalDemoStreamingRuntime {
   private handleMessage(rawData: unknown): void {
     let message: unknown;
     try {
-      message = JSON.parse(typeof rawData === "string" ? rawData : String(rawData));
+      message = parseJsonPreservingNumbers(typeof rawData === "string" ? rawData : String(rawData));
     } catch {
       return;
     }
