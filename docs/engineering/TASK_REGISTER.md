@@ -282,3 +282,16 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 - Architecture: `ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE.md`; Mermaid diagram: `09-capital-demo-market-data-streaming.mmd`.
 - Implemented provider session endpoint discovery, WSS validation, server-side token handling, shared 40-instrument subscription cap, correlation acknowledgements, five-minute ping, reconnect/resubscribe, quote quality checks, in-memory cache, and loopback SSE.
 - No CI or real-provider success is claimed yet. macOS consumer, historical persistence, OHLC streaming, Charting, and RiskEngine integration remain separate follow-up work.
+
+
+## ATP-MKT-004 — Existing Market Explorer Live Quote Integration — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Connect existing Market Explorer to backend DEMO SSE stream with explicit selection and timestamped quote presentation | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #34 streaming backend | Intel + Apple Silicon Build/XCTest/Release/CodeQL; owner-Mac visual/accessibility/runtime QA; provider DEMO verification |
+
+- Branch: `feat/macos-market-explorer-live-quotes`, based on PR #34 head `1378cc9d78151dc58bc548887ff5a3c45594d62b`.
+- Session report: `SESSION_2026-11-17_024_MARKET_EXPLORER_LIVE_QUOTES.md`.
+- Adds URLSession SSE parser/client, explicit selection and Start/Stop/Clear controls, maximum 40 instruments, quote state, timestamp, age, and arrival-time quality presentation.
+- No new screen, no synthetic prices, no trading action, and no RiskEngine integration.
+- Hosted macOS and owner-Mac verification remain pending; no real provider quote is claimed.
