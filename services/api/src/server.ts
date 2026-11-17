@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { CapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
 import type { CapitalDemoStreamingRuntime, MarketDataStreamQuote } from "./market-data/capital-demo-streaming-runtime.ts";
+import { normalizeCapitalHistoricalPrices, validateHistoricalDateRange, type HistoricalPriceResolution } from "./market-data/historical-prices.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
@@ -201,26 +202,54 @@ async function handleMarketDataRequest(
 
     if (pathname === "/market-data/history" && method === "GET") {
       const epic = url.searchParams.get("epic") ?? "";
+      if (!/^[A-Za-z0-9_.-]{1,64}$/.test(epic)) {
+        sendJson(response, 400, { error: "invalid_epic" });
+        return;
+      }
+
       const resolution = url.searchParams.get("resolution") ?? "MINUTE";
-      const allowedResolutions = ["MINUTE", "MINUTE_5", "MINUTE_15", "MINUTE_30", "HOUR", "HOUR_4", "DAY", "WEEK"];
-      if (!allowedResolutions.includes(resolution)) {
+      const allowedResolutions: readonly HistoricalPriceResolution[] = [
+        "MINUTE", "MINUTE_5", "MINUTE_15", "MINUTE_30", "HOUR", "HOUR_4", "DAY", "WEEK",
+      ];
+      if (!allowedResolutions.includes(resolution as HistoricalPriceResolution)) {
         sendJson(response, 400, { error: "invalid_resolution" });
         return;
       }
+
       const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\\d+$/.test(rawMax)) {
+      if (!/^\\d+$/.test(rawMax) || Number(rawMax) < 1 || Number(rawMax) > 1000) {
         sendJson(response, 400, { error: "invalid_max" });
         return;
       }
+
+      const from = url.searchParams.get("from") ?? undefined;
+      const to = url.searchParams.get("to") ?? undefined;
+      if ((from === undefined) !== (to === undefined)) {
+        sendJson(response, 400, { error: "incomplete_date_range" });
+        return;
+      }
+      if (from !== undefined && to !== undefined) {
+        try {
+          validateHistoricalDateRange(from, to);
+        } catch {
+          sendJson(response, 400, { error: "invalid_date_range" });
+          return;
+        }
+      }
+
+      const max = Number(rawMax);
       const result = await runtime.getPriceHistory(
         epic,
-        resolution as "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
-        Number(rawMax),
+        resolution as HistoricalPriceResolution,
+        max,
+        from,
+        to,
       );
+      const batch = normalizeCapitalHistoricalPrices(epic, resolution as HistoricalPriceResolution, result.prices, Date.now());
       sendJson(response, 200, {
-        provider: "capital.com",
-        environment: "DEMO",
-        ...result,
+        ...batch,
+        request: { from: from ?? null, to: to ?? null, max },
+        pagination: { limitReached: batch.candles.length === max },
       });
       return;
     }
