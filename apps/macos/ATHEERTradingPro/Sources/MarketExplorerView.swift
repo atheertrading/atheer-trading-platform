@@ -175,12 +175,12 @@ struct MarketExplorerView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                 Spacer(minLength: 8)
-                Text("\\(model.searchTerm.count)/100")
+                Text("\(model.searchTerm.count)/100")
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundColor(model.searchTerm.count > 100
                         ? ATHEERDesignTokens.ColorRole.attention
                         : .secondary)
-                    .accessibilityLabel("Search query length: \\(model.searchTerm.count) of 100 characters")
+                    .accessibilityLabel("Search query length: \(model.searchTerm.count) of 100 characters")
             }
         }
         .padding(16)
