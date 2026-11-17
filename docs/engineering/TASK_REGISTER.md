@@ -313,3 +313,14 @@ The initial Intel macOS job for PR #34 reached Debug compilation and failed beca
 ## PR chain consolidation — 2026-11-17
 
 PR #33 now consolidates the original Market Explorer and search-lifecycle hardening directly on PR #26, including the Swift 5.8 MainActor dependency-construction fix. PR #31 is closed as superseded. PR #37 is the replacement Capital.com DEMO streaming backend, based directly on corrected PR #33 head 3b609eb259f8961d1e4c1b350a7e8edce1cf1ef1 (16 ahead / 0 behind). Exact-head verification is pending.
+
+
+## PR #38 / PR #39 Swift 5.8 stream-test remediation — 2026-11-18
+
+- Hosted Intel XCTest compilation on PR #38 head `0d37f11a8f91d09c82b39c443e346622a7df3530` exposed an async test missing `throws` and two incorrectly constructed quote-event values. The exact failure is recorded in CI run #44178484275, job #134376144630.
+- Corrected the test declaration and quote factory calls; applied the same tested source patch to `MarketSearchClient.swift` using `@preconcurrency import Foundation` on both branches.
+- PR #38 new head: `f07548eb0233e5113de794f69a8840b3bdd6841f`. PR #39 new head: `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`.
+- Owner-reported Intel Debug/XCTest evidence: 48/48 tests passed on macOS 13.7.8 / Xcode 14.3.1 / Swift 5.8.1 against PR #39 base plus the two local source-file changes; report is recorded in PR #39 comment 6962746664. It is not an exact-clean-commit hosted result.
+- New exact-head CI is pending/in progress; Local Sync Safety passed on both heads; Mermaid validation is running. Release, arm64, visual/accessibility QA and real DEMO provider verification remain outstanding.
+- PRs #38 and #39 remain OPEN / DRAFT. No merge or history rewrite. `CAP_ALLOW_TRADING=false` remains unchanged.
+- Detailed record: `SESSION_2026-11-18_027_SWIFT58_MARKET_STREAM_QUALIFICATION.md`.
