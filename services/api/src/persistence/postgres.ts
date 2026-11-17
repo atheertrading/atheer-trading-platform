@@ -113,7 +113,7 @@ export async function applySqlMigrations(pool: SqlPool, migrations: readonly Sql
       0n,
     );
     for (const migration of orderedMigrations) {
-      if (!/^\\d{3,}$/.test(migration.version) || seenVersions.has(migration.version)) {
+      if (!/^\d{3,}$/.test(migration.version) || seenVersions.has(migration.version)) {
         throw new PersistenceConflictError("Migration versions must be unique numeric identifiers.");
       }
       seenVersions.add(migration.version);
