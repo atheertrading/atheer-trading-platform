@@ -40,6 +40,40 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testWorkspaceEnginePersistsProfilesAndLayoutConfiguration() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let profileID = engine.createProfile(name: "Research")
+        XCTAssertNotNil(profileID)
+
+        let layout = WorkspaceLayoutConfiguration(
+            style: .stacked,
+            sidebarWidth: 360,
+            minimumPrimaryWidth: 540
+        )
+        XCTAssertTrue(engine.updateActiveLayout(layout))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.snapshot.activeProfileID, profileID)
+        XCTAssertEqual(restored.activeWorkspace.layout, layout)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRejectsOutOfRangeLayoutWithoutMutatingState() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let originalLayout = engine.activeWorkspace.layout
+        let invalidLayout = WorkspaceLayoutConfiguration(
+            style: .adaptiveColumns,
+            sidebarWidth: 900,
+            minimumPrimaryWidth: 500
+        )
+
+        XCTAssertFalse(engine.updateActiveLayout(invalidLayout))
+        XCTAssertEqual(engine.activeWorkspace.layout, originalLayout)
+    }
+
+    @MainActor
     func testWorkspaceEngineRecoversFromDuplicatePanelIdentity() {
         let persistence = InMemoryWorkspacePersistence()
         var invalid = WorkspaceSnapshot.standard()
