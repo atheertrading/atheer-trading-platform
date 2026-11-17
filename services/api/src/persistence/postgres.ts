@@ -144,6 +144,33 @@ export async function runSqlMigrations(pool: SqlPool, directory?: string): Promi
   await applySqlMigrations(pool, await loadSqlMigrations(directory));
 }
 
+export async function verifySqlMigrations(pool: SqlPool, directory?: string): Promise<void> {
+  const migrations = await loadSqlMigrations(directory);
+  let applied: SqlResult<{ version: string; checksum: string }>;
+  try {
+    applied = await pool.query<{ version: string; checksum: string }>(
+      "SELECT version, checksum FROM atheer_schema_migrations ORDER BY version",
+    );
+  } catch {
+    throw new PersistenceConflictError("PostgreSQL schema migration ledger is unavailable; apply migrations explicitly before starting the API.");
+  }
+  const appliedByVersion = new Map(applied.rows.map((row) => [row.version, row.checksum]));
+  for (const migration of migrations) {
+    const checksum = sha256(migration.sql);
+    const existing = appliedByVersion.get(migration.version);
+    if (existing === undefined) {
+      throw new PersistenceConflictError("PostgreSQL schema is missing migration " + migration.version + "; apply migrations explicitly.");
+    }
+    if (existing !== checksum) {
+      throw new PersistenceConflictError("PostgreSQL migration checksum differs for version " + migration.version + ".");
+    }
+  }
+  const knownVersions = new Set(migrations.map((migration) => migration.version));
+  if (applied.rows.some((row) => !knownVersions.has(row.version))) {
+    throw new PersistenceConflictError("PostgreSQL schema contains migrations unknown to this application version.");
+  }
+}
+
 export interface TradingPersistenceRepository {
   registerInstrument(instrument: InstrumentIdentity, specification: InstrumentSpecification): Promise<void>;
   registerBrokerAccount(account: BrokerAccountIdentity): Promise<void>;
