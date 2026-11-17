@@ -1,6 +1,6 @@
 import Foundation
 
-enum AppSection: String, CaseIterable, Identifiable {
+enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case workspace
     case apiConnection
 
