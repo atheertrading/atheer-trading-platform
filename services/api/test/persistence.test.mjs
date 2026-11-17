@@ -4,7 +4,7 @@ import { Pool } from "pg";
 import {
   assetClassCode, brokerAccountId, brokerAccountReference, brokerId, brokerInstrumentId,
   commandId, correlationId, createAuditEvent, createDataProvenance, createOrderIntentEnvelope,
-  createReconciliationEvent, createRiskAssessment, currencyCode, idempotencyKey, instrumentId,
+  createReconciliationEvent, createRiskAssessment, currencyCode, decimalValue, idempotencyKey, instrumentId,
   instrumentSpecificationId, orderIntentId, price, quantity, riskAssessmentId, sourceId,
   tradingEnvironment, unitCode, utcTimestamp,
 } from "../dist/domain/index.js";
@@ -62,7 +62,27 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     };
     const repository = new PostgresTradingRepository(pool, tradingEnvironment("DEMO"));
     await repository.registerBrokerAccount(account);
+    await repository.registerBrokerAccount(account);
     await repository.registerInstrument(instrument, specification);
+    await repository.registerInstrument(instrument, specification);
+
+    const accountSnapshot = {
+      accountId: account.id,
+      environment: account.environment,
+      asOf: provenance.eventAt,
+      provenance,
+      balance: { amount: decimalValue("1000.250000"), currency: currencyCode("USD") },
+      equity: { amount: decimalValue("1012.50"), currency: currencyCode("USD") },
+      availableFunds: { amount: decimalValue("900"), currency: currencyCode("USD") },
+      usedMargin: { amount: decimalValue("112.50"), currency: currencyCode("USD") },
+    };
+    await repository.recordAccountSnapshot(account, accountSnapshot);
+    await repository.recordAccountSnapshot(account, accountSnapshot);
+    const exactBalance = await pool.query(
+      "SELECT payload->'balance'->>'amount' AS amount FROM account_balance_snapshots WHERE environment='DEMO' AND account_id=$1 AND as_of=$2",
+      [account.id, new Date(accountSnapshot.asOf).toISOString()],
+    );
+    assert.equal(exactBalance.rows[0].amount, "1000.25");
 
     const intent = createOrderIntentEnvelope({
       id: orderIntentId(prefix + "-intent"), commandId: commandId(prefix + "-command"),
