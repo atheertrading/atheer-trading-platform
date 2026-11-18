@@ -278,7 +278,7 @@ enum BrokerCredentialIPCError: Error, LocalizedError, Sendable {
         case .responseTooLarge, .invalidResponse:
             return "The private broker credential channel returned an invalid response."
         case .requestRejected(let code):
-            return "The private broker credential request was rejected (\\(code))."
+            return "The private broker credential request was rejected (\(code))."
         }
     }
 }
