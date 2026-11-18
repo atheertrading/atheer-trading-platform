@@ -533,6 +533,13 @@ test("market-data HTTP boundary rejects malformed search and history parameters 
   });
   assert.equal(connected.state, "connected");
 
+  const readiness = await fetch(baseUrl + "/health/ready");
+  const readinessPayload = await readiness.json();
+  assert.equal(readiness.status, 503);
+  assert.equal(readinessPayload.dependencies.persistence, "not_configured");
+  assert.equal(readinessPayload.dependencies.broker, "connected");
+  assert.equal(readinessPayload.trading.enabled, false);
+
   const beforeMarketCalls = serverClient.calls.filter((call) => call[0] === "markets").length;
   const beforeHistoryCalls = serverClient.calls.filter((call) => call[0] === "history").length;
 
