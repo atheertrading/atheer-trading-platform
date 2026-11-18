@@ -254,19 +254,24 @@ export async function createBrokerCredentialIPCServer(options: {
       const payload = Buffer.from(buffer.subarray(0, newlineIndex));
       buffer.fill(0);
       buffer = Buffer.alloc(0);
-      let operation: Promise<void>;
-      operation = handleRequest(payload, expectedCapability, manager, beforeSessionReplacement)
+      const operation = handleRequest(payload, expectedCapability, manager, beforeSessionReplacement)
         .then((response) => writeResponse(socket, response))
         .catch(() => writeResponse(socket, {
           requestId: "invalid",
           ok: false,
           errorCode: "broker_session_ipc_failed",
-        }))
-        .finally(() => {
+        }));
+      inFlight.set(socket, operation);
+      void operation.then(
+        () => {
           payload.fill(0);
           if (inFlight.get(socket) === operation) inFlight.delete(socket);
-        });
-      inFlight.set(socket, operation);
+        },
+        () => {
+          payload.fill(0);
+          if (inFlight.get(socket) === operation) inFlight.delete(socket);
+        },
+      );
     });
     socket.on("end", () => {
       if (!handled) socket.destroy();
@@ -304,9 +309,6 @@ export async function createBrokerCredentialIPCServer(options: {
           if (!inFlight.has(socket)) socket.destroy();
         }
         await Promise.all([...inFlight.values()]);
-        for (const socket of sockets) {
-          if (!socket.destroyed) socket.end();
-        }
         await listenerClosed;
         await unlink(socketPath).catch(() => {});
       })();
