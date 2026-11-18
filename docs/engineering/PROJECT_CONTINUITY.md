@@ -655,3 +655,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Final exact-head CI remains the qualification gate. No merge or local Mac qualification is claimed.
 - PR #41/#42 remain dependent legacy stacks and must be reconciled after domain qualification; preserve their history and PostgreSQL least-privilege requirements.
 - `CAP_ALLOW_TRADING=false`; no credentials, broker sessions, orders or LIVE execution used.
+
+
+## 2026-11-18 — ATP-PERSISTENCE-001 port and backend qualification
+
+- Created PR #81 `feat/postgres-persistence-on-canonical-domain`, based on canonical domain PR #76. It ports the existing PostgreSQL migration/repository implementation without integrating or rewriting legacy PR #41.
+- The initial run revealed stale dependencies on legacy stream/history modules in the copied bootstrap/server. Corrected by retaining the canonical parent `main.ts` and `server.ts`, adding only database verification/lifecycle and readiness injection.
+- Verified PR #81 head `9ac64f65eb628fc45df6517432c314fe0044655a`: Backend Toolchain passed, Node.js 24.22.2, PostgreSQL 17.12, TypeScript type-check, API suite 37/37. Repository Hygiene, Mermaid and Local Sync Safety passed.
+- Intel x86_64 and Apple Silicon arm64 checks remain queued. PR #81 remains draft and must not merge before its PR #76 parent is qualified and integrated.
+- Legacy PR #41 and downstream PR #42 remain open and untouched. PR #42 must be reconciled onto the canonical persistence implementation before OMS integration.
+- `CAP_ALLOW_TRADING=false`; no provider credentials, sessions, orders, dealing APIs or LIVE execution used.
