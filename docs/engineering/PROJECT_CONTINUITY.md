@@ -656,3 +656,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #55's latest inspected source/test commit is `915223fdbe22c120d77d152b83006f9a2d981021`, which adjusts actor-isolated dependency construction in `BackendRuntimeViewModel`.
 - Current comparison of PR #55 branch against its base branch is 58 commits ahead / 2 behind, with merge base still `90dfaef64e0845cb2c968c84086db43f0662aecb`. Preserve this ancestry; do not rebase or force-push while the parent stack is moving. Resolve the stack only after PR #54 is qualified and integrated.
 - PR #55 Local Sync Safety passed on commit `915223fd` (run `44278139245`). Its CI run `44278138117` was cancelled by subsequent branch updates. A fresh exact-head CI run is required after the next documentation-only continuity update.
+
+
+## 2026-11-18 — Batch 050: broker test lifecycle and stack revalidation
+
+- Added SESSION_2026-11-18_050_BROKER_TEST_LIFECYCLE_AND_STACK_REVALIDATION.md (documentation commit f36578a7167acff29596ee0c02b34ebd0e11c07e).
+- PR #55 code/test head before the report commit: e3d5ff4a44a8ac4075603ce93887c27ba6dd164f; the report commit advances the PR branch and requires a new exact-head CI run.
+- Backend test fixtures now track all 14 CapitalDemoRuntime and 7 BrokerSessionManager constructions in market-data-runtime.test.mjs; suite teardown disconnects all tracked fixtures before closing the API test server. The streaming test file separately disconnects all tracked streaming runtimes.
+- Exact-head Local Sync Safety run 44283628390 on code/test head e3d5ff4a44a8ac4075603ce93887c27ba6dd164f passed. CI run 44283635275 on that code/test head had repository hygiene complete, API type-check passed, API tests in progress, Intel queued, and Apple Silicon queued at last inspection. The report commit means this is not the current PR head; final CI must be read from the new report commit's run.
+- Revalidated stack heads: #51 1e312352696bcc5e18ba00a15dc426d37aa26c5a; #54 37a085c5a1c5cf22368518dd1550dbbd2facbd53; #56 493e91b010c5637f37a3bc270c99995da3f6d67d; #55 e3d5ff4a44a8ac4075603ce93887c27ba6dd164f before the report commit. All are open/draft. Integrate upward: #55 → #56 → #54 → #51, then requalify #51 and merge it to main.
+- The Library Q&A navigation and IPDS sources and Codex ATP-MER-001 Mermaid catalogue were inspected. The five Mermaid diagrams remain proposed target architecture, not verified deployed topology.
+- Market Explorer still reports backend streaming health but does not yet subscribe to/render live quotes. The next market-data vertical slice is authenticated native SSE subscriptions with timestamp/provenance/freshness validation and cancellation.
+- No owner-Mac build/visual QA, Keychain restart qualification, or real Capital.com DEMO authentication was performed. LIVE and trading remain disabled.
