@@ -233,7 +233,6 @@ final class MarketChartTests: XCTestCase {
         model.selectInstrument(nil)
         XCTAssertNil(model.selectedInstrumentId)
         XCTAssertTrue(model.candles.isEmpty)
-        if case .unavailable = model.state { XCTAssertTrue(true) }
-        else { XCTFail("Clearing the selected instrument must clear the historical series.") }
+        XCTAssertEqual(model.state, .idle)
     }
 }
