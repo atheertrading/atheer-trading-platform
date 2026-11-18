@@ -549,3 +549,28 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - PR #41 current-head run `44210600813` (head `c9eb73d28c24398dfcb435525118f971aae221e8`): Backend Toolchain and Repository Hygiene passed; Mermaid run `44210600930` and Local Sync Safety run `44210600755` passed; Apple Silicon passed; Intel Debug was still in progress at last inspection. These results do not qualify PR #42.
 - Owner-local PostgreSQL 18.7 and local Mac runtime remain unqualified; no local migration was run.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## ATP-MARKET-001 — Command Center live Market Watch (PR #43)
+
+**Screen ID:** `SCR-MKT-001`  
+**Branch:** `feat/command-center-live-market-watch`  
+**Base:** PR #42 branch `feat/oms-authorized-order-persistence`
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Persistent watchlist | IMPLEMENTED; CI PENDING | Versioned UserDefaults, stable ordering, EPIC validation, duplicate prevention, max 40, non-destructive recovery |
+| Shared app-scoped market model | IMPLEMENTED; CI PENDING | ContentView owns model; Market Explorer and Command Center share via DI |
+| Command Center Market Watch | IMPLEMENTED; CI PENDING | Provider-backed DEMO Bid/Ask, spread, quote age and feed status |
+| Explicit stream lifecycle | IMPLEMENTED; CI PENDING | Start/Stop controls; panel navigation no longer cancels stream |
+| Instrument search/add | IMPLEMENTED; CI PENDING | Shared DEMO catalogue search and add/remove watchlist actions |
+| Broker account/positions | NOT IMPLEMENTED | Market-data session is not broker account authentication |
+| Chart/candle engine | NOT IMPLEMENTED | Command Center still truthfully displays no-series state |
+| Order entry / broker execution | NOT IMPLEMENTED | No dealing actions; centralized risk/OMS/Execution Gateway not qualified |
+
+### Verification boundary
+
+- Swift unit tests added for watchlist persistence, validation, ordering, maximum size, corrupt/unsupported schema recovery, save failure, and shared view-model construction.
+- PR #43 exact-head CI is pending; no build or XCTest pass is claimed until the current head completes both Intel x86_64 and Apple Silicon arm64 jobs.
+- Owner-side Mac runtime, Keychain, VoiceOver, resize, and multi-display visual acceptance remain unverified.
+- `CAP_ALLOW_TRADING=false` remains unchanged.
