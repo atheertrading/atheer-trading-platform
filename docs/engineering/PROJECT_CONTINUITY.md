@@ -587,3 +587,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 - Follow-up PR #33: [Market Explorer search lifecycle hardening](https://github.com/atheertrading/atheer-trading-platform/pull/33), OPEN / DRAFT; branch `fix/market-explorer-search-lifecycle`; exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; 9 ahead / 0 behind.
 - PR #33 CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS pass is claimed.
+
+
+## 2026-11-18 — ATP-UI-ARCH-001A Market Explorer boundary separation
+
+- Reviewed PR #33 current head `32a8cb90112011dcc07c149410cea432656a0a92` and found provider Decodable models exposed directly to the ViewModel/UI, the ViewModel constructing its own concrete HTTP client, and infrastructure/VM code combined in one source file.
+- Refactored the feature on `fix/market-explorer-search-lifecycle`: provider DTOs are private to the adapter; semantic models live in `MarketSearchModels.swift`; `MarketExplorerViewModel.swift` is separate; the ViewModel requires an injected `MarketSearchClient`; ContentView selects the production adapter.
+- Updated the view and tests to use semantic models; added unknown backend-state rejection coverage. Existing stale-search generation, 100-character limit, DEMO validation and disconnected-session gating remain.
+- Code/test commits: `448fc017`, `a4ea2355`, `e3cf9c04`, `65b53535`, `4b19bc34`, `82d67fde`.
+- The current PR #33 head includes PR #26 current head `69b15098e879be362926df1630c58cb3f1cd62fd` as an ancestor (comparison: 41 ahead / 0 behind), despite stale PR description metadata.
+- Exact-head CI for the refactored head is pending. No owner-Mac runtime/visual acceptance is claimed.
