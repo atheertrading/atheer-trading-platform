@@ -101,11 +101,17 @@ export function validateInstrumentIdentity(instrument: InstrumentIdentity): void
   nonEmptyString(instrument.id, "instrument_id");
 }
 
+function decimalScale(value: DecimalValue): number {
+  const normalized = decimalValue(value);
+  const point = normalized.indexOf(".");
+  return point < 0 ? 0 : normalized.length - point - 1;
+}
+
 function validateQuantity(quantity: Quantity | undefined, field: string): void {
   if (quantity === undefined) return;
   assertRecord(quantity, field);
   assertPositiveDecimal(quantity.value, field);
-  nonEmptyString(quantity.unit, field + "_unit");
+  unitCode(quantity.unit);
 }
 
 export function validateInstrumentSpecification(specification: InstrumentSpecification): void {
@@ -154,6 +160,12 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
     if (specification.priceIncrement.currency !== undefined) {
       currencyCode(specification.priceIncrement.currency);
     }
+    if (decimalScale(specification.priceIncrement.value) > specification.pricePrecision) {
+      throw new DomainValidationError(
+        "price_increment_precision_mismatch",
+        "Price increment precision cannot exceed the broker-declared price precision.",
+      );
+    }
   }
 
   const quantityConstraints = [
@@ -166,6 +178,15 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
     const expectedUnit = quantityConstraints[0].unit;
     if (quantityConstraints.some((value) => value.unit !== expectedUnit)) {
       throw new DomainValidationError("quantity_unit_mismatch", "Minimum, maximum, and increment quantities must use the same validated unit.");
+    }
+  }
+
+  for (const value of quantityConstraints) {
+    if (decimalScale(value.value) > specification.quantityPrecision) {
+      throw new DomainValidationError(
+        "quantity_precision_mismatch",
+        "Minimum, maximum, and increment quantities cannot exceed the broker-declared quantity precision.",
+      );
     }
   }
 
@@ -191,6 +212,7 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
     assertRecord(constraint, "broker_instrument_constraint");
     nonEmptyString(constraint.code, "broker_constraint_code");
     nonEmptyString(constraint.rawValue, "broker_constraint_raw_value");
+    if (constraint.unit !== undefined) unitCode(constraint.unit);
     if (constraint.sourceField !== undefined) {
       nonEmptyString(constraint.sourceField, "broker_constraint_source_field");
     }
