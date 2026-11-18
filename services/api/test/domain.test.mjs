@@ -365,3 +365,112 @@ test("broker order and position observations require matching broker provenance"
     { code: "position_provenance_mismatch" },
   );
 });
+
+
+test("runtime domain validators reject malformed financial values, environments and event classifications", () => {
+  const account = {
+    id: brokerAccountId("account-demo-1"),
+    brokerId: brokerId("capital.com"),
+    environment: "DEMO",
+    brokerAccountReference: brokerAccountReference("broker-account-ref"),
+    accountCurrency: currencyCode("USD"),
+  };
+  assert.throws(
+    () => validateBrokerAccountIdentity({ ...account, environment: "PAPER" }),
+    { code: "invalid_trading_environment" },
+  );
+  assert.throws(
+    () => validateBrokerAccountIdentity({ ...account, accountCurrency: "US" }),
+    { code: "invalid_currency_code" },
+  );
+
+  const provenance = brokerProvenance();
+  const invalidSnapshot = {
+    accountId: account.id,
+    environment: "DEMO",
+    asOf: provenance.eventAt,
+    provenance,
+    balance: { amount: "1e3", currency: "USD" },
+  };
+  assert.throws(
+    () => validateAccountBalanceSnapshot(account, invalidSnapshot),
+    { code: "invalid_decimal" },
+  );
+
+  const invalidIntent = {
+    id: orderIntentId("intent-invalid-decimal"),
+    commandId: "command-invalid-decimal",
+    correlationId: "correlation-invalid-decimal",
+    idempotencyKey: idempotencyKey("idempotency-invalid-decimal"),
+    accountId: account.id,
+    instrumentId: instrumentId("instrument-GOLD"),
+    instrumentSpecificationId: instrumentSpecificationId("spec-GOLD-v1"),
+    environment: "DEMO",
+    origin: { kind: "HUMAN", sourceId: sourceId("trader-1") },
+    createdAt: utcTimestamp(1_800_000_000_200),
+    intentVersion: 1,
+    schemaVersion: "1.0.0",
+    payload: {
+      operationCode: "OPEN",
+      quantity: { value: "1e3", unit: unitCode("CONTRACT") },
+    },
+  };
+  assert.throws(
+    () => createOrderIntentEnvelope(invalidIntent),
+    { code: "invalid_decimal" },
+  );
+
+  const riskProvenance = createDataProvenance({
+    source: { sourceId: sourceId("risk-engine"), sourceType: "INTERNAL" },
+    environment: "DEMO",
+    eventAt: utcTimestamp(1_800_000_000_300),
+    receivedAt: utcTimestamp(1_800_000_000_300),
+    schemaVersion: "risk-assessment-v1",
+    normalizationVersion: "1.0.0",
+    validationCode: "VALID",
+  });
+  assert.throws(
+    () => createRiskAssessment({
+      id: "risk-invalid-time",
+      intentId: orderIntentId("intent-001"),
+      policyVersion: "risk-policy-v1",
+      outcome: "AUTHORIZED",
+      evaluatedAt: -1,
+      reasonCodes: [],
+      inputReferences: [],
+      provenance: riskProvenance,
+    }),
+    { code: "invalid_utc_timestamp" },
+  );
+
+  assert.throws(
+    () => createAuditEvent({
+      id: "audit-invalid-actor",
+      actorKind: "ADMIN",
+      actorId: sourceId("operator-1"),
+      actionCode: "TEST",
+      subjectType: "ORDER",
+      subjectId: "order-1",
+      outcomeCode: "REJECTED",
+      occurredAt: provenance.eventAt,
+      correlationId: "correlation-1",
+      environment: "DEMO",
+      reasonCodes: [],
+    }),
+    { code: "invalid_audit_actor_kind" },
+  );
+
+  assert.throws(
+    () => createReconciliationEvent({
+      id: "reconciliation-invalid-aggregate",
+      aggregateType: "BROKER",
+      aggregateId: "capital.com",
+      outcomeCode: "MATCHED",
+      occurredAt: provenance.eventAt,
+      environment: "DEMO",
+      discrepancyCodes: [],
+      provenance,
+    }),
+    { code: "invalid_reconciliation_aggregate" },
+  );
+});
