@@ -478,4 +478,4 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Added a Charts navigation destination, Market Explorer Open Chart action and Command Center chart panel using real normalized DEMO Bid/Ask candles.
 - Added timeframe/side selection, manual refresh, receipt-time and quality metadata, plus raw provider-limit warning.
 - Persistent watchlist, live candles, indicators and drawing tools remain separate pending increments. Exact-head CI and owner-Mac qualification pending.
-- PR #69 is stacked on PR #68. Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+- PR #70 is stacked on PR #68. Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
