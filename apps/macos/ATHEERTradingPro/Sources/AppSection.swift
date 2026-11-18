@@ -23,7 +23,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .workspace: return "square.grid.2x2"
         case .markets: return "chart.xyaxis.line"
-        case .charts: return "chart.bar.xaxis"
+        case .charts: return "chart.xyaxis.line"
         case .apiConnection: return "network"
         case .settings: return "gearshape"
         }
