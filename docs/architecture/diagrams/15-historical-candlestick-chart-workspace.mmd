@@ -1,0 +1,24 @@
+flowchart LR
+    Watchlist["Persistent MarketWatchlistStore"]
+    Selection["MarketChartViewModel<br/>instrument + timeframe + Bid/Ask"]
+    Client["MarketHistoryClient"]
+    API["GET /market-data/history"]
+    Broker["Capital.com DEMO historical API"]
+    Normalize["Backend OHLC normalization<br/>UTC timestamps + duplicate/gap quality"]
+    Validate["Native payload validation<br/>provider + environment + instrument + OHLC"]
+    Chart["Swift Charts candlestick renderer"]
+    Command["Command Center chart panel"]
+    Workspace["Charts & Analysis destination"]
+    NoExecution["Read-only boundary<br/>no order or dealing authority"]
+
+    Watchlist --> Selection
+    Selection --> Client
+    Client --> API
+    API --> Broker
+    Broker --> Normalize
+    Normalize --> API
+    API --> Validate
+    Validate --> Chart
+    Chart --> Command
+    Chart --> Workspace
+    NoExecution -.-> Chart

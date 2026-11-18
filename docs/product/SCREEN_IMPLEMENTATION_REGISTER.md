@@ -6,10 +6,10 @@
 
 | Screen ID | Canonical screen | Owning domain | Status | Current behavior / remaining acceptance |
 |---|---|---|---|---|
-| SCR-CMD-001 | Command Center | Workstation / Platform Operations | IN PROGRESS | Workspace shell and platform health exist; Market Watch is being integrated. Chart, account/portfolio, risk, positions, orders, alerts and execution panels remain incomplete or truthfully unavailable. |
+| SCR-CMD-001 | Command Center | Workstation / Platform Operations | IN PROGRESS; CI PENDING | Workspace shell, shared live DEMO Market Watch and provider-backed historical chart panel are implemented on stacked PRs #43/#44; account/portfolio, risk, positions, orders, alerts and execution remain incomplete or truthfully unavailable. |
 | SCR-MKT-001 | Market Watch | Market Data / Workstation | IMPLEMENTED; TESTED PENDING | Persistent EPIC watchlist, authenticated DEMO search, timestamped Bid/Ask, spread, quote age and feed status; no execution actions. PR #43 qualification pending. |
 | SCR-MKT-002 | Market Explorer | Market Data | IN PROGRESS | Provider-backed catalogue search and explicit DEMO stream subscription exist; shared app-scoped model/watchlist integration is in PR #43. |
-| SCR-CHART-001 | Chart Workspace | Charting / Market Data | BLOCKED BY CHART DATA CONTRACT | Current UI shows a truthful no-series state. Historical candles, aggregation, chart rendering, indicators, drawings and synchronization are not implemented. |
+| SCR-CHART-001 | Chart Workspace | Charting / Market Data | IMPLEMENTED; CI PENDING | Native Swift Charts historical candlesticks from the existing Capital.com DEMO history endpoint; watchlist instrument/timeframe controls, explicit Bid or Ask OHLC, strict payload validation, shared Command Center surface. Live aggregation, indicators, drawings and synchronization remain pending. |
 | SCR-ORD-001 | Order Creation & Review | Order Intake / Risk / OMS | NOT STARTED | No UI dealing workflow until risk authorization, OMS lifecycle, Execution Gateway and broker reconciliation are qualified. |
 | SCR-ORD-002 | Order Management | OMS / Execution | NOT STARTED | Requires broker-authoritative order state, fills, cancel/replace semantics and reconciliation. |
 | SCR-POS-001 | Positions & Portfolio | Account / Position Management | NOT STARTED | Requires authenticated broker account snapshots and broker-confirmed position projections. |
@@ -26,3 +26,11 @@
 - Tests: watchlist validation, persistence, ordering, unsupported schema recovery, persistence failure, and shared-view-model construction.
 - Architecture: `ATP_MARKET_WATCH_WORKSPACE_INTEGRATION.md`, Mermaid diagram 14.
 - Verification: exact-head PR #43 CI required; owner-side runtime, accessibility and visual acceptance remain separate.
+
+
+## SCR-CHART-001 acceptance evidence
+
+- Implementation: MarketHistoryClient.swift, MarketChartViewModel.swift, MarketChartView.swift, ContentView.swift, CommandCenterView.swift, and WorkspaceHomeView.swift.
+- Architecture: ATP_HISTORICAL_CHART_WORKSPACE.md, Mermaid diagram 15, and EDL-015.
+- Tests: historical provider/environment/instrument validation, OHLC and Bid/Ask integrity, provider-volume lineage, watchlist selection, stale-series clearing, and shared screen construction.
+- Verification: PR #44 exact-head Intel and Apple Silicon CI required; owner-Mac runtime, visual/accessibility and authenticated DEMO request remain separate acceptance gates.
