@@ -37,3 +37,11 @@ The marker is not a secret and does not authenticate arbitrary local processes. 
 ## Verification
 
 Exact-head hosted CI is pending. No live broker session or credentials were used. No dealing or LIVE capability was added.
+
+
+## Catalogue / quote authority extension
+
+- `CapitalDemoClient.getMarkets` now allow-lists only epic, instrument name, market status and currency.
+- Unvalidated provider `bid`/`offer` fields are stripped from catalogue responses; only normalized streaming events can supply live Bid/Ask.
+- Added a regression test proving catalogue bid/offer values are not exposed.
+- Added ATP-MKT-006I and EDL-021.
