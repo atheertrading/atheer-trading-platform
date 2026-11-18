@@ -6,6 +6,7 @@ import SwiftUI
 struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     let marketHistoryClient: MarketHistoryClient?
+    let marketDataStreamModel: MarketDataStreamViewModel?
     let selectedChartInstrumentId: String?
     let onOpenAPIConnection: () -> Void
     let onOpenMarkets: () -> Void
@@ -13,12 +14,14 @@ struct CommandCenterView: View {
     init(
         backendHealthModel: BackendHealthViewModel,
         marketHistoryClient: MarketHistoryClient? = nil,
+        marketDataStreamModel: MarketDataStreamViewModel? = nil,
         selectedChartInstrumentId: String? = nil,
         onOpenAPIConnection: @escaping () -> Void,
         onOpenMarkets: @escaping () -> Void = {}
     ) {
         _backendHealthModel = ObservedObject(wrappedValue: backendHealthModel)
         self.marketHistoryClient = marketHistoryClient
+        self.marketDataStreamModel = marketDataStreamModel
         self.selectedChartInstrumentId = selectedChartInstrumentId
         self.onOpenAPIConnection = onOpenAPIConnection
         self.onOpenMarkets = onOpenMarkets
@@ -266,42 +269,33 @@ struct CommandCenterView: View {
         }
     }
 
+    @ViewBuilder
     private var marketWatchPanel: some View {
-        CommandCenterPanel(
-            title: "Market Watch",
-            subtitle: "Instrument discovery · Quotes",
-            symbol: "list.bullet.rectangle",
-            status: "NO FEED",
-            statusColor: ATHEERDesignTokens.ColorRole.attention,
-            minHeight: 244
-        ) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("INSTRUMENT")
-                    Spacer()
-                    Text("LAST")
-                    Text("CHANGE")
-                }
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .tracking(0.5)
-                .foregroundColor(.secondary)
-
-                Rectangle()
-                    .fill(ATHEERDesignTokens.ColorRole.separator)
-                    .frame(height: 1)
-
-                VStack(spacing: 8) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: 22))
-                        .foregroundColor(.secondary)
-                    Text("No instruments")
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("A connected provider is required before quotes can be shown.")
+        if let marketDataStreamModel {
+            LiveMarketWatchPanel(
+                model: marketDataStreamModel,
+                onOpenMarkets: onOpenMarkets
+            )
+        } else {
+            CommandCenterPanel(
+                title: "Market Watch",
+                subtitle: "Instrument discovery · DEMO quotes",
+                symbol: "list.bullet.rectangle",
+                status: "BACKEND OFFLINE",
+                statusColor: ATHEERDesignTokens.ColorRole.attention,
+                minHeight: 244
+            ) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("Authenticated market stream unavailable", systemImage: "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Start the supervised backend to restore the shared DEMO quote monitor. No synthetic or cached price is presented as current.")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Connections", action: onOpenAPIConnection)
+                        .buttonStyle(.borderless)
                 }
-                .frame(maxWidth: .infinity, minHeight: 112)
+                .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
             }
         }
     }
