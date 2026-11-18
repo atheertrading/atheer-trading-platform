@@ -83,3 +83,13 @@ A source-level integration review found that `WorkspaceHomeView` and `CommandCen
 - PR #70 exact head after remediation: `484907de2f308231dac89d5e151beee6e95c250a`.
 - Hosted CI was triggered for this exact head; compilation and XCTest results remain pending.
 - PR #71 was closed as redundant, preserving its branch and history. Its only test-fixture change is already byte-for-byte present on PR #70 (blob `c1930bbb87d4ba66898f85ed90faed6c4a4efe56`); PR #70 remains based on the PR #68 head.
+
+## Follow-up data-integrity hardening — 2026-11-18
+
+The native historical payload decoder now independently rejects candles whose market timestamp is later than the candle's receipt timestamp. Added a regression test using a deliberately future-dated payload. This duplicates the backend guard at the client trust boundary rather than relying solely on server normalization.
+
+- Native client: `apps/macos/ATHEERTradingPro/Sources/Services/MarketHistoryClient.swift`.
+- XCTest: `apps/macos/ATHEERTradingPro/Tests/MarketChartTests.swift`.
+- Commits: `68b70ed2404b4672a86dbb91e05b0157da311391`, `b130e4375444deb9c029299fc6564168d51a636d`.
+- Exact-head macOS CI and dependent backend checks are required; no build or test pass is claimed.
+- The chart remains historical DEMO/read-only. No execution path was added.
