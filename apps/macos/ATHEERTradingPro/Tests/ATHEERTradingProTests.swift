@@ -9,7 +9,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .charts, .apiConnection, .settings])
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
@@ -326,6 +326,7 @@ final class ATHEERTradingProTests: XCTestCase {
                 streamClient: StubMarketDataStreamClient(events: [])
             ),
             marketWatchlistStore: MarketWatchlistStore(persistence: InMemoryMarketWatchlistPersistence()),
+            marketChartModel: MarketChartViewModel(),
             onOpenMarkets: {},
             onOpenAPIConnection: {}
         )

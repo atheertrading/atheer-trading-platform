@@ -458,7 +458,7 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 | ATP-MARKET-001B | P0 | Share one app-scoped market-data model between Market Explorer and Command Center | IMPLEMENTED; CI PENDING | `ContentView`, `WorkspaceHomeView`, `CommandCenterView`, `MarketExplorerView`; dependency injection and shared model tests |
 | ATP-MARKET-001C | P0 | Replace Command Center Market Watch placeholder with real DEMO quote panel | IMPLEMENTED; CI PENDING | `MarketWatchPanelView`; provider Bid/Ask, spread, quote age, freshness, explicit stream controls |
 | ATP-MARKET-001D | P0 | Keep market-data runtime independent from screen/panel visibility | IMPLEMENTED; CI PENDING | Stream model app-scoped; removed screen-disappearance pause; explicit Start/Stop and removal behavior |
-| ATP-MARKET-001E | P1 | Implement native chart/candle engine with authenticated historical and live series | PENDING | Requires verified candle contract, timestamp normalization, aggregation, rendering and deterministic chart tests |
+| ATP-MARKET-001E | P1 | Implement native historical candlestick chart workspace and shared Command Center chart surface | IMPLEMENTED; CI PENDING | Existing normalized /market-data/history contract; MarketHistoryClient, strict payload decoder, shared MarketChartViewModel, native Bid/Ask OHLC chart, deterministic tests; live aggregation and indicators remain pending |
 | ATP-MARKET-001F | P1 | Implement account/positions/risk panels from broker-authoritative snapshots | PENDING | Requires authenticated account API, canonical account/position persistence, RiskEngine integration |
 | ATP-MARKET-001G | P1 | Implement governed order entry and OMS workflow | BLOCKED BY EXECUTION SAFETY GATES | Must use shared RiskEngine → OMS → Execution Gateway path; no UI direct broker calls |
 
@@ -514,3 +514,43 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 5. Establish main-branch protection/rulesets and an explicit repository license decision.
 6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
 7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
+
+
+### ATP-CHART-001 — Historical Chart Workspace (PR #44)
+
+- Historical chart data uses the existing backend /market-data/history endpoint; no duplicate broker adapter is introduced.
+- The client validates provider, DEMO environment, instrument identity, timeframe, timestamp ordering, exact OHLC invariants, Bid/Ask non-crossing, and provider-volume lineage.
+- One app-scoped chart model is shared by Charts & Analysis and the Command Center chart panel.
+- The view supports watchlist instrument selection, provider-supported timeframes, explicit Bid or Ask OHLC, refresh, and truthful loading/empty/unavailable/error states.
+- No mid-price synthesis, live candle aggregation, indicators, drawing tools, account values, or execution capability is introduced.
+- CAP_ALLOW_TRADING=false remains unchanged.
+
+
+### Cross-PR audit correction — 2026-11-18
+
+Use the commit-specific qualification record in `IMPLEMENTATION_STATUS.md` as the current review reference. Do not infer macOS qualification from a passing Backend Toolchain job.
+
+- **Rerun required:** PR #25, #38, #39 (macOS jobs cancelled or aggregate CI failed).
+- **Dependency repair required:** PR #26 base SHA must be reconciled with the intended current PR #25 head; Apple Silicon qualification was still pending.
+- **Architecture checks pending at audit time:** PR #24 Intel; PR #33 and #37 Intel/Apple Silicon; PR #43 Intel; PR #44 Intel and Apple Silicon.
+- **Exact-head green:** PR #40, #41, #42 only, for the reviewed SHAs documented in the implementation status record.
+- **Runtime qualification still outstanding:** owner-Mac app build/launch/visual/accessibility checks, Keychain persistence, and authenticated Capital.com DEMO requests/streaming.
+- **Database safety:** no local PostgreSQL 18.7 migration until exact-head CI, controlled backup/restore, and the migration plan are qualified.
+- **Execution safety:** domain outbox and OMS persistence are not broker dispatch. No outbox consumer, Execution Gateway, or broker dealing is approved by this audit.
+- **Governance:** branch protection/rulesets and license decision remain open verification/configuration tasks.
+
+Preserve `CAP_ALLOW_TRADING=false`. Merge only after current-head, parent/base, and required-check verification.
+
+
+### Latest CI recheck correction — 2026-11-18
+
+The current exact-head CI matrix is recorded in IMPLEMENTATION_STATUS.md under CI status correction. Key corrections:
+- PR #24 and #26 have now passed both Intel and Apple Silicon hosted jobs.
+- PR #33 and #37 have passed both architectures.
+- PR #38 has an Intel job failure and Apple Silicon cancellation; inspect failure logs before retry.
+- PR #39's two architecture jobs were cancelled; qualification remains incomplete.
+- PR #25's macOS CI attempts were cancelled; qualification remains incomplete.
+- PR #43 and #44 have Apple Silicon passed while Intel remains in progress at the latest inspected run.
+- PR #26's green CI does not remove its parent/base mismatch with PR #25.
+
+Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or provider-runtime qualification. Preserve CAP_ALLOW_TRADING=false.

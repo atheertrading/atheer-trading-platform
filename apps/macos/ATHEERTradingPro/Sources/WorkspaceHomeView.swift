@@ -6,6 +6,7 @@ struct WorkspaceHomeView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     @ObservedObject var marketExplorerModel: MarketExplorerViewModel
     @ObservedObject var marketWatchlistStore: MarketWatchlistStore
+    @ObservedObject var marketChartModel: MarketChartViewModel
     let onOpenMarkets: () -> Void
     let onOpenAPIConnection: () -> Void
 
@@ -14,6 +15,7 @@ struct WorkspaceHomeView: View {
             backendHealthModel: backendHealthModel,
             marketExplorerModel: marketExplorerModel,
             marketWatchlistStore: marketWatchlistStore,
+            marketChartModel: marketChartModel,
             onOpenMarkets: onOpenMarkets,
             onOpenAPIConnection: onOpenAPIConnection
         )

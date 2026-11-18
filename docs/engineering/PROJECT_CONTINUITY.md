@@ -851,8 +851,52 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 ### Next actions (ordered)
 1. Complete PR #24 Intel job and PR #25 Intel/arm64 qualification.
 2. Reconcile PR #26 base to the intended current PR #25 head; then re-run exact-head CI for #26 and descendants as needed.
-3. Complete PR #43 Intel and arm64 jobs on exact HEAD `25599a3...`; update the implementation snapshot after qualification.
+3. Complete PR #43 Intel and arm64 jobs on exact HEAD `0ba7b82...`; update the implementation snapshot after qualification.
 4. Reconcile stale README and engineering status snapshots; ensure all docs identify exact commit SHAs and distinguish current implementation from target architecture.
 5. Establish main-branch protection/rulesets and an explicit repository license decision.
 6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
 7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
+
+
+## 2026-11-18 — Session 034: ATP-CHART-001 Historical Chart Workspace
+
+- Verified the active repository and current stacked PR chain. PR #43 advanced from 25599a3c to 0ba7b82f while this chart branch was being built; the latest parent changes were reviewed and integrated through a non-destructive merge commit.
+- Created and maintained feat/historical-chart-workspace as a child of the latest PR #43 head. Current PR #44 remains OPEN / DRAFT.
+- Implemented typed MarketHistoryClient transport for the existing /market-data/history endpoint, strict DEMO/provider/instrument/timeframe/OHLC/timestamp/Bid-Ask/volume-lineage validation, and app-scoped MarketChartViewModel.
+- Added native Swift Charts historical candlesticks with separate Bid or Ask selection, watchlist instrument selection, provider timeframes, refresh and truthful loading/empty/unavailable/error states.
+- Replaced the Command Center static chart no-series panel with the same shared chart surface and added Charts & Analysis navigation.
+- Added deterministic decoder/model/view tests, architecture note, Mermaid diagram 15, EDL-015, and updated task, status, screen and conversation records.
+- Historical chart is read-only. No synthetic mid-price series, no fabricated prices, no volume reinterpretation, no live candle aggregation, no order entry, no broker dealing and no strategy execution.
+- Exact-head CI and owner-Mac visual/runtime qualification remain pending. CAP_ALLOW_TRADING=false remains unchanged.
+
+
+## GitHub continuity audit — 2026-11-18
+
+Recorded a cross-PR implementation and qualification audit on the historical-chart feature branch. The audit anchors the mainline at `4875fc30e68b3611c036f4e9b1c9bbe9f0fb59c6`, distinguishes merged baseline from open feature work, and records commit-specific CI outcomes for PRs #24–#44.
+
+Important corrections preserved:
+- PR #25 macOS jobs were cancelled; PR #26 Intel passed but Apple Silicon remained queued, and its recorded base did not match the reviewed PR #25 head.
+- PR #33 and #37 Backend checks passed, but their macOS architecture jobs were queued in the inspected runs.
+- PR #38 and #39 remediation did not complete macOS qualification; their architecture jobs were cancelled.
+- PR #24 Intel, PR #43 Intel, and both PR #44 architecture jobs remained in progress at inspection.
+- PR #40–#42 passed their reviewed exact-head hosted CI gates; this does not imply owner-Mac or broker-runtime qualification.
+
+The audit explicitly preserves the implementation boundaries between domain outbox persistence, OMS order persistence, command processing, Execution Gateway, and broker dealing. It also records that watchlist persistence is local, charting is historical/read-only, and no live aggregation/indicators/drawing/execution are included in PR #44.
+
+No PR was merged, no database migration was run, no permissions or risk limits were changed, and `CAP_ALLOW_TRADING=false` remains mandatory.
+
+
+## CI recheck correction — 2026-11-18
+
+A subsequent direct GitHub Actions recheck supersedes the earlier preliminary cross-PR CI snapshot. Exact-head hosted results:
+- PR #24: Intel + Apple Silicon + Backend + Hygiene passed.
+- PR #25: Backend/Hygiene passed; macOS CI attempts cancelled.
+- PR #26: Intel + Apple Silicon + Backend + Hygiene passed, but its recorded base does not match the reviewed PR #25 head.
+- PR #33 and #37: Intel + Apple Silicon + Backend + Hygiene passed.
+- PR #38: Intel failed; Apple Silicon cancelled; Backend/Hygiene passed.
+- PR #39: both macOS architecture jobs cancelled; Backend/Hygiene passed.
+- PR #40–#42: Intel + Apple Silicon + Backend + Hygiene passed; #41 PostgreSQL 49/49, #42 Backend 52/52.
+- PR #43: Apple Silicon passed; Intel remained in progress.
+- PR #44: Apple Silicon passed; Intel remained in progress.
+
+See the CI status correction table in IMPLEMENTATION_STATUS.md for the exact SHAs. Cancelled checks are not passes. The PR #38 Intel failure needs log-level diagnosis. PR #25 requires a successful exact-head macOS run. No owner-Mac runtime or real provider qualification is implied.
