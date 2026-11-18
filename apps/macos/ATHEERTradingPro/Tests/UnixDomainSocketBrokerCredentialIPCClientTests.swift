@@ -161,4 +161,11 @@ final class UnixDomainSocketBrokerCredentialIPCClientTests: XCTestCase {
         XCTAssertEqual(credentials["identifier"], "synthetic.demo.user")
         XCTAssertEqual(credentials["password"], "synthetic-demo-password")
     }
+
+    func testRequestRejectedErrorDescriptionIncludesErrorCode() {
+        XCTAssertEqual(
+            BrokerCredentialIPCError.requestRejected("unauthorized").errorDescription,
+            "The broker credential request was rejected (unauthorized)."
+        )
+    }
 }
