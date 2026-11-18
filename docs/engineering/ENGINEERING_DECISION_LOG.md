@@ -130,3 +130,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - Mandatory constraints: DEMO only; LIVE rejected; no dealing, order, position mutation, or account mutation methods; no secrets in UserDefaults, logs, diagnostics, source control, or network response payloads; no trading authorization or risk-control changes. Capital.com API keys are trading-capable and are not read-only, so the native feature must remain capability-restricted and trading-disabled.
 - Consequences: API credentials are present in the native process memory while authenticating and are transmitted only to the fixed official DEMO HTTPS endpoint. This local trust boundary is not appropriate for remote or multi-user clients. REST session authentication does not establish streaming or trading readiness.
 - Verification: Official Capital.com API documentation and the existing backend adapter/specification were inspected. Hosted macOS build/XCTest and real provider authentication remain pending.
+
+
+## EDL-020 — Native-only loopback market-data API request guard
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #37 branch; exact-head CI pending.
+- **Decision:** Bind the local API only to `127.0.0.1` and require the native client marker header on every `/market-data/*` route. Reject requests carrying an `Origin` header or a `Sec-Fetch-Site` value other than absent/`none`. Do not enable CORS.
+- **Rationale:** Prevent ordinary browser pages from triggering local broker connect/disconnect operations or reading market-data streams through cross-origin requests.
+- **Threat-model limitation:** The marker header is public and is not authentication against local processes. Before production or multi-user use, add a per-launch capability token or authenticated local IPC.
+- **Verification:** Server tests cover unidentified, cross-origin, cross-site and native-marker requests; SSE contract test sends the marker. Exact-head CI pending.
