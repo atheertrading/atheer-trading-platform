@@ -82,7 +82,7 @@ struct BrokerManagementView: View {
                 metric("AUTHENTICATION", value: model.state.title)
                 metric("SESSION", value: model.state == .connected ? "Active" : (model.state == .sessionExpired ? "Expired" : "Inactive"))
                 metric("LAST CONNECTED", value: model.lastSuccessfulConnection?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified this session")
-                metric("LAST SESSION CHECK", value: model.lastSessionVerification?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
+                metric("LAST BACKEND STATUS CHECK", value: model.lastSessionVerification?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
                 metric("MARKET STREAM", value: "Not connected", tint: .secondary)
                 metric("TRADING", value: "Disabled", tint: .secondary)
             }
@@ -196,7 +196,7 @@ struct BrokerManagementView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Connection and permissions are separate", systemImage: "lock.shield")
                 .font(.system(size: 12, weight: .semibold))
-            Text("This DEMO-only connection test creates an authenticated session and verifies it with a read-only GET /session request. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
+            Text("This DEMO-only connection sends credentials to the managed backend over authenticated loopback IPC and creates a Capital.com DEMO session. The screen displays sanitized backend session state; it does not currently retrieve or display broker account details. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
