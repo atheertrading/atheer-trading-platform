@@ -138,3 +138,50 @@ test("concurrent replacement requests cannot create overlapping broker runtimes"
   assert.ok(createB > disconnectA);
   assert.equal(manager.status().state, "connected");
 });
+
+test("disconnect stream teardown stays inside the serialized session transition", async () => {
+  const events = [];
+  let releaseStream;
+  let signalStreamStarted;
+  const streamGate = new Promise((resolve) => { releaseStream = resolve; });
+  const streamStarted = new Promise((resolve) => { signalStreamStarted = resolve; });
+  const manager = new BrokerSessionManager(
+    (credentials) => {
+      events.push("create:" + credentials.identifier);
+      return createFakeRuntime(credentials, events);
+    },
+    () => 1_800_000_000_000,
+    0,
+  );
+
+  await manager.connect(credentialsA);
+  const disconnecting = manager.disconnect(async () => {
+    events.push("stream:disconnect:start");
+    signalStreamStarted();
+    await streamGate;
+    events.push("stream:disconnect:complete");
+  });
+  await streamStarted;
+
+  const connectingReplacement = manager.connect(credentialsB, async () => {
+    events.push("stream:replacement");
+  });
+  await Promise.resolve();
+  assert.deepEqual(events.slice(-1), ["stream:disconnect:start"]);
+
+  releaseStream();
+  const [disconnected, connected] = await Promise.all([disconnecting, connectingReplacement]);
+
+  assert.equal(disconnected.state, "disconnected");
+  assert.equal(connected.state, "connected");
+  assert.deepEqual(events.slice(-7), [
+    "stream:disconnect:start",
+    "stream:disconnect:complete",
+    "disconnect:synthetic-user-a:start",
+    "disconnect:synthetic-user-a:complete",
+    "create:synthetic-user-b",
+    "connect:synthetic-user-b:start",
+    "connect:synthetic-user-b:complete",
+  ]);
+  assert.equal(manager.status().state, "connected");
+});
