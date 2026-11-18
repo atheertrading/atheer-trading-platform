@@ -474,3 +474,64 @@ test("runtime domain validators reject malformed financial values, environments 
     { code: "invalid_reconciliation_aggregate" },
   );
 });
+
+
+test("public domain constructors reject malformed runtime object and array shapes with typed errors", () => {
+  assert.throws(() => createDataProvenance(null), { code: "invalid_data_provenance" });
+  assert.throws(() => createDataProvenance({ source: null }), { code: "invalid_source_identity" });
+
+  assert.throws(() => createOrderIntentEnvelope(null), { code: "invalid_order_intent" });
+  assert.throws(
+    () => createOrderIntentEnvelope({ payload: [], origin: {} }),
+    { code: "invalid_intent_payload" },
+  );
+  assert.throws(
+    () => createOrderIntentEnvelope({
+      payload: { operationCode: "OPEN", priceParameters: {} },
+      origin: { kind: "HUMAN", sourceId: "operator-1" },
+    }),
+    { code: "invalid_intent_price_parameters" },
+  );
+  assert.throws(
+    () => createOrderIntentEnvelope({
+      payload: { operationCode: "OPEN", quantity: null },
+      origin: { kind: "HUMAN", sourceId: "operator-1" },
+    }),
+    { code: "invalid_intent_quantity" },
+  );
+
+  assert.throws(() => createRiskAssessment(null), { code: "invalid_risk_assessment" });
+  assert.throws(
+    () => createRiskAssessment({ reasonCodes: null, inputReferences: [] }),
+    { code: "invalid_risk_reason_codes" },
+  );
+  assert.throws(
+    () => createRiskAssessment({ reasonCodes: [], inputReferences: {} }),
+    { code: "invalid_risk_input_references" },
+  );
+
+  assert.throws(
+    () => createExecutionEvent({ payload: [] }),
+    { code: "invalid_execution_event_payload" },
+  );
+  assert.throws(
+    () => createReconciliationEvent({ discrepancyCodes: null }),
+    { code: "invalid_reconciliation_discrepancy_codes" },
+  );
+  assert.throws(
+    () => createAuditEvent({ reasonCodes: null }),
+    { code: "invalid_audit_reason_codes" },
+  );
+  assert.throws(
+    () => validateBrokerAccountIdentity(null),
+    { code: "invalid_broker_account_identity" },
+  );
+  assert.throws(
+    () => validateInstrumentSpecification(null),
+    { code: "invalid_instrument_specification" },
+  );
+  assert.throws(
+    () => isTransitionAllowed(null, null, "CREATED"),
+    { code: "invalid_lifecycle_transition_policy" },
+  );
+});
