@@ -667,4 +667,19 @@ test("immutable execution events reject nested mutable platform objects and acce
     () => createExecutionEvent({ ...base, payload: accessorPayload }),
     { code: "invalid_immutable_value" },
   );
+
+  class MutableArray extends Array {
+    #mutationCount = 0;
+
+    mutatePrivateState() {
+      this.#mutationCount += 1;
+    }
+  }
+  assert.throws(
+    () => createExecutionEvent({
+      ...base,
+      payload: { values: new MutableArray("synthetic-value") },
+    }),
+    { code: "invalid_immutable_value" },
+  );
 });
