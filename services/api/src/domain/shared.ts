@@ -10,6 +10,24 @@ export class DomainValidationError extends Error {
   }
 }
 
+/** Reject non-JSON object shapes before dereferencing public domain payloads. */
+export function assertRecord(value: unknown, field: string): void {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new DomainValidationError("invalid_" + field, field + " must be an object.");
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new DomainValidationError("invalid_" + field, field + " must be a plain object.");
+  }
+}
+
+/** Reject missing or object-shaped collections with a stable domain error. */
+export function assertArray(value: unknown, field: string): void {
+  if (!Array.isArray(value)) {
+    throw new DomainValidationError("invalid_" + field, field + " must be an array.");
+  }
+}
+
 export function nonEmptyString(value: string, field: string): string {
   if (typeof value !== "string" || value.length === 0 || value.trim() !== value) {
     throw new DomainValidationError("invalid_" + field, field + " must be a non-empty, trimmed string.");
@@ -227,6 +245,8 @@ export function utcTimestampFromIso(value: string): UtcTimestamp {
   return utcTimestamp(parsed);
 }
 export function createDataProvenance(input: DataProvenance): DataProvenance {
+  assertRecord(input, "data_provenance");
+  assertRecord(input.source, "source_identity");
   nonEmptyString(input.source.sourceId, "source_id");
   if (!["BROKER", "MARKET_DATA_PROVIDER", "INTERNAL", "USER", "STRATEGY", "AI_AGENT"].includes(input.source.sourceType)) {
     throw new DomainValidationError("invalid_source_type", "Source type is not supported.");
