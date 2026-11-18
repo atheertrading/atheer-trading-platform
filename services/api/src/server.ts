@@ -63,6 +63,16 @@ function headerValue(value: string | string[] | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function brokerSessionResponseStatus(
+  status: ReturnType<BrokerSessionManager["status"]>,
+): number {
+  if (status.state === "connected") return 200;
+  if (status.lastError?.includes("HTTP 401") || status.lastError?.includes("HTTP 403")) return 401;
+  if (status.lastError?.includes("HTTP 429")) return 429;
+  return 503;
+}
+
+
 async function readBrokerCredentials(request: IncomingMessage): Promise<CapitalDemoCredentials> {
   const contentType = headerValue(request.headers["content-type"]);
   if (contentType?.split(";")[0]?.trim().toLowerCase() !== "application/json") {
@@ -211,7 +221,7 @@ async function handleMarketDataRequest(
       const credentials = await readBrokerCredentials(request);
       await streamRuntime?.disconnect();
       const status = await runtime.connect(credentials);
-      sendJson(response, status.state === "connected" ? 200 : 401, status);
+      sendJson(response, brokerSessionResponseStatus(status), status);
     } catch (error) {
       if (error instanceof RequestBodyError) {
         sendJson(response, error.statusCode, { error: error.errorCode });
