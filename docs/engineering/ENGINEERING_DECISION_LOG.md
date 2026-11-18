@@ -160,3 +160,14 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Current discrepancy:** PR #26 authenticates directly from Swift using Keychain credentials. PR #37 authenticates separately from backend environment variables. Both can create separate Capital.com sessions.
 - **Required correction:** Establish secure Keychain/vault provisioning to backend CMS using authenticated local IPC or a per-launch capability token; move Broker Management to the backend session API; make Market Data/streaming/account data/future OMS share that session. Keep env credentials test-only.
 - **Merge gate:** PR #37 must not be merged as completed broker integration until this is implemented and DEMO-qualified. LIVE remains disabled.
+
+
+## EDL-023 — Centralized broker connection and subscription orchestration
+
+- **Date:** 2026-11-18
+- **Status:** Partially implemented; remaining work tracked in ATP-BRK-003 / ATP-MKT-007.
+- **Authority:** Library Broker Integration Q10.
+- **Decision:** Maintain the minimum necessary external connections through one Connection Management & Orchestration Service. Distinguish REST request rate, authenticated REST session, persistent WebSocket connection and instrument subscription capacity.
+- **Implemented:** Shared WebSocket runtime, 40-instrument cap, deduplication, five-minute ping, reconnect/backoff and quote-quality counters.
+- **Pending:** One session creation per second per API key, REST keepalive scheduling, priority-based subscription allocation, account-switch restoration and connection utilization metrics.
+- **Constraint:** Do not invent undocumented global connection limits; confirm them with Capital.com.
