@@ -107,7 +107,7 @@ final class MarketDataStreamViewModel: ObservableObject {
             selectedEpics.remove(normalized)
             quotes.removeValue(forKey: normalized)
         } else {
-            guard selectedEpics.count < maximumInstrumentCount else {
+            guard selectedEpics.count < Self.maximumInstrumentCount else {
                 lastError = "A maximum of \(Self.maximumInstrumentCount) instruments can be monitored at once."
                 return
             }
