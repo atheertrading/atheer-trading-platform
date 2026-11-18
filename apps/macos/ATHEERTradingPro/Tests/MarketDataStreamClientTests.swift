@@ -9,8 +9,10 @@ private final class MockMarketDataStreamClient: MarketDataStreamClient {
 
     func events(for epics: [String]) -> AsyncThrowingStream<MarketDataStreamEvent, Error> {
         requestedEpics = epics
-        return AsyncThrowingStream { continuation in
-            self.continuation = continuation
+        return AsyncThrowingStream { [weak self] continuation in
+            Task { @MainActor in
+                self?.continuation = continuation
+            }
         }
     }
 
