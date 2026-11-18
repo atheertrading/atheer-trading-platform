@@ -2,13 +2,16 @@ import SwiftUI
 
 struct MarketExplorerView: View {
     @StateObject private var model: MarketExplorerViewModel
+    @Binding private var requestedSearchTerm: String?
     let onOpenAPIConnection: () -> Void
 
     init(
         client: MarketSearchClient,
+        requestedSearchTerm: Binding<String?> = .constant(nil),
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
+        _requestedSearchTerm = requestedSearchTerm
         self.onOpenAPIConnection = onOpenAPIConnection
     }
 
@@ -26,8 +29,27 @@ struct MarketExplorerView: View {
         }
         .task {
             await model.refreshBackendStatus()
+            await consumeRequestedSearchTerm()
+        }
+        .onChange(of: requestedSearchTerm) { _ in
+            Task {
+                await consumeRequestedSearchTerm()
+            }
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
+    }
+
+    private func consumeRequestedSearchTerm() async {
+        guard let requestedSearchTerm else { return }
+        let query = requestedSearchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            self.requestedSearchTerm = nil
+            return
+        }
+
+        // Clear before awaiting so appearance and onChange cannot submit duplicates.
+        self.requestedSearchTerm = nil
+        await model.search(for: query)
     }
 
     private var header: some View {

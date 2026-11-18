@@ -171,3 +171,14 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Implemented in unmerged PR #37:** shared WebSocket runtime, 40-instrument cap, deduplication, five-minute heartbeat, reconnect/backoff and quote-quality counters.
 - **Pending:** sequential session-creation rate limit, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented provider-wide REST or WebSocket connection limits.
+
+
+## EDL-024 — Global instrument quick search reuses the Markets read model
+
+- **Date:** 2026-11-18
+- **Status:** Reversible UI implementation decision; integration and qualification pending.
+- **Authority:** TEAM A assignment ATP-TEAM-A-001, UI Delivery Plan #72, Collaboration Charter #79, and owner Q38.1 navigation guidance.
+- **Decision:** The global `⌘K` instrument-search surface reuses the existing `MarketSearchClient` and `MarketExplorerViewModel`. Selecting a catalogue record forwards a query into the implemented Markets destination rather than introducing a second provider client, data cache, or search endpoint.
+- **Rationale:** Preserve one verified UI-to-backend read contract, avoid divergent search state machines, and keep the shell thin. Provider metadata is the only information presented by the search surface.
+- **Consequences:** No broker credentials, direct provider API, quote values, account data, position state, order state, risk authorization or dealing capability is added. The view remains presentation-only and can be subsumed by a later approved global command palette without changing the provider contract.
+- **Verification gate:** Exact-head Intel/Apple Silicon build and XCTest, repository hygiene, backend toolchain, Local Sync Safety, and Gate D reconciliation with PR #70. Owner-Mac native interaction, accessibility and RTL validation remain required.

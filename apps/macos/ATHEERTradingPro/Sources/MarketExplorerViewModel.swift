@@ -66,6 +66,13 @@ final class MarketExplorerViewModel: ObservableObject {
         }
     }
 
+    /// Runs the existing provider-backed search for a query handed off by a global
+    /// instrument-selection surface. The MarketSearchClient remains the only data path.
+    func search(for term: String) async {
+        searchTerm = term
+        await search()
+    }
+
     func search() async {
         let query = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty, query.count <= 100 else {

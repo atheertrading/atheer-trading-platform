@@ -5,6 +5,8 @@ struct ContentView: View {
     @StateObject private var backendHealthModel = BackendHealthViewModel()
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
+    @State private var isInstrumentQuickSearchPresented = false
+    @State private var pendingMarketSearchTerm: String?
 
     /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
     private func scheduleSelectionChange(_ newSelection: AppSection?) {
@@ -29,6 +31,33 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.top, 16)
+
+                Button {
+                    isInstrumentQuickSearchPresented = true
+                } label: {
+                    HStack(spacing: 9) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(ATHEERDesignTokens.ColorRole.accent)
+                        Text("Search instruments")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.primary)
+                        Spacer(minLength: 8)
+                        Text("⌘K")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(ATHEERDesignTokens.ColorRole.panel)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut("k", modifiers: [.command])
+                .help("Search the authenticated instrument catalogue")
+                .accessibilityIdentifier("navigation.instrument-quick-search")
+                .padding(.horizontal, 12)
 
                 List(selection: Binding(
                     get: { selection },
@@ -65,7 +94,11 @@ struct ContentView: View {
                             onOpenAPIConnection: { selection = .apiConnection }
                         )
                     case .markets:
-                        MarketExplorerView(client: URLSessionMarketSearchClient(), onOpenAPIConnection: { selection = .apiConnection })
+                        MarketExplorerView(
+                            client: URLSessionMarketSearchClient(),
+                            requestedSearchTerm: $pendingMarketSearchTerm,
+                            onOpenAPIConnection: { selection = .apiConnection }
+                        )
                     case .apiConnection:
                         APIConnectionView(model: backendHealthModel)
                     case .settings:
@@ -88,6 +121,12 @@ struct ContentView: View {
             .navigationTitle((selection ?? .workspace).title)
         }
         .frame(minWidth: 900, minHeight: 600)
+        .sheet(isPresented: $isInstrumentQuickSearchPresented) {
+            InstrumentQuickSearchView(client: URLSessionMarketSearchClient()) { instrument in
+                pendingMarketSearchTerm = InstrumentQuickSearchRouting.marketSearchTerm(for: instrument)
+                selection = .markets
+            }
+        }
         .task {
             await backendHealthModel.refresh()
         }
