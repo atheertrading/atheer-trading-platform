@@ -362,7 +362,7 @@ final class BrokerManagementViewModel: ObservableObject {
         do {
             let snapshot = try await authentication.validateSession()
             account = snapshot
-            lastBackendStatusCheck = snapshot.authenticatedAt
+            lastBackendStatusCheck = Date()
         } catch is CancellationError {
             return
         } catch let error as BrokerAuthenticationError {
