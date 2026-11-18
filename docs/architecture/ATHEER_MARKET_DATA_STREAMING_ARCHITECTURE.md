@@ -110,3 +110,8 @@ Hosted TypeScript/API tests and macOS qualification are pending. No live Capital
 The backend binds only to loopback (`127.0.0.1`). All `/market-data/*` routes additionally require `X-ATHEER-LOCAL-CLIENT: macOS`, reject any `Origin` header, and reject `Sec-Fetch-Site` values other than absent or `none`. No CORS allowance is configured. The native macOS Market Search adapter sends the marker header; future stream/SSE clients must do so as well.
 
 This is a browser-origin/CSRF mitigation, not a secret token and not authentication against arbitrary local processes. A production or multi-user deployment must introduce a per-launch capability token or authenticated local IPC before exposing broker session or streaming controls.
+
+
+## Catalogue metadata versus live quote authority
+
+The Capital.com instrument catalogue is discovery metadata only. The backend normalizes and allow-lists `epic`, instrument name, market status and currency, and deliberately strips provider `bid`/`offer` fields from catalogue responses. Live Bid/Ask values may enter the application only through the validated streaming quote path, which preserves provider timestamp, receive timestamp, monotonic receive time, duplicate/out-of-order checks and freshness evaluation. Catalogue prices must never seed Market Watch, charts, strategy inputs or execution decisions.
