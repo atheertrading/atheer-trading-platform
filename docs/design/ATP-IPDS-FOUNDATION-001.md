@@ -65,9 +65,11 @@ Current source establishes:
 - Minimum detail region: 620 × 520 points.
 - Sidebar minimum width: 190 points.
 - Workspace content maximum width: 1280 points.
+- Status-tile grid uses adaptive item widths of 150–240 points with 10-point spacing.
+- Workspace-panel grid uses adaptive item widths of 320–560 points with 14-point spacing.
 - Dark appearance is selected at the application scene.
 
-These are current implementation constraints, not final responsive/window specifications. Docking, draggable panel rearrangement, user resizing policy, workspace profiles, layout persistence and Settings window construction remain open.
+The adaptive grids replace the previous fixed four-column status layout and fixed two-column panel layout. They allow the status region and panel composition to respond to the available detail width while retaining bounded card widths. At the current 900-point minimum window, the intended initial composition is four compact status tiles and two panel columns; narrower detail regions collapse progressively. These dimensions are provisional implementation metrics, not approved final breakpoints. Docking, draggable panel rearrangement, user resizing policy, workspace profiles, layout persistence and Settings window construction remain open.
 
 ## 6. Accessibility and qualification status
 
@@ -81,9 +83,9 @@ Not yet qualified:
 - Reduced-motion behavior.
 - Localization and right-to-left layout.
 - Visual regression across supported window sizes and displays.
-- Actual macOS visual/runtime behavior.
+- Actual visual quality, layout acceptance, VoiceOver, keyboard/focus, and accessibility behavior.
 
-Hosted CI is necessary but does not establish these runtime properties.
+Owner-confirmed runtime evidence: the application has launched on the owner's Mac and has been exercised across two displays. This is an owner report, not an independently observed or reproduced engineering result. Hosted CI is necessary but does not establish visual quality or accessibility acceptance.
 
 ## 7. Source authority and next reconciliation
 

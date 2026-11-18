@@ -170,3 +170,28 @@ The following Q&A documents were inspected at the header and decision-section le
 - **Q29.7 — Institutional knowledge:** distinguish operational records, episodic memory, semantic knowledge, procedural knowledge, and governance knowledge; preserve provenance and validity.
 
 A proposed synthesis is recorded as EDP-006. It is not yet a final consolidated autonomy specification. In particular, the autonomy level, capability permissions, action authorization classification, and broker execution authority must remain separate concepts.
+
+
+## 2026-11-17 — Current Library retrieval discrepancy and design-source inspection
+
+A fresh read-only Library inventory returned a different visible archive set from the historical inventory above:
+
+| Current Library artifact | Size | Direct inspection |
+|---|---:|---|
+| `Atheer Q&A Repository.zip` | 3,770,219 bytes | 1,151 ZIP entries; 517 Markdown files under `Atheer Q&A Repository/`; no `Consolidated Architectural Foundation & Engineering Execution/` directory or 47 formal-specification files |
+| `Codex.zip` | 7,557,870 bytes | 224 ZIP entries; 58 Markdown files in the generated knowledge-base package |
+
+The current `Atheer Q&A Repository.zip` does contain user-experience Q&A and visual-design documents, but direct path/content inspection did not locate original files or exact identifiers for ATP-ARCH-014, ATP-ARCH-037, ATP-ARCH-038, or ATP-UX-001. The previously recorded 47-document inventory therefore remains a historical structural inventory from an earlier archive, not proof that those original files are present in the currently accessible archive.
+
+The current `Codex.zip` contains derived/reconstructed artifacts such as `IPDS_BASELINE.md`, `APPLICATION_ARCHITECTURE.md`, document registries, and approval/provenance summaries. It does not contain the original ATP-ARCH-014/037/038 or ATP-UX-001 source files. Its own IPDS baseline marks the reconstructed source design incomplete/in review. These artifacts are navigation and reconciliation evidence only; they are not substitutes for original approved specifications.
+
+Directly inspected design-source findings:
+
+- `Master Visual Design, UI/UX Architecture & Engineering Specification.md` explicitly states: **Proposed Master Reference — Subject to Owner Approval**. It must not be represented as approved IPDS v1.0.
+- `Visual Design, UI/UX Engineering & Professional Trading Workspace Architecture.md` is a detailed design/UX engineering directive covering design-system-first governance, native macOS behavior, staged design approval, a main trading workspace benchmark, accessibility, and runtime verification. No explicit owner approval metadata was present in the inspected file.
+- `Professional Trading Screens, Workspace Architecture & User Experience.md` provides owner-provided brand palette and professional-workstation direction, but the inspected file has no normalized revision/approval metadata.
+- Q38.1 proposes 12 primary navigation groups and six predefined workspace types. It is a Q&A proposal and differs from the eight workspace concepts and separate navigation vocabulary in current owner direction; it does not settle the mapping.
+- Q39.2 describes extensive side-menu customization as a proposed product decision. It does not establish approved workspace persistence or panel-docking contracts.
+- PR #13 contains ATP-UX-001 as an owner-directed contributor baseline. It explicitly leaves final workspace inventory, responsive breakpoints, settings persistence, IPDS tokens, and full formal-source reconciliation open.
+
+Disposition: retain the historical 47-document registry without claiming current source availability; keep M00-021 IN PROGRESS; do not promote derived Codex artifacts, Q&A proposals, or the proposed master visual reference into approved architecture. Continue to use the owner-provided palette and non-conflicting design constraints as bounded implementation guidance while marking responsive metrics and other unresolved details provisional.
