@@ -514,3 +514,36 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
 - The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
 - Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.
+
+
+## ATP-OMS-001 — Authorized OMS lifecycle persistence (PR #42)
+
+**Branch:** `feat/oms-authorized-order-persistence`  
+**Base:** PR #41 branch `feat/postgres-persistence-foundation`  
+**Implementation HEAD at documentation update:** pending final branch snapshot
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| OEL-12 typed state vocabulary | IMPLEMENTED; CI PENDING | Source-specific OMS / Execution Gateway / Broker / Reconciliation transition policy |
+| OMS order factory | IMPLEMENTED; CI PENDING | Requires exact matching AUTHORIZED assessment, same environment, and explicit positive quantity |
+| PostgreSQL OMS schema | IMPLEMENTED; CI PENDING | `002_oms_lifecycle.sql`; orders, versioned lifecycle journal, risk/intent composite reference |
+| Risk-gated OMS persistence | IMPLEMENTED; CI PENDING | Exact persisted intent + exact persisted AUTHORIZED assessment locked and verified in transaction |
+| Transactional audit and outbox | IMPLEMENTED; CI PENDING | Order, first lifecycle event, audit record and `oms.order.persisted` committed atomically |
+| Replay/conflict behavior | IMPLEMENTED; CI PENDING | One order per intent/risk assessment; same payload replays; conflicting order identity rejected |
+| Lifecycle event mutability | IMPLEMENTED; CI PENDING | `atheer_app` has SELECT/INSERT only; UPDATE/DELETE revoked |
+| Outbox publisher / consumer | NOT IMPLEMENTED | No lease/claim worker, publisher, or internal event bus consumer |
+| Execution Gateway / broker dealing | NOT IMPLEMENTED | No broker submission, cancellation, modification, or close operation |
+| Broker fills / position projection / reconciliation | NOT IMPLEMENTED | Broker-authoritative ingestion remains a later work package |
+
+### Exact source and architecture references
+
+- Library Q&A: PART VI / Section 18 / Q1, Q11, Q12, Q16, Q17, Q18, Q20.
+- Delegated authority: Library `Atheer Q&A Repository/Owner and Developer Approval/Owner and Developer Approval.md`.
+- Repository diagrams: 04 (intent/risk), 05 (OMS/execution/reconciliation), 11 (canonical domain), 12 (PostgreSQL persistence), and new 13 (authorized OMS persistence).
+
+### Verification boundaries
+
+- PR #42's domain and PostgreSQL integration tests are committed but have not yet been run on this branch's exact head.
+- PR #41 current-head run `44210600813` (head `c9eb73d28c24398dfcb435525118f971aae221e8`): Backend Toolchain and Repository Hygiene passed; Mermaid run `44210600930` and Local Sync Safety run `44210600755` passed; Intel x86_64 and Apple Silicon arm64 macOS jobs were still in progress at last inspection. These results do not qualify PR #42.
+- Owner-local PostgreSQL 18.7 and local Mac runtime remain unqualified; no local migration was run.
+- `CAP_ALLOW_TRADING=false` remains unchanged.
