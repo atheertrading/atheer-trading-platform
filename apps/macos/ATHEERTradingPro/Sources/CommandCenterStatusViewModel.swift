@@ -174,8 +174,7 @@ struct CommandCenterStatusPresentation: Equatable {
     ) -> CommandCenterStatusCard {
         guard case .connected(let snapshot) = state,
               snapshot.readinessFailure == nil,
-              let rawStatus = snapshot.brokerStatus?
-                .trimmingCharacters(in: .whitespacesAndNewlines),
+              let rawStatus = snapshot.brokerStatus?.trimmingCharacters(in: .whitespacesAndNewlines),
               !rawStatus.isEmpty else {
             return CommandCenterStatusCard(
                 id: "broker",
