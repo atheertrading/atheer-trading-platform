@@ -736,5 +736,25 @@ All green results above are exact-SHA hosted checks only. They do not prove owne
 - Adds a deterministic chart candle projection with source provenance (historical, historical-updated-by-live, live-aggregated).
 - Aggregates fresh Capital.com DEMO Bid/Ask ticks into fixed UTC intraday MINUTE through HOUR bars; strict timestamp ordering and freshness checks; no synthetic gaps or fabricated volume.
 - HOUR_4, DAY and WEEK live aggregation remain deferred pending provider/session-calendar alignment.
-- XCTest and exact-head hosted CI are pending. No owner-Mac or live provider acceptance is claimed.
+- PR #45 exact-head hosted CI passed (run 44227375230); the bounded-retention child PR #47 exact-head CI is pending. No owner-Mac runtime/visual/accessibility or live provider acceptance is claimed.
 - No persistence, volume calculation, indicators, drawing tools, strategy execution, orders, or dealing. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## ATP-MKT-006 exact-head CI correction and retention hardening — 2026-11-18
+
+### PR #45 hosted qualification
+
+- Exact HEAD: `218d07c637738c14541482d067954325f16da224`.
+- CI run `44227375230`: Backend toolchain (type-check/API tests), Repository Hygiene, Intel x86_64 Debug build/XCTest/Release/Swift CodeQL, and Apple Silicon arm64 Debug build/XCTest/Release all passed.
+- Apple Silicon CodeQL steps were skipped by the configured workflow matrix; they are not represented as passed.
+- Mermaid run `44227375328` and Local Sync Safety run `44227375239` passed.
+- This supersedes earlier PR #45 records that reported Intel as still running. The evidence is hosted and exact-SHA only.
+
+### ATP-MKT-006H — bounded live candle retention
+
+- Source commit: `82d64fe30b67abc25c18e4be8ce0d0006a01b191`; test commit: `329101f388867097ccf5bf2c684d84af5e1d80ca`.
+- New branch: `fix/live-candle-retention-2026-11-18`, child of PR #45.
+- LiveCandleAggregator now trims oldest bars when appending beyond the 500-candle retention limit, matching the historical fetch maximum.
+- Added deterministic XCTest coverage that ingests 501 distinct minute buckets and verifies the retained count, first/last timestamps, and OHLC values.
+- Exact-head CI for the child branch is pending. No test/build pass is claimed for these commits until workflow evidence is available.
+- Owner-Mac runtime/visual/accessibility and authenticated provider acceptance remain outstanding. `CAP_ALLOW_TRADING=false` remains unchanged.

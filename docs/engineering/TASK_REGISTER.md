@@ -1,6 +1,6 @@
 # ATHEER Trading — Task Register
 
-**Snapshot date:** 2026-11-17  
+**Snapshot date:** 2026-11-18  
 **Active milestone:** M00 — Governance baseline merged; M01 — Platform architecture and toolchain foundation
 
 Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = not started; `BLOCKED` = dependency prevents progress; `OWNER DECISION` = requires explicit owner direction.
@@ -560,13 +560,14 @@ Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or pr
 
 | ID | Priority | Task | Status | Acceptance evidence / dependency |
 |---|---|---|---|---|
-| ATP-MKT-006A | P0 | Deliver every validated stream quote to analytical consumers before UI throttling | IMPLEMENTED; CI PENDING | App-scoped MarketDataQuoteEventBus; publish before 100 ms presentation coalescing |
-| ATP-MKT-006B | P0 | Aggregate fresh DEMO Bid/Ask quotes into deterministic intraday OHLC bars | IMPLEMENTED; CI PENDING | Pure LiveCandleAggregator; MINUTE through HOUR; immutable open, extrema high/low, latest close |
-| ATP-MKT-006C | P0 | Reject stale, future, wrong-instrument, duplicate and out-of-order quote events | IMPLEMENTED; CI PENDING | Provider/environment/freshness/timestamp validation and deterministic XCTest |
-| ATP-MKT-006D | P0 | Integrate live bars into the shared Command Center and Charts & Analysis model | IMPLEMENTED; CI PENDING | Shared app-scoped MarketChartViewModel; source-labelled chart projection |
+| ATP-MKT-006A | P0 | Deliver every validated stream quote to analytical consumers before UI throttling | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | App-scoped MarketDataQuoteEventBus; publish before 100 ms presentation coalescing |
+| ATP-MKT-006B | P0 | Aggregate fresh DEMO Bid/Ask quotes into deterministic intraday OHLC bars | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Pure LiveCandleAggregator; MINUTE through HOUR; immutable open, extrema high/low, latest close |
+| ATP-MKT-006C | P0 | Reject stale, future, wrong-instrument, duplicate and out-of-order quote events | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Provider/environment/freshness/timestamp validation and deterministic XCTest |
+| ATP-MKT-006D | P0 | Integrate live bars into the shared Command Center and Charts & Analysis model | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Shared app-scoped MarketChartViewModel; source-labelled chart projection |
 | ATP-MKT-006E | P1 | Define market-session/calendar alignment for HOUR_4, DAY and WEEK | PENDING | Must use authoritative provider/calendar semantics; no guessed UTC/session boundaries |
 | ATP-MKT-006F | P1 | Add reconnect recovery, gap observation and historical backfill policy | PENDING | Must not synthesize bars; distinguish market closures from missing data |
 | ATP-MKT-006G | P2 | Add volume, indicators and drawing tools | NOT STARTED | Separate provider semantics and analytical contracts required |
+| ATP-MKT-006H | P1 | Bound live candle retention to the 500-bar historical bootstrap maximum | IN PROGRESS | PR #47; exact-head CI pending; deterministic 501-bar regression test added |
 
 ### ATP-MKT-006 guardrails
 - Stream owner remains MarketExplorerViewModel; the quote bus only fans out validated DEMO events.
@@ -574,3 +575,12 @@ Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or pr
 - New live bars do not claim provider volume. No synthetic mid, gap bars or interpolated prices.
 - No chart update can create an order or bypass RiskEngine, OMS or Execution Gateway.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### ATP-MKT-006 exact-head qualification correction — 2026-11-18
+
+- PR #45 HEAD `218d07c637738c14541482d067954325f16da224` completed CI run `44227375230`: Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 Debug/XCTest/Release passed (CodeQL intentionally skipped); Backend type-check/tests passed; Repository Hygiene passed. Mermaid run `44227375328` and Local Sync Safety run `44227375239` passed.
+- This supersedes the older PR #45 `CI PENDING` note. It qualifies only that exact PR #45 SHA and hosted environment; no owner-Mac, visual/accessibility, or authenticated Capital.com DEMO runtime acceptance is implied.
+- A bounded retention defect was identified during source review: live aggregation could append candles indefinitely after the 500-candle historical bootstrap.
+- Child fix branch: `fix/live-candle-retention-2026-11-18`, based on PR #45 HEAD. Code commit `82d64fe30b67abc25c18e4be8ce0d0006a01b191`; regression-test commit `329101f388867097ccf5bf2c684d84af5e1d80ca`.
+- ATP-MKT-006H adds a 500-candle in-memory cap and deterministic 501-bar retention coverage. Exact-head hosted CI is pending; do not mark this hardening verified until the new branch's CI completes.

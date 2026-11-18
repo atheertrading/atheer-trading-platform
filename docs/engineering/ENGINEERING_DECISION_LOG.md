@@ -245,3 +245,13 @@ Use an app-scoped in-process quote event bus to fan out every validated Capital.
 
 ### Consequences
 The chart receives every stream event even when the Market Watch display cache coalesces ticks every 100 ms. This preserves observed intrabar highs/lows for chart aggregation without increasing SwiftUI presentation update frequency. Session-aligned higher timeframes remain deferred pending authoritative market-calendar semantics.
+
+
+## EDL-017 — Bounded in-memory live candle retention
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on child branch; exact-head hosted qualification pending.
+- **Decision:** Bound each active live chart candle series to 500 entries, matching the existing historical MarketHistoryClient request maximum. On appending a new bucket beyond the cap, remove the oldest entries and preserve ascending timestamp order.
+- **Rationale:** The live aggregator previously appended a new bar indefinitely. A long-running stream could therefore grow the in-memory chart series without bound. Matching the established historical maximum provides a deterministic and consistent initial retention contract without inventing a separate UI or provider limit.
+- **Invariants:** No candle is synthesized or interpolated; Bid/Ask OHLC and provenance remain unchanged; the newest accepted candle is retained; the series remains chronological; live bars remain volatile and read-only.
+- **Verification:** Added deterministic XCTest coverage for 501 distinct minute buckets, asserting the 500-entry bound, oldest-bar eviction, final timestamps, and retained OHLC. Source commit `82d64fe30b67abc25c18e4be8ce0d0006a01b191`; test commit `329101f388867097ccf5bf2c684d84af5e1d80ca`. Hosted CI for the child branch is pending.

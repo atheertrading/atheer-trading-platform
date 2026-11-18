@@ -30,13 +30,14 @@ Extend the historical chart with live quote-derived candles while preserving pro
 8. A quote in the current final candle bucket updates that candle. A later bucket appends exactly one bar. No gap filling or interpolation occurs.
 9. Newly aggregated bars do not claim provider volume. Existing historical provider-volume lineage remains explicitly provider-reported.
 10. The current increment aggregates fixed UTC intraday resolutions MINUTE, MINUTE_5, MINUTE_15, MINUTE_30 and HOUR. HOUR_4, DAY and WEEK remain historical-only until provider/session-calendar alignment is specified.
+11. Retain at most 500 candles in the active in-memory series, matching the historical bootstrap maximum. When a later bucket is appended beyond the limit, discard the oldest candle while preserving chronological order and the newest OHLC/provenance. Never fill gaps.
 
 ## Failure and recovery
 
 - Invalid, stale, future-dated, wrong-instrument, duplicate, out-of-order, or unsupported-resolution quotes are ignored without mutating the chart.
 - A new historical request, instrument change, or timeframe change resets the aggregation sequence.
 - No synthetic candle is created to bridge a gap.
-- Live bars are in-memory only and disappear when the chart model is recreated or historical data is refreshed.
+- Live bars are in-memory only, bounded to 500 candles per active chart series, and disappear when the chart model is recreated or historical data is refreshed.
 - If streaming disconnects, the last rendered bar remains visible as last-known data; no new quote is accepted until the stream supplies a valid fresh event.
 
 ## Explicit non-scope
