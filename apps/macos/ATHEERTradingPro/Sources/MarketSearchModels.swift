@@ -22,7 +22,7 @@ enum MarketDataBackendConnectionState: Equatable {
     }
 }
 
-enum MarketDataStreamConnectionState: Equatable {
+enum MarketDataStreamConnectionState: String, Decodable, Equatable {
     case disconnected
     case connecting
     case connected

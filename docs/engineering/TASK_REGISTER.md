@@ -408,3 +408,14 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - DEMO position/working-order endpoints are limited to 1,000 requests/hour; OMS/dealing is not implemented in this slice and must enforce the limit before future dealing.
 - Account changes using `PUT /session` interrupt streaming; any future account-switch flow must invalidate and rebuild the WebSocket subscription set.
 - Source-to-code evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`; official references are recorded in EDL-029.
+
+
+## 2026-11-18 — ATP-MKT-008 Batch 053 update
+
+| Work item | Priority | Current status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-MKT-008 — Native live quote monitor | P1 | IN PROGRESS — PR #63 | Rebased on latest PR #55 head; native SSE client, monitor state model, quote-age tracking, 40-epic limit, status/freshness display, reconnect and redaction tests carried forward. Local Sync Safety passed; exact-head CI pending. Real Capital.com DEMO quote delivery, owner-Mac visual/accessibility QA, and parent credential-confidentiality gate remain. |
+| ATP-BRK-002 — Broker session IPC | P0 | IN PROGRESS — PR #55 | Backend-owned DEMO session and bounded shutdown implemented on draft stack. Credential body remains authenticated plain HTTP loopback and is not encrypted; private local credential IPC or explicitly accepted threat boundary required before security-qualified merge. Exact-head CI pending. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #55/#57 | Session throttling, keepalive, recovery classification, account-switch coordination and bounded shutdown present on unmerged branches. Exact-head Intel/Apple Silicon supervisor qualification remains. |
+
+PR #63 head at creation: `199a32ad94e6e25bc0fd585de1bf9ef87034c4df`; base: `73067706d1a97aa1e1502607fe6903b26c9b8ddd`; 10 ahead / 0 behind. Local Sync Safety passed; exact-head CI queued. No merge authorized.

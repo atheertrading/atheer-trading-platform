@@ -680,3 +680,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #57's bounded-shutdown branch now includes the PR #56 Swift class-bound protocol and mutable supervisor corrections in commit `b1dcda177cf0ff2330a85a09f8f41040392e625c`. Local Sync Safety `44286395589` passed; exact-head CI `44286395905` was queued. The branch remains diverged from PR #56 and must be integrated without rewriting history.
 - No owner-Mac build, worktree sync, Keychain restart test, visual QA, or real Capital.com DEMO authentication was performed. `CAP_ALLOW_TRADING=false`; LIVE/dealing remain disabled.
 - Full evidence: `SESSION_2026-11-18_051_BOUNDED_SHUTDOWN_AND_ARCHITECTURE_REVIEW.md`.
+
+
+## 2026-11-18 — Batch 053: live DEMO quote monitor rebase
+
+- Replayed the ten-file live quote-monitor change set onto PR #55's current parent head `73067706d1a97aa1e1502607fe6903b26c9b8ddd`; final compare at PR #63 creation was 10 ahead / 0 behind, with exactly ten intended feature files.
+- Preserved latest mutable `BackendRuntimeViewModel.supervisor` contract and tracked streaming fixture cleanup while adding the native SSE client/view model, Market Explorer quote panel, status/freshness updates, redacted diagnostics, and API/Swift tests.
+- Opened draft PR #63. Closed stale draft PRs #58/#62 as superseded; no force-push or history rewrite.
+- PR #63 Local Sync Safety `44289596217` passed; exact-head CI `44289596189` was queued. No final architecture build/test pass or real DEMO quote delivery is claimed.
+- Credential confidentiality remains a P0/P1 integration gate in PR #55: loopback HTTP bearer authentication is not payload encryption. LIVE/dealing remain disabled; `CAP_ALLOW_TRADING=false`.
+- Full evidence: `SESSION_2026-11-18_053_LIVE_QUOTE_MONITOR_REBASE.md`.

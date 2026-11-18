@@ -15,9 +15,13 @@ const MAX_RECONNECT_DELAY_MS = 30_000;
 
 export type MarketDataStreamState = "disconnected" | "connecting" | "connected" | "degraded";
 
+export interface MarketDataStreamQuoteFreshness extends QuoteFreshnessResult {
+  readonly maximumAgeMs: number;
+}
+
 export interface MarketDataStreamQuote extends NormalizedQuote {
   readonly receivedAtMonotonicMs: number;
-  readonly freshness: QuoteFreshnessResult;
+  readonly freshness: MarketDataStreamQuoteFreshness;
 }
 
 export interface MarketDataStreamStatus {
@@ -51,9 +55,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function safeErrorMessage(error: unknown): string {
-  if (!(error instanceof Error)) return "Capital.com streaming connection failed.";
-  const message = error.message.trim();
-  return message.length > 0 ? message.slice(0, 240) : "Capital.com streaming connection failed.";
+  // Provider and transport errors are untrusted and may contain sensitive data.
+  // Expose a stable diagnostic; detailed causes stay out of client-visible status.
+  void error;
+  return "Capital.com streaming connection failed.";
 }
 
 /**
@@ -97,7 +102,7 @@ export class CapitalDemoStreamingRuntime {
       provider: "capital.com",
       environment: "DEMO",
       state: this.state,
-      activeInstrumentCount: this.desiredEpics().size,
+      activeInstrumentCount: this.subscribedEpics.size,
       ...(this.lastMessageAtMs === undefined ? {} : { lastMessageAtMs: this.lastMessageAtMs }),
       ...(this.lastError === undefined ? {} : { lastError: this.lastError }),
       invalidQuoteCount: this.invalidQuoteCount,
@@ -420,10 +425,13 @@ export class CapitalDemoStreamingRuntime {
     const quote: MarketDataStreamQuote = {
       ...normalized,
       receivedAtMonotonicMs: this.monotonicNow(),
-      freshness: evaluateQuoteFreshness(normalized, receivedAtMs, {
+      freshness: {
+        ...evaluateQuoteFreshness(normalized, receivedAtMs, {
+          maximumAgeMs: 5_000,
+          maximumFutureSkewMs: 250,
+        }),
         maximumAgeMs: 5_000,
-        maximumFutureSkewMs: 250,
-      }),
+      },
     };
     this.latestQuotes.set(quote.instrumentId, quote);
     this.lastMessageAtMs = receivedAtMs;

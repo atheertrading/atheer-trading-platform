@@ -487,3 +487,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Code alignment: shared REST client spaces request starts by 100 ms; session creation is throttled to 1 second; REST and WebSocket pings run every 5 minutes; stream subscription cap is 40.
 - Account-switch interruption is documented; account-switch support remains unqualified. Future OMS must implement the endpoint-specific order budget.
 - Evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md` and EDL-029.
+
+
+## 2026-11-18 — Batch 053 implementation status
+
+- **Live DEMO quote monitor:** PR #63 replays the ten intended feature files on the current PR #55 parent. Native SSE client, monitor state model, quote freshness/age, 40-instrument cap, reconnect, redacted status and backend SSE status updates are included.
+- **Integration:** PR #63 is 10 ahead / 0 behind its base at creation. Old stale-parent drafts #58/#62 are closed as superseded. Parent supervisor mutability and test fixture teardown are preserved.
+- **Verification:** Local Sync Safety passed; exact-head CI queued. No Intel/Apple Silicon final pass or real DEMO quote delivery is claimed.
+- **Credential confidentiality:** unresolved in PR #55. Authenticated HTTP loopback does not encrypt credential payloads; private local credential IPC or explicit accepted threat boundary required.
+- **Trading safety:** display-only market data. No dealing/execution added; `CAP_ALLOW_TRADING=false`.
