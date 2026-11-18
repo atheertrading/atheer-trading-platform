@@ -154,6 +154,35 @@ test("private Unix-domain IPC disconnects streaming before releasing the broker 
   }
 });
 
+test("private IPC still releases the broker session when stream shutdown fails", async () => {
+  let brokerDisconnectCount = 0;
+  const manager = {
+    async connect() {
+      return connectedStatus;
+    },
+    async disconnect() {
+      brokerDisconnectCount += 1;
+      return disconnectedStatus;
+    },
+  };
+  const fixture = await makeServer(manager, async () => {
+    throw new Error("synthetic stream failure");
+  });
+  try {
+    const response = await sendRequest(fixture.socketPath, {
+      requestId: "request-0005",
+      capability: fixture.capability.toString("base64url"),
+      action: "disconnect",
+    });
+    assert.equal(response.ok, false);
+    assert.equal(response.errorCode, "market_data_stream_disconnect_failed");
+    assert.deepEqual(response.status, disconnectedStatus);
+    assert.equal(brokerDisconnectCount, 1);
+  } finally {
+    await fixture.server.close();
+  }
+});
+
 test("private Unix-domain IPC bounds request size and applies private filesystem modes", async () => {
   const manager = {
     async connect() {
