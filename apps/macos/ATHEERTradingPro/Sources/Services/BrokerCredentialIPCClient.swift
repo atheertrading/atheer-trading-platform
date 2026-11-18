@@ -235,7 +235,7 @@ private struct BrokerCredentialIPCResponse: Decodable, Sendable {
     let errorCode: String?
 }
 
-enum BrokerCredentialIPCError: Error, LocalizedError {
+enum BrokerCredentialIPCError: Error, LocalizedError, Sendable {
     case invalidSocketPath
     case socketCreationFailed(Int32)
     case connectionFailed(Int32)
