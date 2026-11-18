@@ -1,13 +1,13 @@
 # Engineering Session 069 — Backend HTTP Boundary, OpenAPI Contract, and Reconnect Recovery
 
-**Date:** 2026-11-18  
+**Date:** 2026-11-19  
 **Assignment:** ATP-TEAM-B-001  
 **Workstream:** Team B — Backend Engineering  
 **Work packages:** ATP-BRK-002 / ATP-MKT-002 / ATP-API-001  
 **Repository:** `atheertrading/atheer-trading-platform`  
 **Branch:** `fix/broker-credential-unix-domain-ipc`  
 **Pull request:** #66 — private Unix-domain broker credential IPC and managed DEMO session stack  
-**Exact PR head at report creation:** `7e5c8b3df80083af0df12c85b723940acb3aa4a7`
+**Code head qualified by the recorded backend checks:** `7e5c8b3df80083af0df12c85b723940acb3aa4a7`
 
 ## Objective
 
@@ -95,7 +95,7 @@ At exact PR head `7e5c8b3df80083af0df12c85b723940acb3aa4a7`:
   - Apple Silicon arm64 macOS: pending at last inspection.
 - Local Sync Safety run `44412675385`: **passed**.
 
-The backend result is hosted CI evidence for this exact commit. It does not establish owner-Mac runtime, Keychain behavior, real Capital.com DEMO authentication, real-time broker streaming, native UX acceptance, or full PR qualification. No real broker credentials or live provider session were used by these synthetic regression tests.
+The backend result is hosted CI evidence for the code head shown above. The session record itself is an additive documentation commit after that code head, so the newest PR head must receive a fresh CI run. These results do not establish owner-Mac runtime, Keychain behavior, real Capital.com DEMO authentication, real-time broker streaming, native UX acceptance, or full PR qualification. No real broker credentials or live provider session were used by these synthetic regression tests.
 
 ## Security and trading boundaries
 
