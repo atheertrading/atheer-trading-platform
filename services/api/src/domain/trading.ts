@@ -17,6 +17,8 @@ import {
   type TradingEnvironment,
   type UtcTimestamp,
   DomainValidationError,
+  assertArray,
+  assertRecord,
   assertPositiveDecimal,
   compareDecimal,
   createDataProvenance,
@@ -89,9 +91,11 @@ export interface OrderIntentEnvelope<TPayload extends OrderIntentPayload = Order
 export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   input: OrderIntentEnvelope<TPayload>,
 ): OrderIntentEnvelope<Readonly<TPayload>> {
-  if (input.payload === null || typeof input.payload !== "object") {
-    throw new DomainValidationError("invalid_intent_payload", "Order intent payload must be a structured object.");
-  }
+  assertRecord(input, "order_intent");
+  assertRecord(input.payload, "intent_payload");
+  assertRecord(input.origin, "intent_origin");
+  if (input.payload.quantity !== undefined) assertRecord(input.payload.quantity, "intent_quantity");
+  if (input.payload.priceParameters !== undefined) assertArray(input.payload.priceParameters, "intent_price_parameters");
   nonEmptyString(input.id, "order_intent_id");
   nonEmptyString(input.commandId, "command_id");
   nonEmptyString(input.correlationId, "correlation_id");
@@ -117,6 +121,8 @@ export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   if (input.payload.orderTypeCode !== undefined) nonEmptyString(input.payload.orderTypeCode, "order_type_code");
   if (input.payload.timeInForceCode !== undefined) nonEmptyString(input.payload.timeInForceCode, "time_in_force_code");
   for (const parameter of input.payload.priceParameters ?? []) {
+    assertRecord(parameter, "intent_price_parameter");
+    assertRecord(parameter.price, "intent_price");
     nonEmptyString(parameter.code, "price_parameter_code");
     decimalValue(parameter.price.value);
     unitCode(parameter.price.unit);
@@ -165,6 +171,9 @@ export interface RiskAssessment {
 }
 
 export function createRiskAssessment(input: RiskAssessment): RiskAssessment {
+  assertRecord(input, "risk_assessment");
+  assertArray(input.reasonCodes, "risk_reason_codes");
+  assertArray(input.inputReferences, "risk_input_references");
   nonEmptyString(input.id, "risk_assessment_id");
   nonEmptyString(input.intentId, "risk_intent_id");
   nonEmptyString(input.policyVersion, "risk_policy_version");
@@ -204,6 +213,9 @@ export function isTransitionAllowed<TState extends string>(
   fromState: TState | null,
   toState: TState,
 ): boolean {
+  assertRecord(policy, "lifecycle_transition_policy");
+  assertArray(policy.initialStates, "lifecycle_initial_states");
+  assertRecord(policy.transitions, "lifecycle_transitions");
   if (fromState === null) return policy.initialStates.includes(toState);
   return policy.transitions[fromState]?.includes(toState) ?? false;
 }
@@ -261,6 +273,9 @@ export interface ExecutionFill {
 }
 
 export function validateBrokerOrderRecord(order: BrokerOrderRecord): void {
+  assertRecord(order, "broker_order_record");
+  assertRecord(order.orderedQuantity, "ordered_quantity");
+  assertRecord(order.filledQuantity, "filled_quantity");
   nonEmptyString(order.id, "order_id");
   nonEmptyString(order.brokerId, "order_broker_id");
   nonEmptyString(order.brokerOrderReference, "broker_order_reference");
@@ -297,6 +312,9 @@ export function createBrokerOrderRecord(input: BrokerOrderRecord): BrokerOrderRe
 }
 
 export function validatePositionSnapshot(position: PositionSnapshot): void {
+  assertRecord(position, "position_snapshot");
+  assertRecord(position.quantity, "position_quantity");
+  if (position.averageOpenPrice !== undefined) assertRecord(position.averageOpenPrice, "position_average_open_price");
   nonEmptyString(position.id, "position_id");
   nonEmptyString(position.brokerId, "position_broker_id");
   nonEmptyString(position.brokerPositionReference, "broker_position_reference");
@@ -330,6 +348,9 @@ export function createPositionSnapshot(input: PositionSnapshot): PositionSnapsho
 }
 
 export function validateExecutionFill(fill: ExecutionFill): void {
+  assertRecord(fill, "execution_fill");
+  assertRecord(fill.quantity, "execution_quantity");
+  assertRecord(fill.executionPrice, "execution_price");
   nonEmptyString(fill.id, "execution_fill_id");
   nonEmptyString(fill.brokerId, "execution_broker_id");
   nonEmptyString(fill.orderId, "execution_order_id");
@@ -374,6 +395,8 @@ export interface ExecutionEvent<TPayload extends object = Readonly<Record<string
 }
 
 export function createExecutionEvent<TPayload extends object>(input: ExecutionEvent<TPayload>): ExecutionEvent<Readonly<TPayload>> {
+  assertRecord(input, "execution_event");
+  assertRecord(input.payload, "execution_event_payload");
   nonEmptyString(input.id, "execution_event_id");
   nonEmptyString(input.aggregateId, "execution_aggregate_id");
   nonEmptyString(input.eventCode, "execution_event_code");
@@ -402,6 +425,8 @@ export interface ReconciliationEvent {
 }
 
 export function createReconciliationEvent(input: ReconciliationEvent): ReconciliationEvent {
+  assertRecord(input, "reconciliation_event");
+  assertArray(input.discrepancyCodes, "reconciliation_discrepancy_codes");
   nonEmptyString(input.id, "reconciliation_event_id");
   nonEmptyString(input.aggregateId, "reconciliation_aggregate_id");
   nonEmptyString(input.outcomeCode, "reconciliation_outcome_code");
@@ -434,6 +459,8 @@ export interface AuditEvent {
 }
 
 export function createAuditEvent(input: AuditEvent): AuditEvent {
+  assertRecord(input, "audit_event");
+  assertArray(input.reasonCodes, "audit_reason_codes");
   nonEmptyString(input.id, "audit_event_id");
   nonEmptyString(input.actorId, "audit_actor_id");
   nonEmptyString(input.actionCode, "audit_action_code");
