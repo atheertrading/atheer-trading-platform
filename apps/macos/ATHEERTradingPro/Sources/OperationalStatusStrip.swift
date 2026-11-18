@@ -48,7 +48,7 @@ struct OperationalStatusStrip: View {
 
         return enabled
             ? ("ENABLED", "exclamationmark.triangle", ATHEERDesignTokens.ColorRole.attention)
-            : ("DISABLED", "lock.circle", ATHEERDesignTokens.ColorRole.success)
+            : ("DISABLED", "lock.circle", .secondary)
     }
 
     var body: some View {
