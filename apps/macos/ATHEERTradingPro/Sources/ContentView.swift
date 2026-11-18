@@ -7,8 +7,10 @@ struct ContentView: View {
     @State private var selection: AppSection? = .workspace
     @State private var showingBrokers = false
 
-    init(backendRuntimeModel: BackendRuntimeViewModel = BackendRuntimeViewModel()) {
-        self.backendRuntimeModel = backendRuntimeModel
+    init(backendRuntimeModel: BackendRuntimeViewModel? = nil) {
+        _backendRuntimeModel = ObservedObject(
+            wrappedValue: backendRuntimeModel ?? BackendRuntimeViewModel()
+        )
     }
 
     /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
