@@ -144,6 +144,19 @@ final class MarketChartTests: XCTestCase {
         ))
     }
 
+    func testHistoricalDecoderRejectsFutureDatedCandleTimestamp() {
+        let futureDated = validPayload.replacingOccurrences(
+            of: "\"timestampMs\": 1795000000000",
+            with: "\"timestampMs\": 1795000002000"
+        )
+        XCTAssertThrowsError(try MarketHistoryPayloadDecoder().decode(
+            Data(futureDated.utf8),
+            expectedInstrumentId: "GOLD",
+            expectedResolution: .minute,
+            maximum: 500
+        ))
+    }
+
     @MainActor
     func testRequestBuilderUsesDynamicBackendPortAndPrivateCapability() throws {
         let capability = try BackendIPCCapability(testBytes: Data(repeating: 0x42, count: 32))
