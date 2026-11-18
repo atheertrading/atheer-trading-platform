@@ -20,6 +20,7 @@ screen destination or a second market-data implementation.
 - Selecting a result opens the implemented Markets destination and forwards the
   query into its existing search flow.
 - Empty, searching, unavailable, and failure states remain explicit.
+- An unavailable connection state exposes a retry action that refreshes backend status.
 
 ## Data and security boundary
 

@@ -116,6 +116,17 @@ struct InstrumentQuickSearchView: View {
             .buttonStyle(.borderedProminent)
             .tint(ATHEERDesignTokens.ColorRole.teal)
             .disabled(!model.canSearch)
+
+            if case .unavailable = model.state {
+                Button {
+                    Task { await model.refreshBackendStatus() }
+                } label: {
+                    Label("Retry connection", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.borderless)
+                .help("Recheck the authenticated backend session")
+                .accessibilityIdentifier("instrument-quick-search.retry")
+            }
         }
         .padding(12)
         .background(ATHEERDesignTokens.ColorRole.panel)
