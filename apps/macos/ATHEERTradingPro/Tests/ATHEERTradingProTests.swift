@@ -13,12 +13,212 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(AppSection.apiConnection.title, "API Connection")
     }
 
+    @MainActor
+    func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let originalName = engine.activeWorkspace.name
+        let customLayout = WorkspaceLayoutConfiguration(
+            style: .stacked,
+            sidebarWidth: 420,
+            minimumPrimaryWidth: 560
+        )
+        XCTAssertTrue(engine.updateActiveLayout(customLayout))
+        XCTAssertTrue(engine.removePanel(.platformHealth))
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
+
+        engine.restoreDefaultPanels()
+
+        XCTAssertEqual(engine.activeWorkspace.name, originalName)
+        XCTAssertEqual(engine.activeWorkspace.layout, customLayout)
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        XCTAssertEqual(engine.orderedPanels.map(\.panelID), WorkspacePanelID.allCases)
+        XCTAssertEqual(engine.orderedPanels.map(\.order), Array(0..<WorkspacePanelID.allCases.count))
+    }
+
     func testWorkspacePanelInventoryAndDefaultVisibility() {
         XCTAssertEqual(
             WorkspacePanelID.allCases,
             [.marketWatch, .charts, .accountRisk, .platformHealth]
         )
         XCTAssertEqual(WorkspacePanelID.defaultVisible, Set(WorkspacePanelID.allCases))
+    }
+
+    @MainActor
+    func testWorkspaceEnginePersistsVisibilityAndRestoresActiveWorkspace() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
+        XCTAssertFalse(engine.visiblePanels.contains(.marketWatch))
+
+        let secondWorkspaceID = engine.createWorkspace(name: "Execution")!
+        XCTAssertEqual(engine.activeWorkspace.name, "Execution")
+        engine.setPanelVisibility(.marketWatch, isVisible: false)
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.activeWorkspace.id, secondWorkspaceID)
+        XCTAssertEqual(restored.activeWorkspace.name, "Execution")
+        XCTAssertFalse(restored.visiblePanels.contains(.marketWatch))
+    }
+
+    @MainActor
+    func testWorkspaceEnginePersistsProfilesAndLayoutConfiguration() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let profileID = engine.createProfile(name: "Research")
+        XCTAssertNotNil(profileID)
+
+        let layout = WorkspaceLayoutConfiguration(
+            style: .stacked,
+            sidebarWidth: 360,
+            minimumPrimaryWidth: 540
+        )
+        XCTAssertTrue(engine.updateActiveLayout(layout))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.snapshot.activeProfileID, restored.snapshot.profiles.last?.id)
+        XCTAssertEqual(restored.activeWorkspace.layout, layout)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRejectsOutOfRangeLayoutWithoutMutatingState() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+        let originalLayout = engine.activeWorkspace.layout
+        let invalidLayout = WorkspaceLayoutConfiguration(
+            style: .adaptiveColumns,
+            sidebarWidth: 900,
+            minimumPrimaryWidth: 500
+        )
+
+        XCTAssertFalse(engine.updateActiveLayout(invalidLayout))
+        XCTAssertEqual(engine.activeWorkspace.layout, originalLayout)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRecoversFromDuplicatePanelIdentity() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.workspaces[0].panels.append(invalid.workspaces[0].panels[0])
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("duplicate panel identities"))
+        } else {
+            XCTFail("Expected duplicate panel identities to trigger safe recovery.")
+        }
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        XCTAssertEqual(persistence.snapshot?.schemaVersion, WorkspaceSnapshot.currentSchemaVersion)
+    }
+
+    @MainActor
+    func testWorkspaceEngineRecoversFromInvalidPanelOrdering() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.workspaces[0].panels[0].order = -1
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("Panel order values"))
+        } else {
+            XCTFail("Invalid panel ordering should recover to the default workspace.")
+        }
+    }
+
+    @MainActor
+    func testWorkspaceEngineRejectsUnsupportedSchemaAndUsesDefaults() {
+        let persistence = InMemoryWorkspacePersistence()
+        var invalid = WorkspaceSnapshot.standard()
+        invalid.schemaVersion = WorkspaceSnapshot.currentSchemaVersion + 1
+        persistence.snapshot = invalid
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults = engine.recoveryState {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("Expected unsupported workspace schema to recover to defaults.")
+        }
+    }
+
+    @MainActor
+    func testWorkspaceEngineRecoversWhenStoredDataCannotBeDecoded() {
+        let persistence = InMemoryWorkspacePersistence()
+        persistence.loadError = WorkspacePersistenceError.corruptData("invalid JSON")
+
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertEqual(engine.visiblePanels, WorkspacePanelID.defaultVisible)
+        if case .restoredDefaults(let reason) = engine.recoveryState {
+            XCTAssertTrue(reason.contains("invalid JSON"))
+        } else {
+            XCTFail("Unreadable persisted workspace data should recover to defaults.")
+        }
+        XCTAssertNotNil(persistence.snapshot)
+    }
+
+    @MainActor
+    func testWorkspaceEngineMovesPanelsAndPersistsVisualOrder() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.movePanel(.marketWatch, to: 0))
+        XCTAssertEqual(engine.orderedPanels.map(\.panelID).first, .marketWatch)
+        XCTAssertEqual(engine.orderedPanels.map(\.order), Array(0..<engine.orderedPanels.count))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.orderedPanels.map(\.panelID), engine.orderedPanels.map(\.panelID))
+    }
+
+    @MainActor
+    func testWorkspaceEngineAddsAndRemovesPanelConfigurationsIdempotently() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.removePanel(.platformHealth))
+        XCTAssertFalse(engine.activeWorkspace.panels.contains { $0.panelID == .platformHealth })
+        XCTAssertFalse(engine.removePanel(.platformHealth))
+
+        XCTAssertTrue(engine.addPanel(.platformHealth))
+        XCTAssertTrue(engine.visiblePanels.contains(.platformHealth))
+        XCTAssertFalse(engine.addPanel(.platformHealth))
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertTrue(restored.visiblePanels.contains(.platformHealth))
+    }
+
+    @MainActor
+    func testWorkspaceEngineResizesSidebarWithinSupportedBoundsAndPersistsWidth() {
+        let persistence = InMemoryWorkspacePersistence()
+        let engine = WorkspaceEngine(persistence: persistence)
+
+        XCTAssertTrue(engine.resizeSidebar(to: 480))
+        XCTAssertEqual(engine.activeWorkspace.layout.sidebarWidth, 480)
+        XCTAssertTrue(engine.resizeSidebar(to: 900))
+        XCTAssertEqual(engine.activeWorkspace.layout.sidebarWidth, 640)
+
+        let restored = WorkspaceEngine(persistence: persistence)
+        XCTAssertEqual(restored.activeWorkspace.layout.sidebarWidth, 640)
+    }
+
+    @MainActor
+    func testCommandCenterCanBeInstantiatedWithInjectedHealthModel() {
+        let model = BackendHealthViewModel(
+            client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
+        )
+        let view = CommandCenterView(
+            backendHealthModel: model,
+            onOpenAPIConnection: {}
+        )
+
+        XCTAssertNotNil(view)
     }
 
     func testHealthPayloadDecoderKeepsTradingDisabledWhenPlatformIsNotReady() throws {
@@ -159,4 +359,20 @@ private struct StubBackendHealthClient: BackendHealthClient {
 
 private enum StubBackendHealthError: Error {
     case unavailable
+}
+
+private final class InMemoryWorkspacePersistence: WorkspacePersistence {
+    var snapshot: WorkspaceSnapshot?
+    var loadError: Error?
+
+    func load() throws -> WorkspaceSnapshot? {
+        if let loadError {
+            throw loadError
+        }
+        return snapshot
+    }
+
+    func save(_ snapshot: WorkspaceSnapshot) throws {
+        self.snapshot = snapshot
+    }
 }

@@ -483,3 +483,28 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Owner-confirmed application launch and two-display use remain owner-reported and are not attributed to an exact commit. No new local Xcode build, XCTest, application launch, screenshot review, accessibility, keyboard/focus, or visual QA was performed in this session.
 - Next: run read-only local repository/toolchain preflight; then qualify the intended PR #22 revision on the owner's Mac without overwriting or synchronizing a dirty worktree. Perform visual QA at representative widths on both displays before expanding workspace/panel behavior.
 - No trading, broker, credential, risk-policy, production, or LIVE settings were changed.
+
+
+## ATP-2026-11-17-018 — Command Center and Workspace Engine implementation
+
+### Repository and dependency state
+- Revalidated PR #10 → #17 → #18 dependency chain. All three remain open and unmerged; each base SHA matches its predecessor's current head.
+- PR #22 remains open and unmerged as a sibling of PR #24, both based on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`. PR #22 is not a dependency of PR #24.
+- PR #24 remains open / draft on `feat/macos-command-center-ipds`, based on PR #18 exact head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Latest implementation commit at session checkpoint: `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`.
+
+### Source changes
+- Added `CommandCenterView.swift`; `WorkspaceHomeView.swift` delegates to the Command Center. The view uses adaptive layout, the existing token roles, truthful unavailable states, workspace selection, and engine-backed panel visibility.
+- Added `WorkspaceEngine.swift` with Codable workspace/profile/panel/layout models, stable IDs, versioned snapshot, persistence abstraction and UserDefaults adapter, observable state, workspace creation/selection/rename, visibility updates, reset/save/restore, structural validation, and safe fallback from invalid or unreadable stored configuration.
+- Made `WorkspacePanelID` Codable and added persistence/recovery behavior tests in `ATHEERTradingProTests.swift`.
+- No synthetic market/account data, broker dealing, risk changes, credentials, LIVE permission, or production configuration were added.
+
+### Verification
+- PR #24 Local Sync Safety run #207 passed on exact head `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`.
+- CI run #174 was queued at the last check. Repository hygiene and backend toolchain checks had passed on the immediately preceding head `cfcbeac2c5ff7ff569b703e9638fc4719bdc3f78`, but those results do not qualify the newer `59f5e36...` head. No exact-head macOS build/XCTest result is claimed.
+- Owner-side Xcode build, XCTest, app launch, visual inspection, accessibility, resizing, and multi-display QA for PR #24 have not been performed.
+
+### Remaining implementation boundaries
+- Panel reorder/drag-drop, interactive resize, docking and lifecycle operations beyond visibility are pending.
+- Profile creation/management UI, independent window management, restoration and multi-display orchestration are pending.
+- PR #24 remains draft and unmerged pending exact-head CI and owner-side native qualification.

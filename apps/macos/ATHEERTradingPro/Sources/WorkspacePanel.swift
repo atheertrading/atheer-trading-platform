@@ -1,12 +1,19 @@
 import SwiftUI
 
-enum WorkspacePanelID: String, CaseIterable, Identifiable, Hashable {
+enum WorkspacePanelID: String, CaseIterable, Identifiable, Hashable, Codable {
     case marketWatch
     case charts
     case accountRisk
     case platformHealth
 
     var id: String { rawValue }
+
+    var isPrimaryRegion: Bool {
+        switch self {
+        case .charts, .platformHealth: return true
+        case .marketWatch, .accountRisk: return false
+        }
+    }
 
     var title: String {
         switch self {

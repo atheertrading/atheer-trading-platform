@@ -254,3 +254,18 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - The adaptive source still uses provisional 150–240 pt status-tile and 320–560 pt panel widths. No dedicated new geometry test was added by PR #22; existing XCTest covers panel inventory/default visibility. Hosted XCTest passed.
 - No owner-side local Xcode build/test, screenshot review, visual QA, accessibility, keyboard/focus, or independent two-display verification is claimed. The owner's earlier launch/two-display report remains owner-confirmed without an exact tested SHA.
 - Formal IPDS and ATP-ARCH-014/037/038 source/approval reconciliation remains open. Workspace persistence, panel resizing/docking, draggable arrangement, profiles, and Settings remain unimplemented.
+
+
+## PR #24 — Command Center and initial Workspace Engine — 2026-11-17
+
+**Status: SOURCE IMPLEMENTED; EXACT-HEAD CI IN PROGRESS; OWNER MAC QUALIFICATION PENDING.**
+
+- PR #24: `feat/macos-command-center-ipds`, based on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`. PR remains open, draft, and unmerged.
+- Latest source head when recorded: `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`.
+- Added `CommandCenterView.swift` and routed `WorkspaceHomeView.swift` to the Command Center. The view uses the existing ATHEER design-token roles, adaptive two-region/stacked layout, operational status, chart workspace, Market Watch, Account & Risk, Platform Health, workspace selection, and persisted panel visibility.
+- Added `WorkspaceEngine.swift`: Codable workspace/profile/panel/layout models; stable UUID identity; schema-versioned snapshots; `WorkspacePersistence` protocol; UserDefaults persistence; observable state; create/select/rename; panel visibility; reset/save/restore; validation of schema, identities, profile references, panel identities, names, and layout bounds; recovery from invalid or unreadable persisted data.
+- `WorkspacePanelID` now conforms to Codable. XCTest additions exercise persistence/restoration, visibility state, duplicate panel identity recovery, unsupported schema recovery, and corrupt-data recovery.
+- Exact source diff at this checkpoint: five files changed (CommandCenterView, WorkspaceEngine, WorkspaceHomeView, WorkspacePanel, ATHEERTradingProTests). Local Sync Safety #207 passed. CI #174 was queued at last inspection; earlier CI runs were cancelled by newer commits and are not evidence for this head.
+- No local Xcode build, XCTest, app launch, or visual QA has been performed for PR #24. Hosted CI does not replace owner-Mac qualification.
+- No broker integration, market data, financial values, order execution, risk mutation, credentials, LIVE capability, or production settings were introduced.
+- Not implemented: panel drag/drop/reorder, interactive resize, docking, full profile-management UI, independent windows, window restoration, and multi-display orchestration.
