@@ -4,7 +4,6 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { CapitalDemoCredentials } from "./market-data/capital-demo-client.ts";
 import type { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import type {
   CapitalDemoStreamingRuntime,
@@ -15,7 +14,6 @@ import { hasValidIPCCapability } from "./security/ipc-capability.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
-const MAX_CREDENTIAL_BODY_BYTES = 8_192;
 
 interface LiveHealthResponse {
   readonly status: "ok";
@@ -36,14 +34,6 @@ interface ReadinessResponse {
     readonly status: "disabled";
   };
 }
-class RequestBodyError extends Error {
-  constructor(
-    readonly statusCode: number,
-    readonly errorCode: string,
-  ) {
-    super(errorCode);
-  }
-}
 
 function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
   response.statusCode = statusCode;
@@ -57,89 +47,6 @@ function hasSafeNativeRequestContext(request: IncomingMessage): boolean {
   const origin = request.headers.origin;
   const fetchSite = request.headers["sec-fetch-site"];
   return origin === undefined && (fetchSite === undefined || fetchSite === "none");
-}
-
-function headerValue(value: string | string[] | undefined): string | undefined {
-  return typeof value === "string" ? value : undefined;
-}
-
-function brokerSessionResponseStatus(
-  status: ReturnType<BrokerSessionManager["status"]>,
-): number {
-  if (status.state === "connected") return 200;
-  if (
-    status.lastError?.includes("HTTP 401") ||
-    status.lastError?.includes("rejected or expired")
-  ) return 401;
-  if (status.lastError?.includes("HTTP 403")) return 403;
-  if (
-    status.lastError?.includes("HTTP 429") ||
-    status.lastError?.includes("rate-limited")
-  ) return 429;
-  return 503;
-}
-
-
-async function readBrokerCredentials(request: IncomingMessage): Promise<CapitalDemoCredentials> {
-  const contentType = headerValue(request.headers["content-type"]);
-  if (contentType?.split(";")[0]?.trim().toLowerCase() !== "application/json") {
-    throw new RequestBodyError(415, "unsupported_media_type");
-  }
-
-  const contentLength = headerValue(request.headers["content-length"]);
-  if (contentLength !== undefined) {
-    if (!/^\d+$/.test(contentLength)) {
-      throw new RequestBodyError(400, "invalid_content_length");
-    }
-    if (Number(contentLength) > MAX_CREDENTIAL_BODY_BYTES) {
-      throw new RequestBodyError(413, "payload_too_large");
-    }
-  }
-
-  const decoder = new TextDecoder();
-  let body = "";
-  let totalBytes = 0;
-  for await (const chunk of request) {
-    totalBytes += chunk.byteLength;
-    if (totalBytes > MAX_CREDENTIAL_BODY_BYTES) {
-      throw new RequestBodyError(413, "payload_too_large");
-    }
-    body += decoder.decode(chunk, { stream: true });
-  }
-  body += decoder.decode();
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(body);
-  } catch {
-    body = "";
-    throw new RequestBodyError(400, "invalid_json");
-  }
-  body = "";
-
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  const payload = parsed as Record<string, unknown>;
-  const allowedKeys = ["apiKey", "identifier", "password"];
-  const keys = Object.keys(payload);
-  if (keys.length !== allowedKeys.length || keys.some((key) => !allowedKeys.includes(key))) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  const apiKey = typeof payload.apiKey === "string" ? payload.apiKey.trim() : "";
-  const identifier = typeof payload.identifier === "string" ? payload.identifier.trim() : "";
-  const password = typeof payload.password === "string" ? payload.password : "";
-  if (
-    apiKey.length === 0 || apiKey.length > 512 ||
-    identifier.length === 0 || identifier.length > 512 ||
-    password.length === 0 || password.length > 2_048
-  ) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  return { apiKey, identifier, password };
 }
 
 export function createApiServer(
@@ -216,58 +123,6 @@ async function handleMarketDataRequest(
       environment: "DEMO",
       state: "not_configured",
     });
-    return;
-  }
-
-  if (pathname === "/broker-session/connect" && method === "POST") {
-    if (!runtime) {
-      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
-      return;
-    }
-    try {
-      const credentials = await readBrokerCredentials(request);
-      const status = await runtime.connect(credentials, async () => {
-        await streamRuntime?.disconnect();
-      });
-      sendJson(response, brokerSessionResponseStatus(status), status);
-    } catch (error) {
-      if (error instanceof RequestBodyError) {
-        sendJson(response, error.statusCode, { error: error.errorCode });
-        return;
-      }
-      sendJson(response, 502, { error: "broker_session_connect_failed" });
-    }
-    return;
-  }
-
-  if (pathname === "/broker-session/disconnect" && method === "POST") {
-    if (!runtime) {
-      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
-      return;
-    }
-    let streamDisconnectFailed = false;
-    try {
-      await streamRuntime?.disconnect();
-    } catch {
-      streamDisconnectFailed = true;
-    }
-
-    try {
-      const status = await runtime.disconnect();
-      if (streamDisconnectFailed) {
-        sendJson(response, 502, {
-          error: "market_data_stream_disconnect_failed",
-          brokerSession: status,
-        });
-        return;
-      }
-      sendJson(response, 200, status);
-    } catch {
-      sendJson(response, 502, {
-        error: "broker_session_disconnect_failed",
-        streamingDisconnectFailed: streamDisconnectFailed,
-      });
-    }
     return;
   }
 
@@ -420,10 +275,7 @@ async function handleMarketDataRequest(
     return;
   }
 
-  const allowedMethod = pathname === "/broker-session/connect" ||
-      pathname === "/broker-session/disconnect"
-    ? "POST"
-    : pathname === "/broker-session/status" ||
+  const allowedMethod = pathname === "/broker-session/status" ||
       pathname === "/market-data/status" ||
       pathname === "/market-data/markets" ||
       pathname === "/market-data/history" ||

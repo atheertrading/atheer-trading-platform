@@ -4,6 +4,7 @@ import { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import { CapitalDemoStreamingRuntime } from "./market-data/capital-demo-streaming-runtime.ts";
 import { createApiServer } from "./server.ts";
 import { readIPCStartupCapability } from "./security/ipc-capability.ts";
+import { createBrokerCredentialIPCServer } from "./security/broker-credential-ipc.ts";
 import { runBoundedShutdownStep } from "./shutdown.ts";
 
 const config = loadRuntimeConfig(env);
@@ -16,6 +17,17 @@ const marketDataStreamRuntime = new CapitalDemoStreamingRuntime(async () => {
   return brokerSessionManager.getStreamingConnectionInfo();
 });
 const ipcCapability = await readIPCStartupCapability(process.stdin);
+const credentialSocketPath = env.ATHEER_CREDENTIAL_SOCKET_PATH;
+if (!credentialSocketPath) {
+  ipcCapability.fill(0);
+  throw new Error("The private broker credential IPC socket path is not configured.");
+}
+const credentialIPCServer = await createBrokerCredentialIPCServer({
+  socketPath: credentialSocketPath,
+  expectedCapability: ipcCapability,
+  manager: brokerSessionManager,
+  beforeSessionReplacement: async () => marketDataStreamRuntime.disconnect(),
+});
 const server = createApiServer(brokerSessionManager, ipcCapability, marketDataStreamRuntime);
 let shuttingDown = false;
 
@@ -43,6 +55,7 @@ function shutdown(): void {
 
   // Stop accepting IPC immediately. Active requests and SSE streams are closed
   // before provider resources are released.
+  const credentialIPCClosed = credentialIPCServer.close();
   const serverClosed = new Promise<void>((resolve, reject) => {
     server.close((error) => error ? reject(error) : resolve());
   });
@@ -54,6 +67,12 @@ function shutdown(): void {
   }, SHUTDOWN_HARD_DEADLINE_MS);
 
   void (async () => {
+    const credentialIPCStopped = await runBoundedShutdownStep(
+      "credential_ipc_server",
+      () => credentialIPCClosed,
+      SHUTDOWN_SERVER_TIMEOUT_MS,
+      (message) => console.error(message),
+    );
     const streamStopped = await runBoundedShutdownStep(
       "market_data_stream",
       () => marketDataStreamRuntime.disconnect(),
@@ -73,7 +92,7 @@ function shutdown(): void {
       (message) => console.error(message),
     );
 
-    if (!streamStopped || !brokerLoggedOut || !serverStopped) {
+    if (!credentialIPCStopped || !streamStopped || !brokerLoggedOut || !serverStopped) {
       process.exitCode = 1;
     } else {
       console.info("ATHEER API stopped.");

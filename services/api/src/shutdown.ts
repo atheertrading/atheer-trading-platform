@@ -1,4 +1,4 @@
-export type ShutdownOperation = "market_data_stream" | "broker_session" | "http_server";
+export type ShutdownOperation = "credential_ipc_server" | "market_data_stream" | "broker_session" | "http_server";
 
 /**
  * Runs one shutdown action within a strict deadline.
