@@ -52,11 +52,17 @@ async function stopChild(child) {
   if (child.exitCode !== null || child.signalCode !== null) return;
   const exited = new Promise((resolve) => child.once("exit", resolve));
   child.kill("SIGTERM");
+  let timeout;
   await Promise.race([
     exited,
-    new Promise((resolve) => setTimeout(resolve, 3_000)),
+    new Promise((resolve) => { timeout = setTimeout(resolve, 3_000); }),
   ]);
-  if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+  if (timeout) clearTimeout(timeout);
+  if (child.exitCode === null && child.signalCode === null) {
+    const killed = new Promise((resolve) => child.once("exit", resolve));
+    child.kill("SIGKILL");
+    await killed;
+  }
 }
 
 test("managed backend bootstraps over stdin, binds an ephemeral loopback port, and authenticates IPC", async () => {
