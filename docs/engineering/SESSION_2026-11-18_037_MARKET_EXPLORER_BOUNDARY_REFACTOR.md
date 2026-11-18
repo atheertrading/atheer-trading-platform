@@ -64,3 +64,10 @@ Read-only instrument metadata only. No credentials, session tokens, orders, posi
 - Added URLProtocol tests for backend status GET, market search GET, encoded query values, `Cache-Control: no-store`, DEMO response mapping, 503/500 handling and network transport failure mapping.
 - Commits: `5c1ae72805441d2476a6ab57dc9b3d51035fac16`, `a0f28db8f63266f7bfd042dcf035e091c4ef354c`, `834afa04a55075af0f4aa8b22ab8dd345096d458`, `a310237f3c38715b35ee81ee8f0ee9489e464fdd`, `ea1b16f8527798a88d29b522b9320bfb961f9a59`, `0201e0593e3bafdbed206262a81da62ca6756958`.
 - Exact-head CI remains pending.
+
+
+## Local API request marker dependency
+
+- Added `X-ATHEER-LOCAL-CLIENT: macOS` to both Market Search backend status and instrument search GET requests, with XCTest assertions.
+- Dependent PR #37 enforces the marker and rejects browser Origin/cross-site Fetch Metadata. This client/server contract must be integrated together.
+- The marker is not a secret and does not authenticate arbitrary local processes.
