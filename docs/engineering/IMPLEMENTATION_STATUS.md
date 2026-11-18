@@ -411,8 +411,8 @@ Implemented in the PR #37 streaming foundation:
 - Latest quote cache and invalid/duplicate/out-of-order counters.
 
 Still required:
-- Enforce the documented 1 session-creation request/second/API-key limit across sequential attempts; current runtime only coalesces concurrent attempts.
-- Schedule REST session keepalive; `CapitalDemoRuntime.ping()` exists but is not scheduled.
+- Added a minimum one-second interval between sequential session-creation attempts in the single `CapitalDemoRuntime` owner; concurrent connect calls remain coalesced. Cross-runtime/API-key coordination must be guaranteed by the centralized CMS/session manager.
+- Added scheduled REST `GET /ping` every five minutes, safely before the documented ten-minute inactivity threshold. The scheduler is cancelled on disconnect; keepalive 401/403 invalidates the session, while transient provider errors mark it degraded and a successful ping restores it.
 - Prioritize the 40 slots for open positions and active strategies before watchlists/analytics.
 - Restore subscriptions coherently after account switching and expose connection utilization metrics.
 - These controls must be implemented through the single backend session authority required by ATP-BRK-002.
