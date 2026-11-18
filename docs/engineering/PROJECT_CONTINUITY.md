@@ -635,3 +635,16 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - ATP-BRK-002 / EDL-022 remains a mandatory integration gate: PR #26 direct Swift Keychain authentication and PR #37 environment-driven backend authentication are duplicate session authorities. One backend CMS/session manager must own credentials and session tokens; native app provisioning must use authenticated private IPC/per-launch capability; environment credentials remain test-only.
 - ATP-BRK-003 / ATP-MKT-007 / EDL-023 tracks sequential authentication throttling, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection metrics. Existing shared WebSocket/40-subscription/ping/reconnect code remains unmerged in PR #37.
 - PR #44/#45/#47 have green exact-head CI but remain draft, stacked on feature branches. Preserve the stack and resolve ancestry before mainline integration.
+
+
+## 2026-11-18 — Broker-session IPC integration batch 049
+
+- Consulted the governing Screen Implementation execution prompt, the Library Q&A Repository (Broker Integration Q4/Q8; Real-Time Market Data Q1/Q7), and Codex knowledge-base architecture materials.
+- Inspected ATP-MER-001 and the proposed `system-context.mmd`, `market-data-pipeline.mmd`, `ai-order-boundary.mmd`, and `target-trading-boundaries.mmd`. Their catalogue status remains proposed with syntax validation pending; they are architectural guidance, not deployed topology.
+- PR #54 adds the macOS bundled-backend process supervisor and is stacked on PR #51. PR #55 adds backend-owned Capital.com DEMO session lifecycle and native Keychain-to-backend credential handoff, stacked on PR #54.
+- PR #55 implements a 1-second session-creation throttle matching Library Broker Integration Q4; HTTP 401, 403 and 429 are classified separately. REST logout is still attempted if stream shutdown reports failure, and the credential-bearing runtime reference is released even when logout fails.
+- PR #55 head before this documentation commit: `366e2e36c1652c16feaf6d23279ad78ff089bb2e`. PR #55 remains DRAFT and unmerged.
+- PR #54 exact-head CI run `44276116460`: repository hygiene and backend toolchain passed; runtime packaging and Intel architecture inspection passed; macOS XcodeGen/build and Apple Silicon qualification were still running/queued at last inspection.
+- PR #55 prior CI runs were superseded/cancelled during active commits. A prior API typecheck completed, but the final-head backend tests and Intel/Apple Silicon matrix are not yet qualified. The final exact-head run must be checked after this documentation commit.
+- No owner-Mac build, visual/accessibility QA, Keychain restart qualification, or real Capital.com DEMO authentication was performed. No credentials or LIVE endpoints were used; trading remains disabled.
+- Full details and remaining gates: `SESSION_2026-11-18_049_BROKER_SESSION_IPC_INTEGRATION.md`.
