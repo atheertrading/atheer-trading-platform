@@ -398,3 +398,12 @@ Acceptance: no invented endpoint or broker status; REST is not presented as stre
 | ATP-UI-BASELINE-001 | P0 | Reconcile main, current UI PR ancestry, actual screen inventory, IPDS, workspace, ViewModel/client boundaries, tests, cross-stream overlap and blockers | COMPLETED — AUDIT ONLY | `UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md`; main `31e3e554...`; UI PR chain #69/#80/#85/#89/#90/#91 |
 
 The audit is not product completion or CI qualification. Track the #70/#83 shared-file integration as a separate dependency; do not merge it independently with PR #91. Keep `CAP_ALLOW_TRADING=false`.
+
+
+## ATP-UI-WORKSPACE-DELETE-001 — Workspace deletion and profile-reference integrity
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-UI-WORKSPACE-DELETE-001 | P1 | Delete a workspace from the versioned workspace model and management UI; repair every referencing profile; preserve one workspace per profile; persist and test atomically | IMPLEMENTED ON UI CHILD BRANCH — EXACT-HEAD CI PENDING | `WorkspaceEngine.deleteWorkspace(_:)`; `WorkspacePanelManagementView`; `WorkspaceLifecycleTests.swift`; `SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE.md` |
+
+Acceptance: every profile retains at least one workspace; deleting the active workspace selects a valid replacement; candidate snapshot validation occurs before publish/persist; failure leaves in-memory and persisted state unchanged; no broker/market-data/trading lifecycle is changed.

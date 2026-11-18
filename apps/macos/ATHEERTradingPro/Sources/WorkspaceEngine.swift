@@ -338,6 +338,55 @@ final class WorkspaceEngine: ObservableObject {
         return workspace.id
     }
 
+    /// Deletes a workspace configuration and repairs every profile reference atomically.
+    /// Each profile must retain at least one workspace; connected services are not affected.
+    @discardableResult
+    func deleteWorkspace(_ workspaceID: UUID) -> Bool {
+        guard snapshot.workspaces.count > 1,
+              snapshot.workspaces.contains(where: { $0.id == workspaceID }),
+              snapshot.profiles.contains(where: { $0.workspaceIDs.contains(workspaceID) }) else {
+            return false
+        }
+
+        var updatedSnapshot = snapshot
+
+        for profileIndex in updatedSnapshot.profiles.indices {
+            let profile = updatedSnapshot.profiles[profileIndex]
+            guard profile.workspaceIDs.contains(workspaceID) else { continue }
+
+            let remainingWorkspaceIDs = profile.workspaceIDs.filter { $0 != workspaceID }
+            guard !remainingWorkspaceIDs.isEmpty else {
+                return false
+            }
+
+            updatedSnapshot.profiles[profileIndex].workspaceIDs = remainingWorkspaceIDs
+            if profile.activeWorkspaceID == workspaceID {
+                updatedSnapshot.profiles[profileIndex].activeWorkspaceID = remainingWorkspaceIDs[0]
+            }
+        }
+
+        updatedSnapshot.workspaces.removeAll { $0.id == workspaceID }
+
+        if updatedSnapshot.activeWorkspaceID == workspaceID {
+            guard let activeProfile = updatedSnapshot.profiles.first(
+                where: { $0.id == updatedSnapshot.activeProfileID }
+            ) else {
+                return false
+            }
+            updatedSnapshot.activeWorkspaceID = activeProfile.activeWorkspaceID
+        }
+
+        do {
+            try Self.validate(updatedSnapshot)
+        } catch {
+            return false
+        }
+
+        snapshot = updatedSnapshot
+        persist()
+        return recoveryState == .clean
+    }
+
     func renameActiveWorkspace(to name: String) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }

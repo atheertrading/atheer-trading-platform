@@ -689,3 +689,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 - Team A source audit: [UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md](UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md). It records the actual four-destination app baseline and separates the open UI shell chain from parallel chart/market PR #70/#83.
 - Integration warning: PR #70 and child PR #83 both change `CommandCenterView.swift`, `ContentView.swift` and `WorkspaceHomeView.swift`, which overlap UI PR #91. Preserve branch ancestry and perform a deliberate shared-file reconciliation before integrating the live Market Watch/chart stack.
+
+
+## 2026-11-19 — Workspace lifecycle deletion increment
+
+- Identified that `WorkspaceEngine` had workspace creation and persistence but no workspace deletion operation, despite the TEAM A lifecycle requirement.
+- Added atomic workspace deletion with validation across every referencing profile, active-workspace fallback selection and last-workspace protection; exposed a confirmed destructive action in `WorkspacePanelManagementView`.
+- Added isolated XCTest coverage for deletion persistence, shared-profile reference repair and rejection without partial mutation.
+- Session: [SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE.md](SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE.md). Branch `feat/ui-workspace-lifecycle-delete` is stacked on PR #91; qualification pending.
