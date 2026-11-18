@@ -21,6 +21,7 @@ struct MarketDataStreamStatus: Decodable, Equatable {
 struct MarketDataQuoteFreshness: Decodable, Equatable {
     let state: MarketDataQuoteFreshnessState
     let ageMs: Double?
+    let maximumAgeMs: Int
     let automatedDecisionsAllowed: Bool
     let reason: String
 }
@@ -120,6 +121,7 @@ struct ServerSentEventParser {
                       quote.receivedAtMonotonicMs.isFinite,
                       quote.receivedAtMonotonicMs >= 0,
                       freshness.ageMs.map({ $0.isFinite && $0 >= 0 }) ?? true,
+                      freshness.maximumAgeMs > 0,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
                       (freshness.state == .fresh) == freshness.automatedDecisionsAllowed else {
