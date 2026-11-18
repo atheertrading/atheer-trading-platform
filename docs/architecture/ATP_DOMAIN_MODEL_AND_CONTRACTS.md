@@ -94,3 +94,12 @@ This package does not implement PostgreSQL persistence, transactional outbox, br
 ## 8. Next work package
 
 After the domain contract slice is qualified, proceed to ATP-PERSISTENCE-001: PostgreSQL schema/migrations and repository implementations for versioned instrument specifications, account snapshots, intent journal, risk decisions, execution events, audit, reconciliation, and transactional outbox. Preserve the invariant: no broker dealing command without a durably committed intent and matching risk authorization.
+
+
+## 9. Runtime shape validation at untrusted boundaries
+
+Public domain constructors and validators must not assume that TypeScript interfaces guarantee the runtime shape of JSON-derived values. The domain now provides explicit record and array guards and applies them before dereferencing nested provenance, identity, instrument, account, intent, risk, lifecycle, broker order, position, fill, execution, reconciliation and audit structures.
+
+Malformed object/array shapes fail with `DomainValidationError` and stable field-specific codes rather than incidental `TypeError` exceptions. This validation does not authorize an intent, change risk policy, infer missing financial values, or add broker execution capability.
+
+The deterministic test suite covers null roots and nested records, arrays supplied where records are required, object-shaped arrays, and malformed quantity/price records.
