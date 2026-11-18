@@ -153,13 +153,16 @@ async function handleRequest(
 
   let streamDisconnectFailed = false;
   try {
-    await beforeSessionReplacement?.();
-  } catch {
-    streamDisconnectFailed = true;
-  }
-
-  try {
-    const status = await manager.disconnect();
+    // Keep stream teardown and broker-session release in the same serialized
+    // session transition. Running the callback before manager.disconnect()
+    // would allow a concurrent connect to create a new session in between.
+    const status = await manager.disconnect(async () => {
+      try {
+        await beforeSessionReplacement?.();
+      } catch {
+        streamDisconnectFailed = true;
+      }
+    });
     return {
       requestId: request.requestId,
       ok: !streamDisconnectFailed,
