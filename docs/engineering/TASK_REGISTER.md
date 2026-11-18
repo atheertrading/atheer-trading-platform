@@ -349,7 +349,7 @@ Required: app-managed backend child process; 256-bit per-launch capability boots
 
 | Work item | Priority | Scope | Status | Evidence |
 |---|---:|---|---|---|
-| ATP-BRK-003 | P1 | Enforce session-creation rate limit, REST keepalive scheduling, session recovery and account-switch coordination | PARTIAL | PR #37 coalesces concurrent connects and exposes `ping()`; sequential throttle and scheduled ping are not implemented |
+| ATP-BRK-003 | P1 | Enforce session-creation rate limit, REST keepalive scheduling, session recovery and account-switch coordination | PARTIAL — PR #49 CI pending | PR #49 head `a16a0a065997ab912d46ba544cf8d4e0ada00ff0` adds per-runtime sequential one-second throttling, five-minute REST keepalive, degraded recovery and scheduled-promise rejection containment; exact-head CI `44266234067` not yet complete; cross-runtime/API-key throttle belongs to CMS |
 | ATP-MKT-007 | P1 | Allocate 40 WebSocket instrument slots by operational priority and restore after reconnect/account switch | PARTIAL | PR #37 shared WebSocket, 40-cap, dedupe, heartbeat and reconnect are implemented; priority allocator and utilization metrics remain |
 
 Do not conflate REST request-rate limits, authenticated REST session inactivity, WebSocket heartbeat/duration and the 40-instrument subscription cap. Do not invent undocumented provider connection limits.
@@ -361,3 +361,10 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
 - CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
 - Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
+
+
+### 2026-11-18 — PR #48 and PR #49 continuation
+
+- PR #48 is merged at `3bb2f0b68c11eff019bbd88ce09cf3b7155b9ea4`; CI/CodeQL/Local Sync Safety passed.
+- PR #49 exact head `a16a0a065997ab912d46ba544cf8d4e0ada00ff0`; Local Sync Safety passed; exact-head CI is pending. It remains stacked on PR #37 and must not be merged to `main` independently.
+- ATP-BRK-002 remains P0 and blocks PR #37 integration until a single backend CMS/Broker Session Manager owns broker credentials and session tokens through authenticated app-to-backend IPC and Keychain-backed storage.
