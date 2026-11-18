@@ -341,9 +341,9 @@ The marker is not a secret and does not authenticate arbitrary local processes. 
 
 | Work item | Priority | Scope | Status | Evidence |
 |---|---:|---|---|---|
-| ATP-BRK-002 | P0 | Consolidate native and backend broker authentication into one secure backend CMS/session owner | PARTIAL — PR #51 backend IPC boundary only | PR #26 currently owns native Swift Keychain credentials/direct authentication; PR #37 owns a separate environment-driven backend session. PR #51 adds stdin-delivered 256-bit capability and authenticated market-data routes, but native client/process supervisor/Keychain bridge are pending; do not merge until app-side integration prevents HTTP 401 regression |
+| ATP-BRK-002 | P0 | Consolidate native and backend broker authentication into one secure backend CMS/session owner | PARTIAL — PRs #51–#53 implement authenticated process bootstrap/client; Keychain handoff and backend CMS remain pending | PR #51 adds private-stdin 256-bit capability and route authorization; PR #52 adds ephemeral-port readiness; PR #53 adds Swift process supervision, authenticated market-data client, and universal bundled Node/API runtime. Remaining: Keychain credential handoff, one backend Broker Session Manager, lifecycle/recovery tests, exact-head CI, and owner-Mac qualification. Keep the stack unmerged until these gates pass |
 
-Required: app-managed backend child process; 256-bit per-launch capability bootstrapped over private stdin/pipe; bearer auth for local control APIs; backend CMS backed by a Keychain helper/adapter; environment credentials test-only; one Broker Session Manager shared by market data, streaming, account data and future OMS. Add isolation, secret-redaction, IPC authorization, reconnect and token lifecycle tests.
+Implemented on PR #53: app-managed backend child process, 256-bit per-launch capability over private stdin, Bearer auth for market-data IPC, ephemeral loopback port discovery, universal Node/API app resources, and app-shutdown lifecycle. Remaining acceptance criteria: Keychain-backed credential handoff; backend CMS as the only session owner shared by market data, streaming and account data; environment credentials test-only; reconnect/account-switch and secret-redaction tests; exact-head CI and owner-Mac qualification.
 
 ## ATP-BRK-003 / ATP-MKT-007 — Connection and subscription orchestration
 
