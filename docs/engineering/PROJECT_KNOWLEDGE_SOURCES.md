@@ -84,3 +84,17 @@ Verified archive artifacts:
 - The original 47-document formal architecture archive is referenced by the package registry but was not present as a standalone archive in the visible Library root. The Codex export includes its registry metadata, not all 47 original full-text documents.
 
 The current Master Engineering Execution Directive and Continuous Delegation documents in `/work`, plus the owner's explicit current repository direction, supersede stale repository pointers in the historical working draft. Preserve the draft and its substantive requirements as source material; do not claim blanket owner approval.
+
+
+## 8. Screen/workstation and execution lifecycle source inspection — 2026-11-18
+
+The following Library material was directly retrieved and inspected for PRs #42 and #43:
+
+- **Screen Implementation, Application Development & Professional Trading Workstation** — the retained Library reference (stable Library file ID `file_000000003f0882108728e1dd01070cfb`). The full screen implementation directive was read and applied to the Command Center / Market Watch vertical slice.
+- **Atheer Q&A Repository.zip** — exact archive SHA-256 `c6af385151a71fca3f2ef261115d6d2ecd22fa62b6787dd130e10c27050f9af2`. The archive was materialized read-only; the review was targeted, not exhaustive.
+- **Owner and Developer Approval.md** — inspected to verify delegated internal decision authority and distinguish routine architecture decisions from protected financial actions.
+- **PART VI / Section 18 — Order Execution Engine:** Q1 (OEL-12 state model), Q11 (idempotency), Q12 (centralized Execution Gateway), Q16 (timeouts), Q17 (unknown execution), Q18 (duplicate/concurrency/fencing), and Q20 (Gateway failure/recovery) were inspected and mapped into EDL-013 and `ATP_OMS_LIFECYCLE_FOUNDATION.md`.
+- **Professional Trading Screens, Workspace Architecture & User Experience** — read from the Q&A archive and used for the persistent workspace, provider-backed Market Watch, screen/state ownership, and no-fabricated-data boundaries.
+- Repository Mermaid diagrams 04, 05, 11, and 12 were read and used in the OMS batch; diagrams 13 and 14 were added to document the resulting architecture.
+
+This targeted review does **not** claim all 517 Q&A records or all original architecture documents have been exhaustively reconciled. Source provenance and approval status remain governed by the registers above.
