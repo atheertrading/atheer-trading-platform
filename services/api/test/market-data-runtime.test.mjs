@@ -524,3 +524,89 @@ test("HTTP broker credential routes remain absent and market data rejects invali
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
   assert.equal(invalidResolution.status, 400);
 });
+
+test("market-data HTTP boundary rejects malformed search and history parameters before provider access", async () => {
+  const connected = await serverRuntime.connect({
+    apiKey: "synthetic-demo-key",
+    identifier: "synthetic-demo-user",
+    password: "synthetic-demo-password",
+  });
+  assert.equal(connected.state, "connected");
+
+  const beforeMarketCalls = serverClient.calls.filter((call) => call[0] === "markets").length;
+  const beforeHistoryCalls = serverClient.calls.filter((call) => call[0] === "history").length;
+
+  try {
+    for (const term of ["", "   ", "A".repeat(101)]) {
+      const response = await fetch(
+        baseUrl + "/market-data/markets?searchTerm=" + encodeURIComponent(term),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_search_term" });
+    }
+
+    for (const epic of ["", "   ", "EUR/USD", "A".repeat(65)]) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=" + encodeURIComponent(epic),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_epic" });
+    }
+
+    const invalidResolutions = ["INVALID", "MINUTE_1"];
+    for (const resolution of invalidResolutions) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=EURUSD&resolution=" + encodeURIComponent(resolution),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_resolution" });
+    }
+
+    for (const max of ["0", "1001", "1.5", "1e2", "9007199254740992"]) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=EURUSD&max=" + encodeURIComponent(max),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_max" });
+    }
+
+    assert.equal(serverClient.calls.filter((call) => call[0] === "markets").length, beforeMarketCalls);
+    assert.equal(serverClient.calls.filter((call) => call[0] === "history").length, beforeHistoryCalls);
+
+    const marketResponse = await fetch(
+      baseUrl + "/market-data/markets?searchTerm=%20Apple%20",
+      { headers: authorization },
+    );
+    assert.equal(marketResponse.status, 200);
+    assert.deepEqual(serverClient.calls.filter((call) => call[0] === "markets").at(-1), [
+      "markets",
+      serverClient.calls.filter((call) => call[0] === "markets").at(-1)[1],
+      "Apple",
+    ]);
+
+    const historyResponse = await fetch(
+      baseUrl + "/market-data/history?epic=%20EURUSD%20&resolution=HOUR&max=25",
+      { headers: authorization },
+    );
+    assert.equal(historyResponse.status, 200);
+    const historyCall = serverClient.calls.filter((call) => call[0] === "history").at(-1);
+    assert.equal(historyCall[2], "EURUSD");
+    assert.equal(historyCall[3], "HOUR");
+    assert.equal(historyCall[4], 25);
+  } finally {
+    await serverRuntime.disconnect();
+  }
+});
+
+test("valid market-data query syntax does not disguise an unavailable broker session", async () => {
+  const response = await fetch(
+    baseUrl + "/market-data/history?epic=EURUSD&resolution=MINUTE&max=100",
+    { headers: authorization },
+  );
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { error: "broker_session_unavailable" });
+});
