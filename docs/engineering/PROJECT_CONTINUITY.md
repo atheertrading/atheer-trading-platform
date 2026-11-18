@@ -699,3 +699,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #64 is the clean replacement for PR #58 and remains draft pending exact-head CI.
 - PRs #55 and #57 remain draft pending exact-head CI. PR #55 still has the P0 broker-credential confidentiality gate.
 - No PR in this stack has been merged in this batch. PR #57 may be integrated into PR #56 after its full macOS/backend checks pass; broker-session and live-stream branches must not be merged until the credential transport gate is resolved.
+
+
+## 2026-11-18 — Batch 055: private broker credential IPC
+
+- Replaced broker credential HTTP POST design with a dedicated per-process Unix-domain socket for connect/disconnect.
+- Native supervisor creates a mode-0700 temporary directory, passes only the socket path in child environment, verifies socket mode 0600 before readiness, and removes the directory after confirmed process exit.
+- Backend UDS requests require the existing 256-bit capability, constant-time validation, strict DEMO-only action/field allowlist, 8 KiB payload cap and bounded timeout. Credentials are never returned or logged.
+- HTTP credential connect/disconnect routes are removed; capability-authenticated session status and market-data HTTP routes remain.
+- Integrated bounded SIGTERM/SIGKILL process shutdown from session 053; app termination waits for confirmed exit.
+- Native and backend tests added. Exact-head CI and owner-Mac DEMO authentication remain pending; no credentials or orders were used.
+- Evidence: `SESSION_2026-11-18_055_PRIVATE_BROKER_CREDENTIAL_IPC.md`; decision EDL-031.
