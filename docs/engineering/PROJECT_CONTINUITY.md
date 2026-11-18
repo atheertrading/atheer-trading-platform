@@ -750,3 +750,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #37 and #38 are non-mergeable; #38 parent diverged 13 ahead / 36 behind. PRs #39–#47 inherit that stale branch and overlap newer authenticated Market Explorer code. Preserve their branches; port independent features incrementally rather than merging the stale stack wholesale.
 - Last documented Mac qualification is from 2026-11-17 on old commit `0e7f25e`; current Mac state is not accessible and no local pull/build is claimed.
 - Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`. `CAP_ALLOW_TRADING=false` unchanged.
+
+
+## 2026-11-18 — Authenticated historical chart workspace
+
+- Added PR #69 on `feat/authenticated-chart-workspace-2026-11-18`, stacked on PR #68. The chart client uses the supervised dynamic BackendIPCConnection base URL and private bearer IPC capability; the old PR #44 static-port unauthenticated client is not reused.
+- Added strict historical payload decoding, separate Bid/Ask candlestick rendering, timeframe and side selection, manual refresh, duplicate/gap/receipt metadata and raw-provider limit warning.
+- Added Charts navigation, Open Chart from Market Explorer, and a real historical chart surface in the Command Center. No fabricated data or LIVE execution path.
+- Persistent Market Watch, live candle aggregation, indicators, drawings, replay and UI date-range selection remain pending.
+- PR #66 CI uncovered a missing credentialSocketURL in the MarketSearch test fixture. Corrected on updated PR #66 head and propagated to PR #67/#68/#69 branches; new exact-head CI pending. Previous run remains failed and Apple Silicon qualification must be rerun.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`. `CAP_ALLOW_TRADING=false` unchanged.
