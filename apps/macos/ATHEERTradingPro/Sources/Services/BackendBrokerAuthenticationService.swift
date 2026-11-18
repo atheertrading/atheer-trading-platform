@@ -1,0 +1,202 @@
+import Foundation
+
+@MainActor
+final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
+    private struct ConnectPayload: Encodable {
+        let apiKey: String
+        let identifier: String
+        let password: String
+    }
+
+    private struct SessionStatusPayload: Decodable {
+        let provider: String
+        let environment: String
+        let state: String
+        let connectedAtMs: Double?
+        let lastError: String?
+    }
+
+    private let connection: BackendIPCConnection
+    private let session: URLSession
+    private var maskedAccountIdentifier: String?
+    private var authenticatedAt: Date?
+
+    init(connection: BackendIPCConnection, session: URLSession? = nil) {
+        self.connection = connection
+        if let session {
+            self.session = session
+        } else {
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.urlCache = nil
+            configuration.httpCookieStorage = nil
+            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+            self.session = URLSession(configuration: configuration)
+        }
+    }
+
+    func authenticate(
+        _ credential: BrokerCredential,
+        environment: BrokerEnvironment
+    ) async throws -> BrokerAccountSnapshot {
+        guard environment == .demo else { throw BrokerAuthenticationError.liveDisabled }
+        guard credential.isValid else { throw BrokerCredentialStoreError.invalidCredential }
+
+        var request = try makeRequest(path: "/broker-session/connect", method: "POST")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        var body = try JSONEncoder().encode(
+            ConnectPayload(
+                apiKey: credential.apiKey,
+                identifier: credential.identifier,
+                password: credential.password
+            )
+        )
+        request.httpBody = body
+        defer {
+            body.resetBytes(in: 0..<body.count)
+            request.httpBody = nil
+        }
+
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                throw BrokerAuthenticationError.invalidResponse
+            }
+            guard http.statusCode == 200 else {
+                throw authenticationError(statusCode: http.statusCode)
+            }
+
+            let payload = try decodeStatus(data)
+            guard payload.provider == "capital.com",
+                  payload.environment == "DEMO",
+                  payload.state == "connected" else {
+                throw BrokerAuthenticationError.invalidResponse
+            }
+
+            let timestamp = payload.connectedAtMs.map {
+                Date(timeIntervalSince1970: $0 / 1_000)
+            } ?? Date()
+            maskedAccountIdentifier = Self.maskIdentifier(credential.identifier)
+            authenticatedAt = timestamp
+            return BrokerAccountSnapshot(
+                accountIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
+                currencyCode: nil,
+                authenticatedAt: timestamp
+            )
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as BrokerAuthenticationError {
+            throw error
+        } catch {
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
+            throw BrokerAuthenticationError.unavailable
+        }
+    }
+
+    func validateSession() async throws -> BrokerAccountSnapshot {
+        let request = try makeRequest(path: "/broker-session/status", method: "GET")
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                throw BrokerAuthenticationError.unavailable
+            }
+            let payload = try decodeStatus(data)
+            guard payload.provider == "capital.com", payload.environment == "DEMO" else {
+                throw BrokerAuthenticationError.invalidResponse
+            }
+
+            guard payload.state == "connected" else {
+                if payload.lastError?.localizedCaseInsensitiveContains("rejected or expired") == true {
+                    throw BrokerAuthenticationError.invalidCredentials
+                }
+                throw BrokerAuthenticationError.unavailable
+            }
+
+            let timestamp = payload.connectedAtMs.map {
+                Date(timeIntervalSince1970: $0 / 1_000)
+            } ?? authenticatedAt ?? Date()
+            authenticatedAt = timestamp
+            return BrokerAccountSnapshot(
+                accountIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
+                currencyCode: nil,
+                authenticatedAt: timestamp
+            )
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as BrokerAuthenticationError {
+            throw error
+        } catch {
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
+            throw BrokerAuthenticationError.unavailable
+        }
+    }
+
+    func disconnect() async {
+        guard var request = try? makeRequest(path: "/broker-session/disconnect", method: "POST") else {
+            clearLocalState()
+            return
+        }
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        _ = try? await session.data(for: request)
+        clearLocalState()
+    }
+
+    private func makeRequest(path: String, method: String) throws -> URLRequest {
+        guard let authorization = connection.capability.authorizationHeaderValue else {
+            throw BrokerAuthenticationError.unavailable
+        }
+        var request = URLRequest(url: connection.baseURL.appendingPathComponent(path))
+        request.httpMethod = method
+        request.timeoutInterval = 12
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(authorization, forHTTPHeaderField: "Authorization")
+        return request
+    }
+
+    private func decodeStatus(_ data: Data) throws -> SessionStatusPayload {
+        do {
+            return try JSONDecoder().decode(SessionStatusPayload.self, from: data)
+        } catch {
+            throw BrokerAuthenticationError.invalidResponse
+        }
+    }
+
+    private func authenticationError(statusCode: Int) -> BrokerAuthenticationError {
+        switch statusCode {
+        case 400, 401, 403: return .invalidCredentials
+        case 429: return .rateLimited
+        case 503: return .unavailable
+        default: return .providerRejected(statusCode)
+        }
+    }
+
+    private func clearLocalState() {
+        maskedAccountIdentifier = nil
+        authenticatedAt = nil
+    }
+
+    private static func maskIdentifier(_ identifier: String) -> String {
+        let suffix = identifier.suffix(4)
+        return identifier.count > 4 ? "••••" + suffix : "••••"
+    }
+}
+
+@MainActor
+final class UnavailableBrokerAuthenticationService: BrokerAuthenticationService {
+    func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot {
+        throw BrokerAuthenticationError.unavailable
+    }
+
+    func validateSession() async throws -> BrokerAccountSnapshot {
+        throw BrokerAuthenticationError.unavailable
+    }
+
+    func disconnect() async {}
+}
