@@ -162,3 +162,25 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - Exact-head run `44207522335`: Backend type-check and PostgreSQL 17.12 integration tests 49/49 passed; Repository Hygiene, Mermaid, Local Sync Safety, and Apple Silicon Debug/XCTest/Release passed. Intel Debug/XCTest passed, with Release in progress and CodeQL pending at inspection. arm64 CodeQL was skipped by workflow configuration.
 - A direct sequence privilege regression test was subsequently added in commit `78a774289de6ccea0fe49c89c7877f65c8246828`; it tests app `nextval` and app/migrator CREATE denial. It requires a fresh exact-head CI run.
 - Owner-local PostgreSQL 18.7 remains untouched. No local migration or production qualification is claimed.
+
+### Verified GitHub snapshot — 2026-11-18 (current PR #41 HEAD)
+
+- PR #41 is OPEN / DRAFT; current HEAD `dba73544a768006bb8535f72c0a615fda42c88dd`, base is PR #40 HEAD `8d4afc4e59b2787a9252269cbcf11fa379bc65b6`.
+- Backend toolchain run `44210034147`: completed successfully. The exact-head backend report is 49/49 PostgreSQL 17.12 integration tests, including the sequence privilege regression; TypeScript type-check passed.
+- Repository Hygiene (`44210034147`): passed.
+- Mermaid render (`44210034098`): passed.
+- Local Sync Safety (`44210034195`): passed.
+- Apple Silicon arm64 job `134485862385`: XcodeGen and project generation passed; Debug build is currently in progress; XCTest and Release are pending. CodeQL init is skipped by workflow configuration and is not a pass/fail result.
+- Intel x86_64 job `134485862456`: XcodeGen installation is in progress; project generation, Debug, XCTest, Release, and CodeQL are pending.
+- These platform results are still incomplete; do not mark PR #41 fully qualified until both architecture jobs finish and the final HEAD is rechecked.
+- The 49/49 result is specific to this exact HEAD; do not transfer it to a later commit without rerunning CI.
+- Local PostgreSQL 18.7 remains untouched; do not run `npm run migrate` until hosted exact-head qualification is complete and a controlled local qualification plan is approved.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No OMS worker, durable outbox consumer, Execution Gateway dispatcher, or broker order dispatch is implemented by this persistence PR.
+
+### Architecture and next-batch notes
+
+- Treat Mermaid diagram 05's Outbox → Execution Gateway path as target architecture, not implemented behavior. PR #41 currently persists domain outbox records only.
+- Concrete OMS Order/Position state sets and transition semantics remain blocked on reconciliation with the authoritative formal ADR/specification sources; do not invent states.
+- Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
+- The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
+- Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.
