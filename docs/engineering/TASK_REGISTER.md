@@ -195,3 +195,14 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - Owner-confirmed launch/two-display use is not exact-build visual or accessibility acceptance. Local Xcode/XCTest evidence and screenshots remain outstanding; do not mark M02-001 or M02-009 DONE.
 - Formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation remains outstanding. Adaptive width metrics remain provisional.
 - Next acceptance: read-only local preflight, then exact-revision local Debug → XCTest → Release and owner visual/accessibility review on both displays. Preserve all uncommitted local work; no synchronization or branch switch until preflight is reviewed.
+
+
+## Command Center and ATP-WORKSPACE-001 — 2026-11-17
+
+- PR #24 remains OPEN / DRAFT on `feat/macos-command-center-ipds`, stacked directly on PR #18 head `08d7b68ef14dbbce57752ce7b7f0215404a281cb`.
+- Command Center source is implemented in `CommandCenterView.swift`; `WorkspaceHomeView` delegates to it. Market, broker, account and execution values remain explicitly unavailable; no synthetic financial data or dealing controls were introduced.
+- ATP-WORKSPACE-001 is IN PROGRESS. `WorkspaceEngine.swift` now contains typed workspace/profile/panel/layout models, stable identities, versioned snapshots, a persistence protocol, UserDefaults persistence, observable state, workspace creation/selection/rename, panel visibility, reset/save/restore, validation, and safe recovery paths.
+- Command Center now reads panel visibility and width constraints from the engine. Panel reorder/resize UI, full profile management, independent windows, window restoration, and multi-display behavior remain unimplemented.
+- Added deterministic in-memory persistence XCTest coverage for visibility persistence/restoration, workspace creation, duplicate panel identity, unsupported schema, and unreadable stored data recovery.
+- Latest implementation head at this record: `59f5e363356f6e3cbac6e79df02c8d0b1d1a5a07`. Local Sync Safety #207 passed. Exact-head CI #174 is queued; no macOS build/XCTest result is claimed.
+- Owner Mac build, runtime, and visual qualification for PR #24 remain pending. Do not mark M02-009 or ATP-WORKSPACE-001 DONE before exact-head CI and owner-side qualification.
