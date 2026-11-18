@@ -80,12 +80,15 @@ protocol MarketDataStreamClient {
 struct ServerSentEventParser {
     private var eventName: String?
     private var dataLines: [String] = []
+    private var dataByteCount = 0
+    private let maximumEventBytes = 64 * 1_024
 
     mutating func consume(_ line: String) throws -> MarketDataStreamEvent? {
         if line.isEmpty {
             defer {
                 eventName = nil
                 dataLines = []
+                dataByteCount = 0
             }
             guard let eventName, !dataLines.isEmpty else { return nil }
             let data = Data(dataLines.joined(separator: "\n").utf8)
@@ -138,6 +141,7 @@ struct ServerSentEventParser {
                       quote.receivedAtMonotonicMs >= 0,
                       ageIsValid,
                       freshness.maximumAgeMs > 0,
+                      freshness.maximumAgeMs <= 60_000,
                       ageMatchesState,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
@@ -161,6 +165,10 @@ struct ServerSentEventParser {
         } else if line.hasPrefix("data:") {
             var value = String(line.dropFirst("data:".count))
             if value.first == " " { value.removeFirst() }
+            dataByteCount += value.utf8.count + 1
+            guard dataByteCount <= maximumEventBytes else {
+                throw MarketDataStreamError.invalidResponse
+            }
             dataLines.append(value)
         }
         return nil
