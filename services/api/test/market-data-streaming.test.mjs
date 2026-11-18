@@ -112,6 +112,24 @@ test("DEMO stream connects to provider session endpoint and subscribes with serv
   await runtime.disconnect();
 });
 
+test("stream runtime rejects noncanonical provider WebSocket paths", async () => {
+  const runtime = new CapitalDemoStreamingRuntime(
+    async () => ({
+      ...streamInfo,
+      streamEndpoint: "wss://api-streaming-capital.backend-capital.com/private",
+    }),
+    () => new FakeWebSocket("wss://api-streaming-capital.backend-capital.com/connect"),
+    () => 1_800_000_000_000,
+    () => 125,
+  );
+
+  await assert.rejects(
+    runtime.subscribe(["AAPL"], () => {}),
+    /stream endpoint failed host validation/,
+  );
+  assert.equal(runtime.status().state, "degraded");
+});
+
 test("stream disconnect waits for the WebSocket close handshake before returning", async () => {
   const sockets = [];
   const runtime = createStreamingRuntime(sockets);
