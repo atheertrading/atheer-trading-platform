@@ -242,19 +242,19 @@ export class CapitalDemoRuntime {
   private handleSessionFailure(session: CapitalDemoSession, error: unknown): void {
     if (this.session !== session) return;
 
-    if (error instanceof CapitalDemoApiError && error.statusCode !== 401 && error.statusCode !== 403) {
+    if (!(error instanceof CapitalDemoApiError) || (error.statusCode !== 401 && error.statusCode !== 403)) {
       this.connectionState = "degraded";
-      this.lastError = `Capital.com DEMO session health is degraded (HTTP ${error.statusCode}).`;
+      this.lastError = error instanceof CapitalDemoApiError
+        ? `Capital.com DEMO session health is degraded (HTTP ${error.statusCode}).`
+        : "Capital.com DEMO session connectivity is unconfirmed.";
       return;
     }
 
     this.stopKeepalive();
     this.session = null;
     this.connectedAtMs = undefined;
-    this.connectionState = error instanceof CapitalDemoApiError ? "disconnected" : "error";
-    this.lastError = error instanceof CapitalDemoApiError
-      ? "Capital.com DEMO session was rejected or expired."
-      : "Capital.com DEMO connection is unavailable.";
+    this.connectionState = "disconnected";
+    this.lastError = "Capital.com DEMO session was rejected or expired.";
   }
 
   private requireSession(): CapitalDemoSession {
