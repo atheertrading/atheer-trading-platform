@@ -70,9 +70,11 @@ struct ContentView: View {
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
                 case .markets:
-                    if let client = backendRuntimeModel.marketSearchClient {
+                    if let client = backendRuntimeModel.marketSearchClient,
+                       let streamClient = backendRuntimeModel.marketDataStreamClient {
                         MarketExplorerView(
                             client: client,
+                            streamClient: streamClient,
                             onOpenAPIConnection: { selection = .apiConnection }
                         )
                     } else {
