@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { CapitalDemoRuntime, createCapitalDemoRuntime } from "../dist/market-data/capital-demo-runtime.js";
+import { BrokerSessionManager } from "../dist/market-data/broker-session-manager.js";
 import { CapitalDemoApiError } from "../dist/market-data/capital-demo-client.js";
 import { createApiServer } from "../dist/server.js";
 
@@ -205,11 +206,11 @@ test("runtime marks failed provider authentication as error without leaking cred
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
-const serverRuntime = new CapitalDemoRuntime(serverClient, {
-  apiKey: "demo-key",
-  identifier: "demo-user",
-  password: "demo-password",
-});
+const serverRuntime = new BrokerSessionManager((value) => new CapitalDemoRuntime(
+  serverClient,
+  value,
+  () => 1_800_000_000_000,
+));
 const server = createApiServer(serverRuntime, ipcCapability);
 let baseUrl;
 
@@ -224,44 +225,97 @@ before(async () => {
 });
 
 after(async () => {
-  await new Promise((resolve, reject) => {
+  const closed = new Promise((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
   });
+  server.closeAllConnections();
+  await closed;
 });
 
-test("market-data routes reject requests without the private IPC capability", async () => {
+test("market-data and broker-session routes reject requests without the private IPC capability", async () => {
   const response = await fetch(baseUrl + "/market-data/status");
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: "unauthorized" });
-  const invalid = await fetch(baseUrl + "/market-data/status", { headers: { authorization: "Bearer invalid" } });
+  const invalid = await fetch(baseUrl + "/broker-session/status", { headers: { authorization: "Bearer invalid" } });
   assert.equal(invalid.status, 401);
 });
 
-test("market-data status is truthful and never returns provider session tokens", async () => {
-  const response = await fetch(baseUrl + "/market-data/status", { headers: authorization });
+test("broker session status is truthful and never returns provider session tokens", async () => {
+  const response = await fetch(baseUrl + "/broker-session/status", { headers: authorization });
   const payload = await response.json();
   assert.equal(response.status, 200);
   assert.equal(payload.environment, "DEMO");
-  assert.equal(payload.state, "disconnected");
+  assert.equal(payload.state, "not_configured");
   assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
 });
 
-test("loopback market-data routes connect and return DEMO market results only", async () => {
-  const connect = await fetch(baseUrl + "/market-data/connect", { method: "POST", headers: authorization });
+test("broker session connect accepts bounded DEMO credentials and exposes only sanitized status", async () => {
+  const credentialsPayload = {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  };
+  const connect = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: { ...authorization, "content-type": "application/json" },
+    body: JSON.stringify(credentialsPayload),
+  });
+  const connectedStatus = await connect.json();
   assert.equal(connect.status, 200);
+  assert.equal(connectedStatus.environment, "DEMO");
+  assert.equal(connectedStatus.state, "connected");
+  assert.equal(JSON.stringify(connectedStatus).includes("demo-password"), false);
+  assert.equal(JSON.stringify(connectedStatus).includes("secret-cst"), false);
+
   const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple", { headers: authorization });
   const payload = await markets.json();
   assert.equal(markets.status, 200);
   assert.equal(payload.environment, "DEMO");
   assert.equal(payload.markets[0].epic, "AAPL");
   assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
-  const disconnect = await fetch(baseUrl + "/market-data/disconnect", { method: "POST", headers: authorization });
+
+  const disconnect = await fetch(baseUrl + "/broker-session/disconnect", {
+    method: "POST",
+    headers: authorization,
+  });
   assert.equal(disconnect.status, 200);
   assert.equal((await disconnect.json()).state, "disconnected");
+  assert.equal(serverRuntime.status().state, "not_configured");
+  assert.deepEqual(serverClient.calls.map((call) => call[0]), ["connect", "markets", "disconnect"]);
 });
 
-test("market-data routes reject wrong methods and invalid resolutions", async () => {
-  const wrongMethod = await fetch(baseUrl + "/market-data/connect", { headers: authorization });
+test("broker session credential handoff rejects invalid media types, JSON, extra fields, and oversized bodies", async () => {
+  const noMediaType = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: authorization,
+    body: JSON.stringify({ apiKey: "a", identifier: "b", password: "c" }),
+  });
+  assert.equal(noMediaType.status, 415);
+
+  const invalidJson = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: { ...authorization, "content-type": "application/json" },
+    body: "{",
+  });
+  assert.equal(invalidJson.status, 400);
+
+  const extraField = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: { ...authorization, "content-type": "application/json" },
+    body: JSON.stringify({ apiKey: "a", identifier: "b", password: "c", environment: "LIVE" }),
+  });
+  assert.equal(extraField.status, 400);
+
+  const oversized = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: { ...authorization, "content-type": "application/json" },
+    body: JSON.stringify({ apiKey: "a".repeat(8_500), identifier: "b", password: "c" }),
+  });
+  assert.equal(oversized.status, 413);
+});
+
+test("broker session routes reject wrong methods and market data rejects invalid resolutions", async () => {
+  const wrongMethod = await fetch(baseUrl + "/broker-session/connect", { headers: authorization });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get("allow"), "POST");
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
