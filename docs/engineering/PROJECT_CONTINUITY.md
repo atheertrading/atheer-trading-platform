@@ -785,9 +785,9 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 ### PR #43 — Command Center Live Market Watch
 - PR: https://github.com/atheertrading/atheer-trading-platform/pull/43 (OPEN / DRAFT).
 - Branch: `feat/command-center-live-market-watch`; parent: PR #42 branch `feat/oms-authorized-order-persistence`.
-- Current branch head at this continuity update: `7179c81c0daa6d83367c244d25650321f2e59c6e`.
+- Current code head at this continuity update: `42ee04d878f0554f17bef54a5abfd688ffe9a016`.
 - Added persistent versioned watchlist storage, EPIC validation/deduplication/order/cap/recovery, shared app-scoped market data model, integrated Command Center Market Watch, provider-backed Bid/Ask/spread/age/freshness, explicit stream controls, and tests.
-- Stream lifecycle is no longer tied to `MarketExplorerView.onDisappear`. Clearing the last subscription or removing the last watchlist instrument stops the requested stream. Removing a watchlist item also unsubscribes it; context actions support stable watchlist reordering.
+- Stream lifecycle is no longer tied to `MarketExplorerView.onDisappear`. Clearing the last subscription or removing the last watchlist instrument stops the requested stream. Removing a watchlist item also unsubscribes it; context actions support stable watchlist reordering. The last-subscription stop behavior has dedicated XCTest assertions.
 - No dealing actions or synthetic data are exposed.
 
 ### PR #43 qualification snapshot
@@ -801,3 +801,13 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - PR #41 current code head: `c9eb73d28c24398dfcb435525118f971aae221e8`; backend, Repository Hygiene, Mermaid, Local Sync Safety and Apple Silicon passed; Intel Release/CodeQL was still in progress at last inspection.
 - Both PRs remain OPEN / DRAFT. PR #43 is stacked behind PR #42, which is stacked behind PR #41. Merge only in dependency order after exact-head qualification and GitHub mergeability checks.
 - No owner-local PostgreSQL 18.7 migration, local Mac pull, Keychain validation, or visual/accessibility acceptance has been performed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### Final PR #43 implementation delta after the initial CI snapshot
+
+- `5a621db`: last-watchlist removal also unsubscribes the corresponding stream EPIC and exposes row-level move up/down context actions.
+- `943e227`: clearing the final stream subscription sets `streamingRequested=false` and stops the stream rather than retaining a requested-but-empty stream.
+- `b531a47` and `1037a3e`: XCTest assertions cover clear-selection and last-instrument unsubscribe lifecycle.
+- `32f1260`: Bid and Ask freshness coloring now consistently reflects stale vs fresh provider quote state.
+- `42ee04d`: verified final row removal/unsubscribe behavior and moved reorder actions to the row context menu.
+- These changes advance the current code head to `42ee04d878f0554f17bef54a5abfd688ffe9a016`. Previous CI results on `15474ec...` do not qualify this final code head; exact-head CI must be refreshed.
