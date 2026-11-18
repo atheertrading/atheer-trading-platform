@@ -266,162 +266,7 @@ enum BrokerAuthenticationError: Error, LocalizedError {
 protocol BrokerAuthenticationService {
     func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot
     func validateSession() async throws -> BrokerAccountSnapshot
-    func disconnect() async
-}
-
-@MainActor
-final class CapitalComAuthenticationService: BrokerAuthenticationService {
-    private struct SessionPayload: Decodable {
-        let accountId: String?
-        let currentAccountId: String?
-        let currency: String?
-        let currencyIsoCode: String?
-    }
-
-    private let requestExecutor: URLSessionRequestExecutor
-    private let baseURL = URL(string: "https://demo-api-capital.backend-capital.com/api/v1")!
-    private var cst: String?
-    private var securityToken: String?
-
-    init(session: URLSession? = nil) {
-        if let session {
-            self.requestExecutor = URLSessionRequestExecutor(session: session)
-        } else {
-            let configuration = URLSessionConfiguration.ephemeral
-            configuration.urlCache = nil
-            configuration.httpCookieStorage = nil
-            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-            self.requestExecutor = URLSessionRequestExecutor(session: URLSession(configuration: configuration))
-        }
-    }
-
-    func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot {
-        guard environment == .demo else { throw BrokerAuthenticationError.liveDisabled }
-        guard credential.isValid else { throw BrokerCredentialStoreError.invalidCredential }
-        await disconnect()
-
-        var request = URLRequest(url: baseURL.appendingPathComponent("session"))
-        request.httpMethod = "POST"
-        request.timeoutInterval = 10
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(credential.apiKey, forHTTPHeaderField: "X-CAP-API-KEY")
-        let body: [String: Any] = [
-            "identifier": credential.identifier,
-            "password": credential.password,
-            "encryptedPassword": false
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        do {
-            let (_, response) = try await requestExecutor.data(for: request)
-            guard let http = response as? HTTPURLResponse else { throw BrokerAuthenticationError.invalidResponse }
-            try validate(http.statusCode)
-            guard let newCST = http.value(forHTTPHeaderField: "CST"),
-                  let newSecurityToken = http.value(forHTTPHeaderField: "X-SECURITY-TOKEN"),
-                  !newCST.isEmpty, !newSecurityToken.isEmpty else {
-                throw BrokerAuthenticationError.invalidResponse
-            }
-            cst = newCST
-            securityToken = newSecurityToken
-
-            var verify = URLRequest(url: baseURL.appendingPathComponent("session"))
-            verify.httpMethod = "GET"
-            verify.timeoutInterval = 10
-            verify.cachePolicy = .reloadIgnoringLocalCacheData
-            verify.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-            verify.setValue(newCST, forHTTPHeaderField: "CST")
-            verify.setValue(newSecurityToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
-            let (data, verifyResponse) = try await requestExecutor.data(for: verify)
-            guard let verifyHTTP = verifyResponse as? HTTPURLResponse else {
-                throw BrokerAuthenticationError.invalidResponse
-            }
-            try validate(verifyHTTP.statusCode)
-            let payload = try JSONDecoder().decode(SessionPayload.self, from: data)
-            guard let accountID = payload.currentAccountId ?? payload.accountId,
-                  !accountID.isEmpty else {
-                throw BrokerAuthenticationError.invalidResponse
-            }
-            return BrokerAccountSnapshot(
-                accountIdentifier: accountID,
-                currencyCode: payload.currencyIsoCode ?? payload.currency,
-                authenticatedAt: Date()
-            )
-        } catch is CancellationError {
-            await disconnect()
-            throw CancellationError()
-        } catch let error as BrokerAuthenticationError {
-            await disconnect()
-            throw error
-        } catch {
-            await disconnect()
-            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
-                throw CancellationError()
-            }
-            throw BrokerAuthenticationError.unavailable
-        }
-    }
-
-    func validateSession() async throws -> BrokerAccountSnapshot {
-        guard let currentCST = cst, let currentToken = securityToken else {
-            throw BrokerAuthenticationError.invalidResponse
-        }
-        var request = URLRequest(url: baseURL.appendingPathComponent("session"))
-        request.httpMethod = "GET"
-        request.timeoutInterval = 10
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-        request.setValue(currentCST, forHTTPHeaderField: "CST")
-        request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
-        do {
-            let (data, response) = try await requestExecutor.data(for: request)
-            guard let http = response as? HTTPURLResponse else { throw BrokerAuthenticationError.invalidResponse }
-            try validate(http.statusCode)
-            let payload = try JSONDecoder().decode(SessionPayload.self, from: data)
-            guard let accountID = payload.currentAccountId ?? payload.accountId, !accountID.isEmpty else {
-                throw BrokerAuthenticationError.invalidResponse
-            }
-            return BrokerAccountSnapshot(
-                accountIdentifier: accountID,
-                currencyCode: payload.currencyIsoCode ?? payload.currency,
-                authenticatedAt: Date()
-            )
-        } catch let error as BrokerAuthenticationError {
-            if case .invalidCredentials = error { await disconnect() }
-            throw error
-        } catch {
-            if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw CancellationError() }
-            throw BrokerAuthenticationError.unavailable
-        }
-    }
-
-    func disconnect() async {
-        guard let currentCST = cst, let currentToken = securityToken else {
-            cst = nil
-            securityToken = nil
-            return
-        }
-        cst = nil
-        securityToken = nil
-        var request = URLRequest(url: baseURL.appendingPathComponent("session"))
-        request.httpMethod = "DELETE"
-        request.timeoutInterval = 10
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-        request.setValue(currentCST, forHTTPHeaderField: "CST")
-        request.setValue(currentToken, forHTTPHeaderField: "X-SECURITY-TOKEN")
-        _ = try? await requestExecutor.data(for: request)
-    }
-
-    private func validate(_ statusCode: Int) throws {
-        switch statusCode {
-        case 200...299: return
-        case 401, 403: throw BrokerAuthenticationError.invalidCredentials
-        case 429: throw BrokerAuthenticationError.rateLimited
-        default: throw BrokerAuthenticationError.providerRejected(statusCode)
-        }
-    }
+    func disconnect() async throws
 }
 
 @MainActor
@@ -435,7 +280,7 @@ final class BrokerManagementViewModel: ObservableObject {
     @Published private(set) var isWorking = false
 
     private let credentialStore: BrokerCredentialStore
-    private let authentication: BrokerAuthenticationService
+    private var authentication: BrokerAuthenticationService
     private let brokerID = "capital.com"
     private let environment: BrokerEnvironment = .demo
 
@@ -444,7 +289,7 @@ final class BrokerManagementViewModel: ObservableObject {
         authentication: BrokerAuthenticationService? = nil
     ) {
         self.credentialStore = credentialStore
-        self.authentication = authentication ?? CapitalComAuthenticationService()
+        self.authentication = authentication ?? UnavailableBrokerAuthenticationService()
         do {
             let credential = try credentialStore.load(brokerID: brokerID, environment: environment)
             hasSavedCredentials = credential != nil
@@ -457,8 +302,19 @@ final class BrokerManagementViewModel: ObservableObject {
         }
     }
 
+    func configure(authentication: BrokerAuthenticationService) {
+        self.authentication = authentication
+        state = hasSavedCredentials ? .credentialsSaved : .notConfigured
+    }
+
+    func backendUnavailable(_ message: String) {
+        authentication = UnavailableBrokerAuthenticationService()
+        account = nil
+        state = .connectionFailed(message)
+    }
+
     func saveCredentials(_ credential: BrokerCredential) async throws {
-        await authentication.disconnect()
+        try await authentication.disconnect()
         account = nil
         state = hasSavedCredentials ? .credentialsSaved : .notConfigured
         try credentialStore.save(credential, brokerID: brokerID, environment: environment)
@@ -532,13 +388,18 @@ final class BrokerManagementViewModel: ObservableObject {
     }
 
     func disconnect() async {
-        await authentication.disconnect()
-        account = nil
-        state = hasSavedCredentials ? .credentialsSaved : .disconnected
+        do {
+            try await authentication.disconnect()
+            account = nil
+            state = hasSavedCredentials ? .credentialsSaved : .disconnected
+        } catch {
+            account = nil
+            state = .connectionFailed("The backend could not confirm broker-session disconnection.")
+        }
     }
 
     func clearCredentials() async throws {
-        await authentication.disconnect()
+        try await authentication.disconnect()
         account = nil
         state = hasSavedCredentials ? .credentialsSaved : .disconnected
         do {
