@@ -75,7 +75,7 @@ The policy rejects invalid transitions, source-authority violations, and normal-
    - domain outbox event types for OMS persistence/lifecycle notifications only.
 5. `PostgresTradingRepository.persistAuthorizedOrder` locks and verifies the exact persisted intent and exact persisted `AUTHORIZED` assessment before creating the order, lifecycle event, audit record, and `oms.order.persisted` outbox record in one transaction.
 6. Replays of the same intent/order are idempotent. Conflicting order identities/payloads are rejected.
-7. The application role receives SELECT/INSERT on lifecycle events; UPDATE and DELETE are revoked.
+7. The application role receives SELECT/INSERT on OMS orders and lifecycle events; UPDATE and DELETE are revoked on both tables. Orders remain immutable until a later qualified transition command can atomically update the projection and append its event.
 
 ## 5. Deliberately not implemented
 
