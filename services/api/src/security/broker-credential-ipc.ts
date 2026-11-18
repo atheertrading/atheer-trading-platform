@@ -308,7 +308,7 @@ export async function createBrokerCredentialIPCServer(options: {
         for (const socket of sockets) {
           if (!inFlight.has(socket)) socket.destroy();
         }
-        await Promise.all([...inFlight.values()]);
+        await Promise.all([...inFlight.values()].map((operation) => operation.then(() => undefined, () => undefined)));
         await listenerClosed;
         await unlink(socketPath).catch(() => {});
       })();
