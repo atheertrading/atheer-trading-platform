@@ -12,8 +12,14 @@ import {
   type DecimalValue,
   type UtcTimestamp,
   DomainValidationError,
+  assetClassCode,
+  currencyCode,
+  createDataProvenance,
   assertPositiveDecimal,
   compareDecimal,
+  tradingEnvironment,
+  unitCode,
+  utcTimestamp,
   nonEmptyString,
 } from "./shared.ts";
 
@@ -43,16 +49,17 @@ export interface Price {
 
 export function quantity(value: string, unit: UnitCode): Quantity {
   const normalized = decimalValue(value);
-  nonEmptyString(unit, "quantity_unit");
-  return Object.freeze({ value: normalized, unit });
+  const validatedUnit = unitCode(unit);
+  return Object.freeze({ value: normalized, unit: validatedUnit });
 }
 
 export function price(value: string, unit: UnitCode, currency?: CurrencyCode): Price {
   const normalized = decimalValue(value);
-  nonEmptyString(unit, "price_unit");
+  const validatedUnit = unitCode(unit);
+  if (currency !== undefined) currencyCode(currency);
   return Object.freeze(currency === undefined
-    ? { value: normalized, unit }
-    : { value: normalized, unit, currency });
+    ? { value: normalized, unit: validatedUnit }
+    : { value: normalized, unit: validatedUnit, currency });
 }
 
 export interface BrokerInstrumentConstraint {
@@ -87,7 +94,7 @@ export interface InstrumentSpecification {
 export function validateInstrumentIdentity(instrument: InstrumentIdentity): void {
   nonEmptyString(instrument.canonicalCode, "canonical_instrument_code");
   nonEmptyString(instrument.displayName, "instrument_display_name");
-  nonEmptyString(instrument.assetClassCode, "asset_class_code");
+  assetClassCode(instrument.assetClassCode);
   nonEmptyString(instrument.id, "instrument_id");
 }
 
@@ -100,6 +107,9 @@ function validateQuantity(quantity: Quantity | undefined, field: string): void {
 export function validateInstrumentSpecification(specification: InstrumentSpecification): void {
   nonEmptyString(specification.id, "instrument_specification_id");
   nonEmptyString(specification.instrumentId, "instrument_id");
+  tradingEnvironment(specification.brokerReference.environment);
+  utcTimestamp(specification.retrievedAt);
+  createDataProvenance(specification.provenance);
   nonEmptyString(specification.brokerReference.brokerId, "broker_id");
   nonEmptyString(specification.brokerReference.brokerInstrumentId, "broker_instrument_id");
   if (!Number.isSafeInteger(specification.version) || specification.version < 1) {
@@ -132,7 +142,10 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
 
   if (specification.priceIncrement !== undefined) {
     assertPositiveDecimal(specification.priceIncrement.value, "price_increment");
-    nonEmptyString(specification.priceIncrement.unit, "price_increment_unit");
+    unitCode(specification.priceIncrement.unit);
+    if (specification.priceIncrement.currency !== undefined) {
+      currencyCode(specification.priceIncrement.currency);
+    }
   }
 
   const quantityConstraints = [
