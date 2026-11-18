@@ -46,9 +46,19 @@ function createMockClient() {
       calls.push(["markets", session, searchTerm]);
       return { markets: [{ epic: "AAPL" }] };
     },
-    async getPriceHistory(session, epic, resolution, max) {
-      calls.push(["history", session, epic, resolution, max]);
-      return { prices: [] };
+    async getPriceHistory(session, epic, resolution, max, from, to) {
+      calls.push(["history", session, epic, resolution, max, from, to]);
+      const candle = {
+        snapshotTimeUTC: "2026-11-17T10:00:00",
+        openPrice: { bid: 100, ask: 100.2 },
+        highPrice: { bid: 103, ask: 103.2 },
+        lowPrice: { bid: 99, ask: 99.2 },
+        closePrice: { bid: 102, ask: 102.2 },
+        lastTradedVolume: 18,
+      };
+      return {
+        prices: epic === "AAPL-DUPLICATE" ? [{ ...candle }, { ...candle }] : [candle],
+      };
     },
     async ping(session) {
       calls.push(["ping", session]);
@@ -516,6 +526,74 @@ test("broker credentials and disconnect are not accepted by the HTTP API", async
     assert.equal(response.status, 404);
   }
   assert.equal(serverRuntime.status().state, "not_configured");
+});
+
+
+test("authenticated historical route normalizes candles and preserves raw provider pagination", async () => {
+  const from = "2026-11-17T10:00:00Z";
+  const to = "2026-11-17T11:00:00Z";
+
+  const incomplete = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&from=" + encodeURIComponent(from),
+    { headers: authorization },
+  );
+  assert.equal(incomplete.status, 400);
+  assert.deepEqual(await incomplete.json(), { error: "incomplete_date_range" });
+
+  const invalidDate = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&from=2026-02-31T10%3A00%3A00Z&to=" + encodeURIComponent(to),
+    { headers: authorization },
+  );
+  assert.equal(invalidDate.status, 400);
+  assert.deepEqual(await invalidDate.json(), { error: "invalid_date_range" });
+
+  const invalidMax = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&max=1001",
+    { headers: authorization },
+  );
+  assert.equal(invalidMax.status, 400);
+  assert.deepEqual(await invalidMax.json(), { error: "invalid_max" });
+
+  await serverRuntime.connect({
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  });
+  const response = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&resolution=MINUTE&max=10&from=" +
+      encodeURIComponent(from) + "&to=" + encodeURIComponent(to),
+    { headers: authorization },
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.provider, "capital.com");
+  assert.equal(payload.environment, "DEMO");
+  assert.equal(payload.instrumentId, "AAPL");
+  assert.equal(payload.candles.length, 1);
+  assert.deepEqual(payload.candles[0].bid, { open: 100, high: 103, low: 99, close: 102 });
+  assert.deepEqual(payload.candles[0].ask, { open: 100.2, high: 103.2, low: 99.2, close: 102.2 });
+  assert.equal(payload.candles[0].providerVolumeField, "lastTradedVolume");
+  assert.equal(payload.request.from, from);
+  assert.equal(payload.request.to, to);
+  assert.equal(payload.pagination.limitReached, false);
+  assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
+  assert.equal(JSON.stringify(payload).includes("secret-security-token"), false);
+
+  const historyCall = serverClient.calls.filter((call) => call[0] === "history").at(-1);
+  assert.deepEqual(historyCall.slice(2), ["AAPL", "MINUTE", 10, from, to]);
+
+  const duplicateResponse = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL-DUPLICATE&resolution=MINUTE&max=2",
+    { headers: authorization },
+  );
+  const duplicatePayload = await duplicateResponse.json();
+  assert.equal(duplicateResponse.status, 200);
+  assert.equal(duplicatePayload.candles.length, 1);
+  assert.equal(duplicatePayload.quality.duplicateCount, 1);
+  assert.equal(duplicatePayload.pagination.limitReached, true);
+
+  await serverRuntime.disconnect();
 });
 
 test("HTTP broker credential routes remain absent and market data rejects invalid resolutions", async () => {
