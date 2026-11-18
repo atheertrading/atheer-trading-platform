@@ -1,4 +1,4 @@
-import Foundation
+@preconcurrency import Foundation
 
 enum HistoricalPriceResolution: String, CaseIterable, Decodable, Equatable, Identifiable {
     case minute = "MINUTE"
@@ -140,7 +140,13 @@ struct MarketHistoryPayloadDecoder {
               batch.candles.count <= maximum,
               batch.quality.receivedCount >= batch.quality.normalizedCount,
               batch.quality.normalizedCount == batch.candles.count,
-              batch.quality.duplicateCount == batch.quality.receivedCount - batch.quality.normalizedCount else {
+              batch.quality.duplicateCount == batch.quality.receivedCount - batch.quality.normalizedCount,
+              batch.quality.observedGaps.allSatisfy({
+                  $0.previousTimestampMs > 0 &&
+                      $0.nextTimestampMs > $0.previousTimestampMs &&
+                      $0.nominalIntervalsMissing > 0 &&
+                      $0.classification == "requires_market_session_calendar"
+              }) else {
             throw MarketHistoryError.invalidResponse
         }
 
@@ -214,6 +220,10 @@ struct URLSessionMarketHistoryClient: MarketHistoryClient {
                 throw MarketHistoryError.unexpectedHTTPStatus(http.statusCode)
             }
             return try decoder.decode(data, expectedInstrumentId: epic, expectedResolution: resolution, maximum: maximum)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
         } catch let error as MarketHistoryError {
             throw error
         } catch {

@@ -96,6 +96,16 @@ final class MarketChartTests: XCTestCase {
     }
 
     @MainActor
+    func testChartViewModelCancellationDoesNotBecomeBackendFailure() async throws {
+        let client = StubMarketHistoryClient(result: .failure(CancellationError()))
+        let model = MarketChartViewModel(client: client)
+        model.synchronizeWatchlist(["GOLD"])
+        await model.load()
+        XCTAssertEqual(model.state, .idle)
+        XCTAssertTrue(model.candles.isEmpty)
+    }
+
+    @MainActor
     func testChartViewModelClearsSeriesWhenSelectedInstrumentLeavesWatchlist() async throws {
         let batch = try MarketHistoryPayloadDecoder().decode(Data(validPayload.utf8), expectedInstrumentId: "GOLD", expectedResolution: .minute, maximum: 500)
         let model = MarketChartViewModel(client: StubMarketHistoryClient(result: .success(batch)))

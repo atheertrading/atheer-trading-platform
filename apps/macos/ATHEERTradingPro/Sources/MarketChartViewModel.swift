@@ -95,6 +95,10 @@ final class MarketChartViewModel: ObservableObject {
             state = result.candles.isEmpty ? .empty : .loaded
         } catch {
             guard generation == requestGeneration else { return }
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                state = .idle
+                return
+            }
             candles = []
             batch = nil
             lastUpdatedAt = nil
