@@ -245,11 +245,28 @@ async function handleMarketDataRequest(
       sendJson(response, 503, { error: "broker_session_manager_unavailable" });
       return;
     }
+    let streamDisconnectFailed = false;
     try {
       await streamRuntime?.disconnect();
-      sendJson(response, 200, await runtime.disconnect());
     } catch {
-      sendJson(response, 502, { error: "broker_session_disconnect_failed" });
+      streamDisconnectFailed = true;
+    }
+
+    try {
+      const status = await runtime.disconnect();
+      if (streamDisconnectFailed) {
+        sendJson(response, 502, {
+          error: "market_data_stream_disconnect_failed",
+          brokerSession: status,
+        });
+        return;
+      }
+      sendJson(response, 200, status);
+    } catch {
+      sendJson(response, 502, {
+        error: "broker_session_disconnect_failed",
+        streamingDisconnectFailed: streamDisconnectFailed,
+      });
     }
     return;
   }
