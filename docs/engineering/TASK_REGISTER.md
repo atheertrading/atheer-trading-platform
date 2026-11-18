@@ -408,3 +408,20 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - DEMO position/working-order endpoints are limited to 1,000 requests/hour; OMS/dealing is not implemented in this slice and must enforce the limit before future dealing.
 - Account changes using `PUT /session` interrupt streaming; any future account-switch flow must invalidate and rebuild the WebSocket subscription set.
 - Source-to-code evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`; official references are recorded in EDL-029.
+
+
+## ATP-MKT-007 — Native live DEMO quote monitor integration (2026-11-18)
+
+- Added authenticated SSE client, parser, stream view model, quote-age tracking, freshness classification, reconnect/backoff and 40-instrument selection.
+- Added catalogue monitor actions and a display-only quote table; no strategy or execution authority.
+- Preserved shared design tokens, responsive layout and accessibility.
+- Backend status is published after subscription and every 15-second keepalive; provider-confirmed active count and redacted errors are used.
+- Clean integration branch is 11 ahead / 0 behind current PR #55 head. Exact-head CI and owner-Mac DEMO qualification are pending.
+- Credential payload confidentiality remains P0; SSE bearer auth is for local market-data access, not credential transport.
+
+
+## PR stack consolidation — 2026-11-18
+
+- Closed unmerged PRs #49, #50, #54 and #58 as superseded/duplicate after preserving their unique implementation and documentation.
+- PR #64 is the clean live quote integration branch; exact-head CI pending.
+- PR #55 and #57 exact-head CI pending. Do not merge broker authentication/streaming until private credential IPC replaces the local HTTP credential body.
