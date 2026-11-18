@@ -54,7 +54,6 @@ struct UserDefaultsMarketWatchlistPersistence: MarketWatchlistPersistence {
 @MainActor
 final class MarketWatchlistStore: ObservableObject {
     static let maximumInstrumentCount = 40
-    private static let epicPattern = "^[A-Za-z0-9_.-]{1,64}$"
 
     @Published private(set) var epics: [String] = []
     @Published private(set) var recoveryMessage: String?
@@ -151,6 +150,15 @@ final class MarketWatchlistStore: ObservableObject {
     }
 
     private static func isValidEpic(_ epic: String) -> Bool {
-        epic.range(of: epicPattern, options: .regularExpression) != nil
+        guard !epic.isEmpty, epic.count <= 64 else { return false }
+        return epic.unicodeScalars.allSatisfy { scalar in
+            let value = scalar.value
+            return (48...57).contains(value)
+                || (65...90).contains(value)
+                || (97...122).contains(value)
+                || value == 45
+                || value == 46
+                || value == 95
+        }
     }
 }
