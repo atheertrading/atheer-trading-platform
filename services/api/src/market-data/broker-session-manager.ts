@@ -74,9 +74,14 @@ export class BrokerSessionManager {
     const runtime = this.runtime;
     if (!runtime) return this.status();
 
-    const status = await runtime.disconnect();
-    this.runtime = null;
-    return { ...status, state: "disconnected" };
+    try {
+      const status = await runtime.disconnect();
+      return { ...status, state: "disconnected" };
+    } finally {
+      // Drop the credential-bearing runtime even when provider logout fails.
+      // The caller still receives the logout failure and must not report success.
+      this.runtime = null;
+    }
   }
 
   async getMarkets(searchTerm: string) {
