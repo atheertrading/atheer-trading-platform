@@ -26,6 +26,15 @@ The service listens on 127.0.0.1:4100 by default. PORT may select another valid 
 
 A successful liveness response is not evidence that the trading platform is ready. Readiness is fail-closed and must not be changed to ready until the required dependencies are implemented and independently verified.
 
+## API contract
+
+The versioned OpenAPI 3.1 contract for the routes implemented by this service is
+[openapi.yaml](./openapi.yaml). It describes the current local-development service
+(version 0.1.0), not a production-ready or externally exposed API. The current HTTP
+revision is loopback-bound and does not yet enforce the per-process application capability;
+do not expose it beyond 127.0.0.1. The private credential IPC and authenticated managed
+runtime work remains a separate integration gate.
+
 ## Capital.com DEMO market-data routes
 
 Credentials are read only by the backend process:
@@ -39,8 +48,8 @@ All three values must be present to enable DEMO connection. Supply them through 
 - GET /market-data/status — provider/environment/connection state; never returns credentials or session tokens.
 - POST /market-data/connect — creates a Capital.com DEMO session using backend-held credentials.
 - POST /market-data/disconnect — terminates the current DEMO session.
-- GET /market-data/markets?searchTerm=... — searches provider instruments.
-- GET /market-data/history?epic=...&resolution=MINUTE&max=100 — retrieves provider historical prices.
+- GET /market-data/markets?searchTerm=... — searches provider instruments; `searchTerm` must contain 1–100 characters after trimming (otherwise HTTP 400).
+- GET /market-data/history?epic=...&resolution=MINUTE&max=100 — retrieves provider historical prices. EPIC must match `[A-Za-z0-9_.-]{1,64}` after trimming; `max` is an integer from 1 through 1000 (default 100). Invalid EPIC, resolution, or `max` values return HTTP 400.
 
 Every successful market-data response is explicitly labeled provider=capital.com and environment=DEMO. Routes are served only by the loopback-bound local API. No trading endpoints exist.
 

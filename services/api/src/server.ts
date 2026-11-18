@@ -104,7 +104,11 @@ async function handleMarketDataRequest(
       return;
     }
     if (pathname === "/market-data/markets" && method === "GET") {
-      const searchTerm = url.searchParams.get("searchTerm") ?? "";
+      const searchTerm = (url.searchParams.get("searchTerm") ?? "").trim();
+      if (searchTerm.length < 1 || searchTerm.length > 100) {
+        sendJson(response, 400, { error: "invalid_search_term" });
+        return;
+      }
       const result = await runtime.getMarkets(searchTerm);
       sendJson(response, 200, {
         provider: "capital.com",
@@ -114,7 +118,11 @@ async function handleMarketDataRequest(
       return;
     }
     if (pathname === "/market-data/history" && method === "GET") {
-      const epic = url.searchParams.get("epic") ?? "";
+      const epic = (url.searchParams.get("epic") ?? "").trim();
+      if (!/^[A-Za-z0-9_.-]{1,64}$/.test(epic)) {
+        sendJson(response, 400, { error: "invalid_epic" });
+        return;
+      }
       const resolution = url.searchParams.get("resolution") ?? "MINUTE";
       const allowedResolutions = ["MINUTE", "MINUTE_5", "MINUTE_15", "MINUTE_30", "HOUR", "HOUR_4", "DAY", "WEEK"];
       if (!allowedResolutions.includes(resolution)) {
@@ -122,14 +130,15 @@ async function handleMarketDataRequest(
         return;
       }
       const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\\d+$/.test(rawMax)) {
+      const max = Number(rawMax);
+      if (!/^\d+$/.test(rawMax) || !Number.isSafeInteger(max) || max < 1 || max > 1000) {
         sendJson(response, 400, { error: "invalid_max" });
         return;
       }
       const result = await runtime.getPriceHistory(
         epic,
         resolution as "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
-        Number(rawMax),
+        max,
       );
       sendJson(response, 200, {
         provider: "capital.com",

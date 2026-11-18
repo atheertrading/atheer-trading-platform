@@ -380,3 +380,19 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
 - No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
 - Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
+
+## ATP-TEAM-B-001 — Backend API validation and contract (2026-11-18)
+
+| Work item | Priority | Scope | Status | Acceptance evidence / dependency |
+|---|---:|---|---|---|
+| ATP-API-065A | P1 | Correct history `max` validation and enforce safe 1–1000 bounds | IMPLEMENTED — exact-head requalification pending | PR #84; HTTP regression tests; current-head Backend Toolchain/API tests required |
+| ATP-API-065B | P1 | Validate market search term and EPIC at the HTTP boundary | IMPLEMENTED — exact-head requalification pending | PR #84; HTTP tests assert 400 and no provider invocation for invalid input |
+| ATP-API-065C | P1 | Publish current local API OpenAPI 3.1 contract and drift tests | IMPLEMENTED — exact-head requalification pending | `services/api/openapi.yaml`; `openapi-contract.test.mjs`; README integration |
+| ATP-API-065D | P1 | Exact PR #84 hosted macOS matrix and final review | IN PROGRESS | Current final PR head must pass all applicable required checks before merge |
+
+- PR #84 is backend-only under `services/api/**`, OPEN and not merged. Previous exact-head backend, hygiene, CodeQL and sync results do not automatically qualify the later documentation/continuity commits; re-fetch exact current head/checks.
+- The current OpenAPI contract describes the API as loopback-only and not yet per-request capability authenticated. Keep the service restricted to `127.0.0.1` until authenticated IPC/runtime integration is merged and qualified.
+- No LIVE or broker dealing functionality is included; `CAP_ALLOW_TRADING=false` remains unchanged.
+
+- ATP-API-065 follow-up: OpenAPI duplicate-root-section defect corrected in PR #84; regression test now requires exactly one root OpenAPI, info, servers, tags, paths and components section and checks component references. Status remains IMPLEMENTED — exact final-head CI and macOS matrix qualification pending.
+

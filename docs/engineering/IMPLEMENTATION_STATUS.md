@@ -457,3 +457,21 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
 - This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
 - `CAP_ALLOW_TRADING=false`; no LIVE authorization.
+
+## 2026-11-18 — ATP-TEAM-B-001 Batch 065: Backend API boundary and OpenAPI
+
+- Implemented on PR #84: HTTP-boundary validation for historical `max`, market search `searchTerm`, and Capital.com EPIC; invalid values fail with HTTP 400 before provider calls.
+- Added regression coverage for valid defaults/bounds, malformed values, query length/range, provider-call suppression, and OpenAPI route/component integrity.
+- Added `services/api/openapi.yaml` as an OpenAPI 3.1 description of the current local API only; README links the specification and records request constraints.
+- Security disclosure retained: mainline HTTP remains loopback-only and is not yet per-request capability-authenticated. Private credential IPC and managed authenticated backend runtime remain unmerged.
+- Previous exact-head `d5853c3ed8ba42cc49384a64832d270b262fb0b2`: Backend Toolchain, Repository Hygiene, CodeQL and Local Sync Safety passed; Intel and Apple Silicon jobs were queued. Subsequent report/continuity commits changed the PR head; current-head qualification is pending and must be re-fetched.
+- No trading authorization, risk policy, database schema, OMS execution worker, Execution Gateway or broker dealing behavior changed. `CAP_ALLOW_TRADING=false` remains unchanged.
+- No physical Mac, Xcode, owner Keychain, or real Capital.com DEMO qualification is claimed.
+
+### ATP-API-065 — OpenAPI source integrity follow-up
+
+- Removed duplicated root `components:` sections from `services/api/openapi.yaml`; contract now contains exactly one root document and the seven implemented API routes.
+- Confirmed eight declared schemas, two reusable responses, and 33 resolvable internal component references. EPIC pattern is complete and consistent with server validation.
+- Strengthened the OpenAPI contract regression test to reject duplicate root sections. This is source-level validation; no external parser/code generator run is claimed.
+- Final exact-head CI must be rechecked after this documentation/test correction. Earlier backend/hygiene/sync successes are not carried forward to subsequent commits.
+
