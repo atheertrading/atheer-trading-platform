@@ -1,4 +1,4 @@
-CREATE TABLE instruments (
+CREATE TABLE atheer.instruments (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   instrument_id text NOT NULL,
   canonical_code text NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE instruments (
   PRIMARY KEY (environment, instrument_id)
 );
 
-CREATE TABLE instrument_specifications (
+CREATE TABLE atheer.instrument_specifications (
   environment text NOT NULL,
   specification_id text NOT NULL,
   instrument_id text NOT NULL,
@@ -21,10 +21,10 @@ CREATE TABLE instrument_specifications (
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, specification_id),
   UNIQUE (environment, instrument_id, broker_id, broker_instrument_id, specification_version),
-  FOREIGN KEY (environment, instrument_id) REFERENCES instruments (environment, instrument_id)
+  FOREIGN KEY (environment, instrument_id) REFERENCES atheer.instruments (environment, instrument_id)
 );
 
-CREATE TABLE broker_accounts (
+CREATE TABLE atheer.broker_accounts (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   account_id text NOT NULL,
   broker_id text NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE broker_accounts (
   UNIQUE (environment, broker_id, broker_account_reference)
 );
 
-CREATE TABLE account_balance_snapshots (
+CREATE TABLE atheer.account_balance_snapshots (
   environment text NOT NULL,
   snapshot_id char(64) NOT NULL CHECK (snapshot_id ~ '^[0-9a-f]{64}$'),
   account_id text NOT NULL,
@@ -45,10 +45,10 @@ CREATE TABLE account_balance_snapshots (
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, snapshot_id),
   UNIQUE (environment, account_id, as_of),
-  FOREIGN KEY (environment, account_id) REFERENCES broker_accounts (environment, account_id)
+  FOREIGN KEY (environment, account_id) REFERENCES atheer.broker_accounts (environment, account_id)
 );
 
-CREATE TABLE order_intents (
+CREATE TABLE atheer.order_intents (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   intent_id text NOT NULL,
   command_id text NOT NULL,
@@ -64,13 +64,13 @@ CREATE TABLE order_intents (
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, intent_id),
   UNIQUE (environment, account_id, idempotency_key),
-  FOREIGN KEY (environment, account_id) REFERENCES broker_accounts (environment, account_id),
-  FOREIGN KEY (environment, instrument_id) REFERENCES instruments (environment, instrument_id),
-  FOREIGN KEY (environment, specification_id) REFERENCES instrument_specifications (environment, specification_id)
+  FOREIGN KEY (environment, account_id) REFERENCES atheer.broker_accounts (environment, account_id),
+  FOREIGN KEY (environment, instrument_id) REFERENCES atheer.instruments (environment, instrument_id),
+  FOREIGN KEY (environment, specification_id) REFERENCES atheer.instrument_specifications (environment, specification_id)
 );
-CREATE INDEX order_intents_correlation_idx ON order_intents (environment, correlation_id);
+CREATE INDEX order_intents_correlation_idx ON atheer.order_intents (environment, correlation_id);
 
-CREATE TABLE risk_assessments (
+CREATE TABLE atheer.risk_assessments (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   risk_assessment_id text NOT NULL,
   intent_id text NOT NULL,
@@ -80,11 +80,11 @@ CREATE TABLE risk_assessments (
   payload_hash char(64) NOT NULL CHECK (payload_hash ~ '^[0-9a-f]{64}$'),
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, risk_assessment_id),
-  FOREIGN KEY (environment, intent_id) REFERENCES order_intents (environment, intent_id)
+  FOREIGN KEY (environment, intent_id) REFERENCES atheer.order_intents (environment, intent_id)
 );
-CREATE INDEX risk_assessments_intent_idx ON risk_assessments (environment, intent_id, evaluated_at);
+CREATE INDEX risk_assessments_intent_idx ON atheer.risk_assessments (environment, intent_id, evaluated_at);
 
-CREATE TABLE reconciliation_events (
+CREATE TABLE atheer.reconciliation_events (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   reconciliation_event_id text NOT NULL,
   aggregate_type text NOT NULL CHECK (aggregate_type IN ('ACCOUNT', 'ORDER', 'POSITION', 'EXECUTION')),
@@ -97,9 +97,9 @@ CREATE TABLE reconciliation_events (
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, reconciliation_event_id)
 );
-CREATE INDEX reconciliation_events_aggregate_idx ON reconciliation_events (environment, aggregate_type, aggregate_id, occurred_at);
+CREATE INDEX reconciliation_events_aggregate_idx ON atheer.reconciliation_events (environment, aggregate_type, aggregate_id, occurred_at);
 
-CREATE TABLE domain_outbox (
+CREATE TABLE atheer.domain_outbox (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   outbox_id text NOT NULL,
   aggregate_type text NOT NULL,
@@ -114,9 +114,9 @@ CREATE TABLE domain_outbox (
   PRIMARY KEY (environment, outbox_id),
   UNIQUE (environment, event_type, idempotency_key)
 );
-CREATE INDEX domain_outbox_pending_idx ON domain_outbox (created_at) WHERE published_at IS NULL;
+CREATE INDEX domain_outbox_pending_idx ON atheer.domain_outbox (created_at) WHERE published_at IS NULL;
 
-CREATE TABLE audit_events (
+CREATE TABLE atheer.audit_events (
   environment text NOT NULL CHECK (environment IN ('DEMO', 'SIMULATION', 'BACKTEST', 'LIVE')),
   audit_event_id text NOT NULL,
   correlation_id text NOT NULL,
@@ -128,4 +128,4 @@ CREATE TABLE audit_events (
   payload jsonb NOT NULL,
   PRIMARY KEY (environment, audit_event_id)
 );
-CREATE INDEX audit_events_subject_idx ON audit_events (environment, subject_type, subject_id, occurred_at);
+CREATE INDEX audit_events_subject_idx ON atheer.audit_events (environment, subject_type, subject_id, occurred_at);
