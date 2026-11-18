@@ -597,3 +597,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Code/test commits: `448fc017`, `a4ea2355`, `e3cf9c04`, `65b53535`, `4b19bc34`, `82d67fde`.
 - The current PR #33 head includes PR #26 current head `69b15098e879be362926df1630c58cb3f1cd62fd` as an ancestor (comparison: 41 ahead / 0 behind), despite stale PR description metadata.
 - Exact-head CI for the refactored head is pending. No owner-Mac runtime/visual acceptance is claimed.
+
+
+### ATP-UI-ARCH-001A — shared transport and HTTP-contract test extension
+
+- Extracted `URLSessionRequestExecutor` from the broker-management file into shared `Sources/Services/URLSessionRequestExecutor.swift`; both CapitalComAuthenticationService and Market Search now use the same immutable-session executor.
+- Market Search uses an ephemeral session with cookie persistence and URL caching disabled.
+- Added deterministic URLProtocol contract tests for GET /market-data/status, GET /market-data/markets, encoded searchTerm, Cache-Control no-store, 503 backend-not-connected, 500 unexpected status, and transport failure → backendUnavailable.
+- Added commits `5c1ae728`, `a0f28db8`, `834afa04`, `a310237f`, `ea1b16f8`, `0201e059`.
+- Exact-head CI pending.
