@@ -111,3 +111,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-065 | 2026-11-18 | PostgreSQL persistence port and backend qualification | Ported the existing PostgreSQL persistence foundation onto the canonical domain, corrected legacy bootstrap/server dependencies, and qualified hosted backend/PostgreSQL tests (37/37). | ATP-PERSISTENCE-001; PR #81; SESSION_2026-11-18_065_POSTGRES_CANONICAL_DOMAIN_PORT |
+
+| ATP-2026-11-18-067 | 2026-11-18 | Team B — Central Pre-Trade RiskEngine Foundation | Added policy-driven pre-trade evaluation using canonical order-intent and risk-assessment contracts; exact-decimal checks, provenance/freshness, broker specifications, portfolio projection bounds, permission profiles, margin constraints and fail-closed controls; tests, architecture note and Mermaid diagram 15. Stacked on PR #81 / PR #76; exact-head CI pending. | SESSION_2026-11-18_067_CENTRAL_PRETRADE_RISK_ENGINE; ATP_RISK_ENGINE_PRETRADE_FOUNDATION.md; diagram 15; `feat/central-risk-engine-foundation` |
+
