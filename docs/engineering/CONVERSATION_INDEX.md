@@ -100,3 +100,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-042 | 2026-11-18 | Q10 centralized connection and subscription orchestration review | Compared PR #37 stream implementation with Library Q10; documented implemented shared WebSocket/40-cap/ping/reconnect controls and pending REST keepalive, sequential auth rate limit, priority allocation and account-switch restoration. | PR #37; ATP-BRK-003; ATP-MKT-007; EDL-023; ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE |
+
+
+| ATP-2026-11-18-044 | 2026-11-18 | ATP-BRK-003 REST session orchestration | Added one-second sequential session-creation throttling in the single runtime owner, scheduled five-minute REST keepalive, disconnect cancellation, HTTP 401/403 invalidation and degraded recovery; added deterministic tests. Cross-runtime/API-key throttling remains in ATP-BRK-002 CMS integration. | PR #49; CapitalDemoRuntime.ts; market-data-runtime.test.mjs; ATP-BRK-003; ATP-BRK-002; EDL-023 |
