@@ -133,6 +133,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MarketSearchResult'
+        '400':
+          description: searchTerm is missing, blank after trimming, or longer than 100 characters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '502':
           $ref: '#/components/responses/ProviderFailure'
         '503':
@@ -186,7 +192,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MarketHistoryResult'
         '400':
-          description: Invalid resolution or max query parameter.
+          description: Invalid EPIC, resolution, or max query parameter.
           content:
             application/json:
               schema:
