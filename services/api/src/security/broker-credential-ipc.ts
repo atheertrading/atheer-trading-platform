@@ -119,6 +119,11 @@ async function handleRequest(
     return { requestId: "invalid", ok: false, errorCode: "invalid_request" };
   }
   if (!hasValidIPCCapabilityValue(request.capability, expectedCapability)) {
+    if (request.credentials) {
+      request.credentials.apiKey = "";
+      request.credentials.identifier = "";
+      request.credentials.password = "";
+    }
     return { requestId: request.requestId, ok: false, errorCode: "unauthorized" };
   }
 
