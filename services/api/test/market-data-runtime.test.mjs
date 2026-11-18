@@ -554,6 +554,13 @@ test("authenticated historical route normalizes candles and preserves raw provid
   assert.equal(invalidMax.status, 400);
   assert.deepEqual(await invalidMax.json(), { error: "invalid_max" });
 
+  const disconnected = await fetch(
+    baseUrl + "/market-data/history?epic=AAPL&resolution=MINUTE&max=10",
+    { headers: authorization },
+  );
+  assert.equal(disconnected.status, 503);
+  assert.deepEqual(await disconnected.json(), { error: "broker_session_not_connected" });
+
   await serverRuntime.connect({
     apiKey: "demo-key",
     identifier: "demo-user",
