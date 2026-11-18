@@ -149,7 +149,7 @@ test("market search and history requests carry DEMO session headers", async () =
   const client = new CapitalDemoClient(async (url, init) => {
     calls.push({ url: String(url), init });
     return calls.length === 1
-      ? response({ markets: [{ epic: "AAPL", instrumentName: "Apple" }] })
+      ? response({ markets: [{ epic: "AAPL", instrumentName: "Apple", bid: 199.5, offer: 199.6 }] })
       : response({ prices: [{ snapshotTimeUTC: "2026-11-17T10:00:00Z" }] });
   });
   const session = {
@@ -163,6 +163,9 @@ test("market search and history requests carry DEMO session headers", async () =
   const history = await client.getPriceHistory(session, "AAPL", "MINUTE", 20);
 
   assert.equal(markets.markets[0].epic, "AAPL");
+  assert.equal(markets.markets[0].instrumentName, "Apple");
+  assert.equal("bid" in markets.markets[0], false);
+  assert.equal("offer" in markets.markets[0], false);
   assert.equal(history.prices.length, 1);
   assert.ok(calls[0].url.startsWith(demoBase + "/markets?"));
   assert.ok(calls[1].url.startsWith(demoBase + "/prices/AAPL?"));
