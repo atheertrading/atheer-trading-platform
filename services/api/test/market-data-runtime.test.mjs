@@ -293,6 +293,57 @@ test("broker session manager releases credential-bearing runtime after provider 
   assert.equal(manager.status().state, "not_configured");
 });
 
+test("broker logout still runs when the WebSocket stream shutdown reports failure", async () => {
+  const ipcCapability = Buffer.alloc(32, 0x55);
+  const authorization = {
+    authorization: "Bearer " + ipcCapability.toString("base64url"),
+  };
+  const client = createMockClient();
+  const manager = new BrokerSessionManager((value) => new CapitalDemoRuntime(
+    client,
+    value,
+    () => 1_800_000_000_000,
+    { scheduler: { schedule: () => "timer", cancel: () => {} } },
+  ));
+  const stream = {
+    status: () => ({ provider: "capital.com", environment: "DEMO", state: "degraded" }),
+    latest: () => [],
+    async subscribe() { throw new Error("not used"); },
+    async disconnect() { throw new Error("socket shutdown failure"); },
+  };
+  const server = createApiServer(manager, ipcCapability, stream);
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+
+  try {
+    await manager.connect({
+      apiKey: "demo-key",
+      identifier: "demo-user",
+      password: "demo-password",
+    });
+    const response = await fetch("http://127.0.0.1:" + address.port + "/broker-session/disconnect", {
+      method: "POST",
+      headers: authorization,
+    });
+    const payload = await response.json();
+    assert.equal(response.status, 502);
+    assert.equal(payload.error, "market_data_stream_disconnect_failed");
+    assert.equal(payload.brokerSession.state, "disconnected");
+    assert.equal(manager.status().state, "not_configured");
+    assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect"]);
+  } finally {
+    const closed = new Promise((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    server.closeAllConnections();
+    await closed;
+  }
+});
+
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
