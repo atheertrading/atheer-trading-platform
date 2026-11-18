@@ -188,7 +188,8 @@ test("private Unix-domain IPC disconnects streaming before releasing the broker 
     async connect() {
       return connectedStatus;
     },
-    async disconnect() {
+    async disconnect(beforeSessionReplacement) {
+      await beforeSessionReplacement?.();
       order.push("broker");
       return disconnectedStatus;
     },
@@ -244,7 +245,8 @@ test("private IPC still releases the broker session when stream shutdown fails",
     async connect() {
       return connectedStatus;
     },
-    async disconnect() {
+    async disconnect(beforeSessionReplacement) {
+      await beforeSessionReplacement?.();
       brokerDisconnectCount += 1;
       return disconnectedStatus;
     },
