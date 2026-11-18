@@ -149,3 +149,14 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Decision:** Treat `GET /markets` as instrument discovery metadata only. Allow-list identity/name/market-status/currency fields and strip provider bid/offer values. Only validated streaming quote events may populate live Bid/Ask consumers.
 - **Rationale:** Prevent stale or un-timestamped catalogue values from being mistaken for current market prices or entering chart/strategy/risk decisions.
 - **Verification:** Backend regression test proves provider bid/offer fields are not exposed by market catalogue results. Exact-head CI pending.
+
+
+## EDL-022 — Single backend broker credential and session authority
+
+- **Date:** 2026-11-18
+- **Status:** Required architecture decision; implementation pending.
+- **Authority:** Library Broker Integration Q5 (authentication) and Q6 (credential management).
+- **Decision:** A backend CMS and Broker Session Manager shall be the single authority for broker credentials, authentication, CST/`X-SECURITY-TOKEN` lifecycle, renewal, reconnect and status. The macOS app is a secure credential-entry and management client, not an independent broker-session owner.
+- **Current discrepancy:** PR #26 authenticates directly from Swift using Keychain credentials. PR #37 authenticates separately from backend environment variables. Both can create separate Capital.com sessions.
+- **Required correction:** Establish secure Keychain/vault provisioning to backend CMS using authenticated local IPC or a per-launch capability token; move Broker Management to the backend session API; make Market Data/streaming/account data/future OMS share that session. Keep env credentials test-only.
+- **Merge gate:** PR #37 must not be merged as completed broker integration until this is implemented and DEMO-qualified. LIVE remains disabled.
