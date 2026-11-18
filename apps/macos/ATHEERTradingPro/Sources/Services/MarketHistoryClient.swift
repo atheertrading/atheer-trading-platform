@@ -171,7 +171,8 @@ enum MarketHistoryRequestBuilder {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.timeoutInterval = 8
+        request.timeoutInterval = 15
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue(authorization, forHTTPHeaderField: "Authorization")
         request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
