@@ -64,7 +64,7 @@ struct ContentView: View {
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
                 case .markets:
-                    MarketExplorerView(onOpenAPIConnection: { selection = .apiConnection })
+                    MarketExplorerView(client: URLSessionMarketSearchClient(), onOpenAPIConnection: { selection = .apiConnection })
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
                 case .settings:
