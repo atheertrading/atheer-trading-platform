@@ -33,15 +33,22 @@ test("concurrent connect requests share one provider session creation", async ()
 
 test("disconnect during authentication invalidates and closes the late session", async () => {
   let resolveSession;
+  let signalSessionStarted;
   let ended = 0;
+  const sessionStarted = new Promise((resolve) => { signalSessionStarted = resolve; });
   const client = {
     startSession() {
+      signalSessionStarted();
       return new Promise((resolve) => { resolveSession = resolve; });
     },
     async endSession() { ended += 1; },
   };
   const runtime = new CapitalDemoRuntime(client, credentials);
   const connecting = runtime.connect();
+
+  // Wait until the provider request is actually in flight; disconnecting
+  // before this barrier only tests cancellation before authentication starts.
+  await sessionStarted;
   const disconnecting = runtime.disconnect();
   resolveSession(session);
   await disconnecting;
