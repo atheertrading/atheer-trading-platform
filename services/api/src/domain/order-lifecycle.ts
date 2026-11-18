@@ -131,7 +131,7 @@ export function createOrderLifecycleTransition(input: OrderLifecycleEvent): Orde
   }
   if (input.reasonCode !== undefined) nonEmptyString(input.reasonCode, "order_lifecycle_reason_code");
   if (input.evidenceReference !== undefined) nonEmptyString(input.evidenceReference, "order_lifecycle_evidence_reference");
-  return deepFreeze({ ...input }) as OrderLifecycleTransition;
+  return deepFreeze({ ...input }) as OrderLifecycleEvent;
 }
 
 export interface OmsOrder {
