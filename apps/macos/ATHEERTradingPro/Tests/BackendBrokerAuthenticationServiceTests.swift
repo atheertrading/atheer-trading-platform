@@ -84,7 +84,7 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
 
         let account = try await service.authenticate(credential, environment: .demo)
 
-        XCTAssertEqual(account.accountIdentifier, "••••1234")
+        XCTAssertEqual(account.maskedLoginIdentifier, "••••1234")
         XCTAssertNil(account.currencyCode)
         let request = try XCTUnwrap(BrokerAuthenticationURLProtocol.capturedRequests().first)
         XCTAssertEqual(request.httpMethod, "POST")
