@@ -186,6 +186,32 @@ test("private Unix-domain IPC disconnects streaming before releasing the broker 
   }
 });
 
+test("private IPC refuses permissive directories and overlong socket paths", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "atheer-credential-ipc-permissions-"));
+  await chmod(directory, 0o755);
+  const manager = {
+    async connect() { return connectedStatus; },
+    async disconnect() { return disconnectedStatus; },
+  };
+  const capability = Buffer.alloc(32, 23);
+  await assert.rejects(
+    createBrokerCredentialIPCServer({
+      socketPath: join(directory, "broker.sock"),
+      expectedCapability: capability,
+      manager,
+    }),
+    /permissions are not private/,
+  );
+  await assert.rejects(
+    createBrokerCredentialIPCServer({
+      socketPath: "/" + "x".repeat(120),
+      expectedCapability: capability,
+      manager,
+    }),
+    /Invalid private broker credential IPC configuration/,
+  );
+});
+
 test("private IPC still releases the broker session when stream shutdown fails", async () => {
   let brokerDisconnectCount = 0;
   const manager = {
