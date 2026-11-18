@@ -493,3 +493,59 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Corrected stale Unix-domain IPC error-description assertion to match the production private-channel wording.
 - Propagated test-only corrections through PR #55–#70 dependency branches where the affected tests exist.
 - Exact-head CI reruns pending; see session 058 for diagnosis.
+
+
+
+## ATP-CHART-001 — Authenticated historical chart workspace (2026-11-18)
+
+- Ported the historical chart surface into the active authenticated stack; no static backend port or unauthenticated client.
+- Added a dynamic BackendIPCConnection client with bearer capability, safe native context, ephemeral/no-store request handling and strict response validation.
+- Added a Charts navigation destination, Market Explorer Open Chart action and Command Center chart panel using real normalized DEMO Bid/Ask candles.
+- Added timeframe/side selection, manual refresh, receipt-time and quality metadata, plus raw provider-limit warning.
+- Persistent watchlist, live candles, indicators and drawing tools remain separate pending increments. Exact-head CI and owner-Mac qualification pending.
+- PR #70 is stacked on PR #68. Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+
+
+## 2026-11-18 — Chart workspace integration review follow-up
+
+- PR #70 received explicit initializers for authenticated chart dependencies in `WorkspaceHomeView` and `CommandCenterView` after source review identified that initialized immutable properties were not exposed by the synthesized memberwise initializers.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3` and `484907de2f308231dac89d5e151beee6e95c250a`.
+- Status: IMPLEMENTED; exact-head CI pending. Do not mark TESTED or VERIFIED until the new PR #70 workflow completes.
+
+## ATP-CHART-001 follow-up — reject future-dated history at native boundary
+
+- Native historical payload decoding now rejects candle timestamps later than receipt timestamps; added XCTest regression coverage.
+- Commits: `68b70ed`, `b130e43`. Exact-head macOS CI pending.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+
+## ATP-CHART-002 — inherited broker IPC test qualification
+
+- Updated inherited URLProtocol test fixture for streamed HTTP request bodies and bounded reads.
+- Corrected stale expected error-description text for the private Unix-domain broker credential IPC client.
+- Exact-head macOS CI must rerun before chart workspace integration is accepted.
+
+
+## ATP-CHART-003 — PR #70 ancestry reconciliation
+
+- Merged the current PR #68 base into PR #70 using a two-parent Git merge commit; both branch histories are preserved.
+- Merge commit: `b38902d0342962b3d12f327ff3a90881ed063fd0`.
+- PR #70 comparison is now 52 ahead / 0 behind; exact-head CI and code review remain pending.
+- No force-push, history rewrite, or direct merge to `main` was performed.
+
+## ATP-ENG-061 — Broker-to-chart stacked PR ancestry consolidation
+
+- Reconciled PR #64, #66, #67, #68 and #70 top-down with two-parent Git merge commits.
+- All five branches now compare 0 commits behind their current parent; GitHub reports mergeable true at the latest inspection.
+- Final merge commits and exact heads are recorded in Project Continuity and Session 059.
+- This is not a merge to `main`; exact-head CI and owner-Mac/DEMO qualification remain mandatory.
+
+
+## ATP-ENG-062 — Bound backend CI execution and propagate through broker/chart stack
+
+- Added a 30-second per-test timeout to the Node test runner and a 15-minute backend toolchain job deadline on PR #55.
+- Commit: `d7957bc52163ef30413d8df0b2271ef2dda216e1`.
+- Propagated via history-preserving two-parent merges through PR #64/#66/#67/#68/#70; final PR #70 head at this batch: `40cc706bee904c3b74eb904d271ea9672554a4dd`.
+- Direct parent/child comparisons: 0 commits behind. Exact-head CI is pending; no test pass is claimed for the updated timeout configuration yet.
+- Upstream PR #53 has an Intel Swift compile failure; PR #56's correction branch requires fresh macOS qualification. PR #57 bounded-shutdown work remains a separate sibling requiring review.
+- No merge to main, local Mac synchronization, broker DEMO authentication, or dealing action was performed.
+- Session report: `SESSION_2026-11-18_061_CI_EXECUTION_BOUNDS_AND_STACK_PROPAGATION.md`.
