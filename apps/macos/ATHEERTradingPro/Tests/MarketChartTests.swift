@@ -25,7 +25,6 @@ private final class StubMarketHistoryClient: MarketHistoryClient {
     }
 }
 
-@MainActor
 final class MarketChartTests: XCTestCase {
     private let validPayload = """
     {
@@ -145,6 +144,7 @@ final class MarketChartTests: XCTestCase {
         ))
     }
 
+    @MainActor
     func testRequestBuilderUsesDynamicBackendPortAndPrivateCapability() throws {
         let capability = try BackendIPCCapability(testBytes: Data(repeating: 0x42, count: 32))
         let connection = BackendIPCConnection(
@@ -172,6 +172,7 @@ final class MarketChartTests: XCTestCase {
         capability.clear()
     }
 
+    @MainActor
     func testRequestBuilderRejectsInvalidInstrumentAndMaximum() throws {
         let capability = try BackendIPCCapability(testBytes: Data(repeating: 0x11, count: 32))
         let connection = BackendIPCConnection(
@@ -194,6 +195,7 @@ final class MarketChartTests: XCTestCase {
         capability.clear()
     }
 
+    @MainActor
     func testChartViewModelLoadsSelectedInstrumentAndUsesProviderReceiptTime() async throws {
         let batch = try validBatch
         let client = StubMarketHistoryClient(result: .success(batch))
@@ -209,6 +211,7 @@ final class MarketChartTests: XCTestCase {
         XCTAssertEqual(model.lastUpdatedAt, Date(timeIntervalSince1970: 1_795_000_001))
     }
 
+    @MainActor
     func testChartViewModelCancellationDoesNotBecomeBackendFailure() async throws {
         let model = MarketChartViewModel(
             client: StubMarketHistoryClient(result: .failure(CancellationError())),
@@ -219,6 +222,7 @@ final class MarketChartTests: XCTestCase {
         XCTAssertTrue(model.candles.isEmpty)
     }
 
+    @MainActor
     func testChartViewModelClearsSeriesWhenInstrumentIsCleared() async throws {
         let batch = try validBatch
         let model = MarketChartViewModel(
