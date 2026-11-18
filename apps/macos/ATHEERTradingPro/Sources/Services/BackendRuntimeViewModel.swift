@@ -26,6 +26,7 @@ final class BackendRuntimeViewModel: ObservableObject {
     @Published private(set) var state: BackendRuntimeViewState = .stopped
     @Published private(set) var marketSearchClient: MarketSearchClient?
     @Published private(set) var marketDataStreamClient: MarketDataStreamClient?
+    @Published private(set) var marketHistoryClient: MarketHistoryClient?
 
     let healthModel: BackendHealthViewModel
     let brokerManagementModel: BrokerManagementViewModel
@@ -42,6 +43,7 @@ final class BackendRuntimeViewModel: ObservableObject {
         self.supervisor.onUnexpectedTermination = { [weak self] message in
             self?.marketSearchClient = nil
             self?.marketDataStreamClient = nil
+            self?.marketHistoryClient = nil
             self?.healthModel.setUnavailable(message)
             self?.brokerManagementModel.backendUnavailable(message)
             self?.state = .failed(message)
@@ -61,12 +63,14 @@ final class BackendRuntimeViewModel: ObservableObject {
             )
             marketSearchClient = URLSessionMarketSearchClient(connection: connection)
             marketDataStreamClient = URLSessionMarketDataStreamClient(connection: connection)
+            marketHistoryClient = URLSessionMarketHistoryClient(connection: connection)
             await healthModel.refresh()
             state = .ready
         } catch {
             try? await supervisor.stop()
             marketSearchClient = nil
             marketDataStreamClient = nil
+            marketHistoryClient = nil
             healthModel.setUnavailable(error.localizedDescription)
             brokerManagementModel.backendUnavailable(error.localizedDescription)
             state = .failed(error.localizedDescription)
@@ -76,6 +80,7 @@ final class BackendRuntimeViewModel: ObservableObject {
     func stop() async throws {
         marketSearchClient = nil
         marketDataStreamClient = nil
+        marketHistoryClient = nil
         healthModel.setUnavailable("Stopping the managed backend process.")
         do {
             try await supervisor.stop()

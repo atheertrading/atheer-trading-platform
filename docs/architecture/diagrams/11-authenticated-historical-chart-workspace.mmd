@@ -1,0 +1,22 @@
+flowchart LR
+    A["Market Explorer instrument selection"] --> B["ContentView selected instrument"]
+    B --> C["Charts workspace / Command Center chart panel"]
+    C --> D["MarketChartViewModel"]
+    D --> E["MarketHistoryRequestBuilder"]
+    P["BackendProcessSupervisor"] --> F["Dynamic BackendIPCConnection"]
+    F --> E
+    E --> G["GET /market-data/history + bearer IPC capability"]
+    G --> H["API capability and request validation"]
+    H --> I["BrokerSessionManager"]
+    I --> J["CapitalDemoRuntime"]
+    J --> K["CapitalDemoClient"]
+    K --> L["Capital.com DEMO historical prices"]
+    L --> M["Historical Price Normalizer"]
+    M --> N["Bid/Ask OHLC + UTC/receipt lineage + quality"]
+    N --> O["MarketHistoryPayloadDecoder"]
+    O --> Q["Validated historical candle batch"]
+    Q --> R["Swift Charts candlestick surface"]
+    R --> S["Bid / Ask side and timeframe controls"]
+
+    T["RiskEngine / OMS / Execution Gateway"] -. "no call path; chart is read-only" .-> R
+    U["Live candle aggregation"] -. "future integration; not part of this batch" .-> R

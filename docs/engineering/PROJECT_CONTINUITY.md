@@ -751,6 +751,31 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Last documented Mac qualification is from 2026-11-17 on old commit `0e7f25e`; current Mac state is not accessible and no local pull/build is claimed.
 - Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`. `CAP_ALLOW_TRADING=false` unchanged.
 
+
+## 2026-11-18 — Authenticated historical chart workspace
+
+- Added PR #70 on `feat/authenticated-chart-workspace-2026-11-18`, stacked on PR #68. The chart client uses the supervised dynamic BackendIPCConnection base URL and private bearer IPC capability; the old PR #44 static-port unauthenticated client is not reused.
+- Added strict historical payload decoding, separate Bid/Ask candlestick rendering, timeframe and side selection, manual refresh, duplicate/gap/receipt metadata and raw-provider limit warning.
+- Added Charts navigation, Open Chart from Market Explorer, and a real historical chart surface in the Command Center. No fabricated data or LIVE execution path.
+- Persistent Market Watch, live candle aggregation, indicators, drawings, replay and UI date-range selection remain pending.
+- PR #66 CI uncovered a missing credentialSocketURL in the MarketSearch test fixture. Corrected on updated PR #66 head and propagated to PR #67/#68/#69 branches; new exact-head CI pending. Previous run remains failed and Apple Silicon qualification must be rerun.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`. `CAP_ALLOW_TRADING=false` unchanged.
+
+
+## 2026-11-18 — Chart workspace review remediation
+
+- Source review identified missing explicit initializers for injected immutable chart dependencies in `WorkspaceHomeView` and `CommandCenterView`; both were corrected on PR #70.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
+- PR #70 exact head: `484907de2f308231dac89d5e151beee6e95c250a`; exact-head CI is pending.
+- PR #71 was closed as redundant without deleting its branch or rewriting history: its only test-fixture change is already present byte-for-byte on PR #70 (`c1930bbb87d4ba66898f85ed90faed6c4a4efe56`). PR #70 remains based on PR #68 and is mergeable.
+- Owner Mac is not accessible through this session; no local pull/build/runtime verification is claimed.
+
+## 2026-11-18 — Native historical timestamp integrity
+
+- Added an independent client-side guard rejecting future-dated historical candles and an XCTest regression case on PR #70.
+- Commits: `68b70ed2404b4672a86dbb91e05b0157da311391`, `b130e4375444deb9c029299fc6564168d51a636d`.
+- Hosted exact-head macOS CI remains pending. No local build or DEMO provider verification is claimed; `CAP_ALLOW_TRADING=false` remains unchanged.
+
 ## 2026-11-18 — Historical candle timestamp integrity
 
 - Source review found that the historical normalizer accepted a syntactically valid provider candle timestamp later than local receipt time.

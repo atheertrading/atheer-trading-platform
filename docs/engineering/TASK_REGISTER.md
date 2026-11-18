@@ -470,6 +470,35 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Added normalizer, client, authenticated API, disconnected-session and duplicate-pagination tests. Exact-head hosted CI pending.
 - PR #68 is stacked on PR #67. Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
 
+
+## ATP-CHART-001 — Authenticated historical chart workspace (2026-11-18)
+
+- Ported the historical chart surface into the active authenticated stack; no static backend port or unauthenticated client.
+- Added a dynamic BackendIPCConnection client with bearer capability, safe native context, ephemeral/no-store request handling and strict response validation.
+- Added a Charts navigation destination, Market Explorer Open Chart action and Command Center chart panel using real normalized DEMO Bid/Ask candles.
+- Added timeframe/side selection, manual refresh, receipt-time and quality metadata, plus raw provider-limit warning.
+- Persistent watchlist, live candles, indicators and drawing tools remain separate pending increments. Exact-head CI and owner-Mac qualification pending.
+- PR #70 is stacked on PR #68. Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+
+
+## 2026-11-18 — Chart workspace integration review follow-up
+
+- PR #70 received explicit initializers for authenticated chart dependencies in `WorkspaceHomeView` and `CommandCenterView` after source review identified that initialized immutable properties were not exposed by the synthesized memberwise initializers.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3` and `484907de2f308231dac89d5e151beee6e95c250a`.
+- Status: IMPLEMENTED; exact-head CI pending. Do not mark TESTED or VERIFIED until the new PR #70 workflow completes.
+
+## ATP-CHART-001 follow-up — reject future-dated history at native boundary
+
+- Native historical payload decoding now rejects candle timestamps later than receipt timestamps; added XCTest regression coverage.
+- Commits: `68b70ed`, `b130e43`. Exact-head macOS CI pending.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+
+## ATP-CHART-002 — inherited broker IPC test qualification
+
+- Updated inherited URLProtocol test fixture for streamed HTTP request bodies and bounded reads.
+- Corrected stale expected error-description text for the private Unix-domain broker credential IPC client.
+- Exact-head macOS CI must rerun before chart workspace integration is accepted.
+
 ## ATP-MKT-005 follow-up — reject future-dated history
 
 - Backend historical normalization now rejects any candle timestamp later than its receipt timestamp; a deterministic regression test covers the failure.
