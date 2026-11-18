@@ -770,6 +770,27 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testUnsubscribingLastInstrumentStopsRequestedMarketStream() async {
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+                results: []
+            ),
+            streamClient: StubMarketDataStreamClient(events: [])
+        )
+        await model.refreshBackendStatus()
+        model.toggleStreamSubscription(for: "GOLD")
+        model.startStreaming()
+        XCTAssertTrue(model.isStreamingRequested)
+
+        model.toggleStreamSubscription(for: "GOLD")
+
+        XCTAssertTrue(model.selectedEpics.isEmpty)
+        XCTAssertFalse(model.isStreamingRequested)
+        XCTAssertEqual(model.streamingState, .disconnected)
+    }
+
+    @MainActor
     func testMarketExplorerRejectsInvalidEpicBeforeSubscription() async {
         let model = MarketExplorerViewModel(
             client: StubMarketSearchClient(
