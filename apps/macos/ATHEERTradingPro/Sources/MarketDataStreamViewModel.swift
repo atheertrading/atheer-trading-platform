@@ -71,7 +71,7 @@ final class MarketDataStreamViewModel: ObservableObject {
 
     private let client: MarketDataStreamClient
     private let persistence: MarketWatchlistPersistence
-    private let maximumInstrumentCount = 40
+    private static let maximumInstrumentCount = 40
     private var streamTask: Task<Void, Never>?
     private var ageTask: Task<Void, Never>?
     private var generation = 0
@@ -82,7 +82,7 @@ final class MarketDataStreamViewModel: ObservableObject {
     ) {
         self.client = client
         self.persistence = persistence
-        selectedEpics = Set(Self.normalizedEpics(persistence.loadSelectedEpics()).prefix(maximumInstrumentCount))
+        selectedEpics = Set(Self.normalizedEpics(persistence.loadSelectedEpics()).prefix(Self.maximumInstrumentCount))
     }
 
     var selectedCount: Int { selectedEpics.count }
@@ -96,7 +96,7 @@ final class MarketDataStreamViewModel: ObservableObject {
     }
 
     func canSelect(_ epic: String) -> Bool {
-        isSelected(epic) || selectedEpics.count < maximumInstrumentCount
+        isSelected(epic) || selectedEpics.count < Self.maximumInstrumentCount
     }
 
     func toggleSelection(_ epic: String) {
@@ -108,7 +108,7 @@ final class MarketDataStreamViewModel: ObservableObject {
             quotes.removeValue(forKey: normalized)
         } else {
             guard selectedEpics.count < maximumInstrumentCount else {
-                lastError = "A maximum of 40 instruments can be monitored at once."
+                lastError = "A maximum of \(Self.maximumInstrumentCount) instruments can be monitored at once."
                 return
             }
             selectedEpics.insert(normalized)
