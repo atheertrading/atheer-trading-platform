@@ -136,3 +136,36 @@ test("Capital.com REST client bounds 429 retries and does not retry other failur
   await assert.rejects(unavailable.getMarkets(session, "EURUSD"), { statusCode: 503 });
   assert.equal(unavailableRequests, 1);
 });
+
+test("final exhausted 429 still delays subsequent requests through the shared cooldown", async () => {
+  let requestCount = 0;
+  let monotonicNow = 0;
+  const waits = [];
+  const client = new CapitalDemoClient(async () => {
+    requestCount += 1;
+    if (requestCount <= 4) {
+      return new Response(null, {
+        status: 429,
+        ...(requestCount === 4 ? { headers: { "Retry-After": "5" } } : {}),
+      });
+    }
+    return successfulMarkets();
+  }, () => 1_800_000_000_000, {
+    requestIntervalMs: 100,
+    monotonicNow: () => monotonicNow,
+    sleep: async (milliseconds) => {
+      waits.push(milliseconds);
+      monotonicNow += milliseconds;
+    },
+    random: () => 0,
+  });
+
+  await assert.rejects(client.getMarkets(session, "EURUSD"), { statusCode: 429 });
+  assert.equal(requestCount, 4);
+  assert.equal(waits.at(-1), 1);
+
+  const result = await client.getMarkets(session, "EURUSD");
+  assert.equal(result.markets[0].epic, "EURUSD");
+  assert.equal(requestCount, 5);
+  assert.equal(waits.at(-1), 5_000);
+});
