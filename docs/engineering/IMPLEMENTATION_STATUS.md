@@ -520,7 +520,7 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 
 **Branch:** `feat/oms-authorized-order-persistence`  
 **Base:** PR #41 branch `feat/postgres-persistence-foundation`  
-**Implementation HEAD at documentation update:** pending final branch snapshot
+**Implementation HEAD at this update:** `995145c6d44435fad1b5ee3c342e994c0852e119` (continuity-only follow-up commit now advances branch to `c5efe357d8521f52bd8bd013706767b18c52dac2`)
 
 | Capability | Status | Evidence / limitation |
 |---|---|---|
@@ -530,7 +530,7 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 | Risk-gated OMS persistence | IMPLEMENTED; CI PENDING | Exact persisted intent + exact persisted AUTHORIZED assessment locked and verified in transaction |
 | Transactional audit and outbox | IMPLEMENTED; CI PENDING | Order, first lifecycle event, audit record and `oms.order.persisted` committed atomically |
 | Replay/conflict behavior | IMPLEMENTED; CI PENDING | One order per intent/risk assessment; same payload replays; conflicting order identity rejected |
-| Lifecycle event mutability | IMPLEMENTED; CI PENDING | `atheer_app` has SELECT/INSERT only; UPDATE/DELETE revoked |
+| OMS order and lifecycle immutability | IMPLEMENTED; CI PENDING | `atheer_app` has SELECT/INSERT only on both tables; UPDATE/DELETE revoked; direct mutation denial tests added |
 | Outbox publisher / consumer | NOT IMPLEMENTED | No lease/claim worker, publisher, or internal event bus consumer |
 | Execution Gateway / broker dealing | NOT IMPLEMENTED | No broker submission, cancellation, modification, or close operation |
 | Broker fills / position projection / reconciliation | NOT IMPLEMENTED | Broker-authoritative ingestion remains a later work package |
@@ -543,7 +543,9 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 
 ### Verification boundaries
 
-- PR #42's domain and PostgreSQL integration tests are committed but have not yet been run on this branch's exact head.
-- PR #41 current-head run `44210600813` (head `c9eb73d28c24398dfcb435525118f971aae221e8`): Backend Toolchain and Repository Hygiene passed; Mermaid run `44210600930` and Local Sync Safety run `44210600755` passed; Intel x86_64 and Apple Silicon arm64 macOS jobs were still in progress at last inspection. These results do not qualify PR #42.
+- Earlier PR #42 code head `d9c4663d8c579e2aaf7eb122c0da67a32f2ee906` passed Backend type-check and PostgreSQL 17.12 suite 52/52, Repository Hygiene, Mermaid, and Local Sync Safety. Its macOS architecture jobs were cancelled before qualification.
+- Subsequent hardening on `995145c6d44435fad1b5ee3c342e994c0852e119` revokes app UPDATE/DELETE on OMS order projections and lifecycle events and adds direct mutation-denial integration assertions. The latest continuity commit advances the branch to `c5efe357d8521f52bd8bd013706767b18c52dac2`.
+- Exact-head CI must be rerun after these changes; the earlier 52/52 result is historical and does not qualify the current branch.
+- PR #41 current-head run `44210600813` (head `c9eb73d28c24398dfcb435525118f971aae221e8`): Backend Toolchain and Repository Hygiene passed; Mermaid run `44210600930` and Local Sync Safety run `44210600755` passed; Apple Silicon passed; Intel Debug was still in progress at last inspection. These results do not qualify PR #42.
 - Owner-local PostgreSQL 18.7 and local Mac runtime remain unqualified; no local migration was run.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
