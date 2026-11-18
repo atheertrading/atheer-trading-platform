@@ -772,3 +772,87 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - These follow-up commits advanced the branch to `995145c6d44435fad1b5ee3c342e994c0852e119`; the prior 52/52 and workflow results do not qualify this new head. A fresh exact-head CI run is required.
 - Intel and Apple Silicon macOS jobs on the earlier run were cancelled before qualification; neither architecture is currently qualified for PR #42.
 - PR #41 current head remains `c9eb73d28c24398dfcb435525118f971aae221e8`; Backend/Hygiene/Mermaid/Local Sync passed, Apple Silicon passed, Intel Debug was still in progress at last inspection.
+
+
+## ATP-MARKET-001 continuation — 2026-11-18
+
+### Library sources inspected
+- Read the complete retained Library screen implementation directive `Screen Implementation, Application Development & Professional Trading Workstation`.
+- Materialized and inspected the Q&A archive's `Owner and Developer Approval.md`, `Professional Trading Screens, Workspace Architecture & User Experience.md`, and Section 18 Q1/Q11/Q12/Q16/Q17/Q18/Q20. This was targeted source review, not an exhaustive review of all 517 Q&A records.
+- Read repository Mermaid diagrams 04, 05, 11 and 12. New diagrams 13 and 14 document the OMS persistence and shared Market Watch architecture.
+- `PROJECT_KNOWLEDGE_SOURCES.md` records the exact Library/archive identifiers and review scope.
+
+### PR #43 — Command Center Live Market Watch
+- PR: https://github.com/atheertrading/atheer-trading-platform/pull/43 (OPEN / DRAFT).
+- Branch: `feat/command-center-live-market-watch`; parent: PR #42 branch `feat/oms-authorized-order-persistence`.
+- Current code head at this continuity update: `42ee04d878f0554f17bef54a5abfd688ffe9a016`.
+- Added persistent versioned watchlist storage, EPIC validation/deduplication/order/cap/recovery, shared app-scoped market data model, integrated Command Center Market Watch, provider-backed Bid/Ask/spread/age/freshness, explicit stream controls, and tests.
+- Stream lifecycle is no longer tied to `MarketExplorerView.onDisappear`. Clearing the last subscription or removing the last watchlist instrument stops the requested stream. Removing a watchlist item also unsubscribes it; context actions support stable watchlist reordering. The last-subscription stop behavior has dedicated XCTest assertions.
+- No dealing actions or synthetic data are exposed.
+
+### PR #43 qualification snapshot
+- Earlier PR #43 head `3bbe18d5b43e66e7cb7e1c0fa928ec29dd5598dc`, run `44214994515`: backend strict type-check and inherited backend/PostgreSQL suite 52/52 passed; Repository Hygiene passed; Mermaid run `44214994367` passed; Local Sync Safety run `44214994556` passed.
+- Intel and Apple Silicon jobs were still at XcodeGen installation at last inspection. No native build/XCTest/Release result was available.
+- Subsequent code hardening changed the stream empty-selection lifecycle, Market Watch removal behavior, freshness display, and added a last-unsubscribe XCTest assertion. Documentation/source register updates advanced the branch to `7179c81c0daa6d83367c244d25650321f2e59c6e`.
+- Therefore the earlier 52/52 and workflow checks are historical and do not qualify the current PR #43 head. Exact-head CI must be refreshed after the latest branch changes.
+
+### PR #42 and PR #41 dependency snapshots
+- PR #42 current code head: `ff7af23585b8d7272d826fd29b03111ed57492bf`; backend 52/52, Repository Hygiene, Mermaid, Local Sync Safety, and Apple Silicon Debug/XCTest/Release passed; Intel XCTest was still in progress at last inspection.
+- PR #41 current code head: `c9eb73d28c24398dfcb435525118f971aae221e8`; backend, Repository Hygiene, Mermaid, Local Sync Safety and Apple Silicon passed; Intel Release/CodeQL was still in progress at last inspection.
+- Both PRs remain OPEN / DRAFT. PR #43 is stacked behind PR #42, which is stacked behind PR #41. Merge only in dependency order after exact-head qualification and GitHub mergeability checks.
+- No owner-local PostgreSQL 18.7 migration, local Mac pull, Keychain validation, or visual/accessibility acceptance has been performed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### Final PR #43 implementation delta after the initial CI snapshot
+
+- `5a621db`: last-watchlist removal also unsubscribes the corresponding stream EPIC and exposes row-level move up/down context actions.
+- `943e227`: clearing the final stream subscription sets `streamingRequested=false` and stops the stream rather than retaining a requested-but-empty stream.
+- `b531a47` and `1037a3e`: XCTest assertions cover clear-selection and last-instrument unsubscribe lifecycle.
+- `32f1260`: Bid and Ask freshness coloring now consistently reflects stale vs fresh provider quote state.
+- `42ee04d`: verified final row removal/unsubscribe behavior and moved reorder actions to the row context menu.
+- These changes advance the current code head to `42ee04d878f0554f17bef54a5abfd688ffe9a016`. Previous CI results on `15474ec...` do not qualify this final code head; exact-head CI must be refreshed.
+
+## Cross-PR engineering review — verified 2026-11-18
+
+### Repository governance
+- Default branch `main` was observed at `4875fc30e68b3611c036f4e9b1c9bbe9f0fb59c6` during this review.
+- GitHub repository rulesets endpoint returned no rulesets; `main` branch protection was not enabled at review time. Treat this as a governance gap: require PR review/status checks, block force-push and branch deletion, and define merge policy before production collaboration.
+- Repository is public and no repository license was identified in the reviewed metadata. Public visibility does not itself grant reuse rights; owner should select an appropriate license before inviting external reuse.
+- README contains stale PR status references (for example PR #10 still described as unmerged although it is merged). Reconcile project-facing documentation against actual merged history.
+
+### Current PR state and exact-head CI evidence
+- PRs #24–#43 in the current delivery chain remain OPEN / DRAFT / unmerged at review time.
+- PR #24 HEAD `e34c7155c45e9108e5f95156fb8f2e1363d63e60`: Backend and Repository Hygiene passed; Apple Silicon passed; Intel job remains in progress. CodeQL workflow passed, but Intel job completion is still pending.
+- PR #25 HEAD `3112637a014e1573078056dee5fefc61b495ff4f`: Backend and Repository Hygiene passed; Intel job remains in progress; Apple Silicon job in the inspected CI run was cancelled. Do not qualify until a complete current-head run passes both architectures.
+- PR #26 HEAD `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`: CI and Local Sync Safety passed. However its declared base SHA `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b` does not equal PR #25 current HEAD `3112637a014e1573078056dee5fefc61b495ff4f`; reconcile/rebase the stack and re-run exact-head CI before ordered merge.
+- PRs #33, #37, #38, #39, and #40: previously inspected current-head CI suites passed. They remain open/draft and must be merged only after their upstream base chain is reconciled.
+- PR #41 HEAD `c9eb73d28c24398dfcb435525118f971aae221e8`: current-head CI now passed. Intel x86_64, Apple Silicon arm64, Backend, and Repository Hygiene all completed successfully; Mermaid architecture and Local Sync Safety also passed. Backend includes 49/49 PostgreSQL integration tests. This supersedes the earlier note that its new documentation HEAD had no CI.
+- PR #42 HEAD `ff7af23585b8d7272d826fd29b03111ed57492bf`: current-head CI passed on Intel x86_64, Apple Silicon arm64, Backend, and Repository Hygiene; Mermaid and Local Sync Safety passed. Backend test suite reported 52/52.
+- PR #43 current HEAD `25599a3c65ad21ee71871c64759118ad98a63619`: Backend and Repository Hygiene passed; Mermaid and Local Sync Safety passed; Intel and Apple Silicon jobs are queued. Do not mark macOS qualification complete until both jobs and their Debug/XCTest/Release steps pass.
+- PR #43 documentation previously mentioned code head `42ee04d878f0554f17bef54a5abfd688ffe9a016`; that is superseded by current HEAD `25599a3c65ad21ee71871c64759118ad98a63619`. Reconcile the snapshot after the queued jobs complete.
+- These CI statements are SHA-specific. Any subsequent documentation or code commit creates a new HEAD and requires fresh exact-head verification.
+
+### Implementation maturity
+- Merged baseline includes engineering governance, platform foundation, backend/macOS health, safe local sync, navigable workspace, shared visual foundation, and adaptive workspace layout (PRs #1, #2, #6–#11, #17, #18, #22).
+- PRs #24–#26 establish the macOS Command Center/workspace and Capital.com DEMO REST/credential foundations, but they are not yet merged or owner-runtime qualified.
+- PRs #33, #37–#39 establish Market Explorer, Capital.com DEMO streaming, native timestamped quote consumption, and historical candle/UTC normalization. They do not establish a completed chart engine, indicators, or drawing engine.
+- PR #40 establishes canonical trading-domain contracts; it is not a complete RiskEngine or execution system.
+- PR #41 establishes PostgreSQL migration/repository foundations and domain-record outbox persistence. It does not implement an outbox consumer, OMS worker, Execution Gateway dispatcher, or broker order dispatch.
+- PR #42 establishes risk-gated OEL-12 order persistence and atomic lifecycle/audit/outbox records. It is OMS persistence foundation, not a complete lifecycle processor, fill processor, position projection, or broker reconciliation worker.
+- PR #43 integrates a persisted local watchlist and app-scoped DEMO quote consumer into the Command Center. Its latest code includes stream lifecycle, unsubscribe, row actions, and quote freshness presentation; it remains unmerged and current-head macOS CI is pending.
+- No PR in this chain establishes production readiness or LIVE execution. `CAP_ALLOW_TRADING=false` remains mandatory.
+
+### Outstanding owner / operational qualification
+- No owner-side Capital.com DEMO authentication/session validation or end-to-end live quote acceptance is established by hosted CI alone.
+- Local PostgreSQL 18.7 has not been migrated or qualified. Do not run `npm run migrate` without an approved backup/restore and controlled migration qualification plan.
+- Owner-side macOS visual, accessibility/VoiceOver, Keychain, multi-display, and runtime acceptance remain pending.
+- No broker execution, production deployment, credential permission change, or LIVE trading action was performed.
+
+### Next actions (ordered)
+1. Complete PR #24 Intel job and PR #25 Intel/arm64 qualification.
+2. Reconcile PR #26 base to the intended current PR #25 head; then re-run exact-head CI for #26 and descendants as needed.
+3. Complete PR #43 Intel and arm64 jobs on exact HEAD `25599a3...`; update the implementation snapshot after qualification.
+4. Reconcile stale README and engineering status snapshots; ensure all docs identify exact commit SHAs and distinguish current implementation from target architecture.
+5. Establish main-branch protection/rulesets and an explicit repository license decision.
+6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
+7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.

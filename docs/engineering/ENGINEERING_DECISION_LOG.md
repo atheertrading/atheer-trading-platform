@@ -198,3 +198,18 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **No-dispatch boundary:** This increment creates no outbox publisher/worker, Execution Gateway, broker API operation, or execution-dispatch event. `oms.order.persisted` is an internal domain notification, not a broker command. Any later dispatcher requires durable ownership/fencing, uncertain-submission reconciliation, and independently qualified execution controls.
 - **Consequences:** Q1's state model and exception states are now reflected in typed domain policy and tests. Broker-specific status mapping, event ordering, fills, cancel/replace races, position versions, and reconciliation remain subsequent implementation work.
 - **Evidence:** PR #42, `ATP_OMS_LIFECYCLE_FOUNDATION.md`, Mermaid diagram 13, domain and PostgreSQL integration tests. No broker dealing or LIVE operation is claimed.
+
+
+## EDL-014 — App-scoped market-data runtime and persistent Market Watch
+
+- **Date:** 2026-11-18
+- **Status:** Accepted under delegated internal engineering authority; implementation in PR #43, exact-head qualification pending.
+- **Authority:** Library ATP-PROMPT-SCREEN-EXEC-001, Master Visual Design Directive / Professional Trading Screens, Workspace Architecture & User Experience, repository `AGENTS.md`, and existing Capital.com DEMO market-data contracts.
+- **Decision:** `ContentView` owns one app-scoped `MarketExplorerViewModel` and one `MarketWatchlistStore`; Market Explorer and Command Center receive these services through dependency injection. Screen navigation and workspace panel visibility do not own or cancel the shared market-data stream.
+- **Watchlist:** Persist ordered instrument EPICs through a versioned UserDefaults persistence boundary. Validate EPIC identifiers, prevent duplicates, cap at the provider stream limit of 40, and never overwrite corrupt or unsupported stored data during recovery.
+- **Presentation:** Market Watch shows only backend DEMO status and timestamped provider Bid/Ask quotes, calculated spread, provider quote age, and stream state. Missing values remain unavailable; no sample prices or account/position values are fabricated.
+- **Authority separation:** Market-data authentication/streaming remains separate from broker account authentication, account state, RiskEngine authorization, OMS, Execution Gateway, and trading permission.
+- **Lifecycle:** Explicit user stream controls own the requested feed. Hiding or navigating away from a panel does not stop the app-scoped feed; removing a watchlist instrument also removes its stream subscription.
+- **Consequences:** The Command Center's hard-coded market-data unavailable tile is replaced by actual backend/stream state. The Market Watch panel is now an integrated read-only workflow, not a placeholder. Chart, order entry, positions, account, risk, and analytics remain separate implementation increments.
+- **Evidence:** PR #43, `ATP_MARKET_WATCH_WORKSPACE_INTEGRATION.md`, `SCREEN_IMPLEMENTATION_REGISTER.md`, Mermaid diagram 14, and Swift tests.
+- **Safety:** No broker dealing or order workflow is exposed. `CAP_ALLOW_TRADING=false` remains unchanged.

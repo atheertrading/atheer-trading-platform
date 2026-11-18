@@ -114,3 +114,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-032 | 2026-11-18 | ATP-OMS-001 OEL-12 authorized OMS lifecycle persistence | Reconciled Library Owner/Developer delegation and Section 18 Q&A (Q1/Q11/Q12/Q16/Q17/Q18/Q20) with canonical Mermaid 04/05/11/12; implemented typed OEL-12 states, source-specific transition policy, risk-gated OMS order persistence, PostgreSQL orders/lifecycle schema, transactional audit/outbox, and tests; PR branch qualification pending. | PR branch `feat/oms-authorized-order-persistence`; ATP_OMS_LIFECYCLE_FOUNDATION; Mermaid 13; EDL-013; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+
+| ATP-2026-11-18-033 | 2026-11-18 | ATP-MARKET-001 Command Center live Market Watch | Inspected ATP-PROMPT-SCREEN-EXEC-001 and Master Visual Design Directive; integrated app-scoped market data and persistent watchlist into Command Center, shared model across Markets/Workspace, added provider-backed quote panel and tests; exact-head CI pending. | PR branch `feat/command-center-live-market-watch`; ATP_MARKET_WATCH_WORKSPACE_INTEGRATION; Screen Implementation Register; Mermaid 14; EDL-014; TASK_REGISTER; IMPLEMENTATION_STATUS |
