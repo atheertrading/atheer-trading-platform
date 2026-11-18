@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { chmod, mkdtemp, rm, stat } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
@@ -67,6 +70,9 @@ async function stopChild(child) {
 
 test("managed backend bootstraps over stdin, binds an ephemeral loopback port, and authenticates IPC", async () => {
   const capability = randomBytes(32).toString("base64url");
+  const credentialDirectory = await mkdtemp(join(tmpdir(), "atheer-backend-ipc-"));
+  await chmod(credentialDirectory, 0o700);
+  const credentialSocketPath = join(credentialDirectory, "broker.sock");
   const child = spawn(process.execPath, [entrypoint], {
     cwd: workingDirectory,
     env: {
@@ -74,6 +80,7 @@ test("managed backend bootstraps over stdin, binds an ephemeral loopback port, a
       NODE_ENV: "test",
       HOST: "127.0.0.1",
       PORT: "0",
+      ATHEER_CREDENTIAL_SOCKET_PATH: credentialSocketPath,
       CAP_ALLOW_TRADING: "false",
     },
     stdio: ["pipe", "pipe", "ignore"],
@@ -84,6 +91,11 @@ test("managed backend bootstraps over stdin, binds an ephemeral loopback port, a
     child.stdin.end(capability + "\n");
     const port = await readyPromise;
     const baseURL = "http://127.0.0.1:" + port;
+
+    const directoryStats = await stat(credentialDirectory);
+    const socketStats = await stat(credentialSocketPath);
+    assert.equal(directoryStats.mode & 0o777, 0o700);
+    assert.equal(socketStats.mode & 0o777, 0o600);
 
     const live = await fetch(baseURL + "/health/live");
     assert.equal(live.status, 200);
@@ -102,5 +114,6 @@ test("managed backend bootstraps over stdin, binds an ephemeral loopback port, a
     assert.equal(JSON.stringify(payload).includes(capability), false);
   } finally {
     await stopChild(child);
+    await rm(credentialDirectory, { recursive: true, force: true });
   }
 });

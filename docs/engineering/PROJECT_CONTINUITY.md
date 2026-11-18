@@ -6,9 +6,9 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `work/local-pr18-qualification` (local qualification branch tracking PR #18 source branch `feat/macos-workspace-visual-foundation`; PR chain #10 → #17 → #18) |
-| Record status | Initial baseline; further source reconciliation required |
-| Last reviewed | 2026-11-17 |
+| Current work branch | `fix/broker-credential-unix-domain-ipc` — Team B backend continuation on PR #66; parallel domain foundation PR #76 is tracked separately |
+| Record status | Active continuity updated through 2026-11-19; source reconciliation and integration qualification remain in progress |
+| Last reviewed | 2026-11-19 |
 
 ## 1. Current verified state
 
@@ -699,3 +699,38 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #64 is the clean replacement for PR #58 and remains draft pending exact-head CI.
 - PRs #55 and #57 remain draft pending exact-head CI. PR #55 still has the P0 broker-credential confidentiality gate.
 - No PR in this stack has been merged in this batch. PR #57 may be integrated into PR #56 after its full macOS/backend checks pass; broker-session and live-stream branches must not be merged until the credential transport gate is resolved.
+
+
+## 2026-11-18 — Batch 055: private broker credential IPC
+
+- Replaced broker credential HTTP POST design with a dedicated per-process Unix-domain socket for connect/disconnect.
+- Native supervisor creates a mode-0700 temporary directory, passes only the socket path in child environment, verifies socket mode 0600 before readiness, and removes the directory after confirmed process exit.
+- Backend UDS requests require the existing 256-bit capability, constant-time validation, strict DEMO-only action/field allowlist, 8 KiB payload cap and bounded timeout. Credentials are never returned or logged.
+- HTTP credential connect/disconnect routes are removed; capability-authenticated session status and market-data HTTP routes remain.
+- Integrated bounded SIGTERM/SIGKILL process shutdown from session 053; app termination waits for confirmed exit.
+- Native and backend tests added. Exact-head CI and owner-Mac DEMO authentication remain pending; no credentials or orders were used.
+- Evidence: `SESSION_2026-11-18_055_PRIVATE_BROKER_CREDENTIAL_IPC.md`; decision EDL-031.
+
+
+## 2026-11-18 — PR #66 private IPC review remediation
+
+- Reviewed the exact PR #66 source and tests. Found recursive self-invocation in the backend UDS test fixture cleanup helper; corrected it to close the fixture server and then remove the temporary directory.
+- Corrected a Swift LocalizedError interpolation defect and added focused XCTest coverage.
+- Commits: `9dbc2ef35fc736f962f6f91b087c3096da346da7`, `f63f806469f980a47c1ee66f2eab6b3deafe39a8`, `8c12e593f118d778e8486a27240bfb12d58d360b`, `4d35e16e9c5ccce319f51366d7854088c5282505`.
+- Current PR #66 head: `4d35e16e9c5ccce319f51366d7854088c5282505`. Exact-head CI is pending; no test/build pass is claimed. Owner-Mac and real DEMO authentication qualification remain pending.
+- PR #66 remains OPEN / DRAFT, stacked on PR #64. Preserve its dependency chain; do not merge while checks are pending.
+- Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no credentials or orders were used.
+
+
+## 2026-11-19 — Backend session-ordering and rate-limit recovery (Session 070)
+
+- Closed a disconnect-ordering race: stream teardown now executes inside the same serialized `BrokerSessionManager` transition as broker-session release. A queued replacement connect cannot be accidentally closed by an earlier IPC disconnect.
+- Added deterministic lifecycle coverage for a blocked stream teardown while a credential replacement is queued; added IPC callback-order coverage.
+- Added bounded REST HTTP 429 recovery in the shared Capital.com client: numeric/HTTP-date `Retry-After`, process-wide cooldown, maximum three retries, full-jitter fallback, and 10-second network timeout per actual attempt.
+- Network timeouts and non-429 failures are not automatically retried. No order/dealing API exists in this read-only adapter.
+- Final timeout-signal refactor received a separate regression assertion. Exact-head CI for commit `dfd0bf238dec3d88e061367251954fc860dffbb4` is required because the session record is an additive documentation commit after that code head.
+- Code-head evidence before the report commit: backend TypeScript build and API suite passed; Repository Hygiene and Local Sync Safety passed; Intel and Apple Silicon were still running. No final report-head Xcode pass is claimed.
+- PR #66 remains Draft, stacked on PR #64, and is not merge-qualified until exact-head macOS checks and cross-workstream dependency reconciliation complete.
+- Evidence: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`; source Q&A Q8/Q9 and ATP-MER-001 Mermaid catalogue reviewed.
+- `CAP_ALLOW_TRADING=false`; DEMO read-only; no credentials or broker orders used.

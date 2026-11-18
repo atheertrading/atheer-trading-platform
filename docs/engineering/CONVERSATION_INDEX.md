@@ -11,6 +11,8 @@ This index records significant engineering discussions and links them to durable
 | ATP-2026-11-16-001 | 2026-11-16 | Public repository establishment | Owner endorsed public `atheer-trading-platform`, federated knowledge authority, extensible AI architecture, and chronological conversation continuity. | Project Continuity; Decision Log |
 | ATP-2026-11-16-002 | 2026-11-16 | Repository bootstrap | Inspected public repository, initial commit, README, default branch, and missing root agent instructions; created governance bootstrap branch. | This bootstrap PR; Project Continuity |
 
+| ATP-2026-11-19-070 | 2026-11-19 | Broker disconnect serialization and REST 429 recovery | Moved stream teardown into the serialized broker-session transition; implemented process-wide Retry-After/jitter cooldown and deterministic tests. Reviewed Library Q8/Q9 and proposed ATP-MER-001 flows; exact-head macOS qualification remains pending. | PR #66; SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY; ATP-ENG-063 (#77) |
+
 ## Session record requirements
 
 For each new substantial session, add one row and preserve chronology. The detailed record should include:
@@ -121,4 +123,9 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-18-051 | 2026-11-18 | Bounded backend shutdown and architecture review | Added bounded/redacted backend shutdown steps and tests; read all five ATP-MER-001 Codex diagrams; recorded the unresolved loopback credential confidentiality gate and PR #57 compile remediation. | PR #55/#57; SESSION_2026-11-18_051_BOUNDED_SHUTDOWN_AND_ARCHITECTURE_REVIEW |
 | ATP-2026-11-18-052 | 2026-11-18 | Official Capital.com API limit verification | Verified current official 10 req/s user limit, 1 req/s session creation, 10-minute session inactivity, 5-minute implementation pings and 40-epic cap; documented future account-switch and OMS quotas. | EDL-029; SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION |
 
-| ATP-2026-11-18-054 | 2026-11-18 | Clean Market Explorer live DEMO quote integration | Rebased by creating a new child branch from current PR #55 head (11 ahead / 0 behind) after PR #58 diverged 34/22 and became non-mergeable; integrated native SSE client, stream view model, 40-epic selection, freshness validation, status events, and accessible token-based UI while preserving original Market Explorer layout. | PR #60; EDL-030; ATP-MKT-007; SESSION_2026-11-18_054_MARKET_EXPLORER_LIVE_STREAM_INTEGRATION |
+| ATP-2026-11-18-054 | 2026-11-18 | Clean Market Explorer live DEMO quote integration | Rebased by creating a new child branch from current PR #55 head (11 ahead / 0 behind) after PR #58 diverged 34/22 and became non-mergeable; integrated native SSE client, stream view model, 40-epic selection, freshness validation, status events, and accessible token-based UI while preserving original Market Explorer layout. | PR #64; EDL-030; ATP-MKT-007; SESSION_2026-11-18_054_MARKET_EXPLORER_LIVE_STREAM_INTEGRATION |
+
+| ATP-2026-11-18-053 | 2026-11-18 | Native backend shutdown outcome qualification | Bounded SIGTERM then SIGKILL supervision, process exit-status handling, app termination gating, and shutdown tests; code carried forward into the private IPC branch. | PR #65; SESSION_2026-11-18_053_NATIVE_SHUTDOWN_OUTCOME_QUALIFICATION |
+| ATP-2026-11-18-055 | 2026-11-18 | Private broker credential IPC | Replaced HTTP credential POSTs with a capability-authenticated Unix-domain socket; private filesystem permissions, bounded protocol, sanitized status, bounded process shutdown and socket cleanup. | PR #65; EDL-031; ATP-SEC-003; SESSION_2026-11-18_055_PRIVATE_BROKER_CREDENTIAL_IPC |
+
+| ATP-2026-11-18-056 | 2026-11-18 | Private broker IPC review remediation | Fixed recursive UDS fixture teardown and Swift rejection-code interpolation; added focused XCTest. Exact-head CI pending. | PR #66; SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW |

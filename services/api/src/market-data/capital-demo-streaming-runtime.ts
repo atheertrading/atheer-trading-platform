@@ -95,6 +95,7 @@ export class CapitalDemoStreamingRuntime {
     private readonly socketFactory: WebSocketFactory = (url) => new WebSocket(url),
     private readonly now: () => number = Date.now,
     private readonly monotonicNow: () => number = () => performance.now(),
+    private readonly random: () => number = Math.random,
   ) {}
 
   status(): MarketDataStreamStatus {
@@ -455,10 +456,17 @@ export class CapitalDemoStreamingRuntime {
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer || this.subscriptions.size === 0) return;
-    const delay = Math.min(
+    const exponentialCapMs = Math.min(
       INITIAL_RECONNECT_DELAY_MS * (2 ** this.reconnectAttempt),
       MAX_RECONNECT_DELAY_MS,
     );
+    // Full jitter prevents many clients from reconnecting in lockstep after
+    // a provider outage. Clamp injected/system randomness to a safe interval.
+    const randomSample = this.random();
+    const boundedSample = Number.isFinite(randomSample)
+      ? Math.min(1, Math.max(0, randomSample))
+      : 0.5;
+    const delay = Math.max(1, Math.floor(boundedSample * exponentialCapMs));
     this.reconnectAttempt += 1;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;

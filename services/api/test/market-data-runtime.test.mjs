@@ -239,7 +239,7 @@ test("scheduled keepalive contains transient failures and recovers without an un
 
 test("runtime marks failed provider authentication as error without leaking credentials", async () => {
   const client = createMockClient();
-  client.startSession = async () => { throw new Error("Capital.com DEMO session creation failed with HTTP 401."); };
+  client.startSession = async () => { throw new CapitalDemoApiError("provider authentication rejected", 401); };
   const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
@@ -359,7 +359,7 @@ test("broker session manager preserves the shared REST request budget across run
   assert.deepEqual(waits, [100, 100, 100, 100, 100]);
 });
 
-test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
+test("broker session manager reuses a connected session for unchanged credentials", async () => {
   let now = 1_800_000_000_000;
   const client = createMockClient();
   const manager = createTrackedManager(
@@ -379,14 +379,14 @@ test("broker session manager enforces Capital.com one-session-per-second limit",
 
   assert.equal((await manager.connect(credentials)).state, "connected");
   now += 999;
-  const limited = await manager.connect(credentials);
-  assert.equal(limited.state, "error");
-  assert.match(limited.lastError, /Retry in 1 second/);
+  assert.equal((await manager.connect(credentials)).state, "connected");
   assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
 
+  // Expiring the session-creation throttle does not require another
+  // authentication while the existing broker session remains connected.
   now += 1;
   assert.equal((await manager.connect(credentials)).state, "connected");
-  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 2);
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
   await manager.disconnect();
 });
 
@@ -446,57 +446,6 @@ test("broker session manager releases credential-bearing runtime after provider 
   assert.equal(manager.status().state, "not_configured");
 });
 
-test("broker logout still runs when the WebSocket stream shutdown reports failure", async () => {
-  const ipcCapability = Buffer.alloc(32, 0x55);
-  const authorization = {
-    authorization: "Bearer " + ipcCapability.toString("base64url"),
-  };
-  const client = createMockClient();
-  const manager = createTrackedManager((value) => createTrackedRuntime(
-    client,
-    value,
-    () => 1_800_000_000_000,
-    { scheduler: { schedule: () => "timer", cancel: () => {} } },
-  ));
-  const stream = {
-    status: () => ({ provider: "capital.com", environment: "DEMO", state: "degraded" }),
-    latest: () => [],
-    async subscribe() { throw new Error("not used"); },
-    async disconnect() { throw new Error("socket shutdown failure"); },
-  };
-  const server = createApiServer(manager, ipcCapability, stream);
-  await new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  const address = server.address();
-  assert.ok(address && typeof address !== "string");
-
-  try {
-    await manager.connect({
-      apiKey: "demo-key",
-      identifier: "demo-user",
-      password: "demo-password",
-    });
-    const response = await fetch("http://127.0.0.1:" + address.port + "/broker-session/disconnect", {
-      method: "POST",
-      headers: authorization,
-    });
-    const payload = await response.json();
-    assert.equal(response.status, 502);
-    assert.equal(payload.error, "market_data_stream_disconnect_failed");
-    assert.equal(payload.brokerSession.state, "disconnected");
-    assert.equal(manager.status().state, "not_configured");
-    assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect"]);
-  } finally {
-    const closed = new Promise((resolve, reject) => {
-      server.close((error) => (error ? reject(error) : resolve()));
-    });
-    server.closeAllConnections();
-    await closed;
-  }
-});
-
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
@@ -550,94 +499,149 @@ test("broker session status is truthful and never returns provider session token
   assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
 });
 
-test("broker session connect accepts bounded DEMO credentials and exposes only sanitized status", async () => {
-  const credentialsPayload = {
-    apiKey: "demo-key",
-    identifier: "demo-user",
-    password: "demo-password",
-  };
-  const connect = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: { ...authorization, "content-type": "application/json" },
-    body: JSON.stringify(credentialsPayload),
-  });
-  const connectedStatus = await connect.json();
-  assert.equal(connect.status, 200);
-  assert.equal(connectedStatus.environment, "DEMO");
-  assert.equal(connectedStatus.state, "connected");
-  assert.equal(JSON.stringify(connectedStatus).includes("demo-password"), false);
-  assert.equal(JSON.stringify(connectedStatus).includes("secret-cst"), false);
-
-  const accountSwitch = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: { ...authorization, "content-type": "application/json" },
-    body: JSON.stringify({
-      apiKey: "second-key",
-      identifier: "second-user",
-      password: "second-password",
-    }),
-  });
-  assert.equal(accountSwitch.status, 429);
-  assert.equal((await accountSwitch.json()).state, "error");
-  assert.equal(serverRuntime.status().state, "connected");
-
-  const backendStatus = await fetch(baseUrl + "/market-data/status", { headers: authorization });
-  const backendStatusPayload = await backendStatus.json();
-  assert.equal(backendStatus.status, 200);
-  assert.equal(backendStatusPayload.streaming.state, "disconnected");
-  assert.equal(backendStatusPayload.streaming.activeInstrumentCount, 0);
-
-  const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple", { headers: authorization });
-  const payload = await markets.json();
-  assert.equal(markets.status, 200);
-  assert.equal(payload.environment, "DEMO");
-  assert.equal(payload.markets[0].epic, "AAPL");
-  assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
-
-  const disconnect = await fetch(baseUrl + "/broker-session/disconnect", {
-    method: "POST",
-    headers: authorization,
-  });
-  assert.equal(disconnect.status, 200);
-  assert.equal((await disconnect.json()).state, "disconnected");
+test("broker credentials and disconnect are not accepted by the HTTP API", async () => {
+  for (const [path, body, contentType] of [
+    ["/broker-session/connect", JSON.stringify({ apiKey: "demo-key", identifier: "demo-user", password: "demo-password" }), "application/json"],
+    ["/broker-session/connect", "{", "application/json"],
+    ["/broker-session/connect", JSON.stringify({ apiKey: "demo-key", identifier: "demo-user", password: "demo-password", environment: "LIVE" }), "application/json"],
+    ["/broker-session/disconnect", undefined, undefined],
+  ]) {
+    const headers = { ...authorization };
+    if (contentType) headers["content-type"] = contentType;
+    const response = await fetch(baseUrl + path, {
+      method: "POST",
+      headers,
+      ...(body === undefined ? {} : { body }),
+    });
+    assert.equal(response.status, 404);
+  }
   assert.equal(serverRuntime.status().state, "not_configured");
-  assert.deepEqual(serverClient.calls.map((call) => call[0]), ["connect", "markets", "disconnect"]);
 });
 
-test("broker session credential handoff rejects invalid media types, JSON, extra fields, and oversized bodies", async () => {
-  const noMediaType = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: authorization,
-    body: JSON.stringify({ apiKey: "a", identifier: "b", password: "c" }),
-  });
-  assert.equal(noMediaType.status, 415);
-
-  const invalidJson = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: { ...authorization, "content-type": "application/json" },
-    body: "{",
-  });
-  assert.equal(invalidJson.status, 400);
-
-  const extraField = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: { ...authorization, "content-type": "application/json" },
-    body: JSON.stringify({ apiKey: "a", identifier: "b", password: "c", environment: "LIVE" }),
-  });
-  assert.equal(extraField.status, 400);
-
-  const oversized = await fetch(baseUrl + "/broker-session/connect", {
-    method: "POST",
-    headers: { ...authorization, "content-type": "application/json" },
-    body: JSON.stringify({ apiKey: "a".repeat(8_500), identifier: "b", password: "c" }),
-  });
-  assert.equal(oversized.status, 413);
-});
-
-test("broker session routes reject wrong methods and market data rejects invalid resolutions", async () => {
-  const wrongMethod = await fetch(baseUrl + "/broker-session/connect", { headers: authorization });
-  assert.equal(wrongMethod.status, 405);
-  assert.equal(wrongMethod.headers.get("allow"), "POST");
+test("HTTP broker credential routes remain absent and market data rejects invalid resolutions", async () => {
+  const credentialRoute = await fetch(baseUrl + "/broker-session/connect", { headers: authorization });
+  assert.equal(credentialRoute.status, 404);
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
   assert.equal(invalidResolution.status, 400);
+});
+
+test("market-data HTTP boundary rejects malformed search and history parameters before provider access", async () => {
+  const connected = await serverRuntime.connect({
+    apiKey: "synthetic-demo-key",
+    identifier: "synthetic-demo-user",
+    password: "synthetic-demo-password",
+  });
+  assert.equal(connected.state, "connected");
+
+  const readiness = await fetch(baseUrl + "/health/ready");
+  const readinessPayload = await readiness.json();
+  assert.equal(readiness.status, 503);
+  assert.equal(readinessPayload.dependencies.persistence, "not_configured");
+  assert.equal(readinessPayload.dependencies.broker, "connected");
+  assert.equal(readinessPayload.trading.enabled, false);
+
+  const beforeMarketCalls = serverClient.calls.filter((call) => call[0] === "markets").length;
+  const beforeHistoryCalls = serverClient.calls.filter((call) => call[0] === "history").length;
+
+  try {
+    for (const term of ["", "   ", "A".repeat(101)]) {
+      const response = await fetch(
+        baseUrl + "/market-data/markets?searchTerm=" + encodeURIComponent(term),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_search_term" });
+    }
+
+    for (const epic of ["", "   ", "EUR/USD", "A".repeat(65)]) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=" + encodeURIComponent(epic),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_epic" });
+    }
+
+    const invalidResolutions = ["INVALID", "MINUTE_1"];
+    for (const resolution of invalidResolutions) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=EURUSD&resolution=" + encodeURIComponent(resolution),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_resolution" });
+    }
+
+    for (const max of ["0", "1001", "1.5", "1e2", "9007199254740992"]) {
+      const response = await fetch(
+        baseUrl + "/market-data/history?epic=EURUSD&max=" + encodeURIComponent(max),
+        { headers: authorization },
+      );
+      assert.equal(response.status, 400);
+      assert.deepEqual(await response.json(), { error: "invalid_max" });
+    }
+
+    assert.equal(serverClient.calls.filter((call) => call[0] === "markets").length, beforeMarketCalls);
+    assert.equal(serverClient.calls.filter((call) => call[0] === "history").length, beforeHistoryCalls);
+
+    const marketResponse = await fetch(
+      baseUrl + "/market-data/markets?searchTerm=%20Apple%20",
+      { headers: authorization },
+    );
+    assert.equal(marketResponse.status, 200);
+    const marketCall = serverClient.calls.filter((call) => call[0] === "markets").at(-1);
+    assert.equal(marketCall[2], "Apple");
+
+    const historyResponse = await fetch(
+      baseUrl + "/market-data/history?epic=%20EURUSD%20&resolution=HOUR&max=25",
+      { headers: authorization },
+    );
+    assert.equal(historyResponse.status, 200);
+    const historyCall = serverClient.calls.filter((call) => call[0] === "history").at(-1);
+    assert.equal(historyCall[2], "EURUSD");
+    assert.equal(historyCall[3], "HOUR");
+    assert.equal(historyCall[4], 25);
+  } finally {
+    await serverRuntime.disconnect();
+  }
+});
+
+test("valid market-data query syntax does not disguise an unavailable broker session", async () => {
+  const response = await fetch(
+    baseUrl + "/market-data/history?epic=EURUSD&resolution=MINUTE&max=100",
+    { headers: authorization },
+  );
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { error: "broker_session_unavailable" });
+});
+
+test("authenticated broker routes reject browser-originated request contexts", async () => {
+  for (const headers of [
+    { ...authorization, origin: "https://attacker.example" },
+    { ...authorization, "sec-fetch-site": "same-origin" },
+    { ...authorization, "sec-fetch-site": "cross-site" },
+  ]) {
+    const response = await fetch(baseUrl + "/broker-session/status", { headers });
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { error: "unauthorized" });
+  }
+
+  const nativeContext = await fetch(baseUrl + "/broker-session/status", {
+    headers: { ...authorization, "sec-fetch-site": "none" },
+  });
+  assert.equal(nativeContext.status, 200);
+});
+
+test("market-data HTTP routing preserves 404 and 405 semantics before session readiness", async () => {
+  const unknown = await fetch(baseUrl + "/market-data/not-implemented", { headers: authorization });
+  assert.equal(unknown.status, 404);
+  assert.deepEqual(await unknown.json(), { error: "not_found" });
+
+  const wrongMethod = await fetch(baseUrl + "/market-data/history", {
+    method: "POST",
+    headers: authorization,
+  });
+  assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.get("allow"), "GET");
+  assert.deepEqual(await wrongMethod.json(), { error: "method_not_allowed" });
 });

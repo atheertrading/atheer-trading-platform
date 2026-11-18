@@ -1,7 +1,7 @@
 # ATHEER Trading — Implementation Status
 
-**Snapshot date:** 2026-11-17  
-**Evidence scope:** New public repository inspection and available historical project summaries.
+**Snapshot date:** 2026-11-19  
+**Evidence scope:** Current GitHub source/PR inspection, exact-head CI runs identified below, and the available owner Library Q&A/architecture archive.
 
 ## Status definitions
 
@@ -504,3 +504,33 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Clean live quote replacement is draft PR #64, 11 commits ahead / 0 behind its parent at integration.
 - PR #55, #57 and #64 are open draft PRs with CI queued; no merge claimed.
 - P0 broker credential confidentiality remains unresolved.
+
+
+## 2026-11-18 — Private broker credential transport
+
+- Native broker authentication now uses a capability-authenticated Unix-domain socket, not HTTP credential POSTs.
+- Parent directory mode 0700; socket mode 0600; bounded path, payload, timeouts and constant-time capability validation.
+- HTTP credential connect/disconnect routes removed. Session status and market data remain on authenticated loopback HTTP.
+- Bounded SIGTERM/SIGKILL shutdown and socket-directory cleanup integrated.
+- Backend and native tests added; exact-head CI and owner-Mac DEMO authentication remain pending.
+
+
+## 2026-11-18 — PR #66 private IPC review remediation
+
+- Backend UDS test fixture teardown corrected: close the server, then remove the temporary directory; recursive self-await removed.
+- Swift UDS rejection diagnostic interpolation corrected; focused XCTest added.
+- Changes committed on PR #66 branch. Exact-head CI is pending; implementation is not yet TESTED/VERIFIED on the updated head.
+- Owner-Mac build/runtime, Keychain persistence and authenticated Capital.com DEMO remain pending.
+
+
+## 2026-11-19 — Verified backend lifecycle and rate-limit continuation
+
+- **VERIFIED AT CODE HEAD `dfc30ef70b2242166d9269cb4dd9e850b80df288`:** the Backend Toolchain type-check, build, and API test command passed; Repository Hygiene and Local Sync Safety passed.
+- **VERIFIED SOURCE:** `BrokerSessionManager.disconnect(beforeSessionReplacement?)` serializes market-data stream teardown and broker-session release within one transition queue. UDS disconnect delegates the stream callback through this method.
+- **VERIFIED SOURCE:** shared REST transport recognizes 429, numeric/date Retry-After (capped at 60 seconds), process-wide cooldown, bounded exponential full jitter (maximum three retries), and distinct 10-second timeout per network attempt. No automatic retry for network/other HTTP failures.
+- **VERIFIED TESTS IN THE SAME CODE-HEAD RUN:** disconnect/replace ordering, UDS callback order, numeric and HTTP-date Retry-After, jitter, bounded retry count, HTTP 503 non-retry, timeout-signal identity.
+- **PENDING EXACT-HEAD REQUALIFICATION:** test-only follow-up at `dfd0bf238dec3d88e061367251954fc860dffbb4` and subsequent documentation commits require a fresh complete CI result. Intel and Apple Silicon results for the preceding code head were still in progress at last inspection.
+- **PR #66:** OPEN / DRAFT, stacked on PR #64. It contains both backend and native macOS source; Team B has modified only `services/api/**` plus backend documentation in this continuation. No merge claimed.
+- **Trading safety:** Capital.com DEMO read-only only; no order/position dealing APIs, OMS, RiskEngine, or Execution Gateway added; `CAP_ALLOW_TRADING=false`.
+- **Owner-Mac qualification:** local build/launch, Keychain persistence, Darwin UDS lifecycle, real DEMO authentication and real provider quote acceptance remain NOT VERIFIED in this session.
+- Evidence: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`.

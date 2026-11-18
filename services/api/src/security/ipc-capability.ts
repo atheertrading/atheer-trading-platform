@@ -66,17 +66,13 @@ export async function readIPCStartupCapability(
   return capability;
 }
 
-/** Constant-time comparison for the private app-to-backend bearer capability. */
-export function hasValidIPCCapability(
-  request: IncomingMessage,
+/** Constant-time comparison for a supplied base64url capability value. */
+export function hasValidIPCCapabilityValue(
+  supplied: string | undefined,
   expectedCapability: Uint8Array | undefined,
 ): boolean {
   if (!expectedCapability || expectedCapability.byteLength !== CAPABILITY_BYTES) return false;
-  const authorization = request.headers.authorization;
-  if (typeof authorization !== "string" || !authorization.startsWith("Bearer ")) return false;
-
-  const supplied = authorization.slice("Bearer ".length);
-  if (!/^[A-Za-z0-9_-]{43}$/.test(supplied)) return false;
+  if (typeof supplied !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(supplied)) return false;
 
   let candidate: Uint8Array;
   try {
@@ -93,4 +89,17 @@ export function hasValidIPCCapability(
   candidate.fill(0);
   expected.fill(0);
   return valid;
+}
+
+/** Constant-time comparison for the private app-to-backend bearer capability. */
+export function hasValidIPCCapability(
+  request: IncomingMessage,
+  expectedCapability: Uint8Array | undefined,
+): boolean {
+  const authorization = request.headers.authorization;
+  if (typeof authorization !== "string" || !authorization.startsWith("Bearer ")) return false;
+  return hasValidIPCCapabilityValue(
+    authorization.slice("Bearer ".length),
+    expectedCapability,
+  );
 }

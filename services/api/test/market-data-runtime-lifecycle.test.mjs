@@ -25,19 +25,30 @@ test("concurrent connect requests share one provider session creation", async ()
   assert.equal(starts, 1);
   assert.equal(first.state, "connected");
   assert.equal(second.state, "connected");
+
+  // The default runtime scheduler starts a real keepalive interval after
+  // authentication. Explicitly stop it so this test worker can exit cleanly.
+  await runtime.disconnect();
 });
 
 test("disconnect during authentication invalidates and closes the late session", async () => {
   let resolveSession;
+  let signalSessionStarted;
   let ended = 0;
+  const sessionStarted = new Promise((resolve) => { signalSessionStarted = resolve; });
   const client = {
     startSession() {
+      signalSessionStarted();
       return new Promise((resolve) => { resolveSession = resolve; });
     },
     async endSession() { ended += 1; },
   };
   const runtime = new CapitalDemoRuntime(client, credentials);
   const connecting = runtime.connect();
+
+  // Wait until the provider request is actually in flight; disconnecting
+  // before this barrier only tests cancellation before authentication starts.
+  await sessionStarted;
   const disconnecting = runtime.disconnect();
   resolveSession(session);
   await disconnecting;

@@ -4,7 +4,6 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { CapitalDemoCredentials } from "./market-data/capital-demo-client.ts";
 import type { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import type {
   CapitalDemoStreamingRuntime,
@@ -15,7 +14,32 @@ import { hasValidIPCCapability } from "./security/ipc-capability.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
-const MAX_CREDENTIAL_BODY_BYTES = 8_192;
+const MAX_SEARCH_TERM_LENGTH = 100;
+const MAX_HISTORY_RECORDS = 1_000;
+const ALLOWED_HISTORY_RESOLUTIONS = [
+  "MINUTE",
+  "MINUTE_5",
+  "MINUTE_15",
+  "MINUTE_30",
+  "HOUR",
+  "HOUR_4",
+  "DAY",
+  "WEEK",
+] as const;
+type HistoryResolution = typeof ALLOWED_HISTORY_RESOLUTIONS[number];
+
+function isValidEpic(value: string): boolean {
+  return /^[A-Za-z0-9_.-]{1,64}$/.test(value);
+}
+
+function isSessionUnavailable(runtime: BrokerSessionManager): boolean {
+  const state = runtime.status().state;
+  return state === "not_configured" ||
+    state === "disconnected" ||
+    state === "connecting" ||
+    state === "degraded" ||
+    state === "error";
+}
 
 interface LiveHealthResponse {
   readonly status: "ok";
@@ -29,20 +53,12 @@ interface ReadinessResponse {
   readonly timestamp: string;
   readonly dependencies: {
     readonly persistence: "not_configured";
-    readonly broker: "not_configured";
+    readonly broker: "not_configured" | "disconnected" | "connecting" | "connected" | "degraded" | "error";
   };
   readonly trading: {
     readonly enabled: false;
     readonly status: "disabled";
   };
-}
-class RequestBodyError extends Error {
-  constructor(
-    readonly statusCode: number,
-    readonly errorCode: string,
-  ) {
-    super(errorCode);
-  }
 }
 
 function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
@@ -57,89 +73,6 @@ function hasSafeNativeRequestContext(request: IncomingMessage): boolean {
   const origin = request.headers.origin;
   const fetchSite = request.headers["sec-fetch-site"];
   return origin === undefined && (fetchSite === undefined || fetchSite === "none");
-}
-
-function headerValue(value: string | string[] | undefined): string | undefined {
-  return typeof value === "string" ? value : undefined;
-}
-
-function brokerSessionResponseStatus(
-  status: ReturnType<BrokerSessionManager["status"]>,
-): number {
-  if (status.state === "connected") return 200;
-  if (
-    status.lastError?.includes("HTTP 401") ||
-    status.lastError?.includes("rejected or expired")
-  ) return 401;
-  if (status.lastError?.includes("HTTP 403")) return 403;
-  if (
-    status.lastError?.includes("HTTP 429") ||
-    status.lastError?.includes("rate-limited")
-  ) return 429;
-  return 503;
-}
-
-
-async function readBrokerCredentials(request: IncomingMessage): Promise<CapitalDemoCredentials> {
-  const contentType = headerValue(request.headers["content-type"]);
-  if (contentType?.split(";")[0]?.trim().toLowerCase() !== "application/json") {
-    throw new RequestBodyError(415, "unsupported_media_type");
-  }
-
-  const contentLength = headerValue(request.headers["content-length"]);
-  if (contentLength !== undefined) {
-    if (!/^\d+$/.test(contentLength)) {
-      throw new RequestBodyError(400, "invalid_content_length");
-    }
-    if (Number(contentLength) > MAX_CREDENTIAL_BODY_BYTES) {
-      throw new RequestBodyError(413, "payload_too_large");
-    }
-  }
-
-  const decoder = new TextDecoder();
-  let body = "";
-  let totalBytes = 0;
-  for await (const chunk of request) {
-    totalBytes += chunk.byteLength;
-    if (totalBytes > MAX_CREDENTIAL_BODY_BYTES) {
-      throw new RequestBodyError(413, "payload_too_large");
-    }
-    body += decoder.decode(chunk, { stream: true });
-  }
-  body += decoder.decode();
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(body);
-  } catch {
-    body = "";
-    throw new RequestBodyError(400, "invalid_json");
-  }
-  body = "";
-
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  const payload = parsed as Record<string, unknown>;
-  const allowedKeys = ["apiKey", "identifier", "password"];
-  const keys = Object.keys(payload);
-  if (keys.length !== allowedKeys.length || keys.some((key) => !allowedKeys.includes(key))) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  const apiKey = typeof payload.apiKey === "string" ? payload.apiKey.trim() : "";
-  const identifier = typeof payload.identifier === "string" ? payload.identifier.trim() : "";
-  const password = typeof payload.password === "string" ? payload.password : "";
-  if (
-    apiKey.length === 0 || apiKey.length > 512 ||
-    identifier.length === 0 || identifier.length > 512 ||
-    password.length === 0 || password.length > 2_048
-  ) {
-    throw new RequestBodyError(400, "invalid_credentials_payload");
-  }
-
-  return { apiKey, identifier, password };
 }
 
 export function createApiServer(
@@ -193,7 +126,10 @@ export function createApiServer(
       status: "not_ready",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
-      dependencies: { persistence: "not_configured", broker: "not_configured" },
+      dependencies: {
+        persistence: "not_configured",
+        broker: marketData?.status().state ?? "not_configured",
+      },
       trading: { enabled: false, status: "disabled" },
     };
     sendJson(response, 503, payload);
@@ -216,58 +152,6 @@ async function handleMarketDataRequest(
       environment: "DEMO",
       state: "not_configured",
     });
-    return;
-  }
-
-  if (pathname === "/broker-session/connect" && method === "POST") {
-    if (!runtime) {
-      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
-      return;
-    }
-    try {
-      const credentials = await readBrokerCredentials(request);
-      const status = await runtime.connect(credentials, async () => {
-        await streamRuntime?.disconnect();
-      });
-      sendJson(response, brokerSessionResponseStatus(status), status);
-    } catch (error) {
-      if (error instanceof RequestBodyError) {
-        sendJson(response, error.statusCode, { error: error.errorCode });
-        return;
-      }
-      sendJson(response, 502, { error: "broker_session_connect_failed" });
-    }
-    return;
-  }
-
-  if (pathname === "/broker-session/disconnect" && method === "POST") {
-    if (!runtime) {
-      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
-      return;
-    }
-    let streamDisconnectFailed = false;
-    try {
-      await streamRuntime?.disconnect();
-    } catch {
-      streamDisconnectFailed = true;
-    }
-
-    try {
-      const status = await runtime.disconnect();
-      if (streamDisconnectFailed) {
-        sendJson(response, 502, {
-          error: "market_data_stream_disconnect_failed",
-          brokerSession: status,
-        });
-        return;
-      }
-      sendJson(response, 200, status);
-    } catch {
-      sendJson(response, 502, {
-        error: "broker_session_disconnect_failed",
-        streamingDisconnectFailed: streamDisconnectFailed,
-      });
-    }
     return;
   }
 
@@ -362,78 +246,97 @@ async function handleMarketDataRequest(
     return;
   }
 
-  if (!runtime) {
-    sendJson(response, 503, { error: "broker_session_manager_unavailable" });
-    return;
-  }
-
-  try {
-    if (pathname === "/market-data/markets" && method === "GET") {
-      const searchTerm = url.searchParams.get("searchTerm") ?? "";
-      const result = await runtime.getMarkets(searchTerm);
-      sendJson(response, 200, {
-        provider: "capital.com",
-        environment: "DEMO",
-        ...result,
-      });
-      return;
-    }
-    if (pathname === "/market-data/history" && method === "GET") {
-      const epic = url.searchParams.get("epic") ?? "";
-      const resolution = url.searchParams.get("resolution") ?? "MINUTE";
-      const allowedResolutions = [
-        "MINUTE",
-        "MINUTE_5",
-        "MINUTE_15",
-        "MINUTE_30",
-        "HOUR",
-        "HOUR_4",
-        "DAY",
-        "WEEK",
-      ];
-      if (!allowedResolutions.includes(resolution)) {
-        sendJson(response, 400, { error: "invalid_resolution" });
-        return;
-      }
-      const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\d+$/.test(rawMax)) {
-        sendJson(response, 400, { error: "invalid_max" });
-        return;
-      }
-      const result = await runtime.getPriceHistory(
-        epic,
-        resolution as "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
-        Number(rawMax),
-      );
-      sendJson(response, 200, {
-        provider: "capital.com",
-        environment: "DEMO",
-        ...result,
-      });
-      return;
-    }
-  } catch (error) {
-    const message = error instanceof CapitalDemoApiError
-      ? error.message
-      : "market_data_request_failed";
-    sendJson(response, 502, { error: message });
-    return;
-  }
-
-  const allowedMethod = pathname === "/broker-session/connect" ||
-      pathname === "/broker-session/disconnect"
-    ? "POST"
-    : pathname === "/broker-session/status" ||
+  const isMarketSearch = pathname === "/market-data/markets";
+  const isMarketHistory = pathname === "/market-data/history";
+  const allowedMethod = pathname === "/broker-session/status" ||
       pathname === "/market-data/status" ||
       pathname === "/market-data/markets" ||
       pathname === "/market-data/history" ||
       pathname === "/market-data/stream"
       ? "GET"
       : undefined;
-  if (allowedMethod) {
-    response.setHeader("allow", allowedMethod);
+
+  if (!isMarketSearch && !isMarketHistory) {
+    if (allowedMethod) {
+      response.setHeader("allow", allowedMethod);
+      sendJson(response, 405, { error: "method_not_allowed" });
+    } else {
+      sendJson(response, 404, { error: "not_found" });
+    }
+    return;
+  }
+
+  if (method !== "GET") {
+    response.setHeader("allow", "GET");
     sendJson(response, 405, { error: "method_not_allowed" });
     return;
   }
-  sendJson(response, 404, { error: "not_found" });
+
+  let searchTerm: string | undefined;
+  let epic: string | undefined;
+  let resolution: HistoryResolution | undefined;
+  let max: number | undefined;
+
+  if (isMarketSearch) {
+    searchTerm = (url.searchParams.get("searchTerm") ?? "").trim();
+    if (searchTerm.length < 1 || searchTerm.length > MAX_SEARCH_TERM_LENGTH) {
+      sendJson(response, 400, { error: "invalid_search_term" });
+      return;
+    }
+  } else {
+    epic = (url.searchParams.get("epic") ?? "").trim();
+    if (!isValidEpic(epic)) {
+      sendJson(response, 400, { error: "invalid_epic" });
+      return;
+    }
+
+    const rawResolution = url.searchParams.get("resolution") ?? "MINUTE";
+    if (!ALLOWED_HISTORY_RESOLUTIONS.includes(rawResolution as HistoryResolution)) {
+      sendJson(response, 400, { error: "invalid_resolution" });
+      return;
+    }
+    resolution = rawResolution as HistoryResolution;
+
+    const rawMax = url.searchParams.get("max") ?? "100";
+    max = Number(rawMax);
+    if (
+      !/^\d+$/.test(rawMax) ||
+      !Number.isSafeInteger(max) ||
+      max < 1 ||
+      max > MAX_HISTORY_RECORDS
+    ) {
+      sendJson(response, 400, { error: "invalid_max" });
+      return;
+    }
+  }
+
+  if (!runtime || isSessionUnavailable(runtime)) {
+    sendJson(response, 503, { error: "broker_session_unavailable" });
+    return;
+  }
+
+  try {
+    if (isMarketSearch) {
+      const result = await runtime.getMarkets(searchTerm!);
+      sendJson(response, 200, {
+        provider: "capital.com",
+        environment: "DEMO",
+        ...result,
+      });
+      return;
+    }
+
+    const result = await runtime.getPriceHistory(epic!, resolution!, max!);
+    sendJson(response, 200, {
+      provider: "capital.com",
+      environment: "DEMO",
+      ...result,
+    });
+  } catch (error) {
+    const message = error instanceof CapitalDemoApiError
+      ? error.message
+      : "market_data_request_failed";
+    sendJson(response, 502, { error: message });
+  }
+
 }

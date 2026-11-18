@@ -39,3 +39,53 @@ declare module "node:process" {
   export default process;
   export const env: Readonly<Record<string, string | undefined>>;
 }
+
+
+declare module "node:buffer" {
+  export class Buffer extends Uint8Array {
+    static alloc(size: number): Buffer;
+    static from(value: string | Uint8Array, encoding?: string): Buffer;
+    static concat(list: readonly Uint8Array[], totalLength?: number): Buffer;
+    static byteLength(value: string, encoding?: string): number;
+    toString(encoding?: string): string;
+  }
+}
+
+declare module "node:fs/promises" {
+  export interface Stats {
+    readonly mode: number;
+    isDirectory(): boolean;
+  }
+  export function chmod(path: string, mode: number): Promise<void>;
+  export function lstat(path: string): Promise<Stats>;
+  export function stat(path: string): Promise<Stats>;
+  export function unlink(path: string): Promise<void>;
+}
+
+declare module "node:path" {
+  export function dirname(path: string): string;
+}
+
+declare module "node:net" {
+  import type { Buffer } from "node:buffer";
+
+  export interface Socket {
+    readonly destroyed: boolean;
+    setNoDelay(noDelay?: boolean): this;
+    setTimeout(timeout: number, callback?: () => void): this;
+    on(event: "close" | "end", listener: () => void): this;
+    on(event: "error", listener: (error: Error) => void): this;
+    on(event: "data", listener: (chunk: Buffer) => void): this;
+    end(data?: string | Uint8Array): this;
+    destroy(): this;
+  }
+
+  export interface Server {
+    once(event: "error", listener: (error: Error) => void): this;
+    removeListener(event: "error", listener: (error: Error) => void): this;
+    listen(path: string, callback?: () => void): this;
+    close(callback?: (error?: Error) => void): this;
+  }
+
+  export function createServer(listener: (socket: Socket) => void): Server;
+}

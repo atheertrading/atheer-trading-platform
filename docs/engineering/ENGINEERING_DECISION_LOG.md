@@ -218,3 +218,26 @@ The native Market Explorer consumes broker-normalized market data through a loca
 The UI must preserve the shared ATHEER design-token system, responsive layouts and accessibility. It may display timestamped DEMO quotes and quality state but has no order-intent, OMS, execution, or strategy authority. Search results remain metadata-only. A future chart engine may consume this stream through a separate market-data abstraction; it must not turn this UI into an execution path.
 
 This decision does not resolve the separate P0 broker-credential confidentiality issue: credential handoff remains outside the HTTP loopback API and requires private IPC (e.g. stdio RPC or a protected Unix-domain channel) before secure authenticated broker connectivity is qualified.
+
+
+## EDL-031 — Broker credentials use private Unix-domain IPC (2026-11-18)
+
+Broker API key, identifier and password must never be sent in a loopback HTTP request body, command-line argument, or child-process environment. Credential connect/disconnect operations use a per-process Unix-domain socket created by the native supervisor. The parent directory is mode 0700, the socket is mode 0600, the request includes the existing 256-bit process capability, and the backend performs constant-time capability validation. The socket protocol is bounded, DEMO-only, action-allowlisted and returns sanitized status only.
+
+The native supervisor owns the socket directory lifecycle, validates the Darwin socket-path limit, verifies socket permissions before reporting readiness, and removes the directory only after confirmed child termination. HTTP remains capability-authenticated for non-secret status and market-data operations; HTTP credential connect/disconnect routes are removed.
+
+This decision supersedes the earlier open design choice between private stdio RPC and a protected Unix-domain channel. UDS is selected because it separates credential transport from readiness/log output and has explicit filesystem permissions and lifecycle ownership. LIVE execution remains disabled.
+
+
+## EDL-032 — Centralized Capital.com 429 recovery (2026-11-19)
+
+The shared Capital.com REST client remains the single process-level request scheduler. In addition to its 100 ms request-start spacing and independent one-second session-creation throttle, it observes HTTP 429 responses and applies one shared cooldown to subsequent REST requests.
+
+- Prefer numeric-seconds or HTTP-date `Retry-After` values; bound the server-directed delay to 60 seconds.
+- If the header is absent or invalid, use exponential full jitter.
+- Limit each request to three 429 retries.
+- Apply a fresh 10-second timeout to each network attempt, separately from the server-directed wait.
+- Do not automatically retry network timeouts or other uncertain transport failures.
+- Future order/dealing methods must not inherit this retry behavior without explicit idempotency, acknowledgement, and reconciliation semantics. A 429 refusal is distinct from an ambiguous execution timeout.
+
+This decision governs only the current read-only Capital.com DEMO adapter and session operations. It does not introduce OMS or broker-dealing capability. Evidence and qualification scope: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`.
