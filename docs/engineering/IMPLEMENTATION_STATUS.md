@@ -479,3 +479,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - **Mermaid architecture:** read all five ATP-MER-001 sources from Library Codex.zip. They are proposed target architecture; syntax validation and deployed implementation are not claimed.
 - **Credential handoff confidentiality:** unresolved. Authenticated loopback HTTP does not encrypt API-key/login/password payloads. Keep broker stack blocked until a private local IPC transport or an explicitly accepted threat boundary is in place.
 - **Broker DEMO / LIVE:** no real DEMO authentication was performed. LIVE/dealing/trading remain disabled; `CAP_ALLOW_TRADING=false`.
+
+
+## 2026-11-18 — Official Capital.com API limit verification
+
+- Verified official current limits: 10 REST requests/second per user; 1 `POST /session`/second per API key; 10-minute REST and WebSocket session inactivity/duration; ping at least every 10 minutes; maximum 40 WebSocket market-data epics; 1,000 DEMO position/working-order requests per hour.
+- Code alignment: shared REST client spaces request starts by 100 ms; session creation is throttled to 1 second; REST and WebSocket pings run every 5 minutes; stream subscription cap is 40.
+- Account-switch interruption is documented; account-switch support remains unqualified. Future OMS must implement the endpoint-specific order budget.
+- Evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md` and EDL-029.
