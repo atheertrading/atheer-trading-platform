@@ -7,12 +7,14 @@ private final class BrokerAuthenticationURLProtocol: URLProtocol {
     private static var responseStatus = 200
     private static var responseBody = Data()
     private static var captured: [URLRequest] = []
+    private static var capturedBodies: [Data?] = []
 
     static func configure(status: Int, body: Data) {
         lock.lock()
         responseStatus = status
         responseBody = body
         captured = []
+        capturedBodies = []
         lock.unlock()
     }
 
@@ -22,6 +24,30 @@ private final class BrokerAuthenticationURLProtocol: URLProtocol {
         return captured
     }
 
+    static func capturedRequestBody(at index: Int = 0) -> Data? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard capturedBodies.indices.contains(index) else { return nil }
+        return capturedBodies[index]
+    }
+
+    private static func readBody(from request: URLRequest) -> Data? {
+        if let body = request.httpBody { return body }
+        guard let stream = request.httpBodyStream else { return nil }
+        stream.open()
+        defer { stream.close() }
+        var body = Data()
+        var buffer = [UInt8](repeating: 0, count: 4_096)
+        while stream.hasBytesAvailable {
+            let count = stream.read(&buffer, maxLength: buffer.count)
+            if count < 0 { return nil }
+            if count == 0 { break }
+            body.append(buffer, count: count)
+            if body.count > 8 * 1_024 { return nil }
+        }
+        return body
+    }
+
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
@@ -29,7 +55,9 @@ private final class BrokerAuthenticationURLProtocol: URLProtocol {
         Self.lock.lock()
         let status = Self.responseStatus
         let body = Self.responseBody
+        let requestBody = Self.readBody(from: request)
         Self.captured.append(request)
+        Self.capturedBodies.append(requestBody)
         Self.lock.unlock()
 
         guard let url = request.url,
