@@ -108,3 +108,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-045 | 2026-11-18 | PR #48 integration and Capital.com session-orchestration remediation | Merged PR #48 after exact-head CI/CodeQL/Local Sync Safety; inspected Library Q5/Q6/Q10 and Mermaid manual-intervention/emergency-recovery workflows; fixed scheduled keepalive rejection containment and added a recovery regression test on PR #49; exact-head CI pending and branch remains stacked on PR #37. | PR #48/#49; EDL-022–024; ATP-BRK-002/003; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; SESSION_2026-11-18_045_ENGINEERING_CONTINUATION |
+
+
+| ATP-2026-11-18-046 | 2026-11-18 | ATP-BRK-002 backend IPC capability security slice | Implemented PR #51 private-stdin 256-bit capability bootstrap, constant-time Bearer enforcement for broker market-data routes, fail-closed tests and local dev bootstrap. Parent-head backend tests/typecheck and CodeQL passed; current-head Local Sync Safety passed. Do not merge until Swift process supervisor, authenticated client and Keychain credential handoff are implemented. | PR #51; EDL-025; ATP-BRK-002; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; SESSION_2026-11-18_046_BROKER_IPC_CAPABILITY |

@@ -458,3 +458,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Local Sync Safety `44266234099` passed. Exact-head CI `44266234067` remains queued/in progress at report time; backend type-check passed, while backend tests and macOS jobs remain unverified.
 - PR #49 is not merge-ready for `main`: it is stacked on PR #37 and the feature branch is 106 commits ahead / 34 behind current `main`. ATP-BRK-002 remains a mandatory prerequisite.
 - No owner-Mac Xcode build/runtime, Keychain helper, secure IPC, or authentic Capital.com DEMO qualification is claimed.
+
+
+## 2026-11-18 — ATP-BRK-002 backend IPC capability slice
+
+- PR #51 current head: `1e312352696bcc5e18ba00a15dc426d37aa26c5a`.
+- Implemented backend stdin bootstrap for a canonical 256-bit capability and constant-time Bearer authentication on all broker market-data routes.
+- Added fail-closed unauthorized behavior, bounded bootstrap input, buffer clearing, deterministic tests, and a private local development bootstrap script.
+- CI run `44268533151` on parent head `df97d30`: backend type-check/tests and repository hygiene passed; CodeQL `44268533257` passed. Mac jobs were cancelled, not passed. Current head Local Sync Safety `44268907711` passed; full exact-head CI remains unverified.
+- Do not merge PR #51 until the Swift app-side process supervisor and authenticated market-data client are implemented. Current native client does not send the capability.
+- Broker credential storage and session ownership are not yet migrated: backend environment credentials remain; Keychain bridge and canonical CMS are pending.

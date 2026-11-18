@@ -647,3 +647,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - ATP-BRK-003 is partially implemented in PR #49: one-second sequential session-creation throttling per runtime and five-minute REST keepalive. Cross-runtime/API-key throttling under the CMS, priority subscription allocation, account-switch restoration and utilization metrics remain open.
 - Hosted CI is not owner-Mac qualification. This session did not access the local Mac shell, inspect the current local worktree, run local Xcode, enter broker credentials, or establish a real Capital.com DEMO session.
 - Next implementation gate: complete ATP-BRK-002 secure backend CMS/session ownership and authenticated app-to-backend IPC on a branch based on current `main`; then prepare a preservation-first reconstruction/integration of the diverged PR #37 stack.
+
+
+## 2026-11-18 — ATP-BRK-002 backend IPC security slice
+
+- PR #51 opened from current main at head `1e312352696bcc5e18ba00a15dc426d37aa26c5a`.
+- Backend now requires a 256-bit capability delivered over private stdin before starting; all `/market-data/*` routes require Bearer authentication with constant-time comparison. Startup input is bounded and temporary byte buffers are cleared; capability is cleared at shutdown.
+- Local `make backend-start` now creates a unique temporary development capability directory/file with restrictive permissions and removes it at exit.
+- Backend type-check/tests and repository hygiene passed on parent head `df97d30ec4b46bd369b3a3efb6a1ce890f1b8e59`; CodeQL passed on that head. Current head Local Sync Safety `44268907711` passed. Current exact-head full CI is not verified.
+- PR #51 is not merge-ready: the native market-data client does not yet attach the bearer capability, and the app does not yet supervise the backend process or provide the private stdin bootstrap. Merging now would break native market-data access.
+- The backend still sources broker credentials from environment configuration; Keychain-to-backend credential handoff and single broker-session ownership remain open.
+- No owner-Mac shell, local Xcode, broker credentials, or real DEMO session were accessed.
+- Next: implement the Swift backend process supervisor, secure capability provider, authenticated market-data client, and Keychain-backed credential handoff before merging PR #51.

@@ -341,7 +341,7 @@ The marker is not a secret and does not authenticate arbitrary local processes. 
 
 | Work item | Priority | Scope | Status | Evidence |
 |---|---:|---|---|---|
-| ATP-BRK-002 | P0 | Unify macOS Keychain credential provisioning, backend CMS, Capital.com authentication and CST/X-SECURITY-TOKEN lifecycle behind one backend session authority | BLOCKING PR #37 integration | Library Broker Integration Q5/Q6; PR #26 Swift direct-auth; PR #37 environment-driven backend auth; EDL-022 |
+| ATP-BRK-002 | P0 | Consolidate native and backend broker authentication into one secure backend CMS/session owner | PARTIAL — PR #51 backend IPC boundary only | PR #26 currently owns native Swift Keychain credentials/direct authentication; PR #37 owns a separate environment-driven backend session. PR #51 adds stdin-delivered 256-bit capability and authenticated market-data routes, but native client/process supervisor/Keychain bridge are pending; do not merge until app-side integration prevents HTTP 401 regression |
 
 Required: app-managed backend child process; 256-bit per-launch capability bootstrapped over private stdin/pipe; bearer auth for local control APIs; backend CMS backed by a Keychain helper/adapter; environment credentials test-only; one Broker Session Manager shared by market data, streaming, account data and future OMS. Add isolation, secret-redaction, IPC authorization, reconnect and token lifecycle tests.
 
@@ -368,3 +368,11 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - PR #48 is merged at `3bb2f0b68c11eff019bbd88ce09cf3b7155b9ea4`; CI/CodeQL/Local Sync Safety passed.
 - PR #49 exact head `a16a0a065997ab912d46ba544cf8d4e0ada00ff0`; Local Sync Safety passed; exact-head CI is pending. It remains stacked on PR #37 and must not be merged to `main` independently.
 - ATP-BRK-002 remains P0 and blocks PR #37 integration until a single backend CMS/Broker Session Manager owns broker credentials and session tokens through authenticated app-to-backend IPC and Keychain-backed storage.
+
+
+### 2026-11-18 — PR #51 backend IPC capability implementation
+
+- PR #51 adds private-stdin 256-bit capability bootstrap and constant-time Bearer authentication for broker market-data routes.
+- Backend tests/type-check and CodeQL passed on parent head `df97d30`; latest Local Sync Safety passed on `1e312352`. Current exact-head full CI is not yet verified.
+- Do not merge until the native app has a supervised backend process and authenticated market-data client. Current native client does not send the new capability.
+- Keychain credential handoff and single backend broker-session ownership remain outstanding.

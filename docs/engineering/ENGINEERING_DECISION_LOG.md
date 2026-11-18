@@ -182,3 +182,15 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Caller semantics:** Explicit/manual `ping()` retains its rejection behavior so request callers can observe failure. The scheduled callback alone contains the rejection after state handling.
 - **Verification:** Added deterministic coverage for scheduled HTTP 503 degradation, callback settlement, and recovery after a successful ping. Exact-head CI run `44266234067` remains queued/in progress; no pass is claimed.
 - **Scope:** Read-only Capital.com DEMO session health. No dealing, trading authorization, credential access, or LIVE behavior.
+
+
+## EDL-025 — Private app-to-backend IPC capability contract
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #51 backend branch; merge pending native app integration and exact-head qualification.
+- **Decision:** Broker market-data routes must reject unauthenticated loopback requests. The managed macOS parent generates a cryptographically random 256-bit per-launch capability and supplies it through the child process' private stdin pipe, never through command-line arguments or environment variables. The child retains the capability only in memory, requires it as a Bearer token on broker market-data routes, compares it in constant time, bounds bootstrap input, and clears temporary/retained byte buffers when possible.
+- **Health boundary:** Non-sensitive process liveness/readiness routes remain separate from broker market-data authorization.
+- **Development exception:** `make backend-start` uses a temporary 0700 directory and 0600 capability file solely for local diagnostics; the file is removed on normal exit. It is not the production app-to-backend credential or capability transport.
+- **Integration condition:** Do not merge the backend enforcement until the native app process supervisor and market-data client attach the same per-launch capability. Otherwise native market-data calls regress to HTTP 401.
+- **Verification:** Parent-head backend type-check/tests and CodeQL passed; current head Local Sync Safety passed. Exact current-head CI and macOS qualification remain pending.
+- **Scope:** Authentication of local broker market-data IPC only. Does not authorize trading or change `CAP_ALLOW_TRADING=false`.
