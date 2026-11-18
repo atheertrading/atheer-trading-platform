@@ -62,6 +62,22 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     const ownership = await appPool.query("SELECT tableowner FROM pg_tables WHERE schemaname='atheer'");
     assert.ok(ownership.rows.length > 0);
     assert.ok(ownership.rows.every((row) => row.tableowner === "atheer_db_owner"));
+
+    // Verify owner-default sequence privileges independently from table DML grants.
+    const ownerPool = asRole(adminPool, "atheer_db_owner");
+    await ownerPool.query("CREATE SEQUENCE atheer.atheer_sequence_privilege_probe");
+    const sequenceValue = await appPool.query("SELECT nextval('atheer.atheer_sequence_privilege_probe') AS value");
+    assert.equal(Number(sequenceValue.rows[0].value), 1);
+    await assert.rejects(
+      appPool.query("CREATE SEQUENCE atheer.app_must_not_create_sequence"),
+      (error) => error && error.code === "42501",
+    );
+    await assert.rejects(
+      migratorPool.query("CREATE SEQUENCE atheer.migrator_must_not_create_sequence"),
+      (error) => error && error.code === "42501",
+    );
+    await ownerPool.query("DROP SEQUENCE atheer.atheer_sequence_privilege_probe");
+
     const serverVersion = await appPool.query("SHOW server_version");
     console.info("PostgreSQL integration server version: " + serverVersion.rows[0].server_version);
     assert.match(serverVersion.rows[0].server_version, /^17\./);
