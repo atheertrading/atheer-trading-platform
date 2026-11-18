@@ -418,3 +418,8 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 
 The RiskEngine branch does not introduce risk HTTP routes, policy defaults, execution dispatch, broker dealing or LIVE capability. Portfolio-risk projections are supplied by a future deterministic valuation service and are not computed by this increment.
 
+### ATP-RISK-001A qualification checkpoint — PR #86
+
+- Exact head `e19897895b179d47c4ffee7b5fe68857fc20080f`: Node.js 24 type-check/build and API suite **59 passed, 0 failed**; Repository Hygiene, Mermaid and Local Sync Safety passed.
+- Intel and Apple Silicon macOS build/XCTest/Swift CodeQL jobs were queued at last inspection. ATP-RISK-001D remains IN PROGRESS; do not treat backend test success as cross-architecture qualification.
+
