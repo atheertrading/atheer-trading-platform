@@ -55,9 +55,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function safeErrorMessage(error: unknown): string {
-  if (!(error instanceof Error)) return "Capital.com streaming connection failed.";
-  const message = error.message.trim();
-  return message.length > 0 ? message.slice(0, 240) : "Capital.com streaming connection failed.";
+  // Provider and transport errors are untrusted and may contain sensitive data.
+  // Expose a stable diagnostic; detailed causes stay out of client-visible status.
+  void error;
+  return "Capital.com streaming connection failed.";
 }
 
 /**
@@ -101,7 +102,7 @@ export class CapitalDemoStreamingRuntime {
       provider: "capital.com",
       environment: "DEMO",
       state: this.state,
-      activeInstrumentCount: this.desiredEpics().size,
+      activeInstrumentCount: this.subscribedEpics.size,
       ...(this.lastMessageAtMs === undefined ? {} : { lastMessageAtMs: this.lastMessageAtMs }),
       ...(this.lastError === undefined ? {} : { lastError: this.lastError }),
       invalidQuoteCount: this.invalidQuoteCount,
