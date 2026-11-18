@@ -868,3 +868,19 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - Added deterministic decoder/model/view tests, architecture note, Mermaid diagram 15, EDL-015, and updated task, status, screen and conversation records.
 - Historical chart is read-only. No synthetic mid-price series, no fabricated prices, no volume reinterpretation, no live candle aggregation, no order entry, no broker dealing and no strategy execution.
 - Exact-head CI and owner-Mac visual/runtime qualification remain pending. CAP_ALLOW_TRADING=false remains unchanged.
+
+
+## GitHub continuity audit — 2026-11-18
+
+Recorded a cross-PR implementation and qualification audit on the historical-chart feature branch. The audit anchors the mainline at `4875fc30e68b3611c036f4e9b1c9bbe9f0fb59c6`, distinguishes merged baseline from open feature work, and records commit-specific CI outcomes for PRs #24–#44.
+
+Important corrections preserved:
+- PR #25 macOS jobs were cancelled; PR #26 Intel passed but Apple Silicon remained queued, and its recorded base did not match the reviewed PR #25 head.
+- PR #33 and #37 Backend checks passed, but their macOS architecture jobs were queued in the inspected runs.
+- PR #38 and #39 remediation did not complete macOS qualification; their architecture jobs were cancelled.
+- PR #24 Intel, PR #43 Intel, and both PR #44 architecture jobs remained in progress at inspection.
+- PR #40–#42 passed their reviewed exact-head hosted CI gates; this does not imply owner-Mac or broker-runtime qualification.
+
+The audit explicitly preserves the implementation boundaries between domain outbox persistence, OMS order persistence, command processing, Execution Gateway, and broker dealing. It also records that watchlist persistence is local, charting is historical/read-only, and no live aggregation/indicators/drawing/execution are included in PR #44.
+
+No PR was merged, no database migration was run, no permissions or risk limits were changed, and `CAP_ALLOW_TRADING=false` remains mandatory.
