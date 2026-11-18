@@ -3,10 +3,24 @@ import SwiftUI
 
 @MainActor
 final class ATHEERApplicationDelegate: NSObject, NSApplicationDelegate {
-    var onTerminate: (() -> Void)?
+    var onTerminate: (() async throws -> Void)?
+    private var terminationPending = false
 
-    func applicationWillTerminate(_ notification: Notification) {
-        onTerminate?()
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let onTerminate else { return .terminateNow }
+        guard !terminationPending else { return .terminateLater }
+
+        terminationPending = true
+        Task { @MainActor [weak self] in
+            do {
+                try await onTerminate()
+                sender.reply(toApplicationShouldTerminate: true)
+            } catch {
+                self?.terminationPending = false
+                sender.reply(toApplicationShouldTerminate: false)
+            }
+        }
+        return .terminateLater
     }
 }
 
@@ -22,7 +36,7 @@ struct ATHEERTradingProApp: App {
                 .preferredColorScheme(.dark)
                 .onAppear {
                     appDelegate.onTerminate = {
-                        backendRuntimeModel.stop()
+                        try await backendRuntimeModel.stop()
                     }
                 }
         }
