@@ -47,7 +47,10 @@ export class BrokerSessionManager {
     if (credentials) {
       // Reuse the current session for identical credentials. This preserves
       // keepalive/recovery state and prevents resetting provider-auth lockout.
-      if (this.runtime?.usesCredentials(credentials)) {
+      if (
+        this.runtime?.usesCredentials(credentials) &&
+        !this.runtime.isAuthenticationBlockedFor(credentials)
+      ) {
         try {
           return await this.runtime.connect();
         } catch {
