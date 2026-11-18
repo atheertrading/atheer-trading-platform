@@ -476,3 +476,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - **Security preserved:** host remains restricted to `127.0.0.1`; the 256-bit capability remains delivered through private stdin; broker market-data routes remain Bearer-authenticated.
 - **Not yet integrated:** native Swift process supervisor, capability generation, authenticated market-data client, bundled Node/API runtime, Keychain credential handoff, centralized Broker Session Manager.
 - **Qualification:** PR #52 exact-head CI pending; no local Mac/Xcode, process-launch, Keychain, or real broker DEMO qualification is claimed.
+
+
+## ATP-BRK-002 follow-up — native process supervision (PR #53)
+
+- **Implemented in source:** Swift child-process supervisor; 256-bit per-launch capability; private-stdin bootstrap; ephemeral loopback port discovery; liveness and authenticated IPC probes; authenticated market-data client; app shutdown; universal Node/API resources.
+- **Build integration:** Node.js 24.22.3 pinned; official x64/arm64 archives verified by pinned SHA-256; XcodeGen resources and `make generate` packaging step added.
+- **Tests added:** capability encoding/clearing, readiness marker parsing, market-data Bearer header assertions, and actual backend child-process bootstrap/auth integration.
+- **CI:** PR #52 run `44271151574` failed TypeScript because the local Node process declaration omitted `stdout` and `exitCode`; fixed in PR #52 commit `426b3a9`; rerun pending. PR #53 exact-head CI pending.
+- **Remaining P0:** Keychain credential handoff, backend CMS/Broker Session Manager, unification of native/backend session ownership, account-switch/reconnect lifecycle tests, real DEMO and owner-Mac qualification.
+- **Safety:** backend starts without credentials; `not_configured` is the expected state until credential handoff. No dealing/LIVE path is enabled.
