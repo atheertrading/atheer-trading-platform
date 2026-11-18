@@ -607,3 +607,34 @@ test("valid market-data query syntax does not disguise an unavailable broker ses
   assert.equal(response.status, 503);
   assert.deepEqual(await response.json(), { error: "broker_session_unavailable" });
 });
+
+test("authenticated broker routes reject browser-originated request contexts", async () => {
+  for (const headers of [
+    { ...authorization, origin: "https://attacker.example" },
+    { ...authorization, "sec-fetch-site": "same-origin" },
+    { ...authorization, "sec-fetch-site": "cross-site" },
+  ]) {
+    const response = await fetch(baseUrl + "/broker-session/status", { headers });
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { error: "unauthorized" });
+  }
+
+  const nativeContext = await fetch(baseUrl + "/broker-session/status", {
+    headers: { ...authorization, "sec-fetch-site": "none" },
+  });
+  assert.equal(nativeContext.status, 200);
+});
+
+test("market-data HTTP routing preserves 404 and 405 semantics before session readiness", async () => {
+  const unknown = await fetch(baseUrl + "/market-data/not-implemented", { headers: authorization });
+  assert.equal(unknown.status, 404);
+  assert.deepEqual(await unknown.json(), { error: "not_found" });
+
+  const wrongMethod = await fetch(baseUrl + "/market-data/history", {
+    method: "POST",
+    headers: authorization,
+  });
+  assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.get("allow"), "GET");
+  assert.deepEqual(await wrongMethod.json(), { error: "method_not_allowed" });
+});
