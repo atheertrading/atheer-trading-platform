@@ -25,7 +25,12 @@ import {
   type ReconciliationEvent,
   type RiskAssessment,
 } from "../domain/trading.ts";
-import type { TradingEnvironment } from "../domain/shared.ts";
+import {
+  createOmsOrder,
+  createOrderLifecycleTransition,
+  type OmsOrder,
+} from "../domain/order-lifecycle.ts";
+import type { OrderId, TradingEnvironment, UtcTimestamp } from "../domain/shared.ts";
 
 export interface SqlResult<Row extends Record<string, unknown> = Record<string, unknown>> {
   readonly rows: Row[];
@@ -45,6 +50,11 @@ export interface PersistIntentResult {
   readonly intentInserted: boolean;
   readonly riskAssessmentInserted: boolean;
   readonly replayed: boolean;
+}
+export interface PersistAuthorizedOrderResult {
+  readonly orderInserted: boolean;
+  readonly replayed: boolean;
+  readonly order: OmsOrder;
 }
 
 export class PersistenceConflictError extends Error {
@@ -178,6 +188,12 @@ export interface TradingPersistenceRepository {
   registerBrokerAccount(account: BrokerAccountIdentity): Promise<void>;
   recordAccountSnapshot(account: BrokerAccountIdentity, snapshot: AccountBalanceSnapshot): Promise<void>;
   persistIntentAndRiskAssessment(intent: OrderIntentEnvelope, assessment: RiskAssessment): Promise<PersistIntentResult>;
+  persistAuthorizedOrder(input: {
+    readonly orderId: OrderId;
+    readonly intent: OrderIntentEnvelope;
+    readonly assessment: RiskAssessment;
+    readonly createdAt: UtcTimestamp;
+  }): Promise<PersistAuthorizedOrderResult>;
   recordReconciliationEvent(event: ReconciliationEvent): Promise<void>;
   recordAuditEvent(event: AuditEvent): Promise<void>;
 }
@@ -311,6 +327,111 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
       return { intentInserted, riskAssessmentInserted, replayed: !intentInserted && !riskAssessmentInserted };
     });
   }
+  async persistAuthorizedOrder(input: {
+    readonly orderId: OrderId;
+    readonly intent: OrderIntentEnvelope;
+    readonly assessment: RiskAssessment;
+    readonly createdAt: UtcTimestamp;
+  }): Promise<PersistAuthorizedOrderResult> {
+    const order = createOmsOrder({
+      id: input.orderId,
+      intent: input.intent,
+      riskAssessment: input.assessment,
+      createdAt: input.createdAt,
+    });
+    this.assertEnvironment(order.environment);
+    const orderPayload = canonicalJson(order);
+    const orderHash = sha256(orderPayload);
+    const transition = createOrderLifecycleTransition({
+      eventId: "order-persisted:" + order.id,
+      orderId: order.id,
+      fromState: "AUTHORIZED",
+      toState: "PERSISTED",
+      sourceKind: "OMS",
+      sourceId: "atheer-oms" as import("../domain/shared.ts").SourceId,
+      occurredAt: input.createdAt,
+      correlationId: order.correlationId,
+      orderVersion: 1,
+    });
+    const transitionPayload = canonicalJson(transition);
+    const transitionHash = sha256(transitionPayload);
+
+    return inTransaction(this.pool, async (client) => {
+      const persistedIntent = await client.query<{ payload_hash: string }>(
+        "SELECT payload_hash FROM atheer.order_intents WHERE environment=$1 AND intent_id=$2 AND account_id=$3 AND instrument_id=$4 FOR UPDATE",
+        [this.environment, input.intent.id, input.intent.accountId, input.intent.instrumentId],
+      );
+      if (persistedIntent.rows[0]?.payload_hash !== sha256(canonicalJson(input.intent))) {
+        throw new PersistenceConflictError("OMS order intent must exactly match the immutable, persisted intent envelope.");
+      }
+
+      const persistedAssessment = await client.query<{ payload_hash: string; outcome: string }>(
+        "SELECT payload_hash,outcome FROM atheer.risk_assessments WHERE environment=$1 AND risk_assessment_id=$2 AND intent_id=$3 FOR UPDATE",
+        [this.environment, input.assessment.id, input.intent.id],
+      );
+      if (
+        persistedAssessment.rows[0]?.outcome !== "AUTHORIZED" ||
+        persistedAssessment.rows[0]?.payload_hash !== sha256(canonicalJson(input.assessment))
+      ) {
+        throw new PersistenceConflictError("OMS order requires the exact persisted AUTHORIZED risk assessment for this intent and environment.");
+      }
+
+      const inserted = await client.query(
+        "INSERT INTO atheer.orders (environment,order_id,intent_id,risk_assessment_id,account_id,instrument_id,correlation_id,state,version,requested_quantity,filled_quantity,remaining_quantity,quantity_unit,created_at,updated_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,'PERSISTED',1,$8,$9,$10,$11,$12,$12,$13,$14::jsonb) ON CONFLICT (environment,intent_id) DO NOTHING RETURNING order_id",
+        [
+          this.environment, order.id, order.intentId, order.riskAssessmentId, order.accountId,
+          order.instrumentId, order.correlationId, order.requestedQuantity.value,
+          order.filledQuantity.value, order.remainingQuantity.value, order.requestedQuantity.unit,
+          isoTimestamp(order.createdAt), orderHash, orderPayload,
+        ],
+      );
+      const orderInserted = inserted.rowCount === 1;
+      if (!orderInserted) {
+        const existing = await client.query<{ order_id: string; payload_hash: string }>(
+          "SELECT order_id,payload_hash FROM atheer.orders WHERE environment=$1 AND intent_id=$2",
+          [this.environment, order.intentId],
+        );
+        if (existing.rows[0]?.order_id !== order.id || existing.rows[0]?.payload_hash !== orderHash) {
+          throw new PersistenceConflictError("An OMS order already exists for this intent with a different order identity or payload.");
+        }
+      }
+
+      await client.query(
+        "INSERT INTO atheer.order_lifecycle_events (environment,event_id,order_id,from_state,to_state,source_kind,source_id,occurred_at,correlation_id,order_version,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb) ON CONFLICT (environment,event_id) DO NOTHING",
+        [
+          this.environment, transition.eventId, transition.orderId, transition.fromState,
+          transition.toState, transition.sourceKind, transition.sourceId,
+          isoTimestamp(transition.occurredAt), transition.correlationId,
+          transition.orderVersion, transitionHash, transitionPayload,
+        ],
+      );
+      const persistedTransition = await client.query<{ payload_hash: string }>(
+        "SELECT payload_hash FROM atheer.order_lifecycle_events WHERE environment=$1 AND event_id=$2",
+        [this.environment, transition.eventId],
+      );
+      if (persistedTransition.rows[0]?.payload_hash !== transitionHash) {
+        throw new PersistenceConflictError("OMS lifecycle event identity was reused with different content.");
+      }
+
+      await client.query(
+        "INSERT INTO atheer.domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'ORDER',$3,'oms.order.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        [
+          this.environment, "oms-order:" + order.id, order.id, order.correlationId,
+          "oms-order:" + order.id,
+          canonicalJson({ orderId: order.id, intentId: order.intentId, riskAssessmentId: order.riskAssessmentId, state: order.state, version: order.version }),
+        ],
+      );
+      await client.query(
+        "INSERT INTO atheer.audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,'ORDER',$4,'trading.order.persisted',$5,$6,$7::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
+        [
+          this.environment, "oms-order-persisted:" + order.id, order.correlationId,
+          order.id, isoTimestamp(order.createdAt), transitionHash, transitionPayload,
+        ],
+      );
+      return { orderInserted, replayed: !orderInserted, order };
+    });
+  }
+
   async recordReconciliationEvent(event: ReconciliationEvent): Promise<void> {
     createReconciliationEvent(event);
     this.assertEnvironment(event.environment);

@@ -5,7 +5,7 @@ import {
   assetClassCode, brokerAccountId, brokerAccountReference, brokerId, brokerInstrumentId,
   commandId, correlationId, createAuditEvent, createDataProvenance, createOrderIntentEnvelope,
   createReconciliationEvent, createRiskAssessment, currencyCode, decimalValue, idempotencyKey, instrumentId,
-  instrumentSpecificationId, orderIntentId, price, quantity, riskAssessmentId, sourceId,
+  instrumentSpecificationId, orderIntentId, orderId, price, quantity, riskAssessmentId, sourceId,
   tradingEnvironment, unitCode, utcTimestamp,
 } from "../dist/domain/index.js";
 import {
@@ -170,6 +170,72 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     });
     assert.deepEqual(await repository.persistIntentAndRiskAssessment(intent, assessment), { intentInserted: true, riskAssessmentInserted: true, replayed: false });
     assert.deepEqual(await repository.persistIntentAndRiskAssessment(intent, assessment), { intentInserted: false, riskAssessmentInserted: false, replayed: true });
+    const authorizedAssessment = createRiskAssessment({
+      ...assessment,
+      id: riskAssessmentId(prefix + "-authorized-risk"),
+      outcome: "AUTHORIZED",
+      reasonCodes: [],
+    });
+    await repository.persistIntentAndRiskAssessment(intent, authorizedAssessment);
+    const orderInput = {
+      orderId: orderId(prefix + "-oms-order"),
+      intent,
+      assessment: authorizedAssessment,
+      createdAt: utcTimestamp(1_800_000_000_400),
+    };
+    const persistedOrder = await repository.persistAuthorizedOrder(orderInput);
+    assert.equal(persistedOrder.orderInserted, true);
+    assert.equal(persistedOrder.replayed, false);
+    assert.equal(persistedOrder.order.state, "PERSISTED");
+    assert.equal(persistedOrder.order.requestedQuantity.value, "0.2");
+    const replayedOrder = await repository.persistAuthorizedOrder(orderInput);
+    assert.equal(replayedOrder.orderInserted, false);
+    assert.equal(replayedOrder.replayed, true);
+    assert.equal(replayedOrder.order.id, persistedOrder.order.id);
+
+    const orderRow = await appPool.query(
+      "SELECT state,version,requested_quantity::text AS requested_quantity,filled_quantity::text AS filled_quantity,remaining_quantity::text AS remaining_quantity FROM atheer.orders WHERE environment='DEMO' AND order_id=$1",
+      [orderInput.orderId],
+    );
+    assert.deepEqual(orderRow.rows[0], {
+      state: "PERSISTED",
+      version: 1,
+      requested_quantity: "0.2",
+      filled_quantity: "0",
+      remaining_quantity: "0.2",
+    });
+    const lifecycleRows = await appPool.query(
+      "SELECT from_state,to_state,source_kind,order_version FROM atheer.order_lifecycle_events WHERE environment='DEMO' AND order_id=$1",
+      [orderInput.orderId],
+    );
+    assert.deepEqual(lifecycleRows.rows, [{
+      from_state: "AUTHORIZED",
+      to_state: "PERSISTED",
+      source_kind: "OMS",
+      order_version: 1,
+    }]);
+    await assert.rejects(
+      appPool.query("UPDATE atheer.orders SET state='FILLED' WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+    await assert.rejects(
+      appPool.query("DELETE FROM atheer.orders WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+    await assert.rejects(
+      appPool.query("UPDATE atheer.order_lifecycle_events SET to_state='FILLED' WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+
+    await assert.rejects(
+      repository.persistAuthorizedOrder({ ...orderInput, orderId: orderId(prefix + "-conflicting-order") }),
+      (error) => error instanceof PersistenceConflictError && error.message.includes("different order identity"),
+    );
+    await assert.rejects(
+      repository.persistAuthorizedOrder({ ...orderInput, assessment }),
+      (error) => error && error.code === "order_risk_not_authorized",
+    );
+
 
     const orphanIntent = createOrderIntentEnvelope({
       ...intent,
@@ -204,7 +270,13 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await repository.recordAuditEvent(audit);
 
     const outbox = await appPool.query("SELECT event_type FROM atheer.domain_outbox WHERE environment='DEMO' AND correlation_id=$1 ORDER BY event_type", [intent.correlationId]);
-    assert.deepEqual(outbox.rows.map((row) => row.event_type).sort(), ["order.intent.persisted", "risk.assessment.persisted", "audit.event.persisted"].sort());
+    assert.deepEqual(outbox.rows.map((row) => row.event_type).sort(), [
+      "order.intent.persisted",
+      "risk.assessment.persisted",
+      "risk.assessment.persisted",
+      "audit.event.persisted",
+      "oms.order.persisted",
+    ].sort());
     const persisted = await appPool.query("SELECT outcome FROM atheer.risk_assessments WHERE environment='DEMO' AND risk_assessment_id=$1", [assessment.id]);
     assert.equal(persisted.rows[0].outcome, "REJECTED");
     const reconciliationCount = await appPool.query("SELECT count(*)::text AS count FROM atheer.reconciliation_events WHERE environment='DEMO' AND reconciliation_event_id=$1", [reconciliation.id]);
