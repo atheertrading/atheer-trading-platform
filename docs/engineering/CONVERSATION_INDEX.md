@@ -86,3 +86,9 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-17-018 | 2026-11-17 | Command Center and initial Workspace Engine implementation | Revalidated PR #24 and the PR #10 → #17 → #18 dependency chain; inspected repository instructions, continuity/task/status records, SwiftUI sources, design tokens, tests and XcodeGen configuration; added the Command Center and a persisted, versioned WorkspaceEngine with validation/recovery and deterministic persistence tests; reviewed the full PR diff and exact-head workflow state. | PR #24; ATP-WORKSPACE-001; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+
+| ATP-2026-11-17-020 | 2026-11-17 | PR #26 owner-Mac qualification and concurrency/AppKit remediation | Inspected the full owner report The terminal on Hossam's Mac - 02; verified exact baseline HEAD, Intel Debug/Release, 35/35 XCTest, universal build slices, runtime diagnostics, and exact-SHA CI cancellations; implemented isolated URLSession transport and deferred List-backed panel mutations; published the detailed qualification record. | SESSION_2026-11-17_020_PR26_OWNER_MAC_QUALIFICATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; PR #26 |
+
+
+- Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers navigation sidebar List selection changes to avoid synchronous detail-hierarchy updates during AppKit's NSTableView delegate callback.

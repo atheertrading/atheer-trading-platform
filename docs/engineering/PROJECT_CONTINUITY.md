@@ -521,3 +521,38 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Exact-head CI must be revalidated after every subsequent commit. The previous hosted backend pass on f5a388dbe5b91df7b4cad086ba3504ed7e928bf3 does not qualify later source changes.
 - Next: complete exact-head CI, resolve official DEMO WebSocket endpoint, implement stream lifecycle/recovery, then bind Market Watch/Charting only to validated provider data.
 - LIVE endpoints, dealing methods, order routes, and trading permissions remain absent; CAP_ALLOW_TRADING=false is unchanged.
+
+
+## ATP-BROKER-001 — Broker Management and Capital.com DEMO credential/authentication slice (2026-11-17)
+
+- Owner directive: implement functional broker management in the existing native macOS app, reachable through Settings → Brokers, with secure local credential entry, Keychain persistence, actual Capital.com DEMO authentication, and no LIVE or dealing capability.
+- Created feature branch `feat/broker-management-keychain-demo` from PR #25 head `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b`. PR #26 is Draft and targets PR #25's feature branch to preserve the dependency chain.
+- PR #26 source adds Settings navigation, a Capital.com management workspace, broker credential and authentication abstractions, Keychain storage, account/environment credential isolation, DEMO REST session creation/verification/termination, and periodic session verification while the Brokers view is active.
+- Capital.com contract verified against the official API documentation: POST /session requires X-CAP-API-KEY, identifier, password, and encryptedPassword=false for the selected flow; CST and X-SECURITY-TOKEN are response headers; GET /session provides account/session context; DELETE /session ends the session.
+- The app does not call order, position-dealing, account-mutation, or LIVE endpoints. Market streaming is shown independently and remains disconnected. Trading remains disabled and centralized execution/risk governance is unchanged.
+- EDL-010 records the owner-directed local macOS Keychain/native authentication boundary. The existing backend-owned credential policy remains for remote clients and future multi-user services.
+- XCTest source includes Keychain store isolation/deletion and view-model state tests, plus URLProtocol-based tests for the official DEMO request contract, unauthorized response redaction, and LIVE rejection.
+- No owner credentials were supplied. No real Capital.com DEMO session is claimed. No Xcode build, XCTest execution, or owner-side runtime/Keychain restart QA is claimed until exact evidence is recorded.
+- PR #24 and PR #25 remain OPEN / DRAFT and their HEAD SHAs are unchanged. Phase A CI qualification remains a separate workstream.
+
+
+## PR #26 qualification remediation — 2026-11-17
+
+- Owner-Mac qualification after commit `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9` confirmed Debug compilation and 34 of 35 XCTest cases passing; the single failure is `CapitalComAuthenticationTests.testDemoAuthenticationUsesOfficialRequestContractAndVerifiesSession()` at the post-URLSession `httpBody` unwrap. The exact-head hosted macOS XCTest job failed at the same assertion; its Release step was skipped and the Apple Silicon job was cancelled.
+- GitHub defect reports: [#27 request-body capture](https://github.com/atheertrading/atheer-trading-platform/issues/27), [#28 URLSession Sendable diagnostics](https://github.com/atheertrading/atheer-trading-platform/issues/28), and [#29 Brokers UI freeze investigation](https://github.com/atheertrading/atheer-trading-platform/issues/29).
+- Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
+- Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
+- This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+## PR #26 owner-Mac qualification update — ATP-2026-11-17-020
+
+- The owner-provided report **The terminal on Hossam's Mac - 02** is indexed by `SESSION_2026-11-17_020_PR26_OWNER_MAC_QUALIFICATION.md`.
+- Baseline HEAD was confirmed by the terminal's `git rev-parse HEAD`: `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`; branch status was clean and tracking origin.
+- Intel workstation evidence: macOS 13.7.8, Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1; Debug and Release succeeded; XCTest 35/35 passed; Release emitted universal arm64 + x86_64 slices. App launch was requested but visual/interactive success is not established.
+- Observed warnings and limits are recorded in the session report. Baseline exact-SHA CI #222 had hygiene/backend success but cancelled Intel/arm64 macOS jobs.
+- The PR #26 source increment isolates URLSession transport from MainActor and defers panel-manager List row mutations. This is source implementation only until new exact-head CI and owner rerun.
+- PR #26 remains Open/Draft. PR #24/#25 remain untouched. LIVE and dealing remain disabled.
+
+
+- Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers the always-visible ContentView navigation List selection update, covering both the navigation sidebar and panel-manager List mutation paths. The NSTableView warning's exact runtime origin remains unconfirmed until owner-Mac rerun.
