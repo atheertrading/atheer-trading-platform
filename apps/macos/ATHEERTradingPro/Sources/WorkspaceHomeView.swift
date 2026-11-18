@@ -6,11 +6,9 @@ struct WorkspaceHomeView: View {
 
     @State private var visiblePanels = WorkspacePanelID.defaultVisible
 
-    private let statusColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
-    private let panelColumns = [
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14)
-    ]
+    // Initial adaptive metrics; final breakpoints remain subject to specification reconciliation and owner visual QA.
+    private let statusColumns = [GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 10)]
+    private let panelColumns = [GridItem(.adaptive(minimum: 320, maximum: 560), spacing: 14)]
 
     var body: some View {
         ScrollView {
