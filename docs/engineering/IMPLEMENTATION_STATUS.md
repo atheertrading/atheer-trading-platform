@@ -485,3 +485,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - No policy persistence/runtime provider, portfolio valuation implementation, risk HTTP endpoint, OMS wiring, execution gateway or broker dealing operation is included. Default `DisabledRiskTradingControls` remains false; `CAP_ALLOW_TRADING=false` unchanged.
 - Exact-head Node 24 build/tests and hosted hygiene/security/Mermaid/sync checks pending. Owner-Mac and authenticated DEMO qualification are separate gates.
 
+### ATP-RISK-001A — hosted exact-head validation update
+
+PR #86 head `e19897895b179d47c4ffee7b5fe68857fc20080f`:
+- Node.js 24 Backend Toolchain: **passed**; TypeScript type-check/build and **59/59 API tests**.
+- Repository Hygiene: **passed**.
+- Mermaid architecture render: **passed**.
+- Local Sync Safety: **passed**.
+- Intel x86_64 and Apple Silicon arm64 build/XCTest/Swift CodeQL jobs: queued at last inspection. Keep the PR Draft and do not merge before those jobs and upstream dependencies qualify.
+
