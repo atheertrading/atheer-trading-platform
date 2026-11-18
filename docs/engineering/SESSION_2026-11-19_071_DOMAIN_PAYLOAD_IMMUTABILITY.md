@@ -5,7 +5,8 @@
 **Work package:** ATP-DOMAIN-001  
 **PR:** #76 — canonical multi-asset trading domain foundation  
 **Branch:** `feat/canonical-multi-asset-domain-foundation`  
-**Code/test head recorded before this report commit:** `dc2e3d7445ce19dc526d0a3d8bc4ce25bebc33c0`
+**Original code/test head:** `dc2e3d7445ce19dc526d0a3d8bc4ce25bebc33c0`
+**Additional immutability hardening head:** `ba3d9066d1cfe78c0d0aae790a8ff0fee4958307`
 
 ## Finding
 
@@ -26,11 +27,13 @@ Updated `services/api/src/domain/shared.ts`:
 - Traverses own property descriptors rather than invoking getters through Object.values/property reads.
 - Rejects accessor properties with the stable `invalid_immutable_value` domain validation code.
 - Preserves recursive freezing and cycle detection for plain object/array graphs.
+- Rejects Array subclasses and custom array prototypes, which may retain mutable private fields or behavior even after Object.freeze. Only ordinary arrays with Array.prototype are accepted.
 
 Updated `services/api/test/domain.test.mjs`:
 
 - Nested Map inside an execution-event payload is rejected.
 - An accessor property that would throw when evaluated is rejected without invoking the getter.
+- An Array subclass with private mutable state is rejected before freezing.
 
 No order, risk, lifecycle, identifier or broker-execution semantics were changed. This change only makes the existing immutability contract enforceable at runtime.
 
@@ -55,3 +58,8 @@ A new documentation commit for this report advances the PR head; fresh exact-hea
 - No PostgreSQL persistence, transactional outbox, RiskEngine formula, OMS order state machine, Execution Gateway, dealing adapter or LIVE execution is introduced.
 - The existing policy is to keep order/position detailed transitions open until accepted original architecture/ADR semantics and broker contracts are reconciled.
 - `CAP_ALLOW_TRADING=false` remains enforced.
+
+
+## Follow-up — ordinary-array prototype validation
+
+A subsequent review identified that `Array.isArray` also accepts Array subclasses. The deep-freeze routine now requires the intrinsic `Array.prototype` for array values as well as plain/null prototypes for records. A regression fixture declares an Array subclass with private mutable state and verifies it is rejected. Exact-head CI is required for this final follow-up; no pass is claimed yet.
