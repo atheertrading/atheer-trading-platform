@@ -41,6 +41,9 @@ targets:
     platform: macOS
     sources:
       - path: Sources
+    resources:
+      - path: Resources/Backend
+      - path: Resources/Runtime
     settings:
       base:
         INFOPLIST_KEY_CFBundleDisplayName: ATHEER Trading Pro
