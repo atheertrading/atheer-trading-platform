@@ -468,3 +468,10 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - No trading authorization, risk policy, database schema, OMS execution worker, Execution Gateway or broker dealing behavior changed. `CAP_ALLOW_TRADING=false` remains unchanged.
 - No physical Mac, Xcode, owner Keychain, or real Capital.com DEMO qualification is claimed.
 
+### ATP-API-065 — OpenAPI source integrity follow-up
+
+- Removed duplicated root `components:` sections from `services/api/openapi.yaml`; contract now contains exactly one root document and the seven implemented API routes.
+- Confirmed eight declared schemas, two reusable responses, and 33 resolvable internal component references. EPIC pattern is complete and consistent with server validation.
+- Strengthened the OpenAPI contract regression test to reject duplicate root sections. This is source-level validation; no external parser/code generator run is claimed.
+- Final exact-head CI must be rechecked after this documentation/test correction. Earlier backend/hygiene/sync successes are not carried forward to subsequent commits.
+
