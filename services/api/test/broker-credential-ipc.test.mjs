@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, stat } from "node:fs/promises";
+import { chmod, mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
@@ -194,22 +194,26 @@ test("private IPC refuses permissive directories and overlong socket paths", asy
     async disconnect() { return disconnectedStatus; },
   };
   const capability = Buffer.alloc(32, 23);
-  await assert.rejects(
-    createBrokerCredentialIPCServer({
-      socketPath: join(directory, "broker.sock"),
-      expectedCapability: capability,
-      manager,
-    }),
-    /permissions are not private/,
-  );
-  await assert.rejects(
-    createBrokerCredentialIPCServer({
-      socketPath: "/" + "x".repeat(120),
-      expectedCapability: capability,
-      manager,
-    }),
-    /Invalid private broker credential IPC configuration/,
-  );
+  try {
+    await assert.rejects(
+      createBrokerCredentialIPCServer({
+        socketPath: join(directory, "broker.sock"),
+        expectedCapability: capability,
+        manager,
+      }),
+      /permissions are not private/,
+    );
+    await assert.rejects(
+      createBrokerCredentialIPCServer({
+        socketPath: "/" + "x".repeat(120),
+        expectedCapability: capability,
+        manager,
+      }),
+      /Invalid private broker credential IPC configuration/,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("private IPC still releases the broker session when stream shutdown fails", async () => {
