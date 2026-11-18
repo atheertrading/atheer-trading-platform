@@ -62,6 +62,11 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             throw CancellationError()
         } catch let error as BrokerAuthenticationError {
             throw error
+        } catch let error as BrokerCredentialIPCError {
+            if case .invalidRequest = error {
+                throw BrokerAuthenticationError.invalidCredentials
+            }
+            throw BrokerAuthenticationError.unavailable
         } catch {
             if Task.isCancelled || (error as? URLError)?.code == .cancelled {
                 throw CancellationError()
