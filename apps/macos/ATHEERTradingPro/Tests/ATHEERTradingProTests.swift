@@ -10,6 +10,7 @@ final class ATHEERTradingProTests: XCTestCase {
 
     func testNavigationExposesOnlyImplementedDestinations() {
         XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.workspace.title, "Command Center")
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
@@ -764,6 +765,94 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(ATHEERAppearance.dark.colorScheme, .dark)
         XCTAssertEqual(ATHEERAppearance.light.colorScheme, .light)
     }
+
+    func testOperationalStatusDefaultsToUnverifiedInsteadOfSuccess() {
+        let presentation = OperationalStatusPresentation(state: .idle)
+
+        XCTAssertEqual(presentation.localAPI, OperationalStatusValue(
+            title: "NOT CHECKED",
+            symbol: "questionmark.circle",
+            tone: .neutral
+        ))
+        XCTAssertEqual(presentation.platform.title, "NOT VERIFIED")
+        XCTAssertEqual(presentation.tradingGate.title, "NOT VERIFIED")
+    }
+
+    func testOperationalStatusSeparatesReachabilityFromPlatformReadiness() {
+        let snapshot = BackendHealthSnapshot(
+            version: "0.1.0",
+            livenessTimestamp: "2026-11-18T10:00:00.000Z",
+            platformReady: false,
+            persistenceStatus: "not_configured",
+            brokerStatus: "not_configured",
+            tradingEnabled: false,
+            tradingStatus: "disabled",
+            readinessHTTPStatus: 503,
+            readinessTimestamp: "2026-11-18T10:00:01.000Z",
+            readinessFailure: nil
+        )
+
+        let presentation = OperationalStatusPresentation(state: .connected(snapshot))
+
+        XCTAssertEqual(presentation.localAPI.title, "REACHABLE")
+        XCTAssertEqual(presentation.localAPI.tone, .positive)
+        XCTAssertEqual(presentation.platform.title, "NOT READY")
+        XCTAssertEqual(presentation.platform.tone, .attention)
+        XCTAssertEqual(presentation.tradingGate.title, "DISABLED")
+        XCTAssertEqual(presentation.tradingGate.tone, .neutral)
+    }
+
+    func testOperationalStatusDoesNotInferReadinessWhenReadinessRequestFails() {
+        let snapshot = BackendHealthSnapshot(
+            version: "0.1.0",
+            livenessTimestamp: "2026-11-18T10:00:00.000Z",
+            platformReady: nil,
+            persistenceStatus: nil,
+            brokerStatus: nil,
+            tradingEnabled: nil,
+            tradingStatus: nil,
+            readinessHTTPStatus: nil,
+            readinessTimestamp: nil,
+            readinessFailure: .transport("Readiness request timed out.")
+        )
+
+        let presentation = OperationalStatusPresentation(state: .connected(snapshot))
+
+        XCTAssertEqual(presentation.localAPI.title, "REACHABLE")
+        XCTAssertEqual(presentation.platform.title, "UNAVAILABLE")
+        XCTAssertEqual(presentation.tradingGate.title, "NOT VERIFIED")
+        XCTAssertEqual(presentation.tradingGate.tone, .neutral)
+    }
+
+    func testOperationalStatusNeverPresentsEnabledTradingAsHealthyState() {
+        let snapshot = BackendHealthSnapshot(
+            version: "0.1.0",
+            livenessTimestamp: "2026-11-18T10:00:00.000Z",
+            platformReady: true,
+            persistenceStatus: "ready",
+            brokerStatus: "connected",
+            tradingEnabled: true,
+            tradingStatus: "enabled",
+            readinessHTTPStatus: 200,
+            readinessTimestamp: "2026-11-18T10:00:01.000Z",
+            readinessFailure: nil
+        )
+
+        let presentation = OperationalStatusPresentation(state: .connected(snapshot))
+
+        XCTAssertEqual(presentation.tradingGate.title, "ENABLED")
+        XCTAssertEqual(presentation.tradingGate.tone, .attention)
+    }
+
+    func testOperationalStatusPreservesUnexpectedServerError() {
+        let presentation = OperationalStatusPresentation(state: .serverError(503))
+
+        XCTAssertEqual(presentation.localAPI.title, "HTTP 503")
+        XCTAssertEqual(presentation.localAPI.tone, .attention)
+        XCTAssertEqual(presentation.platform.title, "NOT VERIFIED")
+        XCTAssertEqual(presentation.tradingGate.title, "NOT VERIFIED")
+    }
+
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {

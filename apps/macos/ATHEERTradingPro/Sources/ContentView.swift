@@ -56,24 +56,32 @@ struct ContentView: View {
             .frame(minWidth: 190)
             .background(ATHEERDesignTokens.ColorRole.deepTeal.opacity(0.22))
         } detail: {
-            Group {
-                switch selection ?? .workspace {
-                case .workspace:
-                    WorkspaceHomeView(
-                        backendHealthModel: backendHealthModel,
-                        onOpenAPIConnection: { selection = .apiConnection }
-                    )
-                case .markets:
-                    MarketExplorerView(client: URLSessionMarketSearchClient(), onOpenAPIConnection: { selection = .apiConnection })
-                case .apiConnection:
-                    APIConnectionView(model: backendHealthModel)
-                case .settings:
-                    SettingsHomeView(onOpenBrokers: { showingBrokers = true })
-                        .sheet(isPresented: $showingBrokers) {
-                            BrokerManagementView(model: brokerManagementModel)
-                                .frame(minWidth: 760, minHeight: 560)
-                        }
+            VStack(spacing: 0) {
+                Group {
+                    switch selection ?? .workspace {
+                    case .workspace:
+                        WorkspaceHomeView(
+                            backendHealthModel: backendHealthModel,
+                            onOpenAPIConnection: { selection = .apiConnection }
+                        )
+                    case .markets:
+                        MarketExplorerView(client: URLSessionMarketSearchClient(), onOpenAPIConnection: { selection = .apiConnection })
+                    case .apiConnection:
+                        APIConnectionView(model: backendHealthModel)
+                    case .settings:
+                        SettingsHomeView(onOpenBrokers: { showingBrokers = true })
+                            .sheet(isPresented: $showingBrokers) {
+                                BrokerManagementView(model: brokerManagementModel)
+                                    .frame(minWidth: 760, minHeight: 560)
+                            }
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider()
+                    .overlay(ATHEERDesignTokens.ColorRole.separator)
+
+                OperationalStatusStrip(model: backendHealthModel)
             }
             .frame(minWidth: 620, minHeight: 520)
             .background(ATHEERDesignTokens.ColorRole.canvas)
