@@ -156,6 +156,38 @@ test("temporary keepalive failures degrade the session and a successful ping res
   await runtime.disconnect();
 });
 
+test("network timeouts degrade session health without discarding an unconfirmed session", async () => {
+  const client = createMockClient();
+  let failedOnce = false;
+  client.getMarkets = async (session, searchTerm) => {
+    client.calls.push(["markets", session, searchTerm]);
+    if (!failedOnce) {
+      failedOnce = true;
+      throw new TypeError("fetch failed");
+    }
+    return { markets: [{ epic: "AAPL" }] };
+  };
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, Date.now, {
+    scheduler: { schedule: () => "timer", cancel: () => {} },
+  });
+
+  await runtime.connect();
+  await assert.rejects(runtime.getMarkets("Apple"), /fetch failed/);
+  assert.equal(runtime.status().state, "degraded");
+
+  // A successful authenticated keepalive restores the existing session.
+  await runtime.connect();
+  assert.equal(runtime.status().state, "connected");
+  assert.equal((await runtime.getMarkets("Apple")).markets[0].epic, "AAPL");
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
+  assert.equal(client.calls.filter((call) => call[0] === "disconnect").length, 0);
+  await runtime.disconnect();
+});
+
 test("scheduled keepalive contains transient failures and recovers without an unhandled rejection", async () => {
   const client = createMockClient();
   client.ping = async (session) => {
