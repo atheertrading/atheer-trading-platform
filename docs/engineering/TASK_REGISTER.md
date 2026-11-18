@@ -1,6 +1,6 @@
 # ATHEER Trading — Task Register
 
-**Snapshot date:** 2026-11-17  
+**Snapshot date:** 2026-11-18  
 **Active milestone:** M00 — Governance baseline merged; M01 — Platform architecture and toolchain foundation
 
 Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = not started; `BLOCKED` = dependency prevents progress; `OWNER DECISION` = requires explicit owner direction.
@@ -574,3 +574,12 @@ Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or pr
 - New live bars do not claim provider volume. No synthetic mid, gap bars or interpolated prices.
 - No chart update can create an order or bypass RiskEngine, OMS or Execution Gateway.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### ATP-MKT-006 exact-head qualification correction — 2026-11-18
+
+- PR #45 HEAD `218d07c637738c14541482d067954325f16da224` completed CI run `44227375230`: Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 Debug/XCTest/Release passed (CodeQL intentionally skipped); Backend type-check/tests passed; Repository Hygiene passed. Mermaid run `44227375328` and Local Sync Safety run `44227375239` passed.
+- This supersedes the older PR #45 `CI PENDING` note. It qualifies only that exact PR #45 SHA and hosted environment; no owner-Mac, visual/accessibility, or authenticated Capital.com DEMO runtime acceptance is implied.
+- A bounded retention defect was identified during source review: live aggregation could append candles indefinitely after the 500-candle historical bootstrap.
+- Child fix branch: `fix/live-candle-retention-2026-11-18`, based on PR #45 HEAD. Code commit `82d64fe30b67abc25c18e4be8ce0d0006a01b191`; regression-test commit `329101f388867097ccf5bf2c684d84af5e1d80ca`.
+- ATP-MKT-006H adds a 500-candle in-memory cap and deterministic 501-bar retention coverage. Exact-head hosted CI is pending; do not mark this hardening verified until the new branch's CI completes.
