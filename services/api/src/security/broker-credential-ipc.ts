@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 import { chmod, lstat, stat, unlink } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createServer, type Socket } from "node:net";
-import type { CapitalDemoCredentials } from "../market-data/capital-demo-client.ts";
 import type { BrokerSessionManager, BrokerSessionStatus } from "../market-data/broker-session-manager.ts";
 import { hasValidIPCCapabilityValue } from "./ipc-capability.ts";
 
