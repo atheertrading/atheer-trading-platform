@@ -559,6 +559,7 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertTrue(request.url?.path.hasSuffix("/market-data/status") == true)
         XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
     }
 
     @MainActor
@@ -602,6 +603,7 @@ final class ATHEERTradingProTests: XCTestCase {
         let components = try XCTUnwrap(URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false))
         XCTAssertEqual(components.queryItems?.first(where: { $0.name == "searchTerm" })?.value, "Gold & Silver")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
     }
 
     @MainActor
