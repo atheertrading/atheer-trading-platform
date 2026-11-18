@@ -155,6 +155,40 @@ test("temporary keepalive failures degrade the session and a successful ping res
   await runtime.disconnect();
 });
 
+test("scheduled keepalive contains transient failures and recovers without an unhandled rejection", async () => {
+  const client = createMockClient();
+  client.ping = async (session) => {
+    client.calls.push(["ping", session]);
+    throw new CapitalDemoApiError("provider unavailable HTTP 503", 503);
+  };
+  let scheduledTask = null;
+  const scheduler = {
+    schedule(task) {
+      scheduledTask = task;
+      return "keepalive";
+    },
+    cancel() {},
+  };
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, Date.now, { scheduler });
+
+  await runtime.connect();
+  assert.equal(typeof scheduledTask, "function");
+
+  // Timer callbacks must settle normally; runKeepalive records degraded state.
+  await scheduledTask();
+  assert.equal(runtime.status().state, "degraded");
+
+  client.ping = async (session) => { client.calls.push(["ping", session]); };
+  await scheduledTask();
+  assert.equal(runtime.status().state, "connected");
+  assert.equal(runtime.status().lastError, undefined);
+  await runtime.disconnect();
+});
+
 test("runtime marks failed provider authentication as error without leaking credentials", async () => {
   const client = createMockClient();
   client.startSession = async () => { throw new Error("Capital.com DEMO session creation failed with HTTP 401."); };
