@@ -513,3 +513,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - HTTP credential connect/disconnect routes removed. Session status and market data remain on authenticated loopback HTTP.
 - Bounded SIGTERM/SIGKILL shutdown and socket-directory cleanup integrated.
 - Backend and native tests added; exact-head CI and owner-Mac DEMO authentication remain pending.
+
+
+## 2026-11-18 — PR #66 private IPC review remediation
+
+- Backend UDS test fixture teardown corrected: close the server, then remove the temporary directory; recursive self-await removed.
+- Swift UDS rejection diagnostic interpolation corrected; focused XCTest added.
+- Changes committed on PR #66 branch. Exact-head CI is pending; implementation is not yet TESTED/VERIFIED on the updated head.
+- Owner-Mac build/runtime, Keychain persistence and authenticated Capital.com DEMO remain pending.
