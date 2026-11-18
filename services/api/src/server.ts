@@ -243,64 +243,8 @@ async function handleMarketDataRequest(
     return;
   }
 
-  if (!runtime || isSessionUnavailable(runtime)) {
-    sendJson(response, 503, { error: "broker_session_unavailable" });
-    return;
-  }
-
-  try {
-    if (pathname === "/market-data/markets" && method === "GET") {
-      const searchTerm = (url.searchParams.get("searchTerm") ?? "").trim();
-      if (searchTerm.length < 1 || searchTerm.length > MAX_SEARCH_TERM_LENGTH) {
-        sendJson(response, 400, { error: "invalid_search_term" });
-        return;
-      }
-      const result = await runtime.getMarkets(searchTerm);
-      sendJson(response, 200, {
-        provider: "capital.com",
-        environment: "DEMO",
-        ...result,
-      });
-      return;
-    }
-    if (pathname === "/market-data/history" && method === "GET") {
-      const epic = (url.searchParams.get("epic") ?? "").trim();
-      if (!isValidEpic(epic)) {
-        sendJson(response, 400, { error: "invalid_epic" });
-        return;
-      }
-      const resolution = url.searchParams.get("resolution") ?? "MINUTE";
-      if (!ALLOWED_HISTORY_RESOLUTIONS.includes(resolution as HistoryResolution)) {
-        sendJson(response, 400, { error: "invalid_resolution" });
-        return;
-      }
-      const rawMax = url.searchParams.get("max") ?? "100";
-      const max = Number(rawMax);
-      if (
-        !/^\\d+$/.test(rawMax) ||
-        !Number.isSafeInteger(max) ||
-        max < 1 ||
-        max > MAX_HISTORY_RECORDS
-      ) {
-        sendJson(response, 400, { error: "invalid_max" });
-        return;
-      }
-      const result = await runtime.getPriceHistory(epic, resolution as HistoryResolution, max);
-      sendJson(response, 200, {
-        provider: "capital.com",
-        environment: "DEMO",
-        ...result,
-      });
-      return;
-    }
-  } catch (error) {
-    const message = error instanceof CapitalDemoApiError
-      ? error.message
-      : "market_data_request_failed";
-    sendJson(response, 502, { error: message });
-    return;
-  }
-
+  const isMarketSearch = pathname === "/market-data/markets";
+  const isMarketHistory = pathname === "/market-data/history";
   const allowedMethod = pathname === "/broker-session/status" ||
       pathname === "/market-data/status" ||
       pathname === "/market-data/markets" ||
@@ -308,10 +252,88 @@ async function handleMarketDataRequest(
       pathname === "/market-data/stream"
       ? "GET"
       : undefined;
-  if (allowedMethod) {
-    response.setHeader("allow", allowedMethod);
+
+  if (!isMarketSearch && !isMarketHistory) {
+    if (allowedMethod) {
+      response.setHeader("allow", allowedMethod);
+      sendJson(response, 405, { error: "method_not_allowed" });
+    } else {
+      sendJson(response, 404, { error: "not_found" });
+    }
+    return;
+  }
+
+  if (method !== "GET") {
+    response.setHeader("allow", "GET");
     sendJson(response, 405, { error: "method_not_allowed" });
     return;
   }
-  sendJson(response, 404, { error: "not_found" });
+
+  let searchTerm: string | undefined;
+  let epic: string | undefined;
+  let resolution: HistoryResolution | undefined;
+  let max: number | undefined;
+
+  if (isMarketSearch) {
+    searchTerm = (url.searchParams.get("searchTerm") ?? "").trim();
+    if (searchTerm.length < 1 || searchTerm.length > MAX_SEARCH_TERM_LENGTH) {
+      sendJson(response, 400, { error: "invalid_search_term" });
+      return;
+    }
+  } else {
+    epic = (url.searchParams.get("epic") ?? "").trim();
+    if (!isValidEpic(epic)) {
+      sendJson(response, 400, { error: "invalid_epic" });
+      return;
+    }
+
+    const rawResolution = url.searchParams.get("resolution") ?? "MINUTE";
+    if (!ALLOWED_HISTORY_RESOLUTIONS.includes(rawResolution as HistoryResolution)) {
+      sendJson(response, 400, { error: "invalid_resolution" });
+      return;
+    }
+    resolution = rawResolution as HistoryResolution;
+
+    const rawMax = url.searchParams.get("max") ?? "100";
+    max = Number(rawMax);
+    if (
+      !/^\d+$/.test(rawMax) ||
+      !Number.isSafeInteger(max) ||
+      max < 1 ||
+      max > MAX_HISTORY_RECORDS
+    ) {
+      sendJson(response, 400, { error: "invalid_max" });
+      return;
+    }
+  }
+
+  if (!runtime || isSessionUnavailable(runtime)) {
+    sendJson(response, 503, { error: "broker_session_unavailable" });
+    return;
+  }
+
+  try {
+    if (isMarketSearch) {
+      const result = await runtime.getMarkets(searchTerm!);
+      sendJson(response, 200, {
+        provider: "capital.com",
+        environment: "DEMO",
+        ...result,
+      });
+      return;
+    }
+
+    const result = await runtime.getPriceHistory(epic!, resolution!, max!);
+    sendJson(response, 200, {
+      provider: "capital.com",
+      environment: "DEMO",
+      ...result,
+    });
+  } catch (error) {
+    const message = error instanceof CapitalDemoApiError
+      ? error.message
+      : "market_data_request_failed";
+    sendJson(response, 502, { error: message });
+  }
+
 }
