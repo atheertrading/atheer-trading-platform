@@ -218,3 +218,91 @@ A milestone cannot close unless:
 - `CAP_ALLOW_TRADING=false` remains the default until DEMO reconciliation and RiskEngine/Execution Gateway validation are complete.
 - LIVE activation remains a separate explicit Owner Gate after M11 release readiness.
 - No milestone may weaken mandatory security, risk, audit or environment-isolation controls.
+
+
+---
+
+## 13. Re-audit addendum — 2026-11-18 23:15 Cairo
+
+This addendum supersedes the implementation snapshot in Section 10 where newer exact-head PR evidence is available. The original snapshot is retained for historical traceability.
+
+### 13.1 Current repository and merge state
+
+- Canonical repository: `atheertrading/atheer-trading-platform`.
+- Default branch: `main`; latest verified integration baseline remains `31e3e5547c9204645427ec56426e741d4bcfa955`.
+- No PR in the reviewed delivery stacks has been merged to `main`.
+- All current PR heads below are feature-branch evidence, not integrated `main` functionality.
+
+### 13.2 Updated domain, persistence, risk and OMS progress
+
+| Workstream | Current PR evidence | Verified scope boundary |
+|---|---|---|
+| Canonical multi-asset domain | #76 — `f1d3e60fde2b9021d65adcda7f8d338bdcd412cd` | Provider-neutral account/instrument/order-intent/risk/execution/reconciliation contracts and deterministic domain validation. No runtime API, persistence, RiskEngine, OMS or dealing. |
+| PostgreSQL persistence | #81 — `f31ec142ac59476ea083e88ee7162ef0701fc438` | Explicit checksum-verified migrations, environment-scoped records, durable intent/risk/audit/reconciliation journals and transactional domain-event outbox. No outbox dispatcher or execution worker. |
+| OMS lifecycle persistence | #82 — `b8a465f7a80dd1ca96f9f213977f2caa97b4fdf8` | Persists order and initial lifecycle/audit/domain event atomically, requiring the exact immutable intent and matching persisted `AUTHORIZED` RiskAssessment. No broker dispatcher, Execution Gateway or dealing. |
+| Pre-trade RiskEngine | #86 — `fde3450dba0334a1fcafc92b2260a6159e2563ca` | Deterministic policy-driven evaluator with `AUTHORIZED`, `REJECTED`, `HELD`, injected policy/context/control interfaces, provenance/freshness checks and exact-decimal validation. No HTTP route, runtime policy/context adapters, valuation service, persisted assessment adapter, OMS wiring or dealing. |
+
+The current backend dependency shape is `#76 → #81 → #82`, with `#86` based on #81. These are separate unmerged branches. #82's persistence contract and #86's evaluator must be reconciled against the same immutable assessment schema and exact intent binding before integration. A pure evaluator and an OMS persistence adapter do not together establish an operational order path.
+
+### 13.3 Updated workstation and market-data progress
+
+| Workstream | Current PR evidence | Verified scope boundary |
+|---|---|---|
+| IPDS foundation | #69 — `fa195a6e0617091322b7934564db0e681cd9d58d` | Adaptive semantic Dark/Light tokens and persisted appearance preference. The #00CEC8 versus Q&A Q39.1 #40E0D0 brand-turquoise conflict remains unresolved; do not silently choose a new canonical value. |
+| 12-screen blueprint | #73 — `6591283c8d9568e17c5e9bb328f43dfcd2ccf7b1` | Design blueprint and delivery plan; the 12-screen inventory is a target, not 12 implemented screens. |
+| Operational status strip | #80 — `9fd6e3aaa6af82eba55e01c512200cee6956bd01` | Separates API liveness, platform readiness and trading gate in the shell; presentation-only. |
+| Historical chart workspace | #70 — `031c88e73d7a172601138aea8904371a0f630a02` | Authenticated read-only DEMO historical charting; no live candle aggregation, indicators, drawing tools or dealing. |
+| Persistent DEMO Market Watch | #83 — `abf87d40c866a2b6ef7efffbd1b8d7186165f095` | Shared stream lifecycle and provider-backed quote presentation; account values remain unavailable without an authenticated account read model; no dealing. |
+| Instrument quick search | #85 — `326214b20dd2bdebd8d7e171bf8cf6aafbe12922` | Keyboard-accessible catalogue discovery using existing authenticated read-only search; no execution controls. |
+
+The UI/chart branches overlap in `ContentView.swift`, `MarketExplorerView.swift`, workspace composition and test files. The IPDS/chart stacks also contain Mermaid numbering collisions. Integration requires a deliberate source and diagram reconciliation, not a merge based only on GitHub's mergeable flag.
+
+### 13.4 Exact-head qualification status at this review
+
+- #76: Backend toolchain and repository hygiene passed; both macOS architecture jobs were cancelled. Its CI run is incomplete, not a source failure.
+- #81: Backend toolchain and repository hygiene passed; Intel qualification was in progress and Apple Silicon had been cancelled at inspection.
+- #82: Backend toolchain and repository hygiene passed; Intel was queued and Apple Silicon had been cancelled at inspection.
+- #86: Repository hygiene and Mermaid passed; Backend and Intel qualification were in progress/queued and Apple Silicon was queued at inspection.
+- #69, #80 and #85: targeted CI workflows were queued for retry after earlier cancelled macOS jobs. No retry result is claimed here.
+- #70 and #83: inspected runs had cancelled macOS/backend jobs; neither is fully qualified.
+- #78: the earlier roadmap/documentation workflow had cancelled jobs; this addendum itself must pass exact-head CI after commit.
+
+A completed pass is valid only for the exact commit and architecture tested. Cancellation is neither pass nor proof of a code defect. Hosted CI does not replace owner-workstation Xcode 14.3.1, native launch, visual/accessibility/RTL, Keychain restart, PostgreSQL backup/restore or authenticated broker-runtime qualification.
+
+### 13.5 Reconciled milestone status
+
+| Milestone | Updated status | Remaining exit evidence |
+|---|---|---|
+| M0 — Source Reconciliation | Partial | Library/Q&A/archive provenance, current source conflicts, stale main continuity and full PR ancestry still require reconciliation. |
+| M1 — Requirements & Architecture | Partial | Canonical domain and architecture records exist on feature branches; cross-contract review and accepted decision/traceability closure remain. |
+| M2 — Security & Persistence | Partial | Authenticated IPC and PostgreSQL migration/persistence work exist on unmerged branches; full lifecycle, backup/restore and runtime qualification remain. |
+| M3 — Data OS | Partial | Read-only streaming/history/chart increments exist on unmerged branches; provider-independent catalog, subscription governance, replay/gap recovery and complete data qualification remain. |
+| M4 — Capital.com Integration | Partial | DEMO read-only market data/search/history exist on open branches; authenticated account read model, complete instrument capabilities, broker reconciliation and dealing qualification remain. |
+| M5 — OMS & Risk Engine | Partial foundation | Domain contracts, persisted intent/risk records, OMS lifecycle persistence and a pure policy-driven RiskEngine exist on dependent branches; runtime adapters and integrated risk-to-OMS transaction remain. |
+| M6 — Execution Gateway | Not implemented | Exclusive authorized dealing boundary, outbox dispatch, broker confirmation and reconciliation path. |
+| M7 — Strategy & Position Management | Not implemented | Strategy lifecycle, position projections, broker-reconciled management and protective-action policy. |
+| M8 — Intelligence & Research | Specified / implementation unverified | Model Gateway, agent permissions, quant research, reproducible backtesting and evaluation. |
+| M9 — Desktop & Web Integration | Partial | Native shell, Markets, API Connection, Settings, chart/search/status increments; remaining screens, workspace lifecycle, accessibility, Arabic RTL and visual qualification. |
+| M10 — Integration & DEMO Validation | Not achieved | Complete end-to-end DEMO order lifecycle, failure/restart/idempotency/reconciliation and controlled soak evidence. |
+| M11 — Release Readiness | Not started | Signed distribution, security review, SLOs, recovery, release evidence and explicit release decision. |
+
+### 13.6 Multi-asset, broker and AI architecture clarifications
+
+- Separate **analytical support**, **market-data availability** and **trading availability**. Broker catalogue support determines whether that broker/account can trade an instrument; it must not define the platform's entire analytical universe.
+- Maintain a canonical platform instrument identity and map each provider/broker identifier and capability to it. Do not use a raw Capital.com EPIC as the platform's canonical instrument identity.
+- Do not label an instrument tradable until provider/account/jurisdiction availability, market-data entitlement, contract specifications, order capabilities and verification time are known.
+- Preserve DEMO, SIMULATION, BACKTEST and LIVE as isolated environments.
+- AI autonomy level and capability permissions are orthogonal. A3/A4 autonomy can only operate inside explicit, revocable, pre-authorized envelopes; agents cannot grant themselves permissions, change risk limits, authorize risk or call broker dealing endpoints.
+- The five-year strategic direction remains: professional core; intelligence ecosystem; scalable multi-user infrastructure; professional/institutional capabilities; integrated broker-independent ecosystem. These are strategic horizons, not fixed release dates.
+
+### 13.7 Documentation and diagram reconciliation
+
+The current `main` README and engineering continuity/implementation/task snapshots still describe earlier PR #9/#10/#17/#18 and November 17 status. PR #78 contains a more recent documentation snapshot but remains stacked on the unqualified chart branch. The integration tracker Issue #77 received a separate re-audit comment on 2026-11-18; see its conversation for the exact PR heads and qualification details.
+
+The Library contains the original Q&A repository and historical architecture archives. The historical Mermaid export contains 52 source diagrams; the GitHub diagram guide still records their reviewed extraction/commit migration as pending. Preserve original files and provenance. Keep canonical diagrams separate from historical exports, validate every committed `.mmd` in CI, and resolve diagram IDs 09–15 consistently before stack integration.
+
+### 13.8 Local synchronization and safety
+
+No local pull, checkout, branch switch, reset, stash, or workstation mutation was performed during this re-audit. Before local synchronization, inspect the owner's current worktree and preserve all staged, unstaged and untracked user changes. Use the repository's non-destructive sync procedure and fast-forward `main` only after the exact merge set is qualified.
+
+`CAP_ALLOW_TRADING=false` remains unchanged. No broker dealing, LIVE permission, production deployment or release is authorized by this roadmap.
