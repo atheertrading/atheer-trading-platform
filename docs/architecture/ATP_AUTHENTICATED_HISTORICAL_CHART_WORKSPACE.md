@@ -1,6 +1,6 @@
 # ATHEER Trading Pro — Authenticated Historical Chart Workspace
 
-**Status:** Implemented on PR #69 branch; exact-head CI and macOS qualification pending  
+**Status:** Implemented on PR #70 branch; exact-head CI and macOS qualification pending  
 **Workstream:** ATP-CHART-001  
 **Provider scope:** Capital.com DEMO historical prices only  
 **Execution scope:** Read-only; no order submission
