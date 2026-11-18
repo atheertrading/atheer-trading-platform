@@ -754,7 +754,7 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 ## 2026-11-18 — Authenticated historical chart workspace
 
-- Added PR #69 on `feat/authenticated-chart-workspace-2026-11-18`, stacked on PR #68. The chart client uses the supervised dynamic BackendIPCConnection base URL and private bearer IPC capability; the old PR #44 static-port unauthenticated client is not reused.
+- Added PR #70 on `feat/authenticated-chart-workspace-2026-11-18`, stacked on PR #68. The chart client uses the supervised dynamic BackendIPCConnection base URL and private bearer IPC capability; the old PR #44 static-port unauthenticated client is not reused.
 - Added strict historical payload decoding, separate Bid/Ask candlestick rendering, timeframe and side selection, manual refresh, duplicate/gap/receipt metadata and raw-provider limit warning.
 - Added Charts navigation, Open Chart from Market Explorer, and a real historical chart surface in the Command Center. No fabricated data or LIVE execution path.
 - Persistent Market Watch, live candle aggregation, indicators, drawings, replay and UI date-range selection remain pending.
