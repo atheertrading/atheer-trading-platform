@@ -736,7 +736,7 @@ All green results above are exact-SHA hosted checks only. They do not prove owne
 - Adds a deterministic chart candle projection with source provenance (historical, historical-updated-by-live, live-aggregated).
 - Aggregates fresh Capital.com DEMO Bid/Ask ticks into fixed UTC intraday MINUTE through HOUR bars; strict timestamp ordering and freshness checks; no synthetic gaps or fabricated volume.
 - HOUR_4, DAY and WEEK live aggregation remain deferred pending provider/session-calendar alignment.
-- XCTest and exact-head hosted CI are pending. No owner-Mac or live provider acceptance is claimed.
+- PR #45 exact-head hosted CI passed (run 44227375230); the bounded-retention child PR #47 exact-head CI is pending. No owner-Mac runtime/visual/accessibility or live provider acceptance is claimed.
 - No persistence, volume calculation, indicators, drawing tools, strategy execution, orders, or dealing. `CAP_ALLOW_TRADING=false` remains unchanged.
 
 
