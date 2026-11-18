@@ -7,10 +7,15 @@ const SERVICE_VERSION = "0.1.0";
 const LOCAL_MARKET_DATA_CLIENT_HEADER = "x-atheer-local-client";
 const LOCAL_MARKET_DATA_CLIENT_VALUE = "macOS";
 
+type IncomingMessageWithHeaders = IncomingMessage & {
+  readonly headers: Readonly<Record<string, string | string[] | undefined>>;
+};
+
 function isTrustedLocalMarketDataRequest(request: IncomingMessage): boolean {
-  const fetchSite = request.headers["sec-fetch-site"];
-  return request.headers[LOCAL_MARKET_DATA_CLIENT_HEADER] === LOCAL_MARKET_DATA_CLIENT_VALUE &&
-    request.headers.origin === undefined &&
+  const headers = (request as IncomingMessageWithHeaders).headers;
+  const fetchSite = headers["sec-fetch-site"];
+  return headers[LOCAL_MARKET_DATA_CLIENT_HEADER] === LOCAL_MARKET_DATA_CLIENT_VALUE &&
+    headers.origin === undefined &&
     (fetchSite === undefined || fetchSite === "none");
 }
 
