@@ -108,3 +108,4 @@ For each new substantial session, add one row and preserve chronology. The detai
 - Diagram: `docs/architecture/diagrams/12-postgres-transactional-persistence.mmd`.
 - Decision: EDL-012 in `ENGINEERING_DECISION_LOG.md`.
 - Session: `SESSION_2026-11-18_029_ATP_PERSISTENCE_001.md`.
+| ATP-2026-11-18-030 | 2026-11-18 | Owner-local PostgreSQL foundation and PR #41 migration compatibility review | Recorded the verified Postgres.app 18.7 local cluster, database/schema/least-privilege roles and rollback/denial tests; re-inspected PR #41 exact-head CI and found the migration runner/schema qualification mismatch that blocks local migration. | SESSION_2026-11-18_030_POSTGRESQL_LOCAL_FOUNDATION_AND_PR41_REVIEW; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; POSTGRESQL operations runbook; PR #41 |
