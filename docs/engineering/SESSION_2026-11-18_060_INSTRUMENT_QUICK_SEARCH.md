@@ -28,6 +28,7 @@ shell using an existing, verified backend client contract.
 - Reused `MarketSearchClient` and `MarketExplorerViewModel`; no new HTTP path,
   endpoint, or backend source was introduced.
 - Added a one-shot selection handoff into the existing Markets search.
+- Added an unavailable-state retry action for backend status.
 - Added deterministic tests for search submission and name/EPIC fallback.
 - Added the feature interaction contract and this session record.
 
@@ -41,7 +42,7 @@ included. No dealing controls or LIVE permissions are introduced.
 ## Verification status
 
 - Source transformations and API write preconditions are checked before commit.
-- Hosted exact-head CI is pending PR creation.
+- PR #85 exact-head workflow was created after the feature commits. On code head `5b69910114e184c179d1d747fa34173dc7573e35`, Local Sync Safety passed; Backend toolchain and Repository hygiene passed; Intel and Apple Silicon macOS jobs were queued at inspection. The subsequent engineering-record sync is documentation-only and requires a fresh exact-head workflow.
 - Native Xcode build, XCTest, app launch, keyboard/VoiceOver review, and screenshot
   QA require the owner macOS workstation and remain unverified in this session.
 - The branch is stacked on PR #80 and remains subject to Gate D reconciliation
@@ -53,3 +54,11 @@ included. No dealing controls or LIVE permissions are introduced.
 Inspect exact-head PR CI and review changes against the charting integration.
 Do not merge until both stack dependencies and architecture conflicts are
 reconciled and all required qualification gates pass.
+
+
+## Delivery record
+
+- PR: [#85](https://github.com/atheertrading/atheer-trading-platform/pull/85), Draft.
+- Implementation commits: `e7b4a8a96cf9dda840b72f5da7cd4c5f8b7af39d` and `5b69910114e184c179d1d747fa34173dc7573e35`.
+- A final documentation/continuity commit follows these implementation commits; exact final branch head and its CI must be checked from GitHub before qualification is reported.
+- No commit to `main`, merge, force-push, local-machine pull, or LIVE operation occurred.

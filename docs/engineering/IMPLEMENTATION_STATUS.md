@@ -469,3 +469,18 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Not yet verified: exact-head CI, owner-Mac Xcode/runtime, screenshots, contrast, accessibility, localization/RTL, multi-display and complete component inventory.
 - This is not Phase 00 approval, full IPDS completion, broker certification, trading qualification or LIVE authorization.
 
+
+
+## ATP-UI-QUICKSEARCH-001 — Global instrument quick search (2026-11-18)
+
+**Source status:** Implemented on a feature branch; final exact-head qualification pending.
+
+- PR: [#85](https://github.com/atheertrading/atheer-trading-platform/pull/85), Draft; branch `feat/ui-instrument-quick-search`, stacked on PR #80.
+- Adds a `⌘K` shell entry point and a native search sheet backed by the existing `MarketSearchClient` and `MarketExplorerViewModel`.
+- Selection routes to the implemented Markets destination and reuses its existing provider-backed search.
+- Results show only provider-returned instrument metadata: name, EPIC, currency and market status when available.
+- Adds a connection retry action in the unavailable state and regression tests for query handoff and name/EPIC fallback.
+- No backend source, endpoint, credentials, dealing API, order control, quote, balance, position or risk data was added.
+- Local Sync Safety passed on code head `5b69910114e184c179d1d747fa34173dc7573e35`; Backend toolchain and Repository hygiene passed. Intel/Apple Silicon macOS build and XCTest jobs were queued at the time of inspection. A documentation follow-up requires a new exact-head run.
+- Native Xcode build/launch, visual QA, VoiceOver, keyboard, RTL and Gate D integration remain pending.
+- `CAP_ALLOW_TRADING=false`; no LIVE authorization is implied.

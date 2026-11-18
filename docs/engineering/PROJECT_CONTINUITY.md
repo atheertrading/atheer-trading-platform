@@ -6,9 +6,9 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `work/local-pr18-qualification` (local qualification branch tracking PR #18 source branch `feat/macos-workspace-visual-foundation`; PR chain #10 → #17 → #18) |
-| Record status | Initial baseline; further source reconciliation required |
-| Last reviewed | 2026-11-17 |
+| Current work branch | `feat/ui-instrument-quick-search` (PR #85, stacked on PR #80; not merged) |
+| Record status | Team A implementation active; PR #85 is a Draft feature branch and remains subject to #77 integration gates |
+| Last reviewed | 2026-11-18 |
 
 ## 1. Current verified state
 
@@ -674,3 +674,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No credentials were read or changed; no broker authentication was attempted; no trading, risk-policy or LIVE configuration was changed. CAP_ALLOW_TRADING remains false.
 - Next gate: evaluate exact-head repository hygiene, Mermaid validation, Intel/Apple Silicon Debug/XCTest/Release and Swift CodeQL; then perform owner-Mac theme persistence and visual/accessibility qualification.
 
+
+
+## Team A implementation update — ATP-UI-QUICKSEARCH-001 (2026-11-18)
+
+- Canonical `main` remains `31e3e5547c9204645427ec56426e741d4bcfa955`; no change to `main` was made.
+- Current UI increment: [PR #85](https://github.com/atheertrading/atheer-trading-platform/pull/85), branch `feat/ui-instrument-quick-search`, stacked on PR #80.
+- Implemented keyboard-accessible `⌘K` instrument search using the existing authenticated, read-only `MarketSearchClient` and `MarketExplorerViewModel`; selecting provider metadata routes into Markets.
+- The search surface contains no quotes, account values, positions, orders, dealing API, or new backend contract.
+- PR #85 remains Draft. Its integration must reconcile the shared shell/search files with PR #70 under ATP-ENG-063 / #77. PR #80 and its IPDS parent remain separate dependencies.
+- Exact-head qualification: Local Sync Safety passed on source head `5b69910114e184c179d1d747fa34173dc7573e35`; Backend toolchain and Repository hygiene passed; Intel and Apple Silicon macOS jobs were queued at the recorded inspection. A documentation-only follow-up advances the head and requires fresh exact-head CI.
+- No owner-Mac Xcode build, app launch, screenshots, VoiceOver, RTL, or full broker/runtime qualification is claimed.
+- `CAP_ALLOW_TRADING=false`; no LIVE permission or dealing action was changed.
