@@ -475,3 +475,10 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Backend historical normalization now rejects any candle timestamp later than its receipt timestamp; a deterministic regression test covers the failure.
 - Commits: `aa425f9`, `b9f1a71`. Exact-head CI pending.
 - Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
+
+## ATP-ENG-060 — inherited broker IPC CI regression corrections
+
+- Corrected URLProtocol request-body test capture to support both `httpBody` and bounded `httpBodyStream` representations.
+- Corrected stale Unix-domain IPC error-description assertion to match the production private-channel wording.
+- Propagated test-only corrections through PR #55–#70 dependency branches where the affected tests exist.
+- Exact-head CI reruns pending; see session 058 for diagnosis.
