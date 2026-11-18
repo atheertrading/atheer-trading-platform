@@ -113,9 +113,11 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             guard payload.state == "connected" else {
                 let providerError = payload.lastError ?? ""
                 if providerError.contains("HTTP 401") ||
-                    providerError.contains("HTTP 403") ||
                     providerError.localizedCaseInsensitiveContains("rejected or expired") {
                     throw BrokerAuthenticationError.invalidCredentials
+                }
+                if providerError.contains("HTTP 403") {
+                    throw BrokerAuthenticationError.providerRejected(403)
                 }
                 if providerError.contains("HTTP 429") ||
                     providerError.localizedCaseInsensitiveContains("rate-limited") {
@@ -181,7 +183,8 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
 
     private func authenticationError(statusCode: Int) -> BrokerAuthenticationError {
         switch statusCode {
-        case 400, 401, 403: return .invalidCredentials
+        case 400, 401: return .invalidCredentials
+        case 403: return .providerRejected(403)
         case 429: return .rateLimited
         case 503: return .unavailable
         default: return .providerRejected(statusCode)
