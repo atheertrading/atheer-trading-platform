@@ -806,3 +806,12 @@ The stacked implementation branches were reconciled top-down using two-parent me
 Post-reconciliation GitHub compare results: PR #64 25 ahead / 0 behind; #66 72/0; #67 20/0; #68 32/0; #70 57/0. All five PRs report mergeable true at the latest inspection.
 
 These are branch ancestry merges only. The PRs remain draft; hosted exact-head CI, code review, owner-Mac build/runtime, authenticated DEMO broker verification and risk/execution qualification remain separate gates. No PR was merged into `main`.
+
+
+## 2026-11-18 — Session 061: CI execution bounds and stack propagation
+
+- Added `node --test --test-timeout=30000` and a 15-minute backend toolchain job deadline on PR #55 (commit `d7957bc52163ef30413d8df0b2271ef2dda216e1`). The previous prolonged test step's root cause remains unknown; the change bounds and identifies future hangs rather than claiming a fix to the underlying cause.
+- Propagated the parent commit through PR #64/#66/#67/#68/#70 with two-parent commits `a3380652952c530d667ee3337523f275dc532915`, `519cb86ba667cc9fdf34c08480f50fab65b80bf9`, `2506aebedc9fce416e929ffc0faf7e4963f4f3fd`, `b4ca620d23e65b4720d19782d4f3ffaa10787b09`, and `40cc706bee904c3b74eb904d271ea9672554a4dd`. Direct parent-to-child compares show 0 commits behind.
+- Refreshed exact-head CI remains pending. PR #53 has a recorded Intel macOS compile failure; PR #56 is the stacked correction branch and its current macOS qualification is pending. PR #57 remains a separate sibling, not integrated into the broker-to-chart stack.
+- PR #55/#64/#66/#67/#68/#70 remain draft; no PR was merged into main. No local Mac pull/build or broker DEMO session is claimed. `CAP_ALLOW_TRADING=false` remains unchanged.
+- Full evidence: `SESSION_2026-11-18_061_CI_EXECUTION_BOUNDS_AND_STACK_PROPAGATION.md`.

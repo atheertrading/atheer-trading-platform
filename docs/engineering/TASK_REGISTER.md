@@ -525,3 +525,14 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - All five branches now compare 0 commits behind their current parent; GitHub reports mergeable true at the latest inspection.
 - Final merge commits and exact heads are recorded in Project Continuity and Session 059.
 - This is not a merge to `main`; exact-head CI and owner-Mac/DEMO qualification remain mandatory.
+
+
+## ATP-ENG-062 — Bound backend CI execution and propagate through broker/chart stack
+
+- Added a 30-second per-test timeout to the Node test runner and a 15-minute backend toolchain job deadline on PR #55.
+- Commit: `d7957bc52163ef30413d8df0b2271ef2dda216e1`.
+- Propagated via history-preserving two-parent merges through PR #64/#66/#67/#68/#70; final PR #70 head at this batch: `40cc706bee904c3b74eb904d271ea9672554a4dd`.
+- Direct parent/child comparisons: 0 commits behind. Exact-head CI is pending; no test pass is claimed for the updated timeout configuration yet.
+- Upstream PR #53 has an Intel Swift compile failure; PR #56's correction branch requires fresh macOS qualification. PR #57 bounded-shutdown work remains a separate sibling requiring review.
+- No merge to main, local Mac synchronization, broker DEMO authentication, or dealing action was performed.
+- Session report: `SESSION_2026-11-18_061_CI_EXECUTION_BOUNDS_AND_STACK_PROPAGATION.md`.

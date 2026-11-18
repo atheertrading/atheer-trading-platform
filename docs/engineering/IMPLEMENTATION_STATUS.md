@@ -558,3 +558,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - `WorkspaceHomeView` and `CommandCenterView` now use explicit dependency initializers for the authenticated market-history client, selected instrument, backend health model, and navigation closures.
 - Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
 - Classification: IMPLEMENTED ON PR #70 BRANCH; hosted exact-head build/XCTest pending. No local Xcode, broker DEMO session, or runtime result is claimed.
+
+
+## 2026-11-18 — CI execution-bound guard
+
+- **IMPLEMENTED ON PR #55 AND PROPAGATED:** Node API test command now applies a 30-second per-test timeout; backend CI job has a 15-minute maximum runtime.
+- Commit: `d7957bc52163ef30413d8df0b2271ef2dda216e1`.
+- Propagation heads: PR #64 `a3380652952c530d667ee3337523f275dc532915`; #66 `519cb86ba667cc9fdf34c08480f50fab65b80bf9`; #67 `2506aebedc9fce416e929ffc0faf7e4963f4f3fd`; #68 `b4ca620d23e65b4720d19782d4f3ffaa10787b09`; #70 `40cc706bee904c3b74eb904d271ea9672554a4dd`.
+- **CI QUALIFICATION PENDING:** refreshed backend tests and macOS matrix checks have not yet completed on all exact heads. The earlier prolonged backend test step's root cause is not established.
+- **NOT VERIFIED:** owner-Mac build/runtime, visual/accessibility QA, Keychain restart, Capital.com DEMO authentication, or trading lifecycle.
