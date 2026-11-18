@@ -617,3 +617,10 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - This supersedes older continuity statements that PR #24/#25/#26 remained OPEN / DRAFT.
 - The merged broker-management foundation remains DEMO-only and read-only. Owner-Mac Keychain restart/runtime qualification and real DEMO authentication remain pending; no LIVE or dealing capability was enabled.
 - PR #33 has been retargeted to `main` after the PR #26 merge. Current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; its exact-head CI is running.
+
+
+### ATP-SEC-001A cross-PR integration
+
+- Native Market Search in PR #33 sends `X-ATHEER-LOCAL-CLIENT: macOS`.
+- Dependent PR #37 enforces the marker and rejects browser Origin / cross-site Fetch Metadata.
+- Integrate PR #33 before PR #37. The marker is not a secret and does not authenticate arbitrary local processes.
