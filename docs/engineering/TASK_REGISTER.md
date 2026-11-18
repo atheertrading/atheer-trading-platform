@@ -393,7 +393,7 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 | M03-006 | P2 | Evaluate multi-agent workflow outcomes and decide whether to scale | PENDING | Measured lead time, dependency wait, contract drift, rework, defects, evidence quality and owner decision |
 
 - Operating specification: [ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md](ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md).
-- Adoption and pilot tracker: [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60).
+- Adoption and pilot tracker: [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60); governing-document review: [Draft PR #61](https://github.com/atheertrading/atheer-trading-platform/pull/61).
 - M03 is a cross-cutting engineering operating workstream; it does not replace M01 architecture tasks, M02 product tasks or Issue #59's controlled DEMO qualification.
 - Agent roles are logical until actual model/runtime, tool, identity and permission availability is verified. Separate ChatGPT conversations do not imply shared memory or autonomous coordination.
 - The first pilot is read-only Market Explorer work. No dealing, broker permission, risk-limit, production or LIVE authorization is included.
