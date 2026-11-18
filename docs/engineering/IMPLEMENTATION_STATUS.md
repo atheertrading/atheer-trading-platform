@@ -521,3 +521,10 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Swift UDS rejection diagnostic interpolation corrected; focused XCTest added.
 - Changes committed on PR #66 branch. Exact-head CI is pending; implementation is not yet TESTED/VERIFIED on the updated head.
 - Owner-Mac build/runtime, Keychain persistence and authenticated Capital.com DEMO remain pending.
+
+
+## 2026-11-18 — Cached quote freshness replay correction
+
+- Source implementation: recompute cached quote freshness using the current backend clock at replay time; preserve original provider and receipt timestamps.
+- Regression test source: verify a quote that ages 6 seconds after receipt is replayed as stale and is not eligible for automated decisions.
+- Status: IMPLEMENTED ON PR #67 BRANCH; exact-head hosted CI and runtime verification pending.
