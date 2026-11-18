@@ -756,6 +756,45 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(model.state, .results)
     }
 
+    @MainActor
+    func testMarketExplorerSearchEntryPointSubmitsTheSelectedInstrumentQuery() async {
+        let instrument = MarketInstrumentSummary(
+            epic: "GOLD",
+            name: "Gold",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+            results: [instrument]
+        )
+        let model = MarketExplorerViewModel(client: client)
+
+        await model.refreshBackendStatus()
+        await model.search(for: InstrumentQuickSearchRouting.marketSearchTerm(for: instrument))
+
+        XCTAssertEqual(client.submittedSearchTerms, ["Gold"])
+        XCTAssertEqual(model.results, [instrument])
+        XCTAssertEqual(model.state, .results)
+    }
+
+    func testInstrumentQuickSearchUsesNameAndFallsBackToProviderEPIC() {
+        let named = MarketInstrumentSummary(
+            epic: "GOLD",
+            name: "  Gold  ",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let unnamed = MarketInstrumentSummary(
+            epic: "SILVER",
+            name: "   ",
+            marketStatus: nil,
+            currency: nil
+        )
+
+        XCTAssertEqual(InstrumentQuickSearchRouting.marketSearchTerm(for: named), "Gold")
+        XCTAssertEqual(InstrumentQuickSearchRouting.marketSearchTerm(for: unnamed), "SILVER")
+    }
 
     @MainActor
     func testAppearancePreferenceResolvesDarkFirstAndRejectsUnknownValues() {
@@ -874,6 +913,7 @@ private final class StubMarketSearchClient: MarketSearchClient {
     private let status: MarketDataBackendStatus
     private let instruments: [MarketInstrumentSummary]
     private(set) var searchCallCount = 0
+    private(set) var submittedSearchTerms: [String] = []
 
     init(status: MarketDataBackendStatus, results: [MarketInstrumentSummary]) {
         self.status = status
@@ -886,6 +926,7 @@ private final class StubMarketSearchClient: MarketSearchClient {
 
     func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
         searchCallCount += 1
+        submittedSearchTerms.append(searchTerm)
         return instruments
     }
 }
