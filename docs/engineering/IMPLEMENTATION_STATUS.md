@@ -455,3 +455,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Added XCTest coverage for graceful shutdown, SIGKILL escalation, non-zero exit, and idempotent cleanup.
 - `CAP_ALLOW_TRADING=false` is set by the supervisor.
 - Child stderr remains discarded; operation-specific diagnostics are not yet surfaced. Exact-head CI and owner-Mac verification remain pending.
+
+
+## 2026-11-18 — Bounded supervisor shutdown integrated with Swift compile corrections
+
+- **RECONCILED:** PR #57 now contains the current PR #56 compile-correction head through two-parent merge commit `ed839778b4b86c242b73b2b43c1e0fba10015925`; comparison is 16 ahead / 0 behind.
+- **CI VERIFIED ON EXACT HEAD:** workflow `44352748432`; Node.js 24.22.3, TypeScript type-check, Backend Toolchain, 30/30 API tests, and Repository hygiene passed.
+- **PENDING:** Intel and Apple Silicon macOS build/XCTest were queued at report time. No Swift compile/test pass is claimed.
+- **NOT VERIFIED:** owner-Mac build/runtime, visual/accessibility review, Keychain restart, Capital.com DEMO authentication, or broker execution.
+- **OBSERVABILITY LIMITATION:** child stderr still redirects to the null device; only overall exit status reaches the native UI.

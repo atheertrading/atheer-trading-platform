@@ -370,3 +370,12 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - `CAP_ALLOW_TRADING=false` is explicitly set in the child environment.
 - Operation-specific stderr diagnostics are still discarded by the native supervisor; only the overall failure status is surfaced. Filtered diagnostic capture remains open.
 - Latest code head `4a55032511125d98a9cb4861c8ab4173bea42a3e`; exact-head CI is pending.
+
+
+## ATP-ENG-063 — Reconcile bounded supervisor shutdown with compile corrections
+
+- Integrated current PR #56 head `493e91b010c5637f37a3bc270c99995da3f6d67d` into PR #57 using two-parent commit `ed839778b4b86c242b73b2b43c1e0fba10015925`; compare is 16 ahead / 0 behind.
+- Exact-head workflow `44352748432`: Backend Toolchain passed; 30 API tests passed, 0 failed; TypeScript type-check and repository hygiene passed.
+- Intel and Apple Silicon macOS build/XCTest remain queued; exact-head native qualification is incomplete.
+- PR #57 remains draft. Child stderr operation-level redacted diagnostics remain unavailable to the native UI. Owner-Mac/runtime and DEMO verification remain pending.
+- Session report: `SESSION_2026-11-18_062_SUPERVISOR_DEPENDENCY_RECONCILIATION_AND_BOUNDED_SHUTDOWN_CI.md`.

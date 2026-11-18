@@ -105,3 +105,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 | ATP-2026-11-18-043 | 2026-11-18 | PR #33 Market Explorer merge and broker integration gate refresh | Merged exact qualified PR #33 at `2e8bf9bd`; recorded successful Intel/Apple Silicon/backend/hygiene/CodeQL/sync checks; reconciled Library Q5/Q6/Q10 with PR #26 and PR #37 duplicate session authorities and connection orchestration gaps; documented PR #37 ancestry divergence and downstream chart PR stack status. | PR #33; PR #37; PR #44/#45/#47; ATP-BRK-002; ATP-BRK-003; ATP-MKT-007; EDL-022; EDL-023; SESSION_2026-11-18_041_MARKET_EXPLORER_MERGE_AND_BROKER_GATES |
 
+
+| ATP-2026-11-18-062 | 2026-11-18 | Supervisor dependency reconciliation and bounded shutdown CI | Merged latest PR #56 compile fixes into PR #57 with a history-preserving two-parent commit; backend toolchain passed 30/30 tests and repository hygiene passed on the exact merged head. Intel/Apple Silicon macOS checks remain queued. | PR #56/#57; commit ed839778b4b86c242b73b2b43c1e0fba10015925; workflow 44352748432; SESSION_2026-11-18_062_SUPERVISOR_DEPENDENCY_RECONCILIATION_AND_BOUNDED_SHUTDOWN_CI |

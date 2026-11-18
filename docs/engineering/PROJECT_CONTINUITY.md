@@ -645,3 +645,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Latest code head: `4a55032511125d98a9cb4861c8ab4173bea42a3e`. Local Sync Safety and CI results from earlier head `00d8aab` do not qualify this latest commit. Exact-head macOS builds/XCTest remain pending.
 - Limitation: native supervisor currently discards child stderr; the overall exit failure is surfaced, but operation-specific redacted shutdown diagnostics are not yet visible in the app. This is recorded as follow-up, not claimed complete.
 - Evidence: `SESSION_2026-11-18_053_NATIVE_SHUTDOWN_OUTCOME_QUALIFICATION.md`.
+
+
+## 2026-11-18 — Session 062: supervisor dependency reconciliation
+
+- Reconciled PR #57 with current PR #56 head `493e91b010c5637f37a3bc270c99995da3f6d67d` using two-parent merge commit `ed839778b4b86c242b73b2b43c1e0fba10015925`; prior PR #57 head `99f740b74b786d78d375e8415d085882adfe3ca0` remains the second parent. Current comparison: 16 ahead / 0 behind; mergeable.
+- The combined branch contains the compile corrections and bounded shutdown implementation. Exact-head workflow `44352748432`: Backend Toolchain passed; TypeScript type-check passed; API test suite 30/30 passed; Repository hygiene passed. Intel and Apple Silicon macOS jobs were queued at report time.
+- PR #57 remains draft; no merge to main, local Mac validation, provider DEMO authentication, or dealing action was performed. `CAP_ALLOW_TRADING=false` remains enforced.
+- Child stderr remains discarded by the native supervisor; operation-level redacted shutdown diagnostics are an outstanding observability task.
+- Evidence: `SESSION_2026-11-18_062_SUPERVISOR_DEPENDENCY_RECONCILIATION_AND_BOUNDED_SHUTDOWN_CI.md`.
