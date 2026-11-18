@@ -5,7 +5,7 @@
 **Workstream:** Team B — Backend Engineering  
 **PR:** #66 — private Unix-domain broker credential IPC  
 **Branch:** `fix/broker-credential-unix-domain-ipc`  
-**Current code/test head recorded before this report commit:** `dfd0bf238dec3d88e061367251954fc860dffbb4`
+**Final implementation/test head:** `7689188b649b037c795642e9c0d86af4579303ee`
 
 ## Objective
 
@@ -84,11 +84,13 @@ Reviewed the source Q&A:
 
 This code head included the serialized disconnect race correction and the 429 retry policy after the numeric Retry-After parser correction. The immediately earlier head `650add5019bbeebadc7da14cc6d1f03f9f7b6169` had one failed numeric-header assertion; that run is not carried forward as a pass.
 
-### Later timeout-signal correction
+### Later transport and final-cooldown corrections
 
-A final diff review found the per-attempt timeout signal had been removed from the shared transport call while redundant caller signals were being cleaned up. The signal was restored at the shared fetch boundary and the callers' duplicate timeout signals removed. A deterministic regression assertion now verifies that retry attempts receive separate active AbortSignals.
+A final diff review found the per-attempt timeout signal had been removed from the shared transport call while redundant caller signals were being cleaned up. The signal was restored at the shared fetch boundary and the callers' duplicate timeout signals removed. A deterministic regression assertion verifies that retry attempts receive separate active AbortSignals.
 
-The current code/test head at report creation is `dfd0bf238dec3d88e061367251954fc860dffbb4`. Its exact-head workflow is pending and must be inspected before claiming this final timeout-signal correction is verified.
+A further rate-limit review found that an exhausted final HTTP 429 returned before publishing its Retry-After value to the shared process cooldown. The client now records the cooldown for every HTTP 429, including the final response after the three-retry budget is exhausted. A subsequent request therefore still waits for the provider-directed delay. Added deterministic coverage that sends four consecutive 429 responses, then verifies the next request waits the full five-second Retry-After. The non-retry contract now also explicitly tests a thrown network failure in addition to HTTP 503.
+
+The final implementation/test head is `7689188b649b037c795642e9c0d86af4579303ee`. Exact-head CI has not yet been observed for this final head; no pass is claimed until Backend Toolchain, Repository Hygiene, Intel and Apple Silicon results are inspected.
 
 ## 5. Security and trading constraints
 
