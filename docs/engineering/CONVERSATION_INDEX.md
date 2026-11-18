@@ -107,3 +107,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 | ATP-2026-11-18-065 | 2026-11-18 | Team B backend API-boundary validation and OpenAPI 3.1 contract | Corrected history max validation; added market search and EPIC HTTP validation; regression tests for bounds, invalid inputs and provider-call suppression; published current-route OpenAPI contract and contract-integrity test; updated backend README and continuity. PR #84 remains open pending final exact-head CI/macOS matrix. | PR #84; ATP-TEAM-B-001; SESSION_2026-11-18_065_BACKEND_API_BOUNDARY_AND_OPENAPI_CONTRACT; services/api/openapi.yaml |
 
+| ATP-2026-11-18-066 | 2026-11-18 | OpenAPI source-integrity correction in Batch 065 | Removed repeated OpenAPI root component sections, verified unique root structure, seven route entries and all 33 internal references; strengthened the contract regression test to catch duplicate root sections and fixed test newline splitting. Exact final-head CI still pending. | PR #84; services/api/openapi.yaml; openapi-contract.test.mjs; SESSION_2026-11-18_065_BACKEND_API_BOUNDARY_AND_OPENAPI_CONTRACT |
+
