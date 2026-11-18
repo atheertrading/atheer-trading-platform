@@ -772,3 +772,32 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - These follow-up commits advanced the branch to `995145c6d44435fad1b5ee3c342e994c0852e119`; the prior 52/52 and workflow results do not qualify this new head. A fresh exact-head CI run is required.
 - Intel and Apple Silicon macOS jobs on the earlier run were cancelled before qualification; neither architecture is currently qualified for PR #42.
 - PR #41 current head remains `c9eb73d28c24398dfcb435525118f971aae221e8`; Backend/Hygiene/Mermaid/Local Sync passed, Apple Silicon passed, Intel Debug was still in progress at last inspection.
+
+
+## ATP-MARKET-001 continuation — 2026-11-18
+
+### Library sources inspected
+- Read the complete retained Library screen implementation directive `Screen Implementation, Application Development & Professional Trading Workstation`.
+- Materialized and inspected the Q&A archive's `Owner and Developer Approval.md`, `Professional Trading Screens, Workspace Architecture & User Experience.md`, and Section 18 Q1/Q11/Q12/Q16/Q17/Q18/Q20. This was targeted source review, not an exhaustive review of all 517 Q&A records.
+- Read repository Mermaid diagrams 04, 05, 11 and 12. New diagrams 13 and 14 document the OMS persistence and shared Market Watch architecture.
+- `PROJECT_KNOWLEDGE_SOURCES.md` records the exact Library/archive identifiers and review scope.
+
+### PR #43 — Command Center Live Market Watch
+- PR: https://github.com/atheertrading/atheer-trading-platform/pull/43 (OPEN / DRAFT).
+- Branch: `feat/command-center-live-market-watch`; parent: PR #42 branch `feat/oms-authorized-order-persistence`.
+- Current branch head at this continuity update: `7179c81c0daa6d83367c244d25650321f2e59c6e`.
+- Added persistent versioned watchlist storage, EPIC validation/deduplication/order/cap/recovery, shared app-scoped market data model, integrated Command Center Market Watch, provider-backed Bid/Ask/spread/age/freshness, explicit stream controls, and tests.
+- Stream lifecycle is no longer tied to `MarketExplorerView.onDisappear`. Clearing the last subscription or removing the last watchlist instrument stops the requested stream. Removing a watchlist item also unsubscribes it; context actions support stable watchlist reordering.
+- No dealing actions or synthetic data are exposed.
+
+### PR #43 qualification snapshot
+- Earlier PR #43 head `3bbe18d5b43e66e7cb7e1c0fa928ec29dd5598dc`, run `44214994515`: backend strict type-check and inherited backend/PostgreSQL suite 52/52 passed; Repository Hygiene passed; Mermaid run `44214994367` passed; Local Sync Safety run `44214994556` passed.
+- Intel and Apple Silicon jobs were still at XcodeGen installation at last inspection. No native build/XCTest/Release result was available.
+- Subsequent code hardening changed the stream empty-selection lifecycle, Market Watch removal behavior, freshness display, and added a last-unsubscribe XCTest assertion. Documentation/source register updates advanced the branch to `7179c81c0daa6d83367c244d25650321f2e59c6e`.
+- Therefore the earlier 52/52 and workflow checks are historical and do not qualify the current PR #43 head. Exact-head CI must be refreshed after the latest branch changes.
+
+### PR #42 and PR #41 dependency snapshots
+- PR #42 current code head: `ff7af23585b8d7272d826fd29b03111ed57492bf`; backend 52/52, Repository Hygiene, Mermaid, Local Sync Safety, and Apple Silicon Debug/XCTest/Release passed; Intel XCTest was still in progress at last inspection.
+- PR #41 current code head: `c9eb73d28c24398dfcb435525118f971aae221e8`; backend, Repository Hygiene, Mermaid, Local Sync Safety and Apple Silicon passed; Intel Release/CodeQL was still in progress at last inspection.
+- Both PRs remain OPEN / DRAFT. PR #43 is stacked behind PR #42, which is stacked behind PR #41. Merge only in dependency order after exact-head qualification and GitHub mergeability checks.
+- No owner-local PostgreSQL 18.7 migration, local Mac pull, Keychain validation, or visual/accessibility acceptance has been performed. `CAP_ALLOW_TRADING=false` remains unchanged.
