@@ -10,7 +10,7 @@ export function loadRuntimeConfig(
   environment: Readonly<Record<string, string | undefined>>,
 ): ApiRuntimeConfig {
   const rawPort = environment.PORT ?? String(DEFAULT_PORT);
-  if (!/^\\d+$/.test(rawPort)) {
+  if (!/^\d+$/.test(rawPort)) {
     throw new Error("PORT must be an integer between 0 and 65535.");
   }
   const port = Number(rawPort);
