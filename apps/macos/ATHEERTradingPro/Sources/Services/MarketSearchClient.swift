@@ -95,11 +95,20 @@ struct MarketSearchPayloadDecoder {
 
 struct URLSessionMarketSearchClient: MarketSearchClient {
     private let baseURL = URL(string: URLSessionBackendHealthClient.baseURLString)!
-    private let session: URLSession
+    private let requestExecutor: URLSessionRequestExecutor
     private let decoder = MarketSearchPayloadDecoder()
 
-    init(session: URLSession = .shared) {
-        self.session = session
+    init(session: URLSession? = nil) {
+        let resolvedSession = session ?? Self.makeEphemeralSession()
+        self.requestExecutor = URLSessionRequestExecutor(session: resolvedSession)
+    }
+
+    private static func makeEphemeralSession() -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpCookieStorage = nil
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: configuration)
     }
 
     func fetchBackendStatus() async throws -> MarketDataBackendStatus {
@@ -131,7 +140,7 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await requestExecutor.data(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw MarketSearchError.invalidResponse
         }
@@ -153,7 +162,7 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
 
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await requestExecutor.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 throw MarketSearchError.invalidResponse
             }
