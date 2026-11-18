@@ -57,7 +57,7 @@ final class BackendRuntimeViewModel: ObservableObject {
     }
 
     func start() async {
-        guard state != .starting else { return }
+        guard state != .starting, state != .ready else { return }
         state = .starting
         do {
             let connection = try await supervisor.start()
