@@ -691,3 +691,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Display-only DEMO market data; no OMS/order/execution capability. Credential confidentiality over local IPC remains P0 and is not solved by this quote stream.
 - Exact-head CI is pending. Owner-Mac build and real DEMO quote qualification are pending.
 - Evidence: `SESSION_2026-11-18_054_MARKET_EXPLORER_LIVE_STREAM_INTEGRATION.md`.
+
+
+## 2026-11-18 — PR stack reconciliation status
+
+- PRs #49, #50, #54 and #58 are closed unmerged as superseded/duplicate after their useful code, tests, diagrams or historical records were preserved.
+- PR #64 is the clean replacement for PR #58 and remains draft pending exact-head CI.
+- PRs #55 and #57 remain draft pending exact-head CI. PR #55 still has the P0 broker-credential confidentiality gate.
+- No PR in this stack has been merged in this batch. PR #57 may be integrated into PR #56 after its full macOS/backend checks pass; broker-session and live-stream branches must not be merged until the credential transport gate is resolved.
