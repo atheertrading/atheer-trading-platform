@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { CapitalDemoRuntime, createCapitalDemoRuntime } from "../dist/market-data/capital-demo-runtime.js";
 import { BrokerSessionManager } from "../dist/market-data/broker-session-manager.js";
-import { CapitalDemoApiError } from "../dist/market-data/capital-demo-client.js";
+import { CapitalDemoApiError, CapitalDemoClient } from "../dist/market-data/capital-demo-client.js";
 import { createApiServer } from "../dist/server.js";
 
 const credentials = {
@@ -290,6 +290,58 @@ test("broker session manager preserves creation throttling across account replac
   assert.equal(factoryCalls, 2);
   assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect", "connect"]);
   await manager.disconnect();
+});
+
+test("broker session manager preserves the shared REST request budget across runtime replacement", async () => {
+  const waits = [];
+  const calls = [];
+  let monotonicNow = 0;
+  let wallClockNow = 1_800_000_000_000;
+  const client = new CapitalDemoClient(async (url, init) => {
+    const path = new URL(String(url)).pathname;
+    calls.push({ path, method: init?.method ?? "GET" });
+    if (path === "/api/v1/session" && init?.method === "POST") {
+      return new Response("{}", {
+        status: 200,
+        headers: { CST: "demo-cst", "X-SECURITY-TOKEN": "demo-security-token" },
+      });
+    }
+    if (path === "/api/v1/session" && init?.method === "DELETE") {
+      return new Response(null, { status: 200 });
+    }
+    return new Response(JSON.stringify({ markets: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }, () => wallClockNow, {
+    requestIntervalMs: 100,
+    monotonicNow: () => monotonicNow,
+    sleep: async (milliseconds) => {
+      waits.push(milliseconds);
+      monotonicNow += milliseconds;
+    },
+  });
+  const manager = new BrokerSessionManager(undefined, () => wallClockNow, 0, client);
+
+  assert.equal((await manager.connect({
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "first-password",
+  })).state, "connected");
+  await manager.getMarkets("Apple");
+  await manager.disconnect();
+
+  wallClockNow += 1_000;
+  assert.equal((await manager.connect({
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "second-password",
+  })).state, "connected");
+  await manager.getMarkets("Apple");
+  await manager.disconnect();
+
+  assert.equal(calls.length, 6);
+  assert.deepEqual(waits, [100, 100, 100, 100, 100]);
 });
 
 test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
