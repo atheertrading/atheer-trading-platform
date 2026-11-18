@@ -54,7 +54,7 @@ test("market-data stream reconnect uses deterministic exponential full jitter", 
   const originalSetTimeout = globalThis.setTimeout;
   const nativeSetTimeout = originalSetTimeout.bind(globalThis);
   const sockets = [];
-  let reconnectDelayMs;
+  const reconnectDelays = [];
 
   globalThis.WebSocket = FakeWebSocket;
   try {
@@ -82,14 +82,20 @@ test("market-data stream reconnect uses deterministic exponential full jitter", 
     assert.equal(runtime.status().state, "connected");
 
     globalThis.setTimeout = (callback, delay, ...args) => {
-      reconnectDelayMs = delay;
+      reconnectDelays.push(delay);
       return nativeSetTimeout(callback, 60_000, ...args);
     };
 
     sockets[0].interrupt();
 
     assert.equal(runtime.status().state, "degraded");
-    assert.equal(reconnectDelayMs, 250);
+    const expectedDelays = [250, 500, 1_000, 2_000, 4_000, 7_500, 7_500];
+    for (const expectedDelay of expectedDelays) {
+      assert.equal(reconnectDelays.at(-1), expectedDelay);
+      runtime.clearReconnectTimer();
+      runtime.scheduleReconnect();
+    }
+    assert.deepEqual(reconnectDelays, expectedDelays);
     assert.equal(sockets.length, 1);
 
     await runtime.disconnect();
