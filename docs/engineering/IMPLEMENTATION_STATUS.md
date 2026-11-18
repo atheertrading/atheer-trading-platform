@@ -486,3 +486,9 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 3. Prepare a controlled PostgreSQL 18.7 local qualification; no migration until the plan and exact-head evidence are complete.
 4. Backup/restore, retention, PITR, production TLS, role provisioning, and restore drills remain open.
 5. No OMS lifecycle worker, durable outbox consumer, Execution Gateway, or broker dispatch is included in this PR. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+### Follow-up batch snapshot — branch HEAD `434ae1191c6a66cafe30e98f21c5ee03a8a4faf8`
+
+- Sequence privilege regression test and documentation reconciliation are committed; this branch HEAD is newer than the previously reported code-bearing head `94cc13d...`.
+- Current exact-head workflows: Mermaid run `44209957024` in progress; Local Sync Safety run `44209957152` passed; CI run `44209957185` has Backend queued and Intel/Apple Silicon/Repository Hygiene in progress at inspection.
+- The 49/49 Backend result applies to `94cc13d...` only and does not include the new sequence regression test. Do not carry it forward to `434ae119...`.
