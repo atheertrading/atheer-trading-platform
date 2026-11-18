@@ -140,7 +140,7 @@ test("loopback market-data routes connect and return DEMO market results only", 
 });
 
 test("market-data routes reject wrong methods and invalid resolutions", async () => {
-  const wrongMethod = await fetch(baseUrl + "/market-data/connect");
+  const wrongMethod = await fetch(baseUrl + "/market-data/connect", { headers: authorization });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get("allow"), "POST");
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
