@@ -680,3 +680,9 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 3. Review the current Workstation reference and relevant canonical Mermaid sources when accessible; preserve the distinction between UI workspace persistence and trading/runtime state.
 4. Prepare a controlled local PostgreSQL 18.7 qualification plan. Do not run `npm run migrate` on the owner database until hosted tests pass on the final head and the plan is reviewed.
 5. Keep PR #41 stacked on PR #40; no merge or approval is claimed.
+
+### Follow-up batch snapshot — branch HEAD `434ae1191c6a66cafe30e98f21c5ee03a8a4faf8`
+
+- Sequence privilege regression test and documentation reconciliation are committed; this branch HEAD is newer than the previously reported code-bearing head `94cc13d...`.
+- Current exact-head workflows: Mermaid run `44209957024` in progress; Local Sync Safety run `44209957152` passed; CI run `44209957185` has Backend queued and Intel/Apple Silicon/Repository Hygiene in progress at inspection.
+- The 49/49 Backend result applies to `94cc13d...` only and does not include the new sequence regression test. Do not carry it forward to `434ae119...`.
