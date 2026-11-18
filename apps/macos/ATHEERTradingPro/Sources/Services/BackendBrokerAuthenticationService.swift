@@ -82,7 +82,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             maskedAccountIdentifier = Self.maskIdentifier(credential.identifier)
             authenticatedAt = timestamp
             return BrokerAccountSnapshot(
-                accountIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
+                maskedLoginIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
                 currencyCode: nil,
                 authenticatedAt: timestamp
             )
