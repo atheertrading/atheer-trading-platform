@@ -136,6 +136,44 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
         }
     }
 
+    func testProviderPermissionFailureIsNotMisclassifiedAsInvalidCredentials() async throws {
+        BrokerAuthenticationURLProtocol.configure(
+            status: 403,
+            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"error","lastError":"Capital.com DEMO session creation failed with HTTP 403."}"#.utf8)
+        )
+        let (service, _) = try makeService()
+
+        do {
+            _ = try await service.authenticate(credential, environment: .demo)
+            XCTFail("Provider permission denial must not be reported as invalid credentials.")
+        } catch let error as BrokerAuthenticationError {
+            if case .providerRejected(let status) = error {
+                XCTAssertEqual(status, 403)
+            } else {
+                XCTFail("Unexpected broker authentication error: \(error)")
+            }
+        }
+    }
+
+    func testSessionStatusPreservesRateLimitClassification() async throws {
+        BrokerAuthenticationURLProtocol.configure(
+            status: 200,
+            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"error","lastError":"Capital.com DEMO session creation failed with HTTP 429."}"#.utf8)
+        )
+        let (service, _) = try makeService()
+
+        do {
+            _ = try await service.validateSession()
+            XCTFail("Rate-limited session status must not be reported as connected.")
+        } catch let error as BrokerAuthenticationError {
+            if case .rateLimited = error {
+                XCTAssertEqual(BrokerAuthenticationURLProtocol.capturedRequests().count, 1)
+            } else {
+                XCTFail("Unexpected broker authentication error: \(error)")
+            }
+        }
+    }
+
     func testDisconnectRequiresSuccessfulBackendAcknowledgement() async throws {
         BrokerAuthenticationURLProtocol.configure(
             status: 200,
