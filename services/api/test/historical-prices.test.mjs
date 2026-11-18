@@ -66,6 +66,14 @@ test("rejects malformed timestamps, crossed bid/ask, and inconsistent OHLC range
   );
 });
 
+test("rejects future-dated historical candles relative to receipt time", () => {
+  const futureTimestamp = new Date(receivedAtMs + 60_000).toISOString().slice(0, 19);
+  assert.throws(
+    () => normalizeCapitalHistoricalPrices("AAPL", "MINUTE", [providerCandle(futureTimestamp)], receivedAtMs),
+    /future-dated relative to receipt time/,
+  );
+});
+
 test("drops exact duplicate candles but rejects conflicting duplicate timestamps", () => {
   const first = providerCandle("2026-11-17T10:00:00");
   const conflicting = providerCandle("2026-11-17T10:00:00", 1);
