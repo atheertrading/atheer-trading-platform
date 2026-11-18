@@ -55,22 +55,33 @@ The local role model is deliberately least-privilege:
 
 The owner verified app connectivity and CREATE denial, migrator authentication and explicit role switching, owner ownership of a temporary probe table, app DML permissions, and rollback/removal of probe objects. Default sequence privileges are configured but still need an explicit test. No project trading migration has been applied locally.
 
-## Local migration compatibility gate — BLOCKED
+## Local migration compatibility gate — role/schema fix implemented; final qualification pending
 
-**Do not run `npm run migrate` against this local database with the current PR #41 implementation.**
+The former role/schema incompatibility has been corrected in PR #41 code-bearing head `94cc13d13f56fd1f2efa450747e72dc841f65017`:
 
-The current migration CLI connects as `atheer_migrator`. Because the role is NOINHERIT, owner privileges are not inherited automatically. The corrected runner must execute `SET LOCAL ROLE atheer_db_owner` inside its migration transaction. The migration ledger, migration DDL, and repository statements must explicitly target the canonical `atheer` schema. The runbook's generic `DATABASE_URL` instruction is therefore insufficient for this role/schema configuration.
+- `runSqlMigrations` starts a transaction, obtains its advisory lock, then executes `SET LOCAL ROLE atheer_db_owner` before creating or recording schema objects.
+- The migration ledger, migration DDL, and repository SQL explicitly target the canonical `atheer` schema.
+- PostgreSQL integration tests provision a NOINHERIT `atheer_migrator` with explicit owner membership and an `atheer_app` role with schema USAGE and owner-default table DML/sequence privileges only.
+- The tests assert migrated table ownership and direct table CREATE denial for migrator and app.
+- A further regression test for sequence grants has been added after the 49/49 run; it still requires exact-head CI.
 
-Required correction before local migration:
+**Do not run `npm run migrate` against the owner's local database yet.** The code fix and PostgreSQL 17 hosted role tests are positive evidence, but the final head (including the sequence regression) must first pass CI, and a controlled PostgreSQL 18.7 local qualification plan must be recorded. This is a qualification gate, not a request to change local grants.
 
-1. Keep `atheer` as the canonical schema; do not weaken the local grants.
-2. Execute `SET LOCAL ROLE atheer_db_owner` transaction-locally before creating or recording schema objects.
-3. Schema-qualify the migration ledger, every migration object, and all repository SQL with `atheer.`.
-4. Test with a NOINHERIT `atheer_migrator` explicitly granted membership in `atheer_db_owner`, and an `atheer_app` role with schema USAGE plus owner-default DML/sequence grants but no CREATE.
-5. Re-run CI on the corrected exact PR head, then prepare a separate controlled local migration qualification.
+Required local configuration remains:
+1. `atheer` exists and is owned by `atheer_db_owner`.
+2. `atheer_migrator` is NOINHERIT and a member allowed to SET ROLE to `atheer_db_owner`.
+3. `atheer_app` has schema USAGE and owner-default DML/sequence grants, without CREATE.
+4. Passwords remain external to source control and logs; SSL-off is acceptable only for the current loopback-only development listener.
+5. Verify the target database identity and backup/rollback plan before any schema-changing action.
 
-The existing PostgreSQL 17 CI integration pass does not prove this owner's PostgreSQL 18.7 role/schema configuration. Do not create production tables, alter role grants as a workaround, or infer local compatibility from CI.
+## Hosted PR #41 verification checkpoint — code-bearing head
 
-## Hosted PR #41 verification checkpoint — 2026-11-18
+On `94cc13d13f56fd1f2efa450747e72dc841f65017`, run `44207522335`:
+- Backend type-check and PostgreSQL 17.12 integration suite: 49/49 passed, zero failures/skips.
+- Repository Hygiene, Mermaid architecture diagrams, and Local Sync Safety: passed.
+- Apple Silicon arm64: project generation, Debug, XCTest, Release passed; CodeQL skipped by workflow configuration.
+- Intel x86_64: project generation, Debug and XCTest passed; Release in progress and CodeQL pending at last inspection.
+- Later runs `44207530976` and `44207634600` were cancelled; do not treat them as successful qualification.
+- Sequence privilege regression test was added in commit `78a774289de6ccea0fe49c89c7877f65c8246828`; the above results predate that test and must not be carried forward to the new head.
 
-On source head `012ea149749312b5146ee1b8dce900e0d7bba848`, CI run `44203457118` reported Node 24.22.2 / npm 11.19.1, PostgreSQL 17.12, and 49/49 backend tests passing. Repository Hygiene, Mermaid validation, and Local Sync Safety passed. Intel Debug/XCTest passed with Release and CodeQL still pending; Apple Silicon Debug/XCTest/Release passed, with CodeQL skipped. PR #41 remained OPEN / DRAFT with no approval review at inspection. Refresh all results after subsequent commits.
+Hosted PostgreSQL 17 tests do not certify the owner's PostgreSQL 18.7 operational environment. Backup/restore, PITR, retention, restore drills, production TLS, and production role provisioning remain unqualified.
