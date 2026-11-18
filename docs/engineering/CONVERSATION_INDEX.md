@@ -117,3 +117,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-048 | 2026-11-18 | Native macOS backend process supervisor and authenticated IPC | Added Swift supervisor, 256-bit private-stdin capability bootstrap, ephemeral port discovery, authenticated market-data client, universal Node/API app resources, app lifecycle handling, and process-bootstrap tests. Keychain credential handoff and backend CMS remain pending; exact-head CI pending. | PR #53; EDL-025; ATP-BRK-002; SESSION_2026-11-18_048_NATIVE_BACKEND_SUPERVISOR |
+
+
+| ATP-2026-11-18-049 | 2026-11-18 | Library Mermaid governing trading flows | Consolidated 12 Library Mermaid source blocks into normalized engineering flows for manual intervention, manual overrides, strategy stop, emergency recovery, procedure qualification, AI evidence, and unified intelligence. Diagrams are requirements references, not implementation evidence. | docs/architecture/ATHEER_GOVERNING_TRADING_FLOWS.md; TASK_REGISTER.md; EDL-025 |
