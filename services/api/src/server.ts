@@ -4,6 +4,15 @@ import type { CapitalDemoStreamingRuntime, MarketDataStreamQuote } from "./marke
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
+const LOCAL_MARKET_DATA_CLIENT_HEADER = "x-atheer-local-client";
+const LOCAL_MARKET_DATA_CLIENT_VALUE = "macOS";
+
+function isTrustedLocalMarketDataRequest(request: IncomingMessage): boolean {
+  const fetchSite = request.headers["sec-fetch-site"];
+  return request.headers[LOCAL_MARKET_DATA_CLIENT_HEADER] === LOCAL_MARKET_DATA_CLIENT_VALUE &&
+    request.headers.origin === undefined &&
+    (fetchSite === undefined || fetchSite === "none");
+}
 
 interface LiveHealthResponse {
   readonly status: "ok";
@@ -41,6 +50,10 @@ export function createApiServer(
     const pathname = url.pathname;
 
     if (pathname.startsWith("/market-data/")) {
+      if (!isTrustedLocalMarketDataRequest(request)) {
+        sendJson(response, 403, { error: "untrusted_local_client" });
+        return;
+      }
       void handleMarketDataRequest(request, request.method ?? "GET", url, response, marketData, marketDataStream);
       return;
     }
