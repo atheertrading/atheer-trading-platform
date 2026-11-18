@@ -139,6 +139,7 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.timeoutInterval = 8
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+        request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
 
         let (data, response): (Data, URLResponse)
         do {
@@ -168,6 +169,7 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.timeoutInterval = 5
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+        request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
 
         do {
             let (data, response) = try await requestExecutor.data(for: request)
