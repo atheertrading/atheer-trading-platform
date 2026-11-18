@@ -1,19 +1,11 @@
 import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
 import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
-import { CapitalDemoStreamingRuntime } from "./market-data/capital-demo-streaming-runtime.ts";
 import { createPostgresPool, verifySqlMigrations, type SqlPool } from "./persistence/postgres.ts";
 import { createApiServer, type PersistenceReadiness } from "./server.ts";
 
 const config = loadRuntimeConfig(env);
 const marketDataRuntime = createCapitalDemoRuntime(env);
-const marketDataStreamRuntime = new CapitalDemoStreamingRuntime(async () => {
-  if (marketDataRuntime.status().state !== "connected") {
-    const status = await marketDataRuntime.connect();
-    if (status.state !== "connected") throw new Error("Capital.com DEMO session is not connected.");
-  }
-  return marketDataRuntime.getStreamingConnectionInfo();
-});
 
 let databasePool: SqlPool | undefined;
 let persistenceReadiness: PersistenceReadiness = "not_configured";
@@ -35,7 +27,7 @@ async function start(): Promise<void> {
     }
   }
 
-  const server = createApiServer(marketDataRuntime, marketDataStreamRuntime, () => persistenceReadiness);
+  const server = createApiServer(marketDataRuntime, () => persistenceReadiness);
   server.listen(config.port, config.host, () => {
     console.info("ATHEER API listening on http://" + config.host + ":" + config.port);
   });
@@ -43,16 +35,16 @@ async function start(): Promise<void> {
   function shutdown(): void {
     if (shuttingDown) return;
     shuttingDown = true;
-    void (async () => {
-      await marketDataStreamRuntime.disconnect();
-      await marketDataRuntime.disconnect().catch(() => undefined);
-      server.close((error) => {
-        if (error) console.error("ATHEER API shutdown failed.");
-        else console.info("ATHEER API stopped.");
-        void databasePool?.end().catch(() => undefined);
-      });
-      server.closeAllConnections();
-    })();
+    void marketDataRuntime.disconnect().catch(() => undefined);
+    server.close((error) => {
+      if (error) {
+        console.error("ATHEER API shutdown failed.");
+      } else {
+        console.info("ATHEER API stopped.");
+      }
+      void databasePool?.end().catch(() => undefined);
+    });
+    server.closeAllConnections();
   }
 
   process.on("SIGINT", shutdown);
