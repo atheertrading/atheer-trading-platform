@@ -90,7 +90,13 @@ export function validateAccountBalanceSnapshot(
     if (value !== undefined) {
       assertRecord(value, "account_money");
       decimalValue(value.amount);
-      currencyCode(value.currency);
+      const monetaryCurrency = currencyCode(value.currency);
+      if (account.accountCurrency !== undefined && monetaryCurrency !== account.accountCurrency) {
+        throw new DomainValidationError(
+          "account_snapshot_currency_mismatch",
+          "Broker account monetary snapshots must use the declared account currency.",
+        );
+      }
     }
   }
 }
