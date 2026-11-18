@@ -12,7 +12,7 @@ function decodeBase64Url(value: string): Uint8Array {
 
 function encodeBase64Url(value: Uint8Array): string {
   const binary = Array.from(value, (byte) => String.fromCharCode(byte)).join("");
-  return btoa(binary).replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
 /**
