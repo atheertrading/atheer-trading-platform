@@ -194,3 +194,12 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Integration condition:** Do not merge the backend enforcement until the native app process supervisor and market-data client attach the same per-launch capability. Otherwise native market-data calls regress to HTTP 401.
 - **Verification:** Parent-head backend type-check/tests and CodeQL passed; current head Local Sync Safety passed. Exact current-head CI and macOS qualification remain pending.
 - **Scope:** Authentication of local broker market-data IPC only. Does not authorize trading or change `CAP_ALLOW_TRADING=false`.
+
+
+### EDL-025 implementation follow-up — ephemeral backend port
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #52; exact-head CI pending.
+- **Decision detail:** The managed backend child may request `PORT=0`; the operating system selects the loopback port. The child reports the assigned port using the non-secret `ATHEER_BACKEND_READY <port>` stdout marker only after the server binds.
+- **Security boundary:** `HOST` remains restricted to `127.0.0.1`; capability transport remains private stdin, not argv or environment. The supervisor must verify the authenticated market-data route after observing the marker.
+- **Scope:** Startup discovery only. This does not implement the native supervisor, credential lifecycle, Keychain bridge, CMS, or trading authorization.
