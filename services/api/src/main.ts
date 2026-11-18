@@ -44,8 +44,12 @@ server.listen(config.port, config.host, () => {
   process.stdout.write(`ATHEER_BACKEND_READY ${address.port}\n`);
 });
 
-const SHUTDOWN_STEP_TIMEOUT_MS = 7_000;
-const SHUTDOWN_SERVER_TIMEOUT_MS = 4_000;
+// Sequential budgets total 17s, leaving a 3s margin before the 20s
+// process hard deadline. A timed-out action aborts all later teardown steps.
+const SHUTDOWN_CREDENTIAL_IPC_TIMEOUT_MS = 2_000;
+const SHUTDOWN_STREAM_TIMEOUT_MS = 3_000;
+const SHUTDOWN_BROKER_TIMEOUT_MS = 11_000;
+const SHUTDOWN_HTTP_TIMEOUT_MS = 1_000;
 const SHUTDOWN_HARD_DEADLINE_MS = 20_000;
 
 function shutdown(): void {
@@ -67,42 +71,72 @@ function shutdown(): void {
   }, SHUTDOWN_HARD_DEADLINE_MS);
 
   void (async () => {
-    const credentialIPCStopped = await runBoundedShutdownStep(
+    let shutdownFailed = false;
+
+    const credentialIPCOutcome = await runBoundedShutdownStep(
       "credential_ipc_server",
       () => credentialIPCClosed,
-      SHUTDOWN_SERVER_TIMEOUT_MS,
+      SHUTDOWN_CREDENTIAL_IPC_TIMEOUT_MS,
       (message) => console.error(message),
     );
-    const streamStopped = await runBoundedShutdownStep(
+    if (credentialIPCOutcome === "timed_out") {
+      process.exitCode = 1;
+      console.error("ATHEER API shutdown stopped after the credential IPC drain deadline.");
+      return;
+    }
+    if (credentialIPCOutcome === "failed") shutdownFailed = true;
+
+    const streamOutcome = await runBoundedShutdownStep(
       "market_data_stream",
       () => marketDataStreamRuntime.disconnect(),
-      SHUTDOWN_STEP_TIMEOUT_MS,
+      SHUTDOWN_STREAM_TIMEOUT_MS,
       (message) => console.error(message),
     );
-    const brokerLoggedOut = await runBoundedShutdownStep(
+    if (streamOutcome === "timed_out") {
+      process.exitCode = 1;
+      console.error("ATHEER API shutdown stopped after the market-data stream deadline.");
+      return;
+    }
+    if (streamOutcome === "failed") shutdownFailed = true;
+
+    const brokerOutcome = await runBoundedShutdownStep(
       "broker_session",
       () => brokerSessionManager.disconnect(),
-      SHUTDOWN_STEP_TIMEOUT_MS,
+      SHUTDOWN_BROKER_TIMEOUT_MS,
       (message) => console.error(message),
     );
-    const serverStopped = await runBoundedShutdownStep(
+    if (brokerOutcome === "timed_out") {
+      process.exitCode = 1;
+      console.error("ATHEER API shutdown stopped after the broker-session deadline.");
+      return;
+    }
+    if (brokerOutcome === "failed") shutdownFailed = true;
+
+    const httpOutcome = await runBoundedShutdownStep(
       "http_server",
       () => serverClosed,
-      SHUTDOWN_SERVER_TIMEOUT_MS,
+      SHUTDOWN_HTTP_TIMEOUT_MS,
       (message) => console.error(message),
     );
-
-    if (!credentialIPCStopped || !streamStopped || !brokerLoggedOut || !serverStopped) {
+    if (httpOutcome === "timed_out") {
       process.exitCode = 1;
+      console.error("ATHEER API shutdown stopped after the HTTP server deadline.");
+      return;
+    }
+    if (httpOutcome === "failed") shutdownFailed = true;
+
+    clearTimeout(hardDeadline);
+    if (shutdownFailed) {
+      process.exit(1);
     } else {
       console.info("ATHEER API stopped.");
     }
-    clearTimeout(hardDeadline);
+  })()
   })().catch(() => {
     console.error("ATHEER API shutdown failed.");
     process.exitCode = 1;
     server.closeAllConnections();
-    clearTimeout(hardDeadline);
+    // Keep the hard deadline armed when teardown cannot be confirmed.
   });
 }
 
