@@ -79,7 +79,7 @@ const RECONCILIATION_TRANSITIONS: Readonly<Partial<Record<OrderLifecycleState, r
   RECONCILIATION_REQUIRED: ["PENDING", "ACCEPTED", "WORKING", "PARTIALLY_FILLED", "FILLED", "CANCELLED", "REJECTED", "EXPIRED", "UNKNOWN"],
 };
 
-export interface OrderLifecycleTransition {
+export interface OrderLifecycleEvent {
   readonly eventId: string;
   readonly orderId: OrderId;
   readonly fromState: OrderLifecycleState;
@@ -113,7 +113,7 @@ export function assertOrderLifecycleTransitionAllowed(
   }
 }
 
-export function createOrderLifecycleTransition(input: OrderLifecycleTransition): OrderLifecycleTransition {
+export function createOrderLifecycleTransition(input: OrderLifecycleEvent): OrderLifecycleEvent {
   nonEmptyString(input.eventId, "order_lifecycle_event_id");
   nonEmptyString(input.orderId, "order_lifecycle_order_id");
   nonEmptyString(input.sourceId, "order_lifecycle_source_id");
