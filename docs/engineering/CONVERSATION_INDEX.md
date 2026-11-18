@@ -97,3 +97,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-037 | 2026-11-18 | ATP-UI-ARCH-001A Market Explorer boundary separation | Isolated Capital.com provider DTOs in the adapter, introduced semantic market models, split MarketExplorerViewModel, injected the client at ContentView composition root, and added unknown-state regression coverage. Added URLProtocol HTTP-contract tests for status/markets GET, query encoding, no-store, 503/500 and transport failures; extracted shared Sendable URLSessionRequestExecutor used by broker and market-data services; Market Explorer session is ephemeral with cookies/cache disabled; exact-head CI pending. | PR #33; EDL-018; MarketSearchModels.swift; MarketExplorerViewModel.swift; MarketSearchClient.swift; SESSION_2026-11-18_037_MARKET_EXPLORER_BOUNDARY_REFACTOR |
+
+
+| ATP-2026-11-18-038 | 2026-11-18 | PR #26 secure Capital.com DEMO broker-management merge | Qualified exact PR #26 head across Intel/Apple Silicon, backend, hygiene, CodeQL and Local Sync Safety; merged PR #26 with history preservation; retargeted PR #33 to main; updated integration status and owner-Mac/DEMO acceptance boundaries. | PR #24/#25/#26; merge commit 6b4668b9355178d5e13219f14cfe8cc847770915; PR #33; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; SESSION_2026-11-18_038_PR26_MERGE |
