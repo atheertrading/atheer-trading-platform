@@ -98,3 +98,35 @@ The following Library material was directly retrieved and inspected for PRs #42 
 - Repository Mermaid diagrams 04, 05, 11, and 12 were read and used in the OMS batch; diagrams 13 and 14 were added to document the resulting architecture.
 
 This targeted review does **not** claim all 517 Q&A records or all original architecture documents have been exhaustively reconciled. Source provenance and approval status remain governed by the registers above.
+
+
+## 2026-11-18 — Current Library archive and Mermaid revalidation
+
+The current visible Library root contains `/Aether Document Repository` (not the historical `/AtheerTradingPro/90_SOURCE_ARCHIVES` path referenced by older records).
+
+### Directly inspected source archives
+
+| Source | Library path | SHA-256 | Inventory |
+|---|---|---|---|
+| Atheer Q&A Repository.zip | `/Aether Document Repository/Atheer Q&A Repository.zip` | `c6af385151a71fca3f2ef261115d6d2ecd22fa62b6787dd130e10c27050f9af2` | 1,151 ZIP entries; 1,034 Markdown/text files; 12 fenced Mermaid blocks across 10 documents |
+| Codex.zip | `/Aether Document Repository/Codex.zip` | `210f540a98fd8d52cfceb03438f4bebf8e8a6dd949442c2cd96cca2b7e5e1f8f` | 224 ZIP entries; 66 Markdown/text files; 5 standalone `.mmd` sources |
+| Archive.zip | Library root `/Archive.zip` | Not retained in this record | Four screenshot/AppleDouble entries; no text or Mermaid sources |
+
+The Q&A archive hash matches the previously recorded `c6af3851...` source, so the archive is the same byte-level artifact despite the current Library folder/name presentation. The Codex archive hash is recorded as observed on this inspection.
+
+### Mermaid material inspected
+
+All 12 fenced Q&A Mermaid blocks and all 5 standalone Codex `.mmd` files were enumerated and inspected. Relevant design constraints include:
+
+- Market data: broker feed → connection lifecycle → raw observations → timestamp/schema normalization → sequence/completeness validation → freshness decision → provenance-preserving distribution; stale/invalid observations are not promoted to valid strategy inputs.
+- AI authority: model output is analysis or a typed proposal only; no direct broker-dealing authority.
+- Trading lifecycle: manual, strategy, and authorized agent intents converge on backend validation and centralized RiskEngine → OMS → Execution Gateway → broker confirmation → reconciliation.
+- Manual intervention: authenticate and scope the action, check existing overrides/pending actions, validate RiskEngine, create idempotent intent, execute, reconcile, and audit.
+- Manual override protection: a persistent override ledger blocks conflicting strategy/AI management actions before risk authorization.
+- Strategy suspension: block new entries and exposure increases, inspect/cancel eligible pending entries, preserve verified protective orders, reconcile positions, then transfer management authority.
+- Emergency recovery: remain restricted until broker account state is reconciled and critical recovery tests pass.
+- AI evidence: distinguish verified facts, assumptions, hypotheses, conclusions, projections, and unknowns; preserve evidence traceability.
+
+Repository Mermaid diagrams 03, 04, 05, 07, 14, 15, and 16 were also inspected on the live-candle feature branch.
+
+This is a targeted architecture review of the enumerated Mermaid sources, not an exhaustive review of all 1,034 text files or all Q&A records. The separate historical archive name `Project documents and questions and answers.zip` was not present in the current visible Library listing; the byte-identical Q&A archive above was found and verified by SHA-256.
