@@ -790,3 +790,19 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Merged tree preserves the current PR #68 backend/historical-data validation and documentation, then overlays the chart-specific SwiftUI/client/test/architecture files from PR #70. Conflicting shared test files retain the corrected PR #68 versions.
 - GitHub compare now reports PR #70 as 52 commits ahead / 0 behind its base. This resolves ancestry divergence; it does not establish merge readiness or CI success.
 - New exact-head CI and source review are required before merge.
+
+## 2026-11-18 — Broker-to-chart PR stack ancestry consolidation
+
+The stacked implementation branches were reconciled top-down using two-parent merge commits. Each child retains its original feature history; no force-push or history rewrite was used.
+
+| Pull request | Parent branch head | Child head before merge | Reconciliation merge commit |
+|---|---|---|---|
+| #64 | PR #55: `0849f2318c6b6a0eed261997043da69daec4884f` | `98197bf524a0e1e6bebae64f419da73b7b13dc25` | `1a49ea48c3497c30c68557013c749c8d8be7bbe6` |
+| #66 | PR #64: `1a49ea48c3497c30c68557013c749c8d8be7bbe6` | `98ce9d5c8808446c7db597f8ad012a079d3eeae3` | `46d9d7bd6ad5c247c04cf6645f0a548e53582ae1` |
+| #67 | PR #66: `46d9d7bd6ad5c247c04cf6645f0a548e53582ae1` | `8ff12c3ac0d2ca89991d651639e4d8a8af6c6e63` | `1abf1dafb17d346b903fe69a053976bd359b9245` |
+| #68 | PR #67: `1abf1dafb17d346b903fe69a053976bd359b9245` | `407de768925e171770825a7917fd41beb7b2eb1b` | `96df364562b3af4a123f41b440ad0c7f525a6566` |
+| #70 | PR #68: `96df364562b3af4a123f41b440ad0c7f525a6566` | `76de3a0db94396d0bc85bd09a2011f97bf7d115b` | `458d36b92b3c6769e8c8fda6d7ebdcb4668841d2` |
+
+Post-reconciliation GitHub compare results: PR #64 25 ahead / 0 behind; #66 72/0; #67 20/0; #68 32/0; #70 57/0. All five PRs report mergeable true at the latest inspection.
+
+These are branch ancestry merges only. The PRs remain draft; hosted exact-head CI, code review, owner-Mac build/runtime, authenticated DEMO broker verification and risk/execution qualification remain separate gates. No PR was merged into `main`.
