@@ -55,6 +55,14 @@ DEMO, SIMULATION, BACKTEST, and LIVE are distinct operating modes. Broker-derive
 
 The governance baseline and platform foundation are merged. PR #9 adds a loopback-only Node.js/TypeScript health/readiness service; PR #11 adds tested non-destructive local synchronization and workstation bootstrap tooling. PR #10 adds the native macOS health integration. Its current head `bbe43218e4010442605befb9527907b0968dca4f` has passed hosted CI #116 (including macOS Debug, XCTest, Release, and Swift CodeQL), Local Sync Safety #46, and GitHub Actions CodeQL #116. The branch is 26 commits ahead of `main` and zero behind; GitHub reports it mergeable. Review policy/branch protection remains unverified, and local Mac/Xcode build, test, launch, and end-to-end app/backend qualification remain outstanding. Hosted CI does not establish local qualification. Local synchronization, arm64 qualification, production trading, Capital.com integration, persistence, RiskEngine, OMS, Execution Gateway, and production IPDS are not claimed. See [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md), [Task Register](docs/engineering/TASK_REGISTER.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md).
 
+### Engineering continuation snapshot — 2026-11-18
+
+- **PR #41 — PostgreSQL Persistence Foundation:** OPEN / DRAFT. Backend and Repository Hygiene passed on head `c9eb73d28c24398dfcb435525118f971aae221e8`; Mermaid and Local Sync Safety passed; Apple Silicon passed; Intel Debug and XCTest passed with Release/CodeQL still running at the latest inspection. Owner-local PostgreSQL 18.7 remains unqualified.
+- **PR #42 — Authorized OMS Lifecycle Persistence:** OPEN / DRAFT, stacked on PR #41. Backend strict type-check and PostgreSQL 17.12 suite passed **52/52** on exact head `ff7af23585b8d7272d826fd29b03111ed57492bf`; Repository Hygiene, Mermaid and Local Sync Safety passed; Apple Silicon Debug/XCTest/Release passed; Intel remained at XcodeGen installation. No outbox worker, Execution Gateway, broker dealing, broker fills, or LIVE operation is included.
+- **PR #43 — Command Center Live Market Watch:** implementation branch `feat/command-center-live-market-watch`, stacked on PR #42. Adds a persistent provider-EPIC watchlist and a shared app-scoped DEMO market-data model across Market Explorer and Command Center. Exact-head CI and owner-side visual/runtime acceptance are pending.
+
+The Market Watch is read-only. No fabricated prices, balances, positions, P&L, or execution status are displayed. `CAP_ALLOW_TRADING=false` remains unchanged. See [Screen Implementation Register](docs/product/SCREEN_IMPLEMENTATION_REGISTER.md), [OMS Lifecycle Foundation](docs/architecture/ATP_OMS_LIFECYCLE_FOUNDATION.md), [Market Watch Integration](docs/architecture/ATP_MARKET_WATCH_WORKSPACE_INTEGRATION.md), and [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md).
+
 ## Contributing
 
 All contributions must follow [AGENTS.md](AGENTS.md), applicable specifications and accepted ADRs, the security policy, and the project continuity process. Proposed changes should be submitted through focused branches and pull requests with tests and verification evidence.
@@ -64,10 +72,4 @@ All contributions must follow [AGENTS.md](AGENTS.md), applicable specifications 
 No open-source license has been selected yet. Public visibility does not itself grant permission to reuse, modify, or redistribute this software. A license decision must be made explicitly by the project owner.
 
 
-### Engineering continuation snapshot — 2026-11-18
 
-PR #41 (`feat/postgres-persistence-foundation`) is still OPEN / DRAFT. On exact head `c9eb73d28c24398dfcb435525118f971aae221e8`, Backend Toolchain and Repository Hygiene passed; Mermaid and Local Sync Safety passed. Intel x86_64 and Apple Silicon arm64 jobs were still running at the latest inspection. Hosted PostgreSQL 17.12 verification is separate from owner-local PostgreSQL 18.7 qualification.
-
-The next implementation increment is on `feat/oms-authorized-order-persistence`, stacked on PR #41. It adds the OEL-12 typed order lifecycle, PostgreSQL OMS order/lifecycle tables, and atomic persistence requiring the exact persisted `AUTHORIZED` RiskAssessment for the immutable intent. The order, first lifecycle event, audit record, and `oms.order.persisted` domain notification are written transactionally. This branch is not yet hosted-qualified or merged.
-
-No outbox publisher/worker, Execution Gateway, broker dealing API, broker fills, position reconciliation, or LIVE operation is implemented by this OMS increment. `oms.order.persisted` is not an executable broker command. `CAP_ALLOW_TRADING=false` remains unchanged. See [OMS Lifecycle Foundation](docs/architecture/ATP_OMS_LIFECYCLE_FOUNDATION.md), [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md).
