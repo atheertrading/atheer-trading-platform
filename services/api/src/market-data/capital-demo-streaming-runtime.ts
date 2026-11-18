@@ -228,16 +228,23 @@ export class CapitalDemoStreamingRuntime {
       }
       let endpoint: URL;
       try {
-        endpoint = new URL("connect", info.streamEndpoint);
+        endpoint = new URL(info.streamEndpoint);
       } catch {
         throw new Error("Capital.com DEMO session returned an invalid stream endpoint.");
       }
       if (
         endpoint.protocol !== "wss:" ||
-        endpoint.hostname !== "api-streaming-capital.backend-capital.com"
+        endpoint.hostname !== "api-streaming-capital.backend-capital.com" ||
+        endpoint.port !== "" ||
+        endpoint.username.length > 0 ||
+        endpoint.password.length > 0 ||
+        endpoint.search.length > 0 ||
+        endpoint.hash.length > 0 ||
+        (endpoint.pathname !== "/" && endpoint.pathname !== "/connect")
       ) {
         throw new Error("Capital.com DEMO stream endpoint failed host validation.");
       }
+      endpoint.pathname = "/connect";
 
       const socket = this.socketFactory(endpoint.toString());
       createdSocket = socket;
