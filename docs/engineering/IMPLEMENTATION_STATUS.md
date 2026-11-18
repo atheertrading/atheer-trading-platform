@@ -447,3 +447,16 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
 - These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.
+
+
+## 2026-11-18 — Backend broker-session ownership and native IPC handoff (PR #55)
+
+- **IN PROGRESS / UNMERGED:** `BrokerSessionManager` is the backend session authority for Capital.com DEMO credentials, REST session tokens, keepalive and stream connection info.
+- Added capability-protected broker-session status/connect/disconnect APIs; credential payloads are bounded and strict; responses are no-store and sanitized.
+- Added the native `BackendBrokerAuthenticationService` to hand Keychain credentials to the authenticated backend IPC process. Direct native Capital.com session ownership was removed from the broker-management composition path.
+- Added account-switch coordination, the documented one-session-creation-per-second limit, separate 401/403/429 handling, credential-runtime cleanup on logout failure, and stream-shutdown failure coverage.
+- Added backend and native URLProtocol tests. They are committed but not yet qualified on the final PR #55 head.
+- PR stack: #51 IPC capability → #54 native process supervisor → #55 broker-session integration. Do not merge out of order.
+- PR #54 exact-head run `44276116460`: backend toolchain and repository hygiene passed; macOS qualification remained in progress/queued at last inspection.
+- PR #55 final exact-head CI, Intel/Apple Silicon XCTest, owner-Mac launch/Keychain qualification and real DEMO broker acceptance remain pending.
+- Trading and LIVE access remain disabled. See `SESSION_2026-11-18_049_BROKER_SESSION_IPC_INTEGRATION.md`.
