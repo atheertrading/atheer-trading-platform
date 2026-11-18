@@ -2,9 +2,13 @@ import SwiftUI
 
 /// The primary read-only workstation surface. It deliberately renders unavailable
 /// states instead of inventing quotes, balances, positions, or execution activity.
+@MainActor
 struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
+    let marketHistoryClient: MarketHistoryClient? = nil
+    let selectedChartInstrumentId: String? = nil
     let onOpenAPIConnection: () -> Void
+    let onOpenMarkets: () -> Void = {}
 
     @StateObject private var workspaceEngine = WorkspaceEngine()
     @State private var isPanelManagementPresented = false
@@ -186,49 +190,37 @@ struct CommandCenterView: View {
         }
     }
 
+    @ViewBuilder
     private var chartPanel: some View {
-        CommandCenterPanel(
-            title: "Chart Workspace",
-            subtitle: "Price action · Technical analysis",
-            symbol: "chart.xyaxis.line",
-            status: "NO MARKET SERIES",
-            statusColor: ATHEERDesignTokens.ColorRole.attention,
-            minHeight: 438
-        ) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Label("Instrument", systemImage: "waveform.path")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("Awaiting market-data source")
-                        .font(ATHEERDesignTokens.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.bottom, 14)
-
-                Rectangle()
-                    .fill(ATHEERDesignTokens.ColorRole.separator)
-                    .frame(height: 1)
-
+        if let marketHistoryClient {
+            MarketChartSurfaceView(
+                client: marketHistoryClient,
+                initialInstrumentId: selectedChartInstrumentId,
+                compact: true,
+                onOpenMarkets: onOpenMarkets
+            )
+        } else {
+            CommandCenterPanel(
+                title: "Chart Workspace",
+                subtitle: "Price action · Technical analysis",
+                symbol: "chart.xyaxis.line",
+                status: "WAITING FOR AUTHENTICATED HISTORY",
+                statusColor: ATHEERDesignTokens.ColorRole.attention,
+                minHeight: 438
+            ) {
                 VStack(spacing: 12) {
                     Image(systemName: "chart.xyaxis.line")
                         .font(.system(size: 34, weight: .light))
                         .foregroundColor(ATHEERDesignTokens.ColorRole.accent.opacity(0.75))
-
-                    Text("Chart data is not available")
+                    Text("Historical DEMO data is unavailable")
                         .font(.system(size: 15, weight: .semibold))
-
-                    Text("Connect a market-data provider to load instruments, timestamped candles, indicators and drawing tools. No sample prices are displayed.")
+                    Text("Start the supervised backend and establish the authenticated broker session. No sample prices or synthetic candles are displayed.")
                         .font(ATHEERDesignTokens.Typography.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 430)
-
-                    Text("NO SERIES · NO SYNTHETIC DATA")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .tracking(0.8)
-                        .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
-                        .padding(.top, 4)
+                    Button("Connections", action: onOpenAPIConnection)
+                        .buttonStyle(.borderless)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(24)
