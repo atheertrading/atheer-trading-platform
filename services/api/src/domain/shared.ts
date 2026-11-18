@@ -275,12 +275,15 @@ export function deepFreeze<T>(value: T, seen: WeakSet<object> = new WeakSet<obje
     const objectValue = value as object;
     const isArray = Array.isArray(objectValue);
     const prototype = Object.getPrototypeOf(objectValue);
-    if (!isArray && prototype !== Object.prototype && prototype !== null) {
-      // Object.freeze does not make Map/Set contents or Date state immutable.
-      // Domain contracts intentionally accept only data-only object graphs.
+    if (
+      (isArray && prototype !== Array.prototype) ||
+      (!isArray && prototype !== Object.prototype && prototype !== null)
+    ) {
+      // Object.freeze does not make Map/Set contents, Date state, or subclass
+      // private fields immutable. Accept only ordinary JSON-like arrays/records.
       throw new DomainValidationError(
         "invalid_immutable_value",
-        "Domain values must contain only plain objects and arrays.",
+        "Domain values must contain only plain objects and ordinary arrays.",
       );
     }
 
