@@ -45,6 +45,19 @@ export class BrokerSessionManager {
     beforeSessionReplacement?: () => Promise<void>,
   ): Promise<BrokerSessionStatus> {
     if (credentials) {
+      // Reuse the current session for identical credentials. This preserves
+      // keepalive/recovery state and prevents resetting provider-auth lockout.
+      if (
+        this.runtime?.usesCredentials(credentials) &&
+        !this.runtime.isAuthenticationBlockedFor(credentials)
+      ) {
+        try {
+          return await this.runtime.connect();
+        } catch {
+          return this.runtime.status();
+        }
+      }
+
       const now = this.now();
       if (
         this.lastSessionCreationAttemptAtMs !== null &&
