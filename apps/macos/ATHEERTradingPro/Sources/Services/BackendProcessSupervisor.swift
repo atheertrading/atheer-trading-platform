@@ -236,6 +236,10 @@ final class BackendProcessSupervisor: BackendProcessManaging {
                 capability: newCapability
             )
             try await verifyConnection(newConnection)
+            guard process?.isRunning == true,
+                  newCapability.authorizationHeaderValue != nil else {
+                throw BackendProcessSupervisorError.processExited(-1)
+            }
             connection = newConnection
             return newConnection
         } catch {
