@@ -347,11 +347,14 @@ test("broker logout still runs when the WebSocket stream shutdown reports failur
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
-const serverRuntime = new BrokerSessionManager((value) => new CapitalDemoRuntime(
-  serverClient,
-  value,
+const serverRuntime = new BrokerSessionManager(
+  (value) => new CapitalDemoRuntime(
+    serverClient,
+    value,
+    () => 1_800_000_000_000,
+  ),
   () => 1_800_000_000_000,
-));
+);
 const server = createApiServer(serverRuntime, ipcCapability);
 let baseUrl;
 
