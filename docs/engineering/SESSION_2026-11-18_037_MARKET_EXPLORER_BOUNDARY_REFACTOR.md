@@ -55,3 +55,12 @@ This was functional but did not satisfy the intended dependency-inversion and pr
 ## Safety
 
 Read-only instrument metadata only. No credentials, session tokens, orders, positions, RiskEngine/OMS/Execution Gateway, broker dealing, or LIVE capability added.
+
+
+## Shared transport and HTTP-contract extension
+
+- Extracted the Swift 5.8-safe `URLSessionRequestExecutor` from `BrokerManagementServices.swift` into shared `URLSessionRequestExecutor.swift`, and reused it from the Capital.com market search adapter.
+- Market Explorer's default URLSession is ephemeral; cookie storage and URL cache are disabled.
+- Added URLProtocol tests for backend status GET, market search GET, encoded query values, `Cache-Control: no-store`, DEMO response mapping, 503/500 handling and network transport failure mapping.
+- Commits: `5c1ae72805441d2476a6ab57dc9b3d51035fac16`, `a0f28db8f63266f7bfd042dcf035e091c4ef354c`, `834afa04a55075af0f4aa8b22ab8dd345096d458`, `a310237f3c38715b35ee81ee8f0ee9489e464fdd`, `ea1b16f8527798a88d29b522b9320bfb961f9a59`, `0201e0593e3bafdbed206262a81da62ca6756958`.
+- Exact-head CI remains pending.
