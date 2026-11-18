@@ -298,3 +298,17 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 ## ATP-MKT-002 MainActor build remediation — 2026-11-17
 
 The exact-head Intel macOS CI job for PR #33 failed during Debug compilation on actor-isolated URLSessionMarketSearchClient default arguments in MarketExplorerView and MarketExplorerViewModel. Both now accept optional injected dependencies and construct the default client inside the MainActor-isolated view-model initializer. Requalification on the corrected head is pending; no macOS pass is claimed.
+
+
+## ATP-UI-ARCH-001A — Market Explorer presentation boundary separation
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-UI-ARCH-001A | P1 | Keep provider DTOs in infrastructure, expose semantic market models, separate ViewModel, inject client at composition root | IMPLEMENTED; exact-head CI pending | PR #33 branch `fix/market-explorer-search-lifecycle`; six code/test commits; provider DTO mapping and unknown-state regression coverage |
+
+Acceptance:
+- SwiftUI and ViewModel consume only provider-independent semantic models.
+- Provider JSON DTOs remain private to the infrastructure adapter.
+- ViewModel requires an injected `MarketSearchClient`; it cannot construct a production URLSession client.
+- The app composition root selects and injects the production adapter.
+- Existing query length, DEMO-only provider validation, disconnected-state gating, and stale-search suppression remain covered by XCTest.
