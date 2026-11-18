@@ -162,7 +162,7 @@ test("final exhausted 429 still delays subsequent requests through the shared co
 
   await assert.rejects(client.getMarkets(session, "EURUSD"), { statusCode: 429 });
   assert.equal(requestCount, 4);
-  assert.equal(waits.at(-1), 1);
+  assert.deepEqual(waits, [100, 100, 100]);
 
   const result = await client.getMarkets(session, "EURUSD");
   assert.equal(result.markets[0].epic, "EURUSD");
