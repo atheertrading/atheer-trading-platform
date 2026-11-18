@@ -1,3 +1,5 @@
+import { validateHistoricalDateRange, type HistoricalPriceResolution } from "./historical-prices.ts";
+
 const CAPITAL_DEMO_BASE_URL = "https://demo-api-capital.backend-capital.com/api/v1";
 const REQUEST_TIMEOUT_MS = 10_000;
 
@@ -179,8 +181,10 @@ export class CapitalDemoClient {
   async getPriceHistory(
     session: CapitalDemoSession,
     epic: string,
-    resolution: "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
+    resolution: HistoricalPriceResolution,
     max: number,
+    from?: string,
+    to?: string,
   ): Promise<CapitalPriceHistoryResult> {
     const normalizedEpic = epic.trim();
     if (!/^[A-Za-z0-9_.-]{1,64}$/.test(normalizedEpic)) {
@@ -189,7 +193,15 @@ export class CapitalDemoClient {
     if (!Number.isSafeInteger(max) || max < 1 || max > 1000) {
       throw new Error("Price history max must be an integer between 1 and 1000.");
     }
+    if ((from === undefined) !== (to === undefined)) {
+      throw new Error("Historical price requests must provide both from and to date bounds.");
+    }
     const query = new URLSearchParams({ resolution, max: String(max) });
+    if (from !== undefined && to !== undefined) {
+      const range = validateHistoricalDateRange(from, to);
+      query.set("from", range.providerFrom);
+      query.set("to", range.providerTo);
+    }
     const response = await this.authorizedGet(
       session,
       `/prices/${encodeURIComponent(normalizedEpic)}?${query.toString()}`,
@@ -197,6 +209,9 @@ export class CapitalDemoClient {
     const payload: unknown = await response.json();
     if (!isRecord(payload) || !Array.isArray(payload.prices) || !payload.prices.every(isRecord)) {
       throw new Error("Capital.com returned an invalid price history response.");
+    }
+    if (payload.prices.length > max) {
+      throw new Error("Capital.com returned more historical prices than the requested limit.");
     }
     return { prices: payload.prices };
   }

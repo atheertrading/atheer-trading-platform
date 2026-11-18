@@ -206,6 +206,38 @@ test("market search and history requests carry DEMO session headers", async () =
   assert.equal(calls[0].init.headers["X-SECURITY-TOKEN"], "demo-security-token");
 });
 
+
+test("historical requests require paired strict UTC bounds and translate them for Capital.com", async () => {
+  const calls = [];
+  const client = new CapitalDemoClient(async (url) => {
+    calls.push(String(url));
+    return response({ prices: [] });
+  });
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+  const from = "2026-11-17T10:00:00Z";
+  const to = "2026-11-17T11:00:00Z";
+
+  await client.getPriceHistory(session, "AAPL", "MINUTE", 100, from, to);
+  const request = new URL(calls[0]);
+  assert.equal(request.searchParams.get("from"), "2026-11-17T10:00:00");
+  assert.equal(request.searchParams.get("to"), "2026-11-17T11:00:00");
+  assert.equal(request.searchParams.get("max"), "100");
+
+  await assert.rejects(
+    client.getPriceHistory(session, "AAPL", "MINUTE", 100, from),
+    /both from and to/,
+  );
+  await assert.rejects(
+    client.getPriceHistory(session, "AAPL", "MINUTE", 100, "2026-02-31T10:00:00Z", to),
+    /date bound is invalid/,
+  );
+});
+
 test("Capital DEMO adapter rejects missing credentials and non-DEMO sessions", async () => {
   const client = new CapitalDemoClient(async () => response({}));
   await assert.rejects(

@@ -14,6 +14,7 @@ This directory contains version-controlled Mermaid source. Diagrams are engineer
 | `06-ai-agent-authority-boundaries.mmd` | Model Gateway, agent permissions and non-bypassable financial controls |
 | `07-environment-isolation.mmd` | SIMULATION, BACKTEST, DEMO and LIVE separation |
 | `08-project-knowledge-topology.mmd` | GitHub, Library, conversations and local verification authority |
+| `10-historical-market-data-normalization.mmd` | Authenticated historical DEMO request, Bid/Ask OHLC normalization, UTC lineage, duplicates and observed gaps |
 
 ## Original-source diagram recovery
 
