@@ -374,3 +374,15 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 Library Broker Integration Q4 records the Capital.com session-creation ceiling as one request per second per API key, REST session inactivity as ten minutes, and a 40-instrument WebSocket subscription limit. These are integration parameters that must be revalidated against current official provider documentation before release. Q8 requires 401 authentication failure, 403 permission restriction, 429 rate limiting, and WebSocket disconnection to remain distinct operational states.
 
 PR #55 remains draft and unmerged. The final exact-head CI and the owner-Mac / DEMO acceptance gates are mandatory. Do not interpret a saved credential or successful REST authentication as proof that streaming, account reconciliation, or trading readiness is complete.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-MKT-007 batch 050 revalidation
+
+| Work item | Priority | Current status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Backend-owned broker session and authenticated native credential handoff | P0 | IN PROGRESS — PR stack #51/#54/#56/#55 | PR #55 implements BrokerSessionManager, capability-authenticated Keychain handoff, strict bounded credential API, and sanitized status. Current PR head is advanced by report commit f36578a7167acff29596ee0c02b34ebd0e11c07e; exact-head CI pending. Owner-Mac Keychain persistence/restart and real DEMO authentication remain. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #55 | One-second session-creation throttle, five-minute REST keepalive, distinct 401/403/429 handling, account-switch coordination and logout-failure cleanup are implemented on the unmerged stack. Full classified recovery, bounded retry/backoff, account reconciliation and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Shared WebSocket runtime, 40-instrument cap, quote validation, reconnect behavior, streaming health status and SSE backend endpoint exist on the unmerged stack. Native Market Explorer does not yet subscribe to/render live quotes; priority allocation and full utilization metrics remain. |
+| ATP-MKT-008 — Native authenticated live quote subscription | P1 | PENDING — next vertical slice | Add authenticated SSE client, provider-independent quote model, source timestamp/provenance, duplicate/out-of-order/freshness validation, cancellation/reconnect and truthful stale/disconnected UI. Read-only; no dealing actions. |
+
+PR integration order is top-down into parent branches: #55 into #56, #56 into #54, #54 into #51, then exact-head qualification and merge #51 to main. The current report and evidence are in SESSION_2026-11-18_050_BROKER_TEST_LIFECYCLE_AND_STACK_REVALIDATION.md.
