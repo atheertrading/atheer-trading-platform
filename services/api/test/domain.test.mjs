@@ -635,3 +635,36 @@ test("audit event occurrence time must match provenance event time", () => {
     { code: "audit_timestamp_mismatch" },
   );
 });
+
+test("immutable execution events reject nested mutable platform objects and accessors", () => {
+  const provenance = brokerProvenance();
+  const base = {
+    id: "execution-event-immutable-001",
+    aggregateId: orderId("order-immutable-001"),
+    eventCode: "BROKER_FILL_REPORTED",
+    occurredAt: provenance.eventAt,
+    receivedAt: provenance.receivedAt,
+    environment: "DEMO",
+    provenance,
+  };
+
+  assert.throws(
+    () => createExecutionEvent({
+      ...base,
+      payload: { providerState: new Map([["status", "mutable"]]) },
+    }),
+    { code: "invalid_immutable_value" },
+  );
+
+  const accessorPayload = {};
+  Object.defineProperty(accessorPayload, "state", {
+    enumerable: true,
+    get() {
+      throw new Error("accessor must not be invoked during validation");
+    },
+  });
+  assert.throws(
+    () => createExecutionEvent({ ...base, payload: accessorPayload }),
+    { code: "invalid_immutable_value" },
+  );
+});
