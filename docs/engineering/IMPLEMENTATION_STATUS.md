@@ -465,3 +465,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Added malformed-input regression tests and updated the canonical domain architecture contract.
 - Changes are committed on the existing canonical domain branch in PR #76. Exact-head CI is pending; no TESTED/VERIFIED status is claimed until its final workflow completes.
 - This package does not implement risk authorization, PostgreSQL persistence, OMS dispatch, Execution Gateway, broker dealing or LIVE capability.
+
+
+## 2026-11-18 — ATP-PERSISTENCE-001 canonical-domain port
+
+- Ported the qualified PostgreSQL persistence implementation from legacy PR #41 onto the canonical domain branch without altering PR #41 history.
+- PR #81 preserves the current backend broker/market-data bootstrap and HTTP routes; persistence startup verifies migrations and never applies DDL automatically.
+- Exact-head hosted Backend Toolchain on PR #81 head `9ac64f65eb628fc45df6517432c314fe0044655a`: TypeScript type-check passed; PostgreSQL 17.12 API suite **37 passed, 0 failed**.
+- Repository Hygiene, Mermaid and Local Sync Safety passed. Intel/Apple Silicon remain queued. No full PR qualification or merge is claimed.
+- Owner-local PostgreSQL 18.7 backup/restore and owner-Mac runtime qualification remain pending.
+- Transactional outbox contains domain events only; no execution publisher, OMS worker, Execution Gateway or broker dealing was introduced.

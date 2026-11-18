@@ -14,6 +14,8 @@ This directory contains version-controlled Mermaid source. Diagrams are engineer
 | `06-ai-agent-authority-boundaries.mmd` | Model Gateway, agent permissions and non-bypassable financial controls |
 | `07-environment-isolation.mmd` | SIMULATION, BACKTEST, DEMO and LIVE separation |
 | `08-project-knowledge-topology.mmd` | GitHub, Library, conversations and local verification authority |
+| `09-capital-demo-market-data-streaming.mmd` | Capital.com DEMO WebSocket ingestion, local SSE relay, and native quote presentation |
+| `10-historical-market-data-normalization.mmd` | Historical Bid/Ask OHLC normalization, UTC lineage, duplicate validation, and observed gaps |
 
 ## Original-source diagram recovery
 
@@ -37,3 +39,11 @@ python3 scripts/extract-mermaid-sources.py \
 - Review architecture claims against current approved specifications and implementation evidence.
 - Render and validate every `.mmd` file in CI.
 - Keep sensitive values, real account identifiers, API keys and secrets out of diagrams.
+
+
+| `11-canonical-trading-domain.mmd` | Provider-independent canonical identities, instrument specifications, accounts, order-intent envelope, risk assessment, lifecycle-policy boundary, execution facts, reconciliation and audit |
+| `12-postgres-transactional-persistence.mmd` | PostgreSQL migration ledger, environment-scoped records, atomic intent/risk journal, transactional domain outbox, and explicit no-dispatch boundary |
+
+### Library archive availability re-check — 2026-11-18
+
+The exact historical archive path referenced above (`Project documents and questions and answers.zip`) was not present in the accessible Library root during this session. The available `Atheer Q&A Repository.zip` contains 517 Markdown documents and 12 fenced Mermaid blocks; `Codex.zip` contains 58 Markdown documents and five standalone `.mmd` sources. All 17 accessible Mermaid sources were inspected. The previously recorded 564-document / 52-block inventory remains historical evidence for a different archive and is not re-claimed as revalidated or fully extracted in this session.

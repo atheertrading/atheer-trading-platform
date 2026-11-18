@@ -108,3 +108,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-064 | 2026-11-18 | Domain runtime shape validation | Added typed runtime guards for malformed JSON-derived domain records/collections, deterministic regression tests, architecture documentation, and continuity tracking. | ATP-DOMAIN-001A; PR #76; SESSION_2026-11-18_064_DOMAIN_RUNTIME_SHAPE_VALIDATION |
+
+
+| ATP-2026-11-18-065 | 2026-11-18 | PostgreSQL persistence port and backend qualification | Ported the existing PostgreSQL persistence foundation onto the canonical domain, corrected legacy bootstrap/server dependencies, and qualified hosted backend/PostgreSQL tests (37/37). | ATP-PERSISTENCE-001; PR #81; SESSION_2026-11-18_065_POSTGRES_CANONICAL_DOMAIN_PORT |

@@ -33,3 +33,15 @@ These are target ownership areas, not claims that modules already exist.
 
 ## Cross-cutting contracts
 Every external or asynchronous boundary defines identity/correlation, timestamp semantics, validation, timeout, retry policy, idempotency, error taxonomy, observability, and versioning. Financial state transitions are auditable and deterministic where required.
+
+
+## Implemented domain foundation slice — ATP-DOMAIN-001
+
+The first provider-independent TypeScript domain contract slice is implemented under `services/api/src/domain/` (shared value objects/provenance, instruments, accounts, trading intents, risk assessments, lifecycle-policy validation, broker observations, fills, execution events, reconciliation, and audit). It is a bounded foundation, not a claim that all bounded contexts or production state machines are complete.
+
+The domain package has no dependency on HTTP, SwiftUI, database vendors, broker SDKs, or provider-specific execution clients. Detailed OMS/position state lists, order-type semantics, rounding policies, and identifier generation remain subject to formal ADR/specification reconciliation. PostgreSQL persistence is the next separate package after this domain slice is qualified.
+
+
+## PostgreSQL persistence adapter — ATP-PERSISTENCE-001
+
+The backend persistence adapter implements versioned PostgreSQL migrations, environment-scoped instrument/account records, immutable account snapshots, order-intent and risk-assessment journals, reconciliation/audit records, and a transactional domain-event outbox. Application/domain services depend on repository contracts rather than SQL. Intent, risk, audit, and outbox writes share transaction boundaries; broker dealing remains outside this package. See `ATP_PERSISTENCE_ARCHITECTURE.md` and Mermaid diagram 12. The outbox currently accepts domain-record events only and has no dispatcher.

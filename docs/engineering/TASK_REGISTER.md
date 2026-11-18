@@ -390,3 +390,16 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 
 - Acceptance: malformed root/nested records and malformed collection shapes produce stable `DomainValidationError` codes; valid existing fixtures remain compatible; backend type-check/tests and repository checks pass on the exact final head.
 - This is validation only. No RiskEngine formula, execution authorization, order dispatch, broker dealing, or LIVE behavior is introduced.
+
+
+## ATP-PERSISTENCE-001 — PostgreSQL persistence on canonical domain (2026-11-18)
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-PERSISTENCE-001 | P0 | Environment-scoped PostgreSQL schema, checksummed migrations, durable domain journals, audit/reconciliation and transactional outbox | IMPLEMENTED ON PR #81 — BACKEND INTEGRATION PASSED; FULL QUALIFICATION PENDING | PR #81 head `9ac64f65eb628fc45df6517432c314fe0044655a`; CI run #44373617588; Backend Toolchain 37/37; Session 065 |
+
+- Hosted environment: Node.js 24.22.2; PostgreSQL 17.12.
+- Backend TypeScript type-check and complete API test suite passed; PostgreSQL integration test passed.
+- Repository Hygiene, Mermaid and Local Sync Safety passed on the recorded exact head.
+- Intel and Apple Silicon jobs are queued. PR #81 remains draft and stacked on PR #76.
+- Owner-local PostgreSQL 18.7 migration/restore and owner-Mac qualification are not established by hosted CI.
