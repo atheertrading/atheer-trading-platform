@@ -109,8 +109,15 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             }
 
             guard payload.state == "connected" else {
-                if payload.lastError?.localizedCaseInsensitiveContains("rejected or expired") == true {
+                let providerError = payload.lastError ?? ""
+                if providerError.contains("HTTP 401") ||
+                    providerError.contains("HTTP 403") ||
+                    providerError.localizedCaseInsensitiveContains("rejected or expired") {
                     throw BrokerAuthenticationError.invalidCredentials
+                }
+                if providerError.contains("HTTP 429") ||
+                    providerError.localizedCaseInsensitiveContains("rate-limited") {
+                    throw BrokerAuthenticationError.rateLimited
                 }
                 throw BrokerAuthenticationError.unavailable
             }
