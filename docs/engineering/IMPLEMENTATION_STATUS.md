@@ -419,3 +419,10 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - PR #33 retargeted to `main` after PR #26 merge.
 - Current exact head: `8885fd6f43098421973d098b2cd3d94a8e7545e3`.
 - Architecture boundary refactor, shared URLSession executor and HTTP-contract tests are implemented; exact-head CI is running.
+
+
+### ATP-SEC-001A — Native Market Search client marker
+
+- PR #33 now sends `X-ATHEER-LOCAL-CLIENT: macOS` on both backend status and market search GET requests.
+- Server-side rejection of missing markers, browser Origin and cross-site Fetch Metadata is implemented in dependent PR #37.
+- The client/server contract is not considered complete until both PRs are integrated and exact-head CI passes.
