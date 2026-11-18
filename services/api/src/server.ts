@@ -1,5 +1,6 @@
 import { createServer, type Server, type ServerResponse } from "node:http";
 import type { CapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
+import { hasValidIPCCapability } from "./security/ipc-capability.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
@@ -31,12 +32,19 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
   response.end(JSON.stringify(payload));
 }
 
-export function createApiServer(marketData?: CapitalDemoRuntime): Server {
+export function createApiServer(
+  marketData: CapitalDemoRuntime | undefined,
+  ipcCapability: Uint8Array | undefined,
+): Server {
   return createServer((request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
     const pathname = url.pathname;
 
     if (pathname.startsWith("/market-data/")) {
+      if (!hasValidIPCCapability(request, ipcCapability)) {
+        sendJson(response, 401, { error: "unauthorized" });
+        return;
+      }
       void handleMarketDataRequest(request.method ?? "GET", url, response, marketData);
       return;
     }
