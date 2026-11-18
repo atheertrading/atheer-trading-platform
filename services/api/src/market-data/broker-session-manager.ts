@@ -30,7 +30,10 @@ export class BrokerSessionManager {
     };
   }
 
-  async connect(credentials?: CapitalDemoCredentials): Promise<BrokerSessionStatus> {
+  async connect(
+    credentials?: CapitalDemoCredentials,
+    beforeSessionReplacement?: () => Promise<void>,
+  ): Promise<BrokerSessionStatus> {
     if (credentials) {
       const now = this.now();
       if (
@@ -45,8 +48,11 @@ export class BrokerSessionManager {
           lastError: `Capital.com DEMO session creation is rate-limited. Retry in ${Math.ceil(remainingMs / 1_000)} seconds.`,
         };
       }
-      if (this.runtime) await this.disconnect();
       this.lastSessionCreationAttemptAtMs = now;
+      if (this.runtime) {
+        await beforeSessionReplacement?.();
+        await this.disconnect();
+      }
       this.runtime = this.runtimeFactory({
         apiKey: credentials.apiKey,
         identifier: credentials.identifier,
