@@ -58,7 +58,6 @@ const OMS_TRANSITIONS: Readonly<Partial<Record<OrderLifecycleState, readonly Ord
 
 const GATEWAY_TRANSITIONS: Readonly<Partial<Record<OrderLifecycleState, readonly OrderLifecycleState[]>>> = {
   PERSISTED: ["SUBMITTED"],
-  CANCEL_PENDING: ["CANCEL_PENDING"],
 };
 
 const BROKER_TRANSITIONS: Readonly<Partial<Record<OrderLifecycleState, readonly OrderLifecycleState[]>>> = {
