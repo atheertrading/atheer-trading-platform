@@ -165,11 +165,11 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 ## EDL-023 — Centralized broker connection and subscription orchestration
 
 - **Date:** 2026-11-18
-- **Status:** Partially implemented; remaining work tracked in ATP-BRK-003 / ATP-MKT-007.
+- **Status:** Partially implemented; sequential per-runtime session throttling and scheduled REST keepalive are now implemented on PR #49; remaining work tracked in ATP-BRK-003 / ATP-MKT-007.
 - **Authority:** Library Broker Integration Q10.
 - **Decision:** Maintain the minimum necessary external connections through one Connection Management & Orchestration Service. Distinguish REST request rate, authenticated REST session, persistent WebSocket connection and instrument subscription capacity.
-- **Implemented:** Shared WebSocket runtime, 40-instrument cap, deduplication, five-minute ping, reconnect/backoff and quote-quality counters.
-- **Pending:** One session creation per second per API key, REST keepalive scheduling, priority-based subscription allocation, account-switch restoration and connection utilization metrics.
+- **Implemented:** Shared WebSocket runtime, 40-instrument cap, deduplication, five-minute WebSocket heartbeat, reconnect/backoff, quote-quality counters, minimum one-second sequential session-creation interval in the single runtime owner, and scheduled five-minute REST `/ping` with degraded/recovery state handling.
+- **Pending:** Cross-runtime/API-key throttling under the centralized CMS, priority-based subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented global connection limits; confirm them with Capital.com.
 
 
