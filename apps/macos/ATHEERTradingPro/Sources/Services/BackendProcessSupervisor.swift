@@ -116,6 +116,8 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
     case startupTimedOut
     case readinessOutputClosed
     case processExited(Int32)
+    case childExitedWithFailure(Int32)
+    case childExitedUncleanly(Int32)
     case authenticationProbeFailed(Int)
     case startupInProgress
     case terminationTimedOut
@@ -140,6 +142,10 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
             return "The managed backend closed its startup channel before becoming ready."
         case .processExited(let status):
             return "The managed backend exited during startup (status \(status))."
+        case .childExitedWithFailure(let status):
+            return "The managed backend exited with a shutdown failure (status \(status))."
+        case .childExitedUncleanly(let signal):
+            return "The managed backend required signal termination (signal \(signal)); graceful cleanup was not confirmed."
         case .authenticationProbeFailed(let status):
             return "The managed backend failed its authenticated startup probe (HTTP \(status))."
         case .startupInProgress:
@@ -337,10 +343,22 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             throw BackendProcessSupervisorError.terminationTimedOut
         }
 
+        let terminationReason = child.terminationReason
+        let terminationStatus = child.terminationStatus
+
         if self.process === child {
             self.process = nil
         }
         clearSupervisorState()
+
+        switch terminationReason {
+        case .exit where terminationStatus != 0:
+            throw BackendProcessSupervisorError.childExitedWithFailure(terminationStatus)
+        case .uncaughtSignal:
+            throw BackendProcessSupervisorError.childExitedUncleanly(terminationStatus)
+        default:
+            break
+        }
     }
 
     private func signalAndWait(
