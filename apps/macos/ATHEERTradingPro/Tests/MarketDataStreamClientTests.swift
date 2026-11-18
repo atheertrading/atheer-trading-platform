@@ -89,8 +89,9 @@ final class MarketDataStreamClientTests: XCTestCase {
         model.toggleSelection(" AAPL ")
         model.startMonitoring()
 
-        for _ in 0..<20 where client.requestedEpics.isEmpty {
-            await Task.yield()
+        let subscriptionDeadline = Date().addingTimeInterval(1)
+        while client.requestedEpics.isEmpty && Date() < subscriptionDeadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
         }
         XCTAssertEqual(client.requestedEpics, ["AAPL"])
 
@@ -122,8 +123,9 @@ final class MarketDataStreamClientTests: XCTestCase {
             )
         )))
 
-        for _ in 0..<20 where model.quotes["AAPL"] == nil {
-            await Task.yield()
+        let quoteDeadline = Date().addingTimeInterval(1)
+        while model.quotes["AAPL"] == nil && Date() < quoteDeadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
         }
 
         XCTAssertEqual(model.connectionState, .connected)
