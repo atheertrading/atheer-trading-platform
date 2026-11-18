@@ -1,6 +1,6 @@
 # ATHEER Governing Trading and Intelligence Flows
 
-**Source:** ChatGPT Library — `Atheer Q&A Repository.zip`, 12 fenced Mermaid source blocks inspected on 2026-11-18; the flows below are normalized engineering transcriptions and consolidations.  
+**Source:** ChatGPT Library — `Atheer Q&A Repository.zip`, all 12 fenced Mermaid source blocks inspected on 2026-11-18; the flows below are normalized engineering transcriptions and consolidations.  
 **Purpose:** Preserve owner-provided workflow diagrams in the engineering repository so implementation, tests, recovery procedures, and agent behavior can refer to the same governing flows.  
 **Authority note:** These normalized diagrams preserve the source workflows' control points and intent; they are not byte-for-byte reproductions and do not prove that the corresponding product modules are implemented. Requirements and implementation status remain tracked separately.
 
@@ -217,6 +217,63 @@ flowchart TD
 - Deterministic checks and risk/strategy policy compatibility are mandatory gates.
 - Unsupported material claims are revised, qualified, removed, or rejected—not presented as verified facts.
 - AI output does not bypass the central Risk Engine or Execution Gateway.
+
+## 6.3 AI context and memory management
+
+**Source question:** PART IX — AI, AGENTS & INTELLIGENCE SYSTEM / Section 27 — AI Architecture / Q27.13 — How are context and memory managed?
+
+```mermaid
+flowchart TD
+    A["AI Request / Task Event"] --> B["Identify Agent, Skill and Task"]
+    B --> C["Resolve Identity and Permissions"]
+    C --> D["Determine Required Context"]
+    D --> E["Retrieve Relevant Memory"]
+    E --> F["Fetch Authoritative Operational Data"]
+    F --> G["Validate Freshness, Provenance and Conflicts"]
+    G --> H["Rank and Filter Context"]
+    H --> I["Apply Token and Cost Constraints"]
+    I --> J["Assemble Context Package"]
+    J --> K["AMGL Model Routing"]
+    K --> L["AI Analysis / Response"]
+    L --> M["Validate Output and Record References"]
+    M --> N["Memory Eligibility Assessment"]
+    N --> O["Store, Update, Expire or Discard"]
+```
+
+**Engineering invariants**
+- Agent, skill, task identity and permissions are resolved before context retrieval.
+- Relevant memory and authoritative operational data are separate inputs and must be reconciled.
+- Freshness, provenance, conflicts, relevance, token budget and cost are explicit context gates.
+- Model routing occurs only after the context package is assembled and qualified.
+- Output references are validated before the memory-eligibility decision; not every output is eligible for persistent memory.
+
+## 6.4 Distinguishing facts, assumptions, conclusions and unknowns
+
+**Source question:** PART IX — AI, AGENTS & INTELLIGENCE SYSTEM / Section 27 — AI Architecture / Q27.16 — How are actual data, conclusions, and assumptions distinguished from one another?
+
+```mermaid
+flowchart TD
+    A["Verified Facts"] --> D["Evidence Assessment"]
+    B["Explicit Assumptions"] --> D
+    C["Validated Historical Knowledge"] --> D
+    D --> E["Analytical Reasoning"]
+    E --> F["Conclusions"]
+    E --> G["Testable Hypotheses"]
+    F --> H["Scenario / Projection Assessment"]
+    G --> H
+    H --> I["Decision Support"]
+    I --> J["Independent Quality and Evidence Validation"]
+    J --> K["Qualified Output"]
+    U["Unknowns / Missing Evidence"] --> D
+    U --> J
+```
+
+**Engineering invariants**
+- Verified facts, explicit assumptions, validated historical knowledge, and unknowns remain distinct evidence classes.
+- Conclusions and testable hypotheses are analytical outputs, not automatically verified facts.
+- Scenarios and projections retain their uncertainty and evidence lineage.
+- Independent quality and evidence validation occurs before an output is qualified for permitted use.
+- Missing evidence must remain visible; it cannot be silently converted into an assumption or conclusion.
 
 ## 7. Unified market intelligence to governed execution
 
