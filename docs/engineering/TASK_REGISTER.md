@@ -443,3 +443,12 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Commits: `9dbc2ef`, `f63f806`, `8c12e59`, `4d35e16`.
 - Exact-head CI on `4d35e16e9c5ccce319f51366d7854088c5282505` is pending; no passing result is claimed. Owner-Mac DEMO authentication qualification remains pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
+
+
+## ATP-MKT-007 — Cached quote replay freshness correction (2026-11-18)
+
+- Found that `CapitalDemoStreamingRuntime.latest()` replayed the original freshness decision for cached quotes; a quote that was fresh at initial receipt could be replayed later still marked fresh and automated-decision eligible.
+- Recompute freshness against the current backend clock using the original provider timestamp; preserve provider and receipt provenance; stale/invalid replays are not eligible for automated decisions.
+- Added deterministic regression coverage advancing the injected clock by 6 seconds.
+- PR #67 is stacked on PR #66. Exact-head hosted CI and owner-side runtime qualification are pending.
+- Session report: `SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY.md`.
