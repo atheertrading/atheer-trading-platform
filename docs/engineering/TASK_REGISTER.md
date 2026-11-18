@@ -304,7 +304,7 @@ The exact-head Intel macOS CI job for PR #33 failed during Debug compilation on 
 
 | Work item | Priority | Scope | Status | Evidence |
 |---|---:|---|---|---|
-| ATP-UI-ARCH-001A | P1 | Keep provider DTOs in infrastructure, expose semantic market models, separate ViewModel, inject client at composition root | IMPLEMENTED; exact-head CI pending | PR #33 branch `fix/market-explorer-search-lifecycle`; six code/test commits; provider DTO mapping and unknown-state regression coverage |
+| ATP-UI-ARCH-001A | P1 | Keep provider DTOs in infrastructure, expose semantic market models, separate ViewModel, inject client at composition root | IMPLEMENTED; exact-head CI pending | PR #33; private provider DTOs, semantic model mapping, separate injected ViewModel, shared Sendable URLSession executor, ephemeral no-cookie/no-cache session, URLProtocol endpoint/query/status/transport regression coverage |
 
 Acceptance:
 - SwiftUI and ViewModel consume only provider-independent semantic models.
