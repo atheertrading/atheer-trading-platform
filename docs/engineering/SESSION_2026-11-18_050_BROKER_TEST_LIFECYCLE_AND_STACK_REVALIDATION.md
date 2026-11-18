@@ -86,3 +86,12 @@ Do not merge PR #51 to `main` while the native supervisor and authenticated clie
 After exact-head CI completes, resolve any remaining backend or macOS failures and integrate the stack in the order above. The next market-data vertical slice is authenticated native SSE subscription from selected instruments, with provider-independent quote models, source timestamps, sequence/duplicate validation, freshness state, cancellation, and truthful disconnected/stale UI states. It must remain read-only and must not expose dealing actions.
 
 Owner-Mac launch, Keychain persistence/restart, accessibility/visual QA, and explicitly authorized real DEMO authentication remain separate qualification gates.
+
+
+## 8. Mainline ancestry revalidation addendum
+
+- Current main head at inspection: 31e3e5547c9204645427ec56426e741d4bcfa955.
+- PR #51 head remains 1e312352696bcc5e18ba00a15dc426d37aa26c5a; merge base is 3bb2f0b68c11eff019bbd88ce09cf3b7155b9ea4.
+- Comparison reports main four commits ahead and PR #51 twenty commits ahead (diverged). The four mainline commits are documentation-only: ATP-ENGINEERING-REVIEW-2026-11-18.md plus updates to IMPLEMENTATION_STATUS.md, PROJECT_CONTINUITY.md and TASK_REGISTER.md.
+- The mainline engineering review introduces EDL-024 through EDL-032, including single broker-session authority, private IPC trust boundary, canonical multi-asset domain, broker-truth reconciliation, market-data quality/subscription governance, durable persistence/audit, bounded AI permissions and release qualification.
+- GitHub reports PR #51 mergeable at the latest metadata inspection. This is not permission to skip merge-base verification or exact-head CI. Preserve history; do not force-push or rewrite the branch. After the child stack is integrated upward, revalidate the final PR #51 diff against current main and ensure the four mainline documentation updates remain present in the resulting merge.
