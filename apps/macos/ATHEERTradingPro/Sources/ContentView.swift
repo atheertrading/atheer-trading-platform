@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var showingBrokers = false
     @State private var isInstrumentQuickSearchPresented = false
     @State private var pendingMarketSearchTerm: String?
+    @State private var marketSearchClient = URLSessionMarketSearchClient()
 
     var body: some View {
         NavigationSplitView {
@@ -20,11 +21,12 @@ struct ContentView: View {
                     case .workspace:
                         WorkspaceHomeView(
                             backendHealthModel: backendHealthModel,
+                            marketSearchClient: marketSearchClient,
                             onOpenAPIConnection: { selection = .apiConnection }
                         )
                     case .markets:
                         MarketExplorerView(
-                            client: URLSessionMarketSearchClient(),
+                            client: marketSearchClient,
                             requestedSearchTerm: $pendingMarketSearchTerm,
                             onOpenAPIConnection: { selection = .apiConnection }
                         )
@@ -54,7 +56,7 @@ struct ContentView: View {
         .navigationSplitViewStyle(.balanced)
         .frame(minWidth: IPDSViewportMetrics.minimumWindowSize.width, minHeight: IPDSViewportMetrics.minimumWindowSize.height)
         .sheet(isPresented: $isInstrumentQuickSearchPresented) {
-            InstrumentQuickSearchView(client: URLSessionMarketSearchClient()) { instrument in
+            InstrumentQuickSearchView(client: marketSearchClient) { instrument in
                 pendingMarketSearchTerm = InstrumentQuickSearchRouting.marketSearchTerm(for: instrument)
                 selection = .markets
             }

@@ -380,3 +380,12 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
 - No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
 - Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
+
+
+## ATP-UI-CC-STATUS-001 — Command Center operational status
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-UI-CC-STATUS-001 | P1 | Replace static Command Center status labels with injected, backend-derived market-data REST, broker-readiness and trading-gate presentation; preserve truthful account unavailability | IMPLEMENTED ON UI BRANCH — EXACT-HEAD CI PENDING | Branch `feat/ui-command-center-status-integration`; parent PR #90 / `c0f386c1e7701f6445d1e70eea6ee87545c7e954`; session `SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md` |
+
+Acceptance: no invented endpoint or broker status; REST is not presented as streaming; account remains unavailable until a backend account snapshot contract is published; unknown/unavailable readiness is not treated as connected or authorized; XCTest and exact-head CI required. Preserve `CAP_ALLOW_TRADING=false`.

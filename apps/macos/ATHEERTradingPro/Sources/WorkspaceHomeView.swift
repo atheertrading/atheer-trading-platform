@@ -1,14 +1,15 @@
 import SwiftUI
 
-/// Compatibility entry point retained for the existing application navigation.
-/// The primary workspace is implemented by CommandCenterView.
+/// Compatibility entry point for the implemented Command Center destination.
 struct WorkspaceHomeView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
+    let marketSearchClient: MarketSearchClient
     let onOpenAPIConnection: () -> Void
 
     var body: some View {
         CommandCenterView(
             backendHealthModel: backendHealthModel,
+            marketSearchClient: marketSearchClient,
             onOpenAPIConnection: onOpenAPIConnection
         )
     }

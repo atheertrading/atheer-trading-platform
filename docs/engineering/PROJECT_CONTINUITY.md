@@ -674,3 +674,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No credentials were read or changed; no broker authentication was attempted; no trading, risk-policy or LIVE configuration was changed. CAP_ALLOW_TRADING remains false.
 - Next gate: evaluate exact-head repository hygiene, Mermaid validation, Intel/Apple Silicon Debug/XCTest/Release and Swift CodeQL; then perform owner-Mac theme persistence and visual/accessibility qualification.
 
+
+
+## 2026-11-19 — Command Center backend-status integration
+
+- Reconciled the active Team A work from PR #90 (`feat/ui-12-screen-pixel-specs`) and created a focused child branch `feat/ui-command-center-status-integration` from exact base head `c0f386c1e7701f6445d1e70eea6ee87545c7e954`; no UI/chart ancestry was rewritten.
+- Verified that the Command Center used fixed status labels while the existing native client already exposes `MarketSearchClient.fetchBackendStatus()` and backend readiness fields for broker and trading-gate status.
+- Implemented a UI-owned status view model and pure status projection using only these existing contracts. Market-data presentation explicitly identifies a REST session and does not claim streaming readiness. Broker/trading status fail closed when backend readiness is absent or invalid; account remains unavailable because no account snapshot exists in the current contract.
+- Injected one shared market-search client into Command Center, Markets and instrument quick search. No backend file or broker capability was changed.
+- Added deterministic XCTest coverage for backend status mapping and non-inference of unavailable values.
+- Session report: [SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md](SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md).
+- Verification state at implementation: exact-head CI and owner-Mac visual/runtime checks pending; no test pass or broker-session result is claimed here. Keep `CAP_ALLOW_TRADING=false`.
