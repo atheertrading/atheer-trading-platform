@@ -73,6 +73,50 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testMarketWatchlistRoundTripsThroughUserDefaultsPersistence() {
+        let suiteName = "com.atheertrading.tests.watchlist.\\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let persistence = UserDefaultsMarketWatchlistPersistence(
+            defaults: defaults,
+            key: "market-watchlist-test"
+        )
+
+        let store = MarketWatchlistStore(persistence: persistence)
+        XCTAssertTrue(store.add("GOLD"))
+        XCTAssertTrue(store.add("EURUSD"))
+
+        let restored = MarketWatchlistStore(persistence: persistence)
+        XCTAssertEqual(restored.epics, ["GOLD", "EURUSD"])
+    }
+
+    @MainActor
+    func testMarketExplorerAndWatchPanelAcceptSharedAppScopedModels() {
+        let model = MarketExplorerViewModel(
+            client: StubMarketSearchClient(
+                status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .disconnected),
+                results: []
+            ),
+            streamClient: StubMarketDataStreamClient(events: [])
+        )
+        let store = MarketWatchlistStore(persistence: InMemoryMarketWatchlistPersistence())
+        let explorer = MarketExplorerView(
+            model: model,
+            watchlistStore: store,
+            onOpenAPIConnection: {}
+        )
+        let panel = MarketWatchPanelView(
+            model: model,
+            watchlistStore: store,
+            onOpenMarkets: {},
+            onOpenAPIConnection: {}
+        )
+
+        XCTAssertNotNil(explorer)
+        XCTAssertNotNil(panel)
+    }
+
+    @MainActor
     func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
         let persistence = InMemoryWorkspacePersistence()
         let engine = WorkspaceEngine(persistence: persistence)
