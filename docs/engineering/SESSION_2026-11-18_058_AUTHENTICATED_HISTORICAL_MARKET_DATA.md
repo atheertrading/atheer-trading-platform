@@ -81,3 +81,16 @@ A source review identified that historical normalization validated timestamp syn
 - Commits: `aa425f9af869987367e12c274292bf00733a1559`, `b9f1a719556bc291c4430e7e273f023aa5409eae`.
 - Exact-head CI is required; no test pass is claimed here.
 - No provider session, broker credentials, orders, or LIVE capability used.
+
+## CI failure analysis and regression correction — 2026-11-18
+
+Exact-head Intel macOS CI logs exposed two test defects in inherited broker IPC coverage:
+
+1. `BackendBrokerAuthenticationServiceTests` assumed URLSession's `URLProtocol` request always exposed the outgoing body through `httpBody`. The runner surfaced it as `httpBodyStream`, so the test failed to unwrap a body despite successful request construction. The fixture now captures either representation and drains the stream with a bounded read count and an 8 KiB maximum.
+2. `UnixDomainSocketBrokerCredentialIPCClientTests` asserted an outdated error description. The production error intentionally includes the word "private"; the assertion now matches the actual security-specific message.
+
+Applied the fixture correction across PR #55, #64, #66, #67, #68 and #70 branches, and the error-description assertion across #66–#70.
+
+- This is a test-fixture/expectation correction; no broker credential transport behavior or trading authority was weakened.
+- New exact-head CI runs are required before accepting these fixes.
+- Prior failures remain recorded as historical results; no new pass is claimed in this report.
