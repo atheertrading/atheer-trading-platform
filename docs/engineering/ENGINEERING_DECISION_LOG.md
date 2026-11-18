@@ -203,3 +203,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Decision detail:** The managed backend child may request `PORT=0`; the operating system selects the loopback port. The child reports the assigned port using the non-secret `ATHEER_BACKEND_READY <port>` stdout marker only after the server binds.
 - **Security boundary:** `HOST` remains restricted to `127.0.0.1`; capability transport remains private stdin, not argv or environment. The supervisor must verify the authenticated market-data route after observing the marker.
 - **Scope:** Startup discovery only. This does not implement the native supervisor, credential lifecycle, Keychain bridge, CMS, or trading authorization.
+
+
+### EDL-025 implementation follow-up — native process supervisor and runtime bundle
+
+- **Date:** 2026-11-18
+- **Status:** Implemented in PR #53; exact-head CI pending.
+- **Decision detail:** The macOS app owns the backend child process. It creates a per-launch 256-bit capability using the Security framework, passes it only through private stdin, discovers the ephemeral loopback port from a non-secret stdout readiness marker, and requires both liveness and capability-authenticated market-data probes before publishing the connection.
+- **Runtime:** Pin Node.js 24.22.3; bundle universal x64/arm64 runtime plus compiled API assets; verify official archive SHA-256 values; include Node license.
+- **Compatibility:** Official Node 24 macOS binaries require 13.5+. The app target remains 13.0, with an explicit process-start guard below 13.5.
+- **Boundary:** Broker credentials are not passed in environment or argv. Keychain handoff and backend-owned CMS/session authority remain pending. Trading remains disabled.
