@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let background = Color(red: 18.0 / 255.0, green: 18.0 / 255.0, blue: 18.0 / 255.0)
     @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
 
@@ -10,9 +9,9 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("ATHEER")
-                        .font(.system(size: 19, weight: .bold, design: .rounded))
+                        .font(ATHEERDesignTokens.Typography.brand)
                         .tracking(2)
-                        .foregroundColor(Color(red: 0.0, green: 206.0 / 255.0, blue: 200.0 / 255.0))
+                        .foregroundColor(ATHEERDesignTokens.ColorRole.accent)
                     Text("TRADING PRO")
                         .font(.system(size: 10, weight: .semibold))
                         .tracking(1.5)
@@ -34,18 +33,21 @@ struct ContentView: View {
                 .listStyle(.sidebar)
             }
             .frame(minWidth: 190)
-            .background(Color(red: 9.0 / 255.0, green: 55.0 / 255.0, blue: 50.0 / 255.0).opacity(0.22))
+            .background(ATHEERDesignTokens.ColorRole.deepTeal.opacity(0.22))
         } detail: {
             Group {
                 switch selection ?? .workspace {
                 case .workspace:
-                    WorkspaceHomeView(backendHealthModel: backendHealthModel)
+                    WorkspaceHomeView(
+                        backendHealthModel: backendHealthModel,
+                        onOpenAPIConnection: { selection = .apiConnection }
+                    )
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
                 }
             }
             .frame(minWidth: 620, minHeight: 520)
-            .background(background)
+            .background(ATHEERDesignTokens.ColorRole.canvas)
             .navigationTitle((selection ?? .workspace).title)
         }
         .frame(minWidth: 900, minHeight: 600)

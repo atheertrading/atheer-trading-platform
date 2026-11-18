@@ -48,8 +48,9 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-004 | P2 | Establish automated tests and local developer workflows | IN PROGRESS |
 | M02-005 | P2 | Integrate backend health into the macOS workspace | IN PROGRESS — PR #10 exact head `06bd496d957b6cd2f999209cf5dc83cae54251cf` passed hosted CI #117; owner Mac XcodeGen/Debug/XCTest/launch are owner-confirmed; owner supplied /health/live 200 and /health/ready 503 expected payload. App-panel verification remains pending in PR #17. |
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
-| M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; hosted macOS CI and owner runtime QA pending |
-| M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; full control audit and owner runtime QA pending |
+| M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; owner runtime QA pending |
+| M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; workflow #132 passed on its exact head; full control audit and owner runtime QA pending |
+| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 source head `331f424d6d1180569504b725cbcaa1eece41ed46`; exact-head hosted workflow #135 passed repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Mac qualification is active on `work/local-pr18-qualification`; local build/test/launch and visual/accessibility QA remain pending. Formal IPDS source/approval reconciliation remains pending. |
 
 ## Governance notes
 
@@ -152,3 +153,20 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 - P1 — Reconcile ADR-0004/0005/0006 originals and OOP standard; current archive register references them but does not include their original full text.
 
 - PR #10 code-review correction fixes the health client to loopback and rejects `not_ready` responses that advertise trading enabled; a fifth XCTest covers this fail-closed invariant. Fresh CI is required on the updated branch head.
+
+
+## Workspace visual foundation — 2026-11-17
+
+- M02-009 adds shared design-token roles and reusable workspace panels; it remains IN PROGRESS pending exact-head CI, runtime QA and formal IPDS source reconciliation.
+- M02-007 hosted CI #132 passed on PR #17 exact head; owner runtime QA remains pending.
+- M02-008 hosted CI #132 passed on PR #17 exact head; application-wide clipboard audit and owner runtime QA remain pending.
+- ATP-ARCH-014/037/038 and original IPDS full source/approval metadata were not surfaced by Library retrieval; do not mark product IA or IPDS as formally approved.
+
+
+## PR #18 local qualification checkpoint — 2026-11-17
+
+- Local safety branch `safety/local-pr10-checkpoint-20261117` preserves the original local PR #10 checkout at `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Remote ancestry was verified: PR #10 → PR #17 → PR #18. The local qualification branch `work/local-pr18-qualification` tracks `origin/feat/macos-workspace-visual-foundation` at source head `331f424d6d1180569504b725cbcaa1eece41ed46`; the working tree was clean at branch creation.
+- Local toolchain inventory returned Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1, and an existing generated Xcode project. This is environment discovery only; no local build, XCTest, launch, or visual result is claimed.
+- PR #18 workflow #135 passed on source head `331f424d6d1180569504b725cbcaa1eece41ed46`: repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety workflow #90 also passed.
+- Next: inspect full governing/architecture requirements and source; run local Debug → XCTest → Release with isolated DerivedData; then launch and perform visual, interaction, accessibility, and multi-display checks where supported.

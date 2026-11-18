@@ -210,3 +210,20 @@ The health client destination is fixed to loopback rather than accepting an arbi
 - Full workspace/panel composition, settings window, IPDS token conformance, and application-wide clipboard audit remain incomplete. Issues #14 and #16 remain open.
 - The repository contains no Capital.com adapter or credential-handoff API. No credential form or Keychain workflow is implemented; the current local health API is not a secure secret-transfer contract.
 - No broker credentials, trading operations, risk controls, LIVE capability, or production configuration were changed.
+
+
+## Workspace visual foundation — 2026-11-17
+
+- PR #18 branch: `feat/macos-workspace-visual-foundation`, based on PR #17 head `75144f209e4a25d6cd10c2cd4571ac7e5070cffd`.
+- Verified source head at qualification start: `331f424d6d1180569504b725cbcaa1eece41ed46`.
+- Added `ATHEERDesignTokens.swift` with shared color roles, typography roles and spacing primitives based on the owner-provided palette and existing shell treatment.
+- Added `WorkspacePanel.swift` with reusable panel, unavailable-state and status-tile components.
+- Replaced the minimal Workspace home with an operational overview containing Market Watch, Chart Workspace, Account & Risk and Platform Health panels plus explicit market-data, broker, account and trading status.
+- Added in-memory panel show/hide/reset and a direct API Connection navigation action. No persistence or docking behavior is claimed.
+- Added test `testWorkspacePanelInventoryAndDefaultVisibility`.
+- Added provisional product information architecture and IPDS foundation records. Full formal source and approval reconciliation remains pending.
+- PR #17 workflow #132 passed on its exact head. PR #18 workflow #135 passed on exact source head `331f424d6d1180569504b725cbcaa1eece41ed46`: repository hygiene/Markdown lint, backend typecheck/tests, macOS Debug build, XCTest, Release build, and Swift CodeQL. Local Sync Safety workflow #90 passed.
+- Local qualification branch `work/local-pr18-qualification` was created from the verified PR #18 head after confirming PR #10 → PR #17 → PR #18 ancestry. The preserved local PR #10 checkpoint remains at `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Local environment discovery: Xcode 14.3.1, Swift 5.8.1 (x86_64 macOS target), XcodeGen 2.36.1; generated Xcode project exists. These are toolchain/project observations only; local build, XCTest, app launch, visual, accessibility, and multi-display qualification have not yet been performed.
+- Workspace persistence, profiles, panel resizing/docking, multiwindow behavior, synchronized instrument/account context, and Settings remain unimplemented or unqualified. Formal IPDS source/approval reconciliation remains pending.
+- No broker, credential, order, risk-policy, trading-permission, LIVE or production behavior was changed.

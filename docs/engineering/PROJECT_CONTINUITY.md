@@ -6,7 +6,7 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `feat/macos-workspace-api-connection` (PR #17, stacked on PR #10) |
+| Current work branch | `work/local-pr18-qualification` (local qualification branch tracking PR #18 source branch `feat/macos-workspace-visual-foundation`; PR chain #10 → #17 → #18) |
 | Record status | Initial baseline; further source reconciliation required |
 | Last reviewed | 2026-11-17 |
 
@@ -371,3 +371,51 @@ This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness 
 ### Boundaries and next action
 
 PR #10 remains open and unchanged. PR #17 is not merged. The API process remains external to the app; the UI refreshes and reports health but does not launch or terminate the process. No broker credentials, Keychain records, Capital.com sessions, market data, orders, risk limits, or trading permissions were introduced. Continue with exact-head CI, then owner-Mac runtime verification.
+
+
+## Workspace visual foundation — ATP-2026-11-17-016
+
+- PR #17 remains open and unchanged at head `75144f209e4a25d6cd10c2cd4571ac7e5070cffd`.
+- PR #17 exact-head workflow #132 passed backend toolchain/typecheck/tests, repository hygiene/Markdown lint, XcodeGen generation, macOS Debug build, XCTest, Release build and Swift CodeQL.
+- Owner-side runtime and visual verification of PR #17 remains pending.
+- PR #18 branch: `feat/macos-workspace-visual-foundation`; head `98f8e36807fa15027b8ff3eb6ba897b69140be50`; stacked on PR #17.
+- Added shared design tokens, reusable workspace panel/status components, a designed four-panel operational workspace, ephemeral panel visibility controls, and a workspace panel inventory test.
+- Added provisional product IA and IPDS foundation records. These remain pending formal ATP-ARCH-014/037/038 and original IPDS source/approval reconciliation.
+- No new trading destinations, market values, account values, order controls, broker credentials or LIVE capabilities were added.
+- PR #18 exact-head hosted CI is pending; PR #17's passing CI is not substituted for it.
+- Panel visibility is in-memory only. Workspace persistence, docking/resizing and Settings remain unimplemented.
+- Next acceptance: PR #18 exact-head CI and owner-side macOS visual/runtime QA.
+
+
+## Local PR #18 qualification checkpoint — 2026-11-17
+
+### Verified repository state
+
+- Local branch: `work/local-pr18-qualification`, tracking `origin/feat/macos-workspace-visual-foundation`.
+- Source head at qualification start: `331f424d6d1180569504b725cbcaa1eece41ed46`.
+- Local working tree was clean at branch creation. The safety branch `safety/local-pr10-checkpoint-20261117` preserves the original PR #10 checkout at `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Git ancestry checks passed for PR #10 → PR #17, PR #17 → PR #18, and PR #10 → PR #18. `git rev-list --left-right --count HEAD...origin/feat/macos-workspace-visual-foundation` returned `0 13` before switching, confirming no local-only commits and 13 commits on the PR #18 line beyond the PR #10 checkpoint.
+- The PR #18 source inventory contains 14 tracked project files: 12 Swift source files, one XCTest file, and `project.yml`.
+- Local toolchain discovery: Xcode 14.3.1 (14E300c), Swift 5.8.1 targeting `x86_64-apple-macosx13.0`, XcodeGen 2.36.1. The generated `.xcodeproj` exists. No local build/test/launch/visual result is claimed yet.
+
+### Hosted verification
+
+- PR #18 workflow #135 completed successfully on exact source head `331f424d6d1180569504b725cbcaa1eece41ed46`. All three jobs passed: macOS build/tests/Swift CodeQL (including Debug build, XCTest, Release build), repository hygiene/Markdown lint, and backend toolchain/typecheck/tests.
+- Local Sync Safety workflow #90 completed successfully.
+- Hosted CI does not replace local workstation acceptance.
+
+### Current implementation boundaries
+
+- PR #18 remains open and unmerged, stacked on PR #17. Its shell is a bounded visual/workspace foundation, not a completed trading workstation.
+- Market Watch, Chart Workspace, and Account & Risk are explicit unavailable states; Platform Health consumes the local API health model. Panel visibility is in-memory only.
+- Workspace persistence, profiles, docking/resizing, multiwindow/multi-display behavior, instrument/account context synchronization, full accessibility audit, and visual regression evidence remain outstanding.
+- No broker credentials, dealing operations, risk-policy changes, trading permissions, LIVE behavior, or production configuration were introduced.
+
+### Next qualification sequence
+
+1. Inspect the full governing, architecture, continuity, task, and decision records on this branch.
+2. Inspect all Swift sources, tests, and project configuration against the approved requirements and macOS 13 / Swift 5.8 compatibility.
+3. Run local XcodeGen validation and Debug build, XCTest, and Release build with isolated DerivedData; preserve complete command output and exit status.
+4. Launch the app and verify navigation, API Connection, panel visibility/reset, truthful unavailable states, and backend-health states.
+5. Record screenshots and verify accessibility, keyboard behavior, resizing, and multiple displays where the actual environment supports them.
+6. Update this record with exact local evidence and residual defects; do not mark M02-001 or M02-009 DONE prematurely.
