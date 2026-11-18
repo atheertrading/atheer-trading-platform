@@ -386,3 +386,15 @@ PR #55 remains draft and unmerged. The final exact-head CI and the owner-Mac / D
 | ATP-MKT-008 — Native authenticated live quote subscription | P1 | PENDING — next vertical slice | Add authenticated SSE client, provider-independent quote model, source timestamp/provenance, duplicate/out-of-order/freshness validation, cancellation/reconnect and truthful stale/disconnected UI. Read-only; no dealing actions. |
 
 PR integration order is top-down into parent branches: #55 into #56, #56 into #54, #54 into #51, then exact-head qualification and merge #51 to main. The current report and evidence are in SESSION_2026-11-18_050_BROKER_TEST_LIFECYCLE_AND_STACK_REVALIDATION.md.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-BRK-003 batch 051 update
+
+| Work item | Priority | Current status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Backend broker-session authority and credential handoff | P0 | IN PROGRESS — PR #51/#54/#56/#55 stack | BrokerSessionManager and authenticated Keychain handoff are implemented on the unmerged stack. Bounded backend shutdown and redacted diagnostics added in PR #55. Credential payload confidentiality is unresolved because current handoff is plain HTTP loopback; private local IPC or explicit threat-boundary acceptance is required before merge. Exact-head CI and owner-Mac Keychain/DEMO qualification remain. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #49/#55 | One-second session-creation throttling, five-minute REST keepalive, status classification, account-switch coordination and bounded process cleanup are present on unmerged branches. Cross-runtime/API-key coordination, fully qualified recovery/reconciliation, and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Shared WebSocket runtime, 40-instrument cap, quote validation, reconnect, status and backend SSE endpoint exist on the unmerged stack. Priority allocation and full utilization metrics remain. |
+| ATP-MKT-008 — Native live quote monitor | P1 | IN PROGRESS — PR #58 | Native authenticated SSE client and display-only quote monitor are implemented on a draft branch. Parent ancestry, exact-head CI, real DEMO quote delivery and owner-Mac acceptance remain. |
+
+PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8fdd901b3e09`; exact-head CI `44286676363` was not complete at report time. PR #57 compile correction head `b1dcda177cf0ff2330a85a09f8f41040392e625c`; Local Sync Safety passed, CI pending. Neither result authorizes a merge.
