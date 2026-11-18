@@ -91,6 +91,7 @@ CREATE TABLE atheer.order_lifecycle_events (
 CREATE INDEX order_lifecycle_events_order_idx
   ON atheer.order_lifecycle_events (environment, order_id, order_version);
 
-GRANT SELECT, INSERT, UPDATE ON atheer.orders TO atheer_app;
+GRANT SELECT, INSERT ON atheer.orders TO atheer_app;
+REVOKE UPDATE, DELETE ON atheer.orders FROM atheer_app;
 GRANT SELECT, INSERT ON atheer.order_lifecycle_events TO atheer_app;
 REVOKE UPDATE, DELETE ON atheer.order_lifecycle_events FROM atheer_app;
