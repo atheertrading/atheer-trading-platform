@@ -42,10 +42,12 @@ final class BackendProcessSupervisorTests: XCTestCase {
 
         let socketPathFile = directory.appendingPathComponent("credential-socket-path.txt")
         let tradingFlagFile = directory.appendingPathComponent("trading-flag.txt")
+        let credentialEnvironmentFile = directory.appendingPathComponent("credential-environment.txt")
         let scriptURL = directory.appendingPathComponent("wait-for-signal.sh")
         let script = """
         printf '%s\\n' "$ATHEER_CREDENTIAL_SOCKET_PATH" > "\(socketPathFile.path)"
         printf '%s\\n' "$CAP_ALLOW_TRADING" > "\(tradingFlagFile.path)"
+        printf '%s|%s|%s\\n' "${CAPITAL_COM_DEMO_API_KEY-unset}" "${CAPITAL_COM_DEMO_IDENTIFIER-unset}" "${CAPITAL_COM_DEMO_PASSWORD-unset}" > "\(credentialEnvironmentFile.path)"
         trap 'exit 0' TERM
         while true; do /bin/sleep 1; done
         """
@@ -78,6 +80,11 @@ final class BackendProcessSupervisorTests: XCTestCase {
             try String(contentsOf: tradingFlagFile, encoding: .utf8)
                 .trimmingCharacters(in: .whitespacesAndNewlines),
             "false"
+        )
+        XCTAssertEqual(
+            try String(contentsOf: credentialEnvironmentFile, encoding: .utf8)
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            "unset|unset|unset"
         )
         let socketDirectoryURL = URL(fileURLWithPath: socketPath).deletingLastPathComponent()
         let socketDirectoryAttributes = try FileManager.default.attributesOfItem(atPath: socketDirectoryURL.path)
