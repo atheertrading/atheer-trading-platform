@@ -140,3 +140,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Rationale:** Prevent provider schema changes from leaking into SwiftUI and presentation state, preserve a replaceable adapter boundary, and keep production dependency selection in the application composition root.
 - **Compatibility:** Preserve the existing DEMO-only provider/environment validation, 100-character search bound, backend-connected gate, stale-search generation checks, and user-visible status behavior.
 - **Verification:** Added unknown connection-state rejection coverage and retained DTO mapping, stale result, query bound, and disconnected-state tests. Exact-head CI pending.
+
+
+## EDL-019 — Shared actor-safe URLSession request executor
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #33 branch; exact-head hosted qualification pending.
+- **Decision:** Use one shared `URLSessionRequestExecutor` infrastructure type for actor-isolated broker and market-data clients. The executor owns one immutable URLSession reference, is explicitly `@unchecked Sendable` based on URLSession's documented thread-safety, and calls the async API with `delegate: nil`.
+- **Rationale:** Avoid repeating the Swift 5.8 non-Sendable URLSessionTaskDelegate workaround in each service and keep transport execution outside presentation actors.
+- **Session policy:** Market Explorer uses an ephemeral URLSession with cookie storage and URL cache disabled. The caller can inject a URLSession for deterministic URLProtocol tests.
+- **Verification:** URLProtocol tests cover status and markets GET routes, query encoding, no-store headers, 503/500 mapping, and transport failure mapping. Exact-head CI pending.
