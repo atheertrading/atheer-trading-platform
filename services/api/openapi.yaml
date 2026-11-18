@@ -313,7 +313,8 @@ components:
             persistence:
               const: not_configured
             broker:
-              const: not_configured
+              type: string
+              enum: [not_configured, disconnected, connecting, connected, degraded, error]
         trading:
           type: object
           additionalProperties: false
