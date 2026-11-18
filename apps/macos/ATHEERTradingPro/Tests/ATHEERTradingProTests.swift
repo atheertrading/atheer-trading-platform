@@ -236,8 +236,17 @@ final class ATHEERTradingProTests: XCTestCase {
         let model = BackendHealthViewModel(
             client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
         )
+        let marketSearchClient = StubMarketSearchClient(
+            status: MarketDataBackendStatus(
+                provider: "capital.com",
+                environment: "DEMO",
+                state: .notConfigured
+            ),
+            results: []
+        )
         let view = CommandCenterView(
             backendHealthModel: model,
+            marketSearchClient: marketSearchClient,
             onOpenAPIConnection: {}
         )
 
