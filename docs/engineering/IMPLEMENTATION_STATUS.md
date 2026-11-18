@@ -455,40 +455,34 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - No broker dealing API, execution dispatcher, production database, or LIVE capability. `CAP_ALLOW_TRADING=false` unchanged.
 
 - Startup integration now verifies schema/checksums without mutating the database. Schema application is an explicit `npm run migrate` operation; see `docs/operations/POSTGRESQL.md`.
-## ATP-PERSISTENCE-001 — exact-head qualification and local PostgreSQL compatibility — 2026-11-18
-
-**Implementation:** Bounded PostgreSQL persistence slice is present on PR #41.  
-**Hosted backend verification:** PASSED on source head `012ea149749312b5146ee1b8dce900e0d7bba848`.  
-**Local least-privilege migration qualification:** BLOCKED — do not run `npm run migrate` against the owner's local database.
+## ATP-PERSISTENCE-001 — current implementation and qualification status — 2026-11-18
 
 | Area | Status | Evidence / limitation |
 |---|---|---|
-| PostgreSQL driver and lockfile | IMPLEMENTED | `pg` 8.23.1; committed npm lockfile |
-| Versioned SQL migration runner | IMPLEMENTED; LOCAL ROLE/SCHEMA COMPATIBILITY BLOCKER | Advisory transaction lock and SHA-256 ledger exist; runner does not SET ROLE and SQL identifiers are unqualified |
-| Durable domain repositories | IMPLEMENTED ON PR #41 | Instrument/specification, account/snapshot, intent, risk, reconciliation, audit and outbox records |
-| Transaction/idempotency behavior | HOSTED VERIFIED | CI PostgreSQL 17.12 integration suite, exact 49/49 tests |
-| Outbox | IMPLEMENTED, NOT DISPATCHABLE | Domain-record event allow-list only; no publisher, OMS worker, Execution Gateway, or broker dispatcher |
+| PostgreSQL driver and lockfile | IMPLEMENTED | `pg` 8.23.1 and committed npm lockfile |
+| Versioned SQL migration runner | IMPLEMENTED; HOSTED LEAST-PRIVILEGE TESTED | Advisory transaction lock, transaction-local `SET LOCAL ROLE atheer_db_owner`, SHA-256 ledger/checksum verification |
+| Canonical schema targeting | IMPLEMENTED | Migration ledger, migration DDL, FK/index targets, and repository SQL explicitly use `atheer.` |
+| Durable domain repositories | IMPLEMENTED ON PR #41 | Instrument/specification, account/snapshot, intent, risk, reconciliation, audit, and domain outbox |
+| Transaction/idempotency behavior | HOSTED VERIFIED | PostgreSQL 17.12 integration suite 49/49 on code-bearing head `94cc13d...` |
+| Migrator/app least privilege | HOSTED VERIFIED | NOINHERIT migrator assumes owner only within migration transaction; direct table CREATE denied for migrator and app; migrated table ownership checked |
+| Sequence default privileges | CONFIGURED; DIRECT REGRESSION TEST ADDED | New test creates owner-owned sequence, verifies app `nextval`, and verifies app/migrator cannot CREATE sequences; exact-head CI pending |
+| Outbox | IMPLEMENTED, NOT DISPATCHABLE | Domain-record allow-list only; no publisher, OMS worker, Execution Gateway, or broker dispatcher |
 | API startup migration behavior | IMPLEMENTED | Startup verifies ledger/checksums; it does not apply DDL automatically |
-| Owner local PostgreSQL setup | OWNER-VERIFIED FOUNDATION | Postgres.app PostgreSQL 18.7, loopback-only, database/schema/roles and tested least-privilege behavior |
-| Local migration using project CLI | BLOCKED | `atheer_migrator` is NOINHERIT; CLI does not SET ROLE; unqualified SQL does not target schema `atheer` |
-| Default sequence privileges | CONFIGURED; NOT YET TESTED | Local default grants were configured but not exercised with a sequence probe |
-| Backup/restore, retention, PITR, production TLS/roles | NOT IMPLEMENTED / NOT QUALIFIED | Release/production operational blockers |
+| Owner local PostgreSQL foundation | OWNER-VERIFIED | Postgres.app PostgreSQL 18.7, loopback-only, database/schema/roles and denial/rollback tests |
+| Owner local migration | NOT RUN / NOT QUALIFIED | Await final exact-head CI and controlled local qualification plan |
+| Backup/restore, retention, PITR, production TLS/roles | NOT IMPLEMENTED / NOT QUALIFIED | Production operational blockers |
 
-### Exact-head CI checkpoint
+### Exact-head verification history
 
-CI run `44203457118` on PR #41 head `012ea149749312b5146ee1b8dce900e0d7bba848`:
-- Backend Toolchain: passed; Node 24.22.2, npm 11.19.1, PostgreSQL 17.12, 49/49 tests.
-- Repository Hygiene, Mermaid architecture diagrams, and Local Sync Safety: passed.
-- Intel x86_64: project generation, Debug, and XCTest passed; Release was in progress and CodeQL pending at inspection.
-- Apple Silicon arm64: project generation, Debug, XCTest, and Release passed; CodeQL was skipped.
-- PR #41 remains OPEN / DRAFT; no approval review. Results must be refreshed after any new commit.
+- Code-bearing head `94cc13d13f56fd1f2efa450747e72dc841f65017`, run `44207522335`: Backend Toolchain passed type-check and 49/49 PostgreSQL 17.12 integration tests; Repository Hygiene, Mermaid, and Local Sync Safety passed; Apple Silicon arm64 Debug/XCTest/Release passed with CodeQL skipped; Intel Debug/XCTest passed while Release was in progress and CodeQL pending at last inspection.
+- Subsequent CI runs `44207530976` and `44207634600` were cancelled; the latter was superseded/cancelled during workflow activity and is not a passing qualification.
+- Sequence privilege regression test was added in commit `78a774289de6ccea0fe49c89c7877f65c8246828`. The 49/49 result above does not include this new test. Exact-head CI for the new commit is required.
+- Hosted PostgreSQL 17 results do not certify the owner's local PostgreSQL 18.7 operational configuration.
 
-The CI result proves the ephemeral CI database path only. It does not prove compatibility with the owner's PostgreSQL 18.7 database, NOINHERIT migrator role, or canonical `atheer` schema.
+### Remaining gates
 
-### Required next engineering work
-
-- Make the migration session assume `atheer_db_owner` transaction-locally.
-- Explicitly target schema `atheer` for the migration ledger, all migration DDL, and repository statements, or document and test an equally strict schema strategy.
-- Add least-privilege integration tests for `atheer_migrator` and `atheer_app`; preserve app CREATE denial.
-- Refresh exact-head CI and only then prepare a controlled local qualification plan.
-- No migration has been run on the owner's database; no production database or broker dealing is claimed. `CAP_ALLOW_TRADING=false` remains unchanged.
+1. Complete exact-head CI after the sequence test commit, including Intel Release and CodeQL.
+2. Review workstation architecture constraints and reconcile applicable Mermaid diagrams.
+3. Prepare a controlled PostgreSQL 18.7 local qualification; no migration until the plan and exact-head evidence are complete.
+4. Backup/restore, retention, PITR, production TLS, role provisioning, and restore drills remain open.
+5. No OMS lifecycle worker, durable outbox consumer, Execution Gateway, or broker dispatch is included in this PR. `CAP_ALLOW_TRADING=false` remains unchanged.
