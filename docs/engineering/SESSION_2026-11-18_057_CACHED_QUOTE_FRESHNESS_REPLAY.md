@@ -35,6 +35,20 @@ The native view model starts its local monotonic age calculation when it receive
 - Regression test source is committed. Hosted backend tests, full exact-head CI, Mermaid/hygiene checks and Intel/Apple Silicon macOS qualification are pending for this branch.
 - No test pass, owner-Mac runtime result, live provider request or automated-trading integration is claimed.
 
+
+## Library and architecture-source reconciliation
+
+Reviewed the saved **Screen Implementation, Application Development & Professional Trading Workstation** execution reference, the Library's `Codex.zip` knowledge-base package and Mermaid catalogue, and the Library `Atheer Q&A Repository.zip` archive.
+
+- The Q&A ZIP contains 517 primary Markdown files; a programmatic scan found 12 Mermaid blocks across 10 documents. These cover AI evidence/provenance and quality gates, manual intervention and override authority, unified intelligence-to-risk flow, strategy suspension/handover, emergency recovery and controlled resumption.
+- The curated knowledge-base package contains five proposed Mermaid diagrams: system context, market-data pipeline, target trading boundaries, AI order boundary and backtest pipeline. Its catalogue explicitly marks syntax/render validation pending.
+- Repository diagrams 01–11 were inspected. The canonical market-data pipeline diagram (03) is updated in this branch to distinguish live distribution from cached replay and to show freshness recomputation at replay time.
+- The separate `ATHEER_HISTORICAL_MERMAID_52_SOURCE_EXPORT.zip` and `Project documents and questions and answers.zip` named in the documentation handover were not present in the current Library listing. Therefore, the 52 historical Mermaid blocks have not been claimed as reviewed. The available 12 Q&A blocks and five curated diagrams are the inspected sources for this increment.
+
+The source diagrams reinforce the same safety invariants: missing/stale/invalid evidence must remain explicit; deterministic checks precede consequential outputs; manual, strategy and AI proposals converge on independent authorization and RiskEngine; the Execution Gateway alone deals with the broker; manual overrides cannot be silently overwritten; and recovery cannot resume normal trading until broker positions/orders/executions are reconciled and verified.
+
+The current 5,000 ms quote maximum-age and 250 ms future-skew values are inherited from the existing streaming implementation and reused by this correction. They are not newly approved trading-risk limits. The historical repository baseline separately records 5-second normal quote age, blocking new automated entries above 10 seconds and stale classification above 15 seconds. Reconcile those semantics against the authoritative market-data/RiskEngine specification before connecting this display-quality state to automated entry authorization. This PR does not change risk policy or wire RiskEngine.
+
 ## Safety
 
 No broker credentials, provider session, orders, risk limits, LIVE capability or execution path was used or changed. This correction only tightens display/data-quality freshness classification. `CAP_ALLOW_TRADING=false` remains unchanged.
