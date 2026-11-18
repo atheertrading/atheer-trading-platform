@@ -223,3 +223,25 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - State ownership: One app-scoped MarketChartViewModel is shared by the Charts & Analysis destination and the Command Center chart panel. The chart selection is constrained to the persistent Market Watch list.
 - Validation: Provider, DEMO environment, instrument, resolution, timestamp ordering, finite positive prices, OHLC consistency, Bid/Ask non-crossing, duplicate metadata and provider-volume lineage are validated before rendering.
 - Boundary: This increment is historical and read-only. Live candle aggregation, indicators, drawings, strategy synchronization, order entry and broker dealing are not included. All future financial actions remain governed by RiskEngine → OMS → Execution Gateway. CAP_ALLOW_TRADING=false remains unchanged.
+
+
+## EDL-016 — Live quote-to-candle aggregation boundary
+
+**Date:** 2026-11-18  
+**Status:** Implemented on a child feature branch; exact-head CI pending
+
+### Decision
+Use an app-scoped in-process quote event bus to fan out every validated Capital.com DEMO stream event before Market Watch's presentation throttling. The historical chart model consumes this stream and applies a deterministic, in-memory candle aggregator. Historical bars, locally updated historical bars, and newly aggregated live bars have distinct source labels.
+
+### Invariants
+- Only capital.com DEMO quotes with fresh provider timestamps and `automatedDecisionsAllowed=true` can update chart candles.
+- Bid and Ask remain separate OHLC series; no mid-price or synthetic quote is derived.
+- Duplicate and out-of-order provider timestamps are rejected.
+- Only fixed UTC intraday resolutions MINUTE through HOUR are locally aggregated. HOUR_4, DAY and WEEK remain historical-only until provider/session-calendar alignment is specified.
+- Missing intervals are not filled; no synthetic candles are generated.
+- New live bars carry no provider-volume value. Existing provider-volume lineage is preserved only as the historical snapshot field.
+- Live aggregation is volatile presentation state; it is not persisted and has no order, risk, OMS, Execution Gateway or broker-dealing authority.
+- The quote event bus is app-scoped and decouples stream ingestion from UI throttling; the market-data model remains owner of the provider stream lifecycle.
+
+### Consequences
+The chart receives every stream event even when the Market Watch display cache coalesces ticks every 100 ms. This preserves observed intrabar highs/lows for chart aggregation without increasing SwiftUI presentation update frequency. Session-aligned higher timeframes remain deferred pending authoritative market-calendar semantics.

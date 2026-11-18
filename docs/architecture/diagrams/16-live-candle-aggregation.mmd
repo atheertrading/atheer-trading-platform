@@ -1,0 +1,19 @@
+flowchart LR
+    Broker["Capital.com DEMO streaming API"]
+    Backend["Backend quote normalization and freshness policy"]
+    SSE["Server-Sent Events"]
+    StreamModel["MarketExplorerViewModel<br/>owns stream lifecycle"]
+    Bus["App-scoped MarketDataQuoteEventBus<br/>every accepted quote event"]
+    UIThrottle["100 ms presentation coalescing"]
+    Watch["Market Watch / quote presentation"]
+    Aggregator["LiveCandleAggregator<br/>strict time + freshness validation"]
+    ChartModel["MarketChartViewModel<br/>historical bootstrap + live projection"]
+    Chart["Shared Command Center / Charts & Analysis"]
+    History["GET /market-data/history"]
+    NoExec["Read-only boundary<br/>no order or dealing authority"]
+
+    Broker --> Backend --> SSE --> StreamModel
+    StreamModel --> Bus --> Aggregator --> ChartModel --> Chart
+    StreamModel --> UIThrottle --> Watch
+    History --> ChartModel
+    NoExec -.-> Chart

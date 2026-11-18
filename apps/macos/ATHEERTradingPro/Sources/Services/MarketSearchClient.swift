@@ -193,6 +193,7 @@ final class MarketExplorerViewModel: ObservableObject {
 
     private let client: MarketSearchClient
     private let streamClient: MarketDataStreamClient
+    private let quoteEventBus: MarketDataQuoteEventBus?
     private var streamTask: Task<Void, Never>?
     private var displayThrottleTask: Task<Void, Never>?
     private var pendingStreamingQuotes: [String: MarketDataStreamQuote] = [:]
@@ -203,10 +204,12 @@ final class MarketExplorerViewModel: ObservableObject {
 
     init(
         client: MarketSearchClient? = nil,
-        streamClient: MarketDataStreamClient? = nil
+        streamClient: MarketDataStreamClient? = nil,
+        quoteEventBus: MarketDataQuoteEventBus? = nil
     ) {
         self.client = client ?? URLSessionMarketSearchClient()
         self.streamClient = streamClient ?? URLSessionMarketDataStreamClient()
+        self.quoteEventBus = quoteEventBus
     }
 
     var canSearch: Bool {
@@ -406,6 +409,8 @@ final class MarketExplorerViewModel: ObservableObject {
                             }
                         case .quote(let quote):
                             guard selectedEpics.contains(quote.instrumentId) else { continue }
+                            // Publish every event before the UI's 100 ms coalescing cache.
+                            quoteEventBus?.publish(quote)
                             queueQuoteForPresentation(quote)
                             if streamingState != .connected {
                                 streamingState = .connected

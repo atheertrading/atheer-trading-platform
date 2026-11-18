@@ -96,6 +96,127 @@ final class MarketChartTests: XCTestCase {
         XCTAssertEqual(client.requestedMaximum, 500)
     }
 
+    private func makeHistoricalCandle(timestampMs: Int64) -> NormalizedHistoricalCandle {
+        NormalizedHistoricalCandle(
+            provider: "capital.com", environment: "DEMO", instrumentId: "GOLD",
+            resolution: .minute, timestampMs: timestampMs,
+            bid: HistoricalOHLC(open: 100, high: 102, low: 99, close: 101),
+            ask: HistoricalOHLC(open: 100.2, high: 102.2, low: 99.2, close: 101.2),
+            providerVolume: nil, providerVolumeField: nil, receivedAtMs: timestampMs + 100
+        )
+    }
+
+    private func makeQuote(
+        timestampMs: Int64, bid: Double, ask: Double, instrumentId: String = "GOLD",
+        environment: String = "DEMO", freshnessState: String = "fresh",
+        automatedDecisionsAllowed: Bool = true, ageMs: Double? = 100,
+        receivedAtOffsetMs: Int64 = 100
+    ) -> MarketDataStreamQuote {
+        MarketDataStreamQuote(
+            provider: "capital.com", environment: environment, instrumentId: instrumentId,
+            bid: bid, ask: ask, providerTimestampMs: timestampMs,
+            receivedAtMs: timestampMs + receivedAtOffsetMs, receivedAtMonotonicMs: 1_000,
+            freshness: MarketDataQuoteFreshness(
+                state: freshnessState, ageMs: ageMs,
+                automatedDecisionsAllowed: automatedDecisionsAllowed,
+                reason: freshnessState == "fresh" ? "within_policy" : "quote_too_old"
+            )
+        )
+    }
+
+    func testLiveAggregatorUpdatesBidAskOHLCIndependentlyWithinExistingBucket() {
+        let interval: Int64 = 60_000
+        let bucket = (1_800_000_000_000 / interval) * interval
+        var candles = [MarketChartCandle(historical: makeHistoricalCandle(timestampMs: bucket))]
+        var aggregator = LiveCandleAggregator()
+        XCTAssertTrue(aggregator.ingest(makeQuote(timestampMs: bucket + 10_000, bid: 103, ask: 103.2),
+                                        instrumentId: "GOLD", resolution: .minute, candles: &candles))
+        XCTAssertEqual(candles.count, 1)
+        XCTAssertEqual(candles[0].source, .historicalUpdatedByLive)
+        XCTAssertEqual(candles[0].bid.open, 100)
+        XCTAssertEqual(candles[0].bid.high, 103)
+        XCTAssertEqual(candles[0].bid.low, 99)
+        XCTAssertEqual(candles[0].bid.close, 103)
+        XCTAssertEqual(candles[0].ask.high, 103.2)
+        XCTAssertEqual(candles[0].ask.close, 103.2)
+    }
+
+    func testLiveAggregatorAppendsOneBarWithoutSyntheticGapFilling() {
+        let interval: Int64 = 60_000
+        let bucket = (1_800_000_000_000 / interval) * interval
+        var candles = [MarketChartCandle(historical: makeHistoricalCandle(timestampMs: bucket))]
+        var aggregator = LiveCandleAggregator()
+        XCTAssertTrue(aggregator.ingest(
+            makeQuote(timestampMs: bucket + interval * 3 + 5_000, bid: 104, ask: 104.2),
+            instrumentId: "GOLD", resolution: .minute, candles: &candles
+        ))
+        XCTAssertEqual(candles.count, 2, "The aggregator must not synthesize missing intervals.")
+        XCTAssertEqual(candles[1].timestampMs, bucket + interval * 3)
+        XCTAssertEqual(candles[1].source, .liveAggregated)
+        XCTAssertEqual(candles[1].bid.open, 104)
+        XCTAssertNil(candles[1].providerVolume)
+        XCTAssertNil(candles[1].providerVolumeField)
+    }
+
+    func testLiveAggregatorRejectsStaleFutureAndOutOfOrderQuotes() {
+        let interval: Int64 = 60_000
+        let bucket = (1_800_000_000_000 / interval) * interval
+        var candles = [MarketChartCandle(historical: makeHistoricalCandle(timestampMs: bucket))]
+        var aggregator = LiveCandleAggregator()
+        XCTAssertFalse(aggregator.ingest(
+            makeQuote(timestampMs: bucket + 10_000, bid: 101, ask: 101.2,
+                      freshnessState: "stale", automatedDecisionsAllowed: false),
+            instrumentId: "GOLD", resolution: .minute, candles: &candles
+        ))
+        XCTAssertFalse(aggregator.ingest(
+            makeQuote(timestampMs: bucket + 10_000, bid: 101, ask: 101.2, receivedAtOffsetMs: -500),
+            instrumentId: "GOLD", resolution: .minute, candles: &candles
+        ))
+        XCTAssertTrue(aggregator.ingest(
+            makeQuote(timestampMs: bucket + 20_000, bid: 103, ask: 103.2),
+            instrumentId: "GOLD", resolution: .minute, candles: &candles
+        ))
+        XCTAssertFalse(aggregator.ingest(
+            makeQuote(timestampMs: bucket + 15_000, bid: 99, ask: 99.2),
+            instrumentId: "GOLD", resolution: .minute, candles: &candles
+        ))
+        XCTAssertEqual(candles.count, 1)
+        XCTAssertEqual(candles[0].bid.low, 99)
+    }
+
+    func testLiveAggregatorDefersSessionAlignedResolutionsUntilCalendarContractExists() {
+        var candles: [MarketChartCandle] = []
+        var aggregator = LiveCandleAggregator()
+        let quote = makeQuote(timestampMs: 1_800_000_000_000, bid: 100, ask: 100.2)
+        XCTAssertFalse(aggregator.ingest(quote, instrumentId: "GOLD", resolution: .fourHours, candles: &candles))
+        XCTAssertFalse(aggregator.ingest(quote, instrumentId: "GOLD", resolution: .day, candles: &candles))
+        XCTAssertFalse(aggregator.ingest(quote, instrumentId: "GOLD", resolution: .week, candles: &candles))
+        XCTAssertTrue(candles.isEmpty)
+    }
+
+    @MainActor
+    func testChartModelConsumesEveryQuoteEventFromAppScopedBus() async throws {
+        let interval: Int64 = 60_000
+        let bucket = (1_800_000_000_000 / interval) * interval
+        let historical = makeHistoricalCandle(timestampMs: bucket)
+        let batch = HistoricalCandleBatch(
+            provider: "capital.com", environment: "DEMO", instrumentId: "GOLD", resolution: .minute,
+            candles: [historical],
+            quality: HistoricalCandleQuality(receivedCount: 1, normalizedCount: 1, duplicateCount: 0, observedGaps: [])
+        )
+        let bus = MarketDataQuoteEventBus()
+        let model = MarketChartViewModel(client: StubMarketHistoryClient(result: .success(batch)), quoteEventBus: bus)
+        model.selectInstrument("GOLD")
+        await model.load()
+        bus.publish(makeQuote(timestampMs: bucket + 5_000, bid: 110, ask: 110.2))
+        bus.publish(makeQuote(timestampMs: bucket + 10_000, bid: 101, ask: 101.2))
+        XCTAssertEqual(model.candles.count, 1)
+        XCTAssertEqual(model.candles[0].bid.high, 110)
+        XCTAssertEqual(model.candles[0].bid.close, 101)
+        XCTAssertEqual(model.liveCandleUpdateCount, 2)
+        XCTAssertNotNil(model.liveUpdatedAt)
+    }
+
     @MainActor
     func testChartViewModelCancellationDoesNotBecomeBackendFailure() async throws {
         let client = StubMarketHistoryClient(result: .failure(CancellationError()))

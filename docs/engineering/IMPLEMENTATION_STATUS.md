@@ -711,3 +711,30 @@ Mermaid and Local Sync Safety passed on the reviewed #43/#44 heads. PR #40–#42
 The dependency mismatch between PR #26's declared base bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b and PR #25 reviewed head 3112637a014e1573078056dee5fefc61b495ff4f remains a separate integration blocker despite PR #26's green CI.
 
 All green results above are exact-SHA hosted checks only. They do not prove owner-Mac runtime/visual/accessibility acceptance, real DEMO authentication, live quote delivery, or trading readiness.
+
+
+## Exact-head engineering recheck — 2026-11-18 (PR #44)
+
+- PR #24 HEAD `e34c7155c45e9108e5f95156fb8f2e1363d63e60`: Intel, Apple Silicon, Backend, Repository Hygiene, and CodeQL workflows passed.
+- PR #25 HEAD `3112637a014e1573078056dee5f5efc61b495ff4f`: Backend and Repository Hygiene passed. A fresh CI attempt 2 was queued after the prior Intel/Apple Silicon jobs were cancelled; final architecture qualification remains pending.
+- PR #26 HEAD `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`: Intel, Apple Silicon, Backend, and Repository Hygiene passed. Its declared base snapshot remains different from PR #25's reviewed head; resolve dependency metadata before ordered merge.
+- PR #33 HEAD `3b609eb259f8961d1e4c1b350a7e8edce1cf1ef1`: CI and Local Sync Safety passed.
+- PR #37 HEAD `5edddffcd0fa1f9f77514f2b8a20bd99abb946e9`: CI, Mermaid and Local Sync Safety passed.
+- PR #38 HEAD `24daa68b908dcaa065022cf9ae57836599a89d36`: CI, Mermaid and Local Sync Safety passed; this supersedes older cancelled/failed snapshots.
+- PR #39 HEAD `b24a687482f9bfe6e8f3683e568ae7b0c394b032`: CI, Mermaid and Local Sync Safety passed; this supersedes older cancelled snapshots.
+- PR #40 HEAD `8d4afc4e59b2787a9252269cbcf11fa379bc65b6`: Intel, Apple Silicon, Backend, Repository Hygiene, Mermaid and Local Sync Safety passed.
+- PR #41 HEAD `c9eb73d28c24398dfcb435525118f971aae221e8`: Intel, Apple Silicon, Backend, Repository Hygiene, Mermaid and Local Sync Safety passed; PostgreSQL integration suite 49/49.
+- PR #42 HEAD `ff7af23585b8d7272d826fd29b03111ed57492bf`: Intel, Apple Silicon, Backend, Repository Hygiene, Mermaid and Local Sync Safety passed; backend suite 52/52.
+- PR #43 HEAD `0ba7b82fe0b303d87bdb740c9049c36ef81ba4ff`: CI, Mermaid and Local Sync Safety passed.
+- PR #44 HEAD `77ebac707f9f3776261bcf8c195ee4f10fbbad5e`: Intel x86_64 Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon arm64 Debug/XCTest/Release passed (CodeQL intentionally skipped); Backend type-check/tests, Repository Hygiene, Mermaid and Local Sync Safety passed.
+- These are hosted, commit-specific checks. Owner-Mac runtime, visual/accessibility/VoiceOver, Keychain and authenticated Capital.com DEMO runtime acceptance remain outstanding.
+
+### ATP-MKT-006 — Live DEMO Quote-to-Candle Aggregation
+
+- Branch: `feat/live-candle-aggregation`, based on PR #44 head `77ebac707f9f3776261bcf8c195ee4f10fbbad5e`.
+- Adds an app-scoped quote event bus; every validated stream event is delivered before the Market Watch 100 ms UI throttle.
+- Adds a deterministic chart candle projection with source provenance (historical, historical-updated-by-live, live-aggregated).
+- Aggregates fresh Capital.com DEMO Bid/Ask ticks into fixed UTC intraday MINUTE through HOUR bars; strict timestamp ordering and freshness checks; no synthetic gaps or fabricated volume.
+- HOUR_4, DAY and WEEK live aggregation remain deferred pending provider/session-calendar alignment.
+- XCTest and exact-head hosted CI are pending. No owner-Mac or live provider acceptance is claimed.
+- No persistence, volume calculation, indicators, drawing tools, strategy execution, orders, or dealing. `CAP_ALLOW_TRADING=false` remains unchanged.
