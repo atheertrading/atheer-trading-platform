@@ -44,3 +44,14 @@ Secret scanning, dependency scanning, branch protection, signed releases, notari
 - No CORS permissions are granted. Browser-origin and unidentified requests are rejected before broker/session/stream operations.
 - The native macOS HTTP adapter must send the client marker header. Future SSE/stream consumers must do the same.
 - **Threat-model limitation:** this marker is not a secret or user authentication credential. It mitigates browser CSRF/cross-origin access; it does not authenticate arbitrary local processes running as the same user. Production packaging must add a per-launch local API capability token or authenticated local IPC before exposing broker/session controls beyond this development boundary.
+
+
+## Centralized broker credential and session authority
+
+The approved broker-integration direction requires a backend-controlled Credential Management Service (CMS) and centralized Broker Session Manager. The backend owns broker authentication, CST/X-SECURITY-TOKEN lifecycle, service-to-service access control, and audit-safe session status. Demo and Live credentials and sessions must be independently isolated.
+
+The current PR #26 macOS implementation stores credentials in Keychain and authenticates directly from the app, while the current PR #37 backend reads separate credentials from environment variables and establishes another session. These are temporary, non-unified paths and must not be treated as the final production architecture.
+
+**Merge gate:** PR #37 must not be merged as the completed broker integration until one authoritative backend CMS/session path is established and the macOS Broker Management UI delegates to it. Environment variables may remain test/development fixtures only; they must not be the production credential store.
+
+The local API browser-origin marker is not a secret and does not authenticate local processes. A per-launch capability token or authenticated local IPC is required before broker credentials or session controls are exposed through the local service.
