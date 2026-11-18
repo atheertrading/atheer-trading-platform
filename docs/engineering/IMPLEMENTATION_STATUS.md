@@ -386,3 +386,16 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - The streaming path remains the only source of live Bid/Ask, with provider timestamps, receive timestamps, monotonic receive time, freshness and duplicate/out-of-order validation.
 - Regression coverage supplies catalogue bid/offer values and asserts they are absent from the returned catalogue model.
 - Exact-head hosted CI pending.
+
+
+## ATP-BRK-002 — Centralized backend credential/session authority — 2026-11-18
+
+<badge>BLOCKING ARCHITECTURE GAP</badge>
+
+- Library Broker Integration Q5/Q6 requires a backend-controlled CMS and centralized broker session/token lifecycle.
+- PR #26 currently stores credentials in macOS Keychain and authenticates directly from the Swift app.
+- PR #37 currently reads separate broker credentials from environment variables and authenticates another backend session.
+- These are duplicate authorities and can diverge in connection state, session expiry, reconnect and rate-limit consumption.
+- PR #37 must remain unmerged as a completed integration until the backend CMS is the single session authority and the macOS Broker Management UI delegates to it.
+- Environment variables may be used only as test/development fixtures. Production credential provisioning requires encrypted vault/Keychain-backed storage and authenticated local IPC or a per-launch capability token.
+- No real credentials were accessed; no LIVE or dealing capability is enabled.
