@@ -1,5 +1,6 @@
 import SwiftUI
 import XCTest
+@testable import ATHEERTradingPro
 
 @MainActor
 private final class StubMarketHistoryClient: MarketHistoryClient {

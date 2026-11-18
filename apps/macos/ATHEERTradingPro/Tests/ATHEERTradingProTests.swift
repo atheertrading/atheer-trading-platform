@@ -9,7 +9,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .charts, .apiConnection, .settings])
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
