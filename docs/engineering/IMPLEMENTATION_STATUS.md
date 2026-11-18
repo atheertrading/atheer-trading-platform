@@ -528,3 +528,10 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Source implementation: recompute cached quote freshness using the current backend clock at replay time; preserve original provider and receipt timestamps.
 - Regression test source: verify a quote that ages 6 seconds after receipt is replayed as stale and is not eligible for automated decisions.
 - Status: IMPLEMENTED ON PR #67 BRANCH; exact-head hosted CI and runtime verification pending.
+
+
+## 2026-11-18 — Market-data architecture documentation
+
+- Canonical Mermaid diagram 03 now represents cached quote replay as a separate path with freshness recomputed from the original provider timestamp.
+- Library review evidence: five proposed curated Mermaid diagrams and 12 Q&A Mermaid blocks were inspected; the separate 52-block historical export is unavailable in the current Library listing and is not claimed as reviewed.
+- Freshness threshold reconciliation remains pending before any RiskEngine authorization integration.
