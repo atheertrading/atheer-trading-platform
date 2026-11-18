@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor
 struct ContentView: View {
     @ObservedObject private var backendRuntimeModel: BackendRuntimeViewModel
-    @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var selection: AppSection? = .workspace
     @State private var showingBrokers = false
 
@@ -88,7 +87,7 @@ struct ContentView: View {
                 case .settings:
                     SettingsHomeView(onOpenBrokers: { showingBrokers = true })
                         .sheet(isPresented: $showingBrokers) {
-                            BrokerManagementView(model: brokerManagementModel)
+                            BrokerManagementView(model: backendRuntimeModel.brokerManagementModel)
                                 .frame(minWidth: 760, minHeight: 560)
                         }
                 }

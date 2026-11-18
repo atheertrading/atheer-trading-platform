@@ -82,7 +82,7 @@ struct BrokerManagementView: View {
                 metric("AUTHENTICATION", value: model.state.title)
                 metric("SESSION", value: model.state == .connected ? "Active" : (model.state == .sessionExpired ? "Expired" : "Inactive"))
                 metric("LAST CONNECTED", value: model.lastSuccessfulConnection?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified this session")
-                metric("LAST SESSION CHECK", value: model.lastSessionVerification?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
+                metric("LAST BACKEND STATUS CHECK", value: model.lastBackendStatusCheck?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
                 metric("MARKET STREAM", value: "Not connected", tint: .secondary)
                 metric("TRADING", value: "Disabled", tint: .secondary)
             }
@@ -103,10 +103,10 @@ struct BrokerManagementView: View {
                 Divider().overlay(ATHEERDesignTokens.ColorRole.separator)
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("AUTHENTICATED ACCOUNT")
+                        Text("LOGIN IDENTITY")
                             .font(ATHEERDesignTokens.Typography.caption)
                             .foregroundColor(.secondary)
-                        Text(account.accountIdentifier)
+                        Text(account.maskedLoginIdentifier)
                             .font(.system(size: 13, weight: .semibold, design: .monospaced))
                     }
                     Spacer()
@@ -196,7 +196,7 @@ struct BrokerManagementView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Connection and permissions are separate", systemImage: "lock.shield")
                 .font(.system(size: 12, weight: .semibold))
-            Text("This DEMO-only connection test creates an authenticated session and verifies it with a read-only GET /session request. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
+            Text("Capital.com API keys carry provider-level trading privileges; read-only API keys are not available. Enable 2FA before generating a key and use a DEMO key. ATHEER stores credentials in macOS Keychain and sends them to the managed backend over authenticated loopback IPC. The backend currently exposes session and read-only market-data operations only: no order, position, or dealing routes are implemented, LIVE is disabled, and trading remains disabled. This screen displays sanitized session state, not broker account details. REST authentication does not itself establish a WebSocket market-data subscription.")
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

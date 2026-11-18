@@ -10,10 +10,21 @@ protocol MarketSearchClient {
 
 // MARK: - Provider DTOs (infrastructure boundary)
 
+private struct MarketDataStreamingStatusDTO: Decodable {
+    let state: String
+    let activeInstrumentCount: Int
+    let lastMessageAtMs: Double?
+    let lastError: String?
+    let invalidQuoteCount: Int
+    let outOfOrderQuoteCount: Int
+    let duplicateQuoteCount: Int
+}
+
 private struct MarketDataBackendStatusDTO: Decodable {
     let provider: String
     let environment: String
     let state: String
+    let streaming: MarketDataStreamingStatusDTO?
 }
 
 private struct MarketSearchInstrumentDTO: Decodable {
@@ -44,10 +55,35 @@ struct MarketSearchPayloadDecoder {
             throw MarketSearchError.invalidResponse
         }
 
+        let streaming: MarketDataStreamingStatus?
+        if let dtoStreaming = dto.streaming {
+            guard
+                (0...40).contains(dtoStreaming.activeInstrumentCount),
+                dtoStreaming.invalidQuoteCount >= 0,
+                dtoStreaming.outOfOrderQuoteCount >= 0,
+                dtoStreaming.duplicateQuoteCount >= 0,
+                dtoStreaming.lastMessageAtMs.map({ $0.isFinite && $0 >= 0 }) ?? true
+            else {
+                throw MarketSearchError.invalidResponse
+            }
+            streaming = MarketDataStreamingStatus(
+                state: try mapStreamingConnectionState(dtoStreaming.state),
+                activeInstrumentCount: dtoStreaming.activeInstrumentCount,
+                lastMessageAtMs: dtoStreaming.lastMessageAtMs,
+                lastError: dtoStreaming.lastError,
+                invalidQuoteCount: dtoStreaming.invalidQuoteCount,
+                outOfOrderQuoteCount: dtoStreaming.outOfOrderQuoteCount,
+                duplicateQuoteCount: dtoStreaming.duplicateQuoteCount
+            )
+        } else {
+            streaming = nil
+        }
+
         return MarketDataBackendStatus(
             provider: dto.provider,
             environment: dto.environment,
-            state: try mapConnectionState(dto.state)
+            state: try mapConnectionState(dto.state),
+            streaming: streaming
         )
     }
 
@@ -89,6 +125,17 @@ struct MarketSearchPayloadDecoder {
         default: throw MarketSearchError.invalidResponse
         }
     }
+
+    private func mapStreamingConnectionState(_ value: String) throws -> MarketDataStreamConnectionState {
+        switch value {
+        case "disconnected": return .disconnected
+        case "connecting": return .connecting
+        case "connected": return .connected
+        case "degraded": return .degraded
+        default: throw MarketSearchError.invalidResponse
+        }
+    }
+
 }
 
 // MARK: - Capital.com DEMO backend adapter

@@ -18,14 +18,19 @@ export interface CapitalMarket {
   readonly epic: string;
   readonly instrumentName?: string;
   readonly marketStatus?: string;
-  readonly bid?: number;
-  readonly offer?: number;
   readonly currency?: string;
 }
 
 export interface CapitalMarketSearchResult {
   readonly markets: readonly CapitalMarket[];
 }
+
+export interface CapitalDemoStreamingConnectionInfo {
+  readonly streamEndpoint: string;
+  readonly cst: string;
+  readonly securityToken: string;
+}
+
 
 export interface CapitalPriceHistoryResult {
   readonly prices: readonly Readonly<Record<string, unknown>>[];
@@ -35,6 +40,12 @@ export type FetchLike = (
   input: string | URL,
   init?: RequestInit,
 ) => Promise<Response>;
+
+export interface CapitalDemoClientOptions {
+  readonly requestIntervalMs?: number;
+  readonly monotonicNow?: () => number;
+  readonly sleep?: (milliseconds: number) => Promise<void>;
+}
 
 export class CapitalDemoApiError extends Error {
   constructor(
@@ -53,14 +64,27 @@ export class CapitalDemoApiError extends Error {
  * or LIVE endpoint methods. Credentials and session tokens remain server-side.
  */
 export class CapitalDemoClient {
+  private requestQueue: Promise<void> = Promise.resolve();
+  private lastRequestStartedAtMs = 0;
+  private hasStartedRequest = false;
+  private readonly requestIntervalMs: number;
+  private readonly monotonicNow: () => number;
+  private readonly sleep: (milliseconds: number) => Promise<void>;
+
   constructor(
     private readonly fetcher: FetchLike = fetch,
     private readonly now: () => number = Date.now,
-  ) {}
+    options: CapitalDemoClientOptions = {},
+  ) {
+    this.requestIntervalMs = options.requestIntervalMs ?? 100;
+    this.monotonicNow = options.monotonicNow ?? (() => performance.now());
+    this.sleep = options.sleep ?? ((milliseconds) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  }
 
   async startSession(credentials: CapitalDemoCredentials): Promise<CapitalDemoSession> {
     this.validateCredentials(credentials);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}/session`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}/session`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -88,6 +112,45 @@ export class CapitalDemoClient {
     };
   }
 
+  async getStreamingConnectionInfo(
+    session: CapitalDemoSession,
+  ): Promise<CapitalDemoStreamingConnectionInfo> {
+    const response = await this.authorizedGet(session, "/session");
+    const payload: unknown = await response.json();
+    if (!isRecord(payload) || typeof payload.streamEndpoint !== "string") {
+      throw new Error("Capital.com DEMO session response omitted the streaming endpoint.");
+    }
+
+    let endpoint: URL;
+    try {
+      endpoint = new URL(payload.streamEndpoint);
+    } catch {
+      throw new Error("Capital.com DEMO session returned an invalid streaming endpoint.");
+    }
+    if (
+      endpoint.protocol !== "wss:" ||
+      endpoint.hostname !== "api-streaming-capital.backend-capital.com" ||
+      endpoint.port !== "" ||
+      endpoint.username.length > 0 ||
+      endpoint.password.length > 0 ||
+      endpoint.search.length > 0 ||
+      endpoint.hash.length > 0 ||
+      (endpoint.pathname !== "/" && endpoint.pathname !== "/connect")
+    ) {
+      throw new Error("Capital.com DEMO session returned an untrusted streaming endpoint.");
+    }
+
+    // GET /session documents the host root, while the WebSocket contract
+    // requires the /connect path. Normalize only the two official forms.
+    endpoint.pathname = "/connect";
+
+    return {
+      streamEndpoint: endpoint.toString(),
+      cst: session.cst,
+      securityToken: session.securityToken,
+    };
+  }
+
   async getMarkets(
     session: CapitalDemoSession,
     searchTerm: string,
@@ -99,10 +162,18 @@ export class CapitalDemoClient {
     const query = new URLSearchParams({ searchTerm: normalizedSearch });
     const response = await this.authorizedGet(session, `/markets?${query.toString()}`);
     const payload: unknown = await response.json();
-    if (!isRecord(payload) || !Array.isArray(payload.markets) || !payload.markets.every(isCapitalMarket)) {
+    if (!isRecord(payload) || !Array.isArray(payload.markets)) {
       throw new Error("Capital.com returned an invalid market search response.");
     }
-    return { markets: payload.markets };
+    const markets: CapitalMarket[] = [];
+    for (const value of payload.markets) {
+      const market = normalizeCapitalMarket(value);
+      if (!market) {
+        throw new Error("Capital.com returned an invalid market search response.");
+      }
+      markets.push(market);
+    }
+    return { markets };
   }
 
   async getPriceHistory(
@@ -137,7 +208,7 @@ export class CapitalDemoClient {
 
   async endSession(session: CapitalDemoSession): Promise<void> {
     this.validateSession(session);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}/session`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}/session`, {
       method: "DELETE",
       headers: this.sessionHeaders(session),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -145,12 +216,36 @@ export class CapitalDemoClient {
     await this.assertSuccessful(response, "session termination");
   }
 
+  private async fetchWithRateLimit(
+    input: string | URL,
+    init?: RequestInit,
+  ): Promise<Response> {
+    const previous = this.requestQueue;
+    let release!: () => void;
+    this.requestQueue = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+
+    try {
+      if (this.hasStartedRequest) {
+        const elapsed = this.monotonicNow() - this.lastRequestStartedAtMs;
+        const wait = Math.max(0, this.requestIntervalMs - elapsed);
+        if (wait > 0) await this.sleep(wait);
+      }
+      this.lastRequestStartedAtMs = this.monotonicNow();
+      this.hasStartedRequest = true;
+    } finally {
+      release();
+    }
+
+    return this.fetcher(input, init);
+  }
+
   private async authorizedGet(
     session: CapitalDemoSession,
     path: string,
   ): Promise<Response> {
     this.validateSession(session);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}${path}`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}${path}`, {
       method: "GET",
       headers: this.sessionHeaders(session),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -202,7 +297,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isCapitalMarket(value: unknown): value is CapitalMarket {
-  if (!isRecord(value)) return false;
-  return typeof value.epic === "string" && value.epic.length > 0;
+function normalizeCapitalMarket(value: unknown): CapitalMarket | null {
+  if (!isRecord(value) || typeof value.epic !== "string" || value.epic.trim().length === 0) {
+    return null;
+  }
+  return {
+    epic: value.epic,
+    ...(typeof value.instrumentName === "string" ? { instrumentName: value.instrumentName } : {}),
+    ...(typeof value.marketStatus === "string" ? { marketStatus: value.marketStatus } : {}),
+    ...(typeof value.currency === "string" ? { currency: value.currency } : {}),
+  };
 }

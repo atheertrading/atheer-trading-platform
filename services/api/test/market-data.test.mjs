@@ -104,6 +104,82 @@ test("Capital DEMO session uses only the official DEMO host and returns session 
   assert.equal(body.encryptedPassword, false);
 });
 
+test("Capital DEMO session stream endpoint is normalized to the documented WebSocket connect path", async () => {
+  const client = new CapitalDemoClient(async () => response({
+    streamEndpoint: "wss://api-streaming-capital.backend-capital.com/",
+  }));
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  const connection = await client.getStreamingConnectionInfo(session);
+
+  assert.equal(
+    connection.streamEndpoint,
+    "wss://api-streaming-capital.backend-capital.com/connect",
+  );
+  assert.equal(connection.cst, session.cst);
+  assert.equal(connection.securityToken, session.securityToken);
+});
+
+test("Capital DEMO session rejects untrusted WebSocket endpoint paths and ports", async () => {
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+  for (const streamEndpoint of [
+    "wss://attacker.example/connect",
+    "wss://api-streaming-capital.backend-capital.com:8443/connect",
+    "wss://api-streaming-capital.backend-capital.com/private",
+  ]) {
+    const client = new CapitalDemoClient(async () => response({ streamEndpoint }));
+    await assert.rejects(
+      client.getStreamingConnectionInfo(session),
+      /untrusted streaming endpoint/,
+    );
+  }
+});
+
+test("Capital DEMO REST client shares a ten-requests-per-second budget across endpoints", async () => {
+  const calls = [];
+  const waits = [];
+  let monotonicNow = 0;
+  const client = new CapitalDemoClient(async (url, init) => {
+    calls.push({ url: String(url), init });
+    if (String(url).endsWith("/prices/AAPL?resolution=MINUTE&max=20")) {
+      return response({ prices: [] });
+    }
+    return response({ markets: [] });
+  }, Date.now, {
+    requestIntervalMs: 100,
+    monotonicNow: () => monotonicNow,
+    sleep: async (milliseconds) => {
+      waits.push(milliseconds);
+      monotonicNow += milliseconds;
+    },
+  });
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  await Promise.all([
+    client.getMarkets(session, "Apple"),
+    client.ping(session),
+    client.getPriceHistory(session, "AAPL", "MINUTE", 20),
+  ]);
+
+  assert.equal(calls.length, 3);
+  assert.deepEqual(waits, [100, 100]);
+});
+
 test("market search and history requests carry DEMO session headers", async () => {
   const calls = [];
   const client = new CapitalDemoClient(async (url, init) => {

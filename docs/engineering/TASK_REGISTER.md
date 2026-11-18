@@ -361,3 +361,50 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
 - CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
 - Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-BRK-003 implementation update
+
+| Work item | Priority | Updated status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Single backend broker credential/session authority | P0 | IN PROGRESS — PR #51 → #54 → #55 stack | PR #55 adds backend BrokerSessionManager and authenticated Keychain handoff. Remaining: exact-head CI, ordered merges, owner-Mac Keychain/restart and real DEMO qualification. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #55 | 1-second session-creation throttle, status classification and backend-owned lifecycle implemented. Full automatic recovery classification, bounded backoff, account reconciliation and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Existing shared WebSocket runtime, 40-instrument cap, quote validation and reconnect behavior retained. Priority allocator and utilization metrics remain. |
+
+Library Broker Integration Q4 records the Capital.com session-creation ceiling as one request per second per API key, REST session inactivity as ten minutes, and a 40-instrument WebSocket subscription limit. These are integration parameters that must be revalidated against current official provider documentation before release. Q8 requires 401 authentication failure, 403 permission restriction, 429 rate limiting, and WebSocket disconnection to remain distinct operational states.
+
+PR #55 remains draft and unmerged. The final exact-head CI and the owner-Mac / DEMO acceptance gates are mandatory. Do not interpret a saved credential or successful REST authentication as proof that streaming, account reconciliation, or trading readiness is complete.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-MKT-007 batch 050 revalidation
+
+| Work item | Priority | Current status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Backend-owned broker session and authenticated native credential handoff | P0 | IN PROGRESS — PR stack #51/#54/#56/#55 | PR #55 implements BrokerSessionManager, capability-authenticated Keychain handoff, strict bounded credential API, and sanitized status. Current PR head is advanced by report commit f36578a7167acff29596ee0c02b34ebd0e11c07e; exact-head CI pending. Owner-Mac Keychain persistence/restart and real DEMO authentication remain. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #55 | One-second session-creation throttle, five-minute REST keepalive, distinct 401/403/429 handling, account-switch coordination and logout-failure cleanup are implemented on the unmerged stack. Full classified recovery, bounded retry/backoff, account reconciliation and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Shared WebSocket runtime, 40-instrument cap, quote validation, reconnect behavior, streaming health status and SSE backend endpoint exist on the unmerged stack. Native Market Explorer does not yet subscribe to/render live quotes; priority allocation and full utilization metrics remain. |
+| ATP-MKT-008 — Native authenticated live quote subscription | P1 | PENDING — next vertical slice | Add authenticated SSE client, provider-independent quote model, source timestamp/provenance, duplicate/out-of-order/freshness validation, cancellation/reconnect and truthful stale/disconnected UI. Read-only; no dealing actions. |
+
+PR integration order is top-down into parent branches: #55 into #56, #56 into #54, #54 into #51, then exact-head qualification and merge #51 to main. The current report and evidence are in SESSION_2026-11-18_050_BROKER_TEST_LIFECYCLE_AND_STACK_REVALIDATION.md.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-BRK-003 batch 051 update
+
+| Work item | Priority | Current status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Backend broker-session authority and credential handoff | P0 | IN PROGRESS — PR #51/#54/#56/#55 stack | BrokerSessionManager and authenticated Keychain handoff are implemented on the unmerged stack. Bounded backend shutdown and redacted diagnostics added in PR #55. Credential payload confidentiality is unresolved because current handoff is plain HTTP loopback; private local IPC or explicit threat-boundary acceptance is required before merge. Exact-head CI and owner-Mac Keychain/DEMO qualification remain. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #49/#55 | One-second session-creation throttling, five-minute REST keepalive, status classification, account-switch coordination and bounded process cleanup are present on unmerged branches. Cross-runtime/API-key coordination, fully qualified recovery/reconciliation, and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Shared WebSocket runtime, 40-instrument cap, quote validation, reconnect, status and backend SSE endpoint exist on the unmerged stack. Priority allocation and full utilization metrics remain. |
+| ATP-MKT-008 — Native live quote monitor | P1 | IN PROGRESS — PR #58 | Native authenticated SSE client and display-only quote monitor are implemented on a draft branch. Parent ancestry, exact-head CI, real DEMO quote delivery and owner-Mac acceptance remain. |
+
+PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8fdd901b3e09`; exact-head CI `44286676363` was not complete at report time. PR #57 compile correction head `b1dcda177cf0ff2330a85a09f8f41040392e625c`; Local Sync Safety passed, CI pending. Neither result authorizes a merge.
+
+
+## ATP-BRK-003 / ATP-MKT-007 — Official Capital.com limits verified (2026-11-18)
+
+- Official reference confirms 10 REST requests/second per user and 1 `POST /session` request/second per API key.
+- REST inactivity and WebSocket session duration are 10 minutes; current runtime uses 5-minute REST keepalive and 5-minute WebSocket application ping.
+- Official sources confirm a 40-epic market-data subscription maximum.
+- DEMO position/working-order endpoints are limited to 1,000 requests/hour; OMS/dealing is not implemented in this slice and must enforce the limit before future dealing.
+- Account changes using `PUT /session` interrupt streaming; any future account-switch flow must invalidate and rebuild the WebSocket subscription set.
+- Source-to-code evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`; official references are recorded in EDL-029.

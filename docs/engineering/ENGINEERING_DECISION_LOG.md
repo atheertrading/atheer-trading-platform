@@ -171,3 +171,41 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Implemented in unmerged PR #37:** shared WebSocket runtime, 40-instrument cap, deduplication, five-minute heartbeat, reconnect/backoff and quote-quality counters.
 - **Pending:** sequential session-creation rate limit, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented provider-wide REST or WebSocket connection limits.
+
+
+## EDL-022 implementation addendum — 2026-11-18 (PR #55)
+
+- **Status:** Partially implemented on unmerged PR #55; not accepted as a qualified broker integration.
+- **Implemented:** backend `BrokerSessionManager` owns the provider credentials/session runtime; native Keychain credentials are handed over capability-authenticated loopback IPC; provider session tokens remain backend-only; status/connect/disconnect APIs are bounded and sanitized.
+- **Session policy:** enforce the Library-documented one session-creation request per second per API key. Preserve distinct HTTP 401 (authentication), 403 (permission), and 429 (rate limit) semantics. Do not map all provider failures to invalid credentials.
+- **Account switch:** disconnect the stream only after the manager accepts a session replacement attempt; a rate-limited request must not tear down the existing stream.
+- **Logout:** attempt broker REST logout even if stream shutdown reports an error. Drop the credential-bearing runtime reference in all logout outcomes; never return a success response when the complete shutdown was not confirmed.
+- **Remaining:** exact-head CI; ordered PR #51/#54/#55 integration; owner-Mac Keychain persistence and process lifecycle; authenticated Capital.com DEMO acceptance; stream recovery/reconciliation qualification. LIVE and dealing remain disabled.
+
+
+## EDL-022 security qualification addendum — 2026-11-18
+
+- **Status:** Partially implemented; confidentiality qualification remains open.
+- **Finding:** The current app-to-backend credential request uses authenticated plain HTTP to `127.0.0.1`. The per-process 256-bit bearer capability provides authentication and route authorization; it does not encrypt the credential body.
+- **Decision:** Do not treat loopback binding or bearer authentication as payload confidentiality. Keep PR #55 and dependent broker integration blocked from security-qualified merge until credential transfer uses a private local IPC channel with appropriate process/peer controls, or the relevant authority explicitly accepts a documented same-host threat boundary.
+- **Preferred implementation direction:** private stdio RPC between the supervised parent and backend child, or a protected Unix-domain socket, for credential payloads. Retain capability-authenticated HTTP for non-secret local control and market-data operations unless a broader redesign is justified.
+- **Safety:** No credential was used in this batch. LIVE, dealing and trading remain disabled.
+
+
+## EDL-029 official provider-limit verification addendum — 2026-11-18
+
+Current official Capital.com sources were checked:
+- https://open-api.capital.com/
+- https://help.capital.com/hc/en-us/articles/6630830103058-Do-you-have-any-limitations-on-their-API
+- https://help.capital.com/hc/en-us/articles/6630762294418-Which-kind-of-APIs-do-you-have
+
+Verified limits: 10 REST requests/second per user; `POST /session` one request/second per API key; REST inactivity and WebSocket session duration/inactivity 10 minutes; application-level WebSocket ping at least once every 10 minutes; maximum 40 `marketData.subscribe` epics; DEMO `POST /positions` and `POST /workingorders` 1,000 requests/hour. Account switching through `PUT /session` interrupts WebSocket streaming.
+
+Code reconciliation on the current broker-session/streaming stack:
+- `CapitalDemoClient` shared request-start queue defaults to 100 ms (10 requests/second).
+- `CapitalDemoRuntime` and `BrokerSessionManager` enforce at least 1,000 ms between session creation attempts.
+- REST keepalive defaults to 5 minutes and rejects intervals at/above 10 minutes.
+- `CapitalDemoStreamingRuntime` sends application-level `destination: "ping"` every 5 minutes and caps the shared instrument set at 40.
+- Future account-switch support must invalidate/reconnect the WebSocket and re-subscribe after the broker confirms the active account. Future OMS must enforce endpoint-specific DEMO quotas; no dealing routes are part of this work.
+
+This verifies documentation-to-code alignment only; it does not claim real DEMO authentication or live streaming. Full evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`.

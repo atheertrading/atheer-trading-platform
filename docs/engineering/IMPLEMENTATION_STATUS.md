@@ -447,3 +447,43 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
 - These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.
+
+
+## 2026-11-18 — Backend broker-session ownership and native IPC handoff (PR #55)
+
+- **IN PROGRESS / UNMERGED:** `BrokerSessionManager` is the backend session authority for Capital.com DEMO credentials, REST session tokens, keepalive and stream connection info.
+- Added capability-protected broker-session status/connect/disconnect APIs; credential payloads are bounded and strict; responses are no-store and sanitized.
+- Added the native `BackendBrokerAuthenticationService` to hand Keychain credentials to the authenticated backend IPC process. Direct native Capital.com session ownership was removed from the broker-management composition path.
+- Added account-switch coordination, the documented one-session-creation-per-second limit, separate 401/403/429 handling, credential-runtime cleanup on logout failure, and stream-shutdown failure coverage.
+- Added backend and native URLProtocol tests. They are committed but not yet qualified on the final PR #55 head.
+- PR stack: #51 IPC capability → #54 native process supervisor → #55 broker-session integration. Do not merge out of order.
+- PR #54 exact-head run `44276116460`: backend toolchain and repository hygiene passed; macOS qualification remained in progress/queued at last inspection.
+- PR #55 final exact-head CI, Intel/Apple Silicon XCTest, owner-Mac launch/Keychain qualification and real DEMO broker acceptance remain pending.
+- Trading and LIVE access remain disabled. See `SESSION_2026-11-18_049_BROKER_SESSION_IPC_INTEGRATION.md`.
+
+
+## 2026-11-18 — Broker fixture lifecycle and stacked IPC integration (Batch 050)
+
+- PR #55 code/test head e3d5ff4a44a8ac4075603ce93887c27ba6dd164f adds tracked teardown for 14 CapitalDemoRuntime and 7 BrokerSessionManager fixtures in market-data-runtime.test.mjs; the streaming test suite separately tracks and disconnects streaming runtimes. This prevents test-owned keepalive intervals and sockets from surviving the suite.
+- Documentation commit f36578a7167acff29596ee0c02b34ebd0e11c07e records the batch and advances PR #55. The final exact-head CI on the new documentation commit is pending; no final-head test or macOS pass is claimed.
+- Local Sync Safety 44283628390 passed on the code/test head before the report commit. On that same head, API typecheck passed and API tests were still running; Intel and Apple Silicon jobs were queued. Do not carry these results forward as proof for the new head.
+- PR stack remains open/draft: #51 capability IPC → #54 managed backend process → #56 Swift actor-isolation correction → #55 backend broker-session integration. Integrate from #55 upward into #56, then #54, then #51; requalify #51 before main.
+- Market Explorer shows REST/streaming status but no live quote subscription yet. Authenticated native SSE subscription, quote normalization/freshness and UI states remain the next market-data implementation slice.
+- Owner-Mac build/launch, Keychain restart, visual/accessibility QA, and real Capital.com DEMO authentication remain unverified. LIVE/dealing/trading remain disabled.
+
+
+## 2026-11-18 — Batch 051 implementation status
+
+- **Backend shutdown:** bounded stream disconnect, broker logout and HTTP server close; 20-second hard child deadline; redacted operation diagnostics; non-zero exit status on incomplete cleanup. Added deterministic timeout/failure/success tests. Exact-head CI is pending.
+- **Native supervisor:** PR #57 branch has the PR #56 class-bound protocol and mutable supervisor compile corrections. Local Sync Safety passed; exact-head CI is pending; ancestry remains diverged.
+- **Mermaid architecture:** read all five ATP-MER-001 sources from Library Codex.zip. They are proposed target architecture; syntax validation and deployed implementation are not claimed.
+- **Credential handoff confidentiality:** unresolved. Authenticated loopback HTTP does not encrypt API-key/login/password payloads. Keep broker stack blocked until a private local IPC transport or an explicitly accepted threat boundary is in place.
+- **Broker DEMO / LIVE:** no real DEMO authentication was performed. LIVE/dealing/trading remain disabled; `CAP_ALLOW_TRADING=false`.
+
+
+## 2026-11-18 — Official Capital.com API limit verification
+
+- Verified official current limits: 10 REST requests/second per user; 1 `POST /session`/second per API key; 10-minute REST and WebSocket session inactivity/duration; ping at least every 10 minutes; maximum 40 WebSocket market-data epics; 1,000 DEMO position/working-order requests per hour.
+- Code alignment: shared REST client spaces request starts by 100 ms; session creation is throttled to 1 second; REST and WebSocket pings run every 5 minutes; stream subscription cap is 40.
+- Account-switch interruption is documented; account-switch support remains unqualified. Future OMS must implement the endpoint-specific order budget.
+- Evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md` and EDL-029.

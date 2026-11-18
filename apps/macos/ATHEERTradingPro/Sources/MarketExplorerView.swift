@@ -96,7 +96,12 @@ struct MarketExplorerView: View {
                 )
                 statusMetric(
                     title: "STREAMING",
-                    value: "NOT CONNECTED",
+                    value: model.backendStatus?.streaming?.state.displayLabel ?? "UNKNOWN",
+                    tint: streamingTint
+                )
+                statusMetric(
+                    title: "SUBSCRIPTIONS",
+                    value: "\(model.backendStatus?.streaming?.activeInstrumentCount ?? 0)/40",
                     tint: .secondary
                 )
                 statusMetric(
@@ -108,7 +113,7 @@ struct MarketExplorerView: View {
 
             if model.backendStatus?.state != .connected {
                 Label(
-                    "Instrument search requires an active backend DEMO REST session. The app's Keychain broker session is separate and is not automatically transferred to the backend.",
+                    "Instrument search requires an active backend DEMO REST session. Credentials are stored in macOS Keychain and provisioned over authenticated private IPC; provider session tokens remain backend-only.",
                     systemImage: "info.circle"
                 )
                 .font(.system(size: 11))
@@ -310,7 +315,7 @@ struct MarketExplorerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Data and execution boundary")
                     .font(.system(size: 11, weight: .semibold))
-                Text("This screen does not display bid/ask values from an untimestamped search response, does not establish a streaming connection, and exposes no order or dealing action. Market streaming, charting, and trading remain separate qualification milestones.")
+                Text("This screen does not display bid/ask values from an untimestamped search response or subscribe to live quotes. Streaming health is read from the backend session runtime; chart subscriptions, charting, and trading remain separate qualification milestones. No order or dealing action is exposed.")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -320,6 +325,17 @@ struct MarketExplorerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(ATHEERDesignTokens.ColorRole.panelElevated)
         .clipShape(RoundedRectangle(cornerRadius: 9))
+    }
+
+    private var streamingTint: Color {
+        switch model.backendStatus?.streaming?.state {
+        case .some(.connected):
+            return ATHEERDesignTokens.ColorRole.success
+        case .some(.connecting), .some(.degraded):
+            return ATHEERDesignTokens.ColorRole.attention
+        case .some(.disconnected), .none:
+            return .secondary
+        }
     }
 
     private func statusMetric(title: String, value: String, tint: Color = .primary) -> some View {

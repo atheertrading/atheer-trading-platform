@@ -1,17 +1,22 @@
 declare module "node:http" {
-  export interface IncomingMessage {
+  export interface IncomingMessage extends AsyncIterable<Uint8Array> {
     method?: string;
     url?: string;
     headers: Readonly<Record<string, string | string[] | undefined>>;
   }
   export interface ServerResponse {
     statusCode: number;
+    readonly destroyed: boolean;
     setHeader(name: string, value: string): void;
+    writeHead(statusCode: number, headers?: Readonly<Record<string, string>>): this;
+    write(body: string): boolean;
+    on(event: "close", listener: () => void): this;
     end(body?: string): void;
   }
   export interface Server {
     listen(port: number, hostname: string, callback?: () => void): this;
     close(callback?: (error?: Error) => void): this;
+    closeAllConnections(): void;
     address(): { port: number } | string | null;
   }
   export function createServer(
@@ -27,6 +32,7 @@ declare module "node:process" {
     stdin: AsyncIterable<Uint8Array>;
     stdout: WritableStream;
     exitCode: number | undefined;
+    exit(code?: number): never;
     on(event: "SIGINT" | "SIGTERM", listener: () => void): this;
   }
   const process: Process;
