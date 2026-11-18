@@ -123,6 +123,8 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
     case startupInProgress
     case terminationTimedOut
     case invalidCredentialSocketPath
+    case credentialSocketUnavailable
+    case credentialSocketPermissionsInvalid
     
     var errorDescription: String? {
         switch self {
@@ -156,6 +158,10 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
             return "The managed backend did not exit after graceful and forced shutdown deadlines."
         case .invalidCredentialSocketPath:
             return "A private broker credential socket path could not be created within the macOS Unix-domain socket limit."
+        case .credentialSocketUnavailable:
+            return "The private broker credential socket was not ready when the backend reported startup completion."
+        case .credentialSocketPermissionsInvalid:
+            return "The private broker credential socket does not have owner-only permissions."
         }
     }
 }
@@ -520,6 +526,17 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             throw BackendProcessSupervisorError.authenticationProbeFailed(
                 (response as? HTTPURLResponse)?.statusCode ?? -1
             )
+        }
+
+        guard FileManager.default.fileExists(atPath: connection.credentialSocketURL.path) else {
+            throw BackendProcessSupervisorError.credentialSocketUnavailable
+        }
+        let socketAttributes = try FileManager.default.attributesOfItem(
+            atPath: connection.credentialSocketURL.path
+        )
+        let socketPermissions = (socketAttributes[.posixPermissions] as? NSNumber)?.intValue ?? -1
+        guard socketPermissions & 0o777 == 0o600 else {
+            throw BackendProcessSupervisorError.credentialSocketPermissionsInvalid
         }
     }
 
