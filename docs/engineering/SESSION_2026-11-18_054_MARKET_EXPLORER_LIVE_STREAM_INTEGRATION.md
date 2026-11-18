@@ -61,3 +61,8 @@ Added:
 This branch is a clean child of the current PR #55 head (11 ahead / 0 behind). It has not yet received a fresh exact-head GitHub Actions run at report creation. Backend, Intel macOS, Apple Silicon macOS and repository-hygiene checks are required before merge. Owner-Mac Xcode and real DEMO streaming qualification remain pending.
 
 The original PR #58 is not merged. Close it only after this replacement PR has exact-head CI qualification.
+
+
+### PR status addendum — 2026-11-18
+
+PR #58 is now closed unmerged and superseded by PR #64. Its original branch remains preserved. PR #64 is the clean 11-ahead / 0-behind replacement and remains draft pending exact-head CI.
