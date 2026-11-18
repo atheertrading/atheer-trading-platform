@@ -42,9 +42,9 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertTrue(store.epics.isEmpty)
 
         for index in 0..<MarketWatchlistStore.maximumInstrumentCount {
-            XCTAssertTrue(store.add("EPIC\\(index)"))
+            XCTAssertTrue(store.add("EPIC\(index)"))
         }
-        XCTAssertFalse(store.add("EPIC\\(MarketWatchlistStore.maximumInstrumentCount)"))
+        XCTAssertFalse(store.add("EPIC\(MarketWatchlistStore.maximumInstrumentCount)"))
         XCTAssertEqual(store.epics.count, MarketWatchlistStore.maximumInstrumentCount)
         XCTAssertNotNil(store.errorMessage)
     }
