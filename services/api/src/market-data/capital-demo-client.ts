@@ -280,7 +280,7 @@ export class CapitalDemoClient {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
 
-      if (response.status !== 429 || retryAttempt >= MAX_RATE_LIMIT_RETRIES) {
+      if (response.status !== 429) {
         return response;
       }
 
@@ -299,10 +299,16 @@ export class CapitalDemoClient {
       const jitterDelayMs = Math.max(1, Math.floor(boundedSample * exponentialCapMs));
       const delayMs = retryAfterMs ?? jitterDelayMs;
 
+      // Even when this request has exhausted its own retry budget, the final
+      // 429 still constrains subsequent requests through the shared cooldown.
       this.rateLimitBlockedUntilMs = Math.max(
         this.rateLimitBlockedUntilMs,
         this.monotonicNow() + delayMs,
       );
+      if (retryAttempt >= MAX_RATE_LIMIT_RETRIES) {
+        return response;
+      }
+
       retryAttempt += 1;
       await response.body?.cancel();
     }
