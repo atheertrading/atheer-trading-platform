@@ -30,10 +30,10 @@ final class BackendRuntimeViewModel: ObservableObject {
     private let supervisor: BackendProcessManaging
 
     init(
-        supervisor: BackendProcessManaging = BackendProcessSupervisor(),
+        supervisor: BackendProcessManaging? = nil,
         healthModel: BackendHealthViewModel = BackendHealthViewModel()
     ) {
-        self.supervisor = supervisor
+        self.supervisor = supervisor ?? BackendProcessSupervisor()
         self.healthModel = healthModel
         self.supervisor.onUnexpectedTermination = { [weak self] message in
             self?.marketSearchClient = nil
