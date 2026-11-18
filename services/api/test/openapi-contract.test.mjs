@@ -45,3 +45,25 @@ test("OpenAPI component references resolve to declared schemas and responses", (
     assert.ok(declared.has(name), `unresolved ${section} reference: ${name}`);
   }
 });
+
+test("historical market query parameters are separate, named OpenAPI entries", () => {
+  const historySection = contract.split("  /market-data/history:\\n")[1]?.split("\\ncomponents:\\n")[0] ?? "";
+  const parameterNames = [...historySection.matchAll(/^        - name: ([A-Za-z][A-Za-z0-9]*)$/gm)]
+    .map((match) => match[1]);
+
+  assert.deepEqual(parameterNames, ["epic", "resolution", "max"]);
+  assert.equal((contract.match(/^        - name: resolution$/gm) ?? []).length, 1);
+
+  const parameterBlocks = [...historySection.matchAll(
+    /^        - name: ([A-Za-z][A-Za-z0-9]*)$([\\s\\S]*?)(?=^        - name: |^      responses:)/gm,
+  )];
+  assert.equal(parameterBlocks.length, 3);
+  for (const [, name, body] of parameterBlocks) {
+    assert.match(body, /^          in: query$/m, name + " must be a query parameter");
+    assert.match(body, /^          schema:$/m, name + " must declare a schema");
+  }
+
+  assert.match(parameterBlocks[0][2], /^          required: true$/m);
+  assert.match(parameterBlocks[1][2], /^          required: false$/m);
+  assert.match(parameterBlocks[2][2], /^          required: false$/m);
+});
