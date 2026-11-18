@@ -2,10 +2,12 @@ import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
 import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
 import { createApiServer } from "./server.ts";
+import { readIPCStartupCapability } from "./security/ipc-capability.ts";
 
 const config = loadRuntimeConfig(env);
 const marketDataRuntime = createCapitalDemoRuntime(env);
-const server = createApiServer(marketDataRuntime);
+const ipcCapability = await readIPCStartupCapability(process.stdin);
+const server = createApiServer(marketDataRuntime, ipcCapability);
 let shuttingDown = false;
 
 server.listen(config.port, config.host, () => {
@@ -15,6 +17,7 @@ server.listen(config.port, config.host, () => {
 function shutdown(): void {
   if (shuttingDown) return;
   shuttingDown = true;
+  ipcCapability.fill(0);
   void marketDataRuntime.disconnect().catch(() => undefined);
   server.close((error) => {
     if (error) {

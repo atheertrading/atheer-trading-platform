@@ -14,7 +14,7 @@ help:
 	  'make app-run         Build and request launch of the macOS application' \
 	  'make backend-setup   Install locked backend development dependencies' \
 	  'make backend-check   Typecheck and test the backend API' \
-	  'make backend-start   Run the loopback-only backend API in the foreground' \
+	  'make backend-start   Run the loopback-only backend with a temporary private IPC capability' \
 	  'make safe-sync-test  Test non-destructive local synchronization in a temporary Git repository' \
 	  'make clean           Remove local build artifacts only'
 
@@ -50,7 +50,7 @@ backend-check: backend-setup
 
 backend-start:
 	@test -x services/api/node_modules/.bin/tsc || { echo 'Run make backend-setup first.' >&2; exit 2; }
-	@cd services/api && npm start
+	@bash scripts/backend-dev.sh
 
 safe-sync-test:
 	@bash scripts/tests/test-safe-sync.sh
