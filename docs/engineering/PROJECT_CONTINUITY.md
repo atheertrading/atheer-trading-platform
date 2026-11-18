@@ -656,3 +656,46 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - The API now verifies the migration ledger/checksums at startup and does not apply DDL automatically. Pending migrations are applied only by explicit `npm run migrate`.
 - Added `verifySqlMigrations`, migration CLI, `docs/operations/POSTGRESQL.md`, and PostgreSQL server-version assertion in the integration suite.
 - Production backup/restore, retention, role provisioning, TLS policy, and restore drills remain unimplemented release blockers.
+## PostgreSQL local foundation and PR #41 qualification update — 2026-11-18
+
+### Owner workstation PostgreSQL baseline — verified by owner terminal output
+
+- Host: macOS 13.7.8, Intel x86_64.
+- Distribution/runtime: Postgres.app, PostgreSQL 18.7; server listens on `127.0.0.1:5432` with `listen_addresses=localhost`.
+- Data directory: `~/Library/Application Support/Postgres/var-18`.
+- Configuration file: `~/Library/Application Support/Postgres/var-18/postgresql.conf`.
+- Database: `atheer_trading`; canonical application schema: `atheer`.
+- Roles: `atheer_db_owner` (NOLOGIN owner), `atheer_migrator` (LOGIN, NOINHERIT, may explicitly SET ROLE to owner), and `atheer_app` (LOGIN, no CREATE).
+- `PUBLIC` database CONNECT and schema CREATE were revoked; explicit database CONNECT grants were made to the three project roles. `atheer_app` has schema USAGE only. Default table DML and sequence USAGE/SELECT grants are configured for objects created by `atheer_db_owner` in schema `atheer`.
+- Passwords were configured interactively and were not shared or committed. Do not request or record them.
+- SSL is disabled only for this loopback-only local instance. Do not expose the listener externally without a separate TLS/security review.
+- Owner verified app connection/schema access and denial of CREATE, migrator login and explicit SET ROLE behavior, owner-owned probe table and app DML privileges, and rollback/absence of probe objects. Default sequence privileges were configured but not yet independently tested.
+- No ATHEER trading migration or production trading table has been applied to this local database. A probe table was rolled back.
+
+### PR #41 — exact-head checkpoint
+
+- PR #41 remains OPEN / DRAFT, branch `feat/postgres-persistence-foundation`, stacked on PR #40; no approval review is recorded.
+- Source head inspected: `012ea149749312b5146ee1b8dce900e0d7bba848`.
+- CI run `44203457118`: Backend Toolchain passed on Node 24.22.2 / npm 11.19.1 with PostgreSQL 17.12 and 49/49 tests; Repository Hygiene passed; Mermaid validation passed; Local Sync Safety passed.
+- Intel x86_64 macOS: project generation, Debug build, and XCTest passed; Release build was still in progress and CodeQL pending at inspection.
+- Apple Silicon arm64: project generation, Debug, XCTest, and Release passed; CodeQL step was skipped, not passed.
+- These hosted results do not qualify the owner's local PostgreSQL 18.7 role/schema configuration, local Mac sync/runtime, production operations, or broker DEMO dealing.
+
+### Blocking local migration compatibility finding
+
+The current PR #41 implementation is not yet compatible with the owner's least-privilege local database setup:
+
+1. `atheer_migrator` is `NOINHERIT`; the migration CLI and `runSqlMigrations` do not issue `SET ROLE atheer_db_owner`.
+2. The migration ledger and migration DDL use unqualified table names. The SQL migration creates objects such as `instruments` without targeting schema `atheer`; the ledger `atheer_schema_migrations` is also unqualified.
+3. Repository queries likewise use unqualified table names. The current runbook does not establish or verify a controlled `search_path`.
+4. The local grants intentionally do not give `atheer_migrator` implicit owner privileges or `atheer_app` CREATE. Do not weaken these grants to make the current runner work.
+
+**Required resolution before any local `npm run migrate`:** retain `atheer` as the canonical schema; make migration execution explicitly assume `atheer_db_owner` within the migration transaction; schema-qualify migration-ledger, DDL, and repository SQL (or prove an equivalently controlled schema configuration); and add integration coverage using least-privilege migrator/app roles. Update the runbook with the role and schema contract. This is a blocking engineering finding, not an owner-approved change to local database privileges.
+
+### Next actions
+
+1. Resolve the migration role/schema mismatch and add least-privilege PostgreSQL integration tests.
+2. Re-run exact-head CI after the correction; do not carry forward the current SHA's results.
+3. Verify PostgreSQL 18.7 local compatibility only after the fix, first using a controlled disposable/probe transaction and then an explicitly reviewed migration plan.
+4. Test default sequence privileges and document backup/restore, retention, TLS, and role provisioning as operational work.
+5. Keep PRs in dependency order; no merge is recorded here. Keep `CAP_ALLOW_TRADING=false`.
