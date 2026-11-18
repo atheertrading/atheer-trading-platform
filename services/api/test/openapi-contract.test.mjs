@@ -4,7 +4,10 @@ import { test } from "node:test";
 
 const contract = await readFile(new URL("../openapi.yaml", import.meta.url), "utf8");
 
-test("OpenAPI contract documents only implemented local API routes", () => {
+test("OpenAPI contract has one canonical root document and only implemented routes", () => {
+  for (const rootKey of ["openapi: 3.1.0", "info:", "servers:", "tags:", "paths:", "components:"]) {
+    assert.equal(contract.split("\\n").filter((line) => line === rootKey).length, 1, `expected exactly one root ${rootKey}`);
+  }
   assert.match(contract, /^openapi: 3\.1\.0$/m);
   assert.match(contract, /version: 0\.1\.0/);
   assert.match(contract, /url: http:\/\/127\.0\.0\.1:4100/);
