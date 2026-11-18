@@ -102,7 +102,7 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
             socklen_t(MemoryLayout<Int32>.size)
         )
 
-        var timeout = timeval(tv_sec: 12, tv_usec: 0)
+        var timeout = timeval(tv_sec: 35, tv_usec: 0)
         _ = setsockopt(
             descriptor,
             SOL_SOCKET,
