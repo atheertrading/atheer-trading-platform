@@ -582,11 +582,8 @@ test("market-data HTTP boundary rejects malformed search and history parameters 
       { headers: authorization },
     );
     assert.equal(marketResponse.status, 200);
-    assert.deepEqual(serverClient.calls.filter((call) => call[0] === "markets").at(-1), [
-      "markets",
-      serverClient.calls.filter((call) => call[0] === "markets").at(-1)[1],
-      "Apple",
-    ]);
+    const marketCall = serverClient.calls.filter((call) => call[0] === "markets").at(-1);
+    assert.equal(marketCall[2], "Apple");
 
     const historyResponse = await fetch(
       baseUrl + "/market-data/history?epic=%20EURUSD%20&resolution=HOUR&max=25",
