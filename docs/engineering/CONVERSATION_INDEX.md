@@ -111,3 +111,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-046 | 2026-11-18 | ATP-BRK-002 backend IPC capability security slice | Implemented PR #51 private-stdin 256-bit capability bootstrap, constant-time Bearer enforcement for broker market-data routes, fail-closed tests and local dev bootstrap. Parent-head backend tests/typecheck and CodeQL passed; current-head Local Sync Safety passed. Do not merge until Swift process supervisor, authenticated client and Keychain credential handoff are implemented. | PR #51; EDL-025; ATP-BRK-002; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; SESSION_2026-11-18_046_BROKER_IPC_CAPABILITY |
+
+
+| ATP-2026-11-18-047 | 2026-11-18 | ATP-BRK-002 ephemeral-port startup contract | Added OS-assigned loopback port support and a machine-readable bound-port marker for the future macOS backend supervisor; added configuration tests and Mermaid startup sequence. Native Swift supervisor/authenticated client/runtime packaging remain pending; exact-head CI pending. | PR #52; EDL-025; ATP-BRK-002; SESSION_2026-11-18_047_BACKEND_EPHEMERAL_PORT |
