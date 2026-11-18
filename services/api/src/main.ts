@@ -1,21 +1,21 @@
 import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
-import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
+import { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import { CapitalDemoStreamingRuntime } from "./market-data/capital-demo-streaming-runtime.ts";
 import { createApiServer } from "./server.ts";
 import { readIPCStartupCapability } from "./security/ipc-capability.ts";
 
 const config = loadRuntimeConfig(env);
-const marketDataRuntime = createCapitalDemoRuntime(env);
+const brokerSessionManager = new BrokerSessionManager();
 const marketDataStreamRuntime = new CapitalDemoStreamingRuntime(async () => {
-  const status = await marketDataRuntime.connect();
+  const status = await brokerSessionManager.connect();
   if (status.state !== "connected") {
     throw new Error("Capital.com DEMO session is not connected.");
   }
-  return marketDataRuntime.getStreamingConnectionInfo();
+  return brokerSessionManager.getStreamingConnectionInfo();
 });
 const ipcCapability = await readIPCStartupCapability(process.stdin);
-const server = createApiServer(marketDataRuntime, ipcCapability, marketDataStreamRuntime);
+const server = createApiServer(brokerSessionManager, ipcCapability, marketDataStreamRuntime);
 let shuttingDown = false;
 
 server.listen(config.port, config.host, () => {
@@ -43,7 +43,7 @@ function shutdown(): void {
       // Shutdown must continue even if the provider stream is already degraded.
     }
     try {
-      await marketDataRuntime.disconnect();
+      await brokerSessionManager.disconnect();
     } catch {
       // Never retain the child process solely because remote logout failed.
     }
