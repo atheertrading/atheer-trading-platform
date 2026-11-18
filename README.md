@@ -62,3 +62,12 @@ All contributions must follow [AGENTS.md](AGENTS.md), applicable specifications 
 ## License
 
 No open-source license has been selected yet. Public visibility does not itself grant permission to reuse, modify, or redistribute this software. A license decision must be made explicitly by the project owner.
+
+
+### Engineering continuation snapshot — 2026-11-18
+
+PR #41 (`feat/postgres-persistence-foundation`) is still OPEN / DRAFT. On exact head `c9eb73d28c24398dfcb435525118f971aae221e8`, Backend Toolchain and Repository Hygiene passed; Mermaid and Local Sync Safety passed. Intel x86_64 and Apple Silicon arm64 jobs were still running at the latest inspection. Hosted PostgreSQL 17.12 verification is separate from owner-local PostgreSQL 18.7 qualification.
+
+The next implementation increment is on `feat/oms-authorized-order-persistence`, stacked on PR #41. It adds the OEL-12 typed order lifecycle, PostgreSQL OMS order/lifecycle tables, and atomic persistence requiring the exact persisted `AUTHORIZED` RiskAssessment for the immutable intent. The order, first lifecycle event, audit record, and `oms.order.persisted` domain notification are written transactionally. This branch is not yet hosted-qualified or merged.
+
+No outbox publisher/worker, Execution Gateway, broker dealing API, broker fills, position reconciliation, or LIVE operation is implemented by this OMS increment. `oms.order.persisted` is not an executable broker command. `CAP_ALLOW_TRADING=false` remains unchanged. See [OMS Lifecycle Foundation](docs/architecture/ATP_OMS_LIFECYCLE_FOUNDATION.md), [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md).

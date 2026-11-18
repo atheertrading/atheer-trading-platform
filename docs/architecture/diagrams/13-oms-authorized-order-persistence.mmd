@@ -1,0 +1,20 @@
+flowchart TB
+  Intent["Immutable persisted order intent"]
+  Risk["Persisted RiskEngine assessment"]
+  Gate{"Exact intent + AUTHORIZED outcome + same environment?"}
+  OMS["OMS order creation"]
+  Order["atheer.orders — state PERSISTED"]
+  Event["Append-only lifecycle event — AUTHORIZED → PERSISTED"]
+  Audit["Audit record"]
+  Outbox["Transactional domain outbox — oms.order.persisted"]
+  NoDispatch["No publisher / no Execution Gateway / no broker dealing"]
+
+  Intent --> Gate
+  Risk --> Gate
+  Gate -->|Reject or mismatch| Stop["Reject transaction"]
+  Gate -->|Verified| OMS
+  OMS --> Order
+  OMS --> Event
+  OMS --> Audit
+  OMS --> Outbox
+  Outbox -. "future internal consumer only" .-> NoDispatch

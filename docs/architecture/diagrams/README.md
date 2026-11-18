@@ -43,6 +43,7 @@ python3 scripts/extract-mermaid-sources.py \
 
 | `11-canonical-trading-domain.mmd` | Provider-independent canonical identities, instrument specifications, accounts, order-intent envelope, risk assessment, lifecycle-policy boundary, execution facts, reconciliation and audit |
 | `12-postgres-transactional-persistence.mmd` | PostgreSQL migration ledger, environment-scoped records, atomic intent/risk journal, transactional domain outbox, and explicit no-dispatch boundary |
+| `13-oms-authorized-order-persistence.mmd` | Risk-gated OMS order creation, immutable lifecycle event, transactional audit/outbox, and explicit no-broker-dispatch boundary |
 
 ### Library archive availability re-check — 2026-11-18
 

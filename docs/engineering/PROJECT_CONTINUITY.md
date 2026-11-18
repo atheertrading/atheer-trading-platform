@@ -708,3 +708,67 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
 - The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
 - Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.
+
+
+## ATP-OMS-001 execution continuation — 2026-11-18
+
+### Verified source reconciliation
+
+- Re-read repository root `AGENTS.md`, the governing Library screen/workstation execution prompt, and repository Mermaid diagrams 04, 05, 11, and 12.
+- Materialized and inspected the Library `Atheer Q&A Repository.zip` archive, including Section 18 Q1/Q11/Q12/Q16/Q17/Q18/Q20 and the Owner and Developer Approval record.
+- The owner/developer approval record delegates routine internal product, architecture, engineering, risk-design, and professional-trading decisions. This supports selecting OEL-12 as the canonical lifecycle baseline without another routine consultation. It does not authorize LIVE trades, broker permission changes, or other protected financial actions.
+- Q1 specifies the canonical states `CREATED`, `VALIDATING`, `RISK_CHECKING`, `AUTHORIZED`, `PERSISTED`, `SUBMITTED`, `PENDING`, `ACCEPTED`, `WORKING`, `PARTIALLY_FILLED`, `FILLED`, `CANCEL_PENDING`, `CANCELLED`, `REJECTED`, `EXPIRED`, `UNKNOWN`, and `RECONCILIATION_REQUIRED`.
+- Q11/Q16/Q17/Q18/Q20 require persistent idempotency, no blind retry after uncertain submission, broker reconciliation, worker ownership/fencing, and safety lockdown on Gateway failure.
+
+### Implementation branch
+
+- PR #42 branch: `feat/oms-authorized-order-persistence`, based on exact PR #41 head `c9eb73d28c24398dfcb435525118f971aae221e8`.
+- Current code and documentation commits include:
+  - `99c9302` OEL-12 domain and transition policy.
+  - `565f3fb` PostgreSQL OMS schema migration.
+  - `2b38fda` domain lifecycle tests.
+  - `a6bfc7b` transactional risk-gated OMS persistence.
+  - `5154067` PostgreSQL integration tests.
+  - `8a5ca68` OMS architecture and implementation contract.
+  - `da51af5` Mermaid diagram 13.
+  - `18403f8` diagram catalog.
+  - `097d2b1` EDL-013.
+  - `0499eb1` task register.
+  - `2a4df67` implementation status.
+- PR #42 is OPEN / DRAFT: https://github.com/atheertrading/atheer-trading-platform/pull/42. Current branch head at this update is `995145c6d44435fad1b5ee3c342e994c0852e119`.
+- Follow-up hardening commits: `4921f8f` resolved the domain export-name collision; `d475a35` revoked app UPDATE/DELETE on orders; `8e03ec1` added DB denial tests for order/lifecycle mutation; `05b8b55` and `995145c` documented the immutable projection boundary.
+
+### Implemented behavior (not yet hosted-qualified)
+
+- OEL-12 typed state vocabulary and transition authority for OMS, Execution Gateway, Broker, and Reconciliation.
+- OMS order creation requires a valid exact intent, persisted `AUTHORIZED` assessment, matching environment, and positive quantity.
+- Migration `002_oms_lifecycle.sql` creates environment-scoped orders and append-only lifecycle events, binds the order to the exact intent/risk/account/instrument, and preserves decimal quantities using PostgreSQL `numeric`.
+- Repository persistence locks and verifies the exact persisted intent and assessment; order, lifecycle event, audit record, and `oms.order.persisted` outbox event commit in one transaction.
+- Same-order replay is idempotent; conflicting order identities are rejected.
+- App-role UPDATE/DELETE are revoked from lifecycle events.
+
+### Deliberate non-scope
+
+- No outbox lease/claim worker or publisher.
+- No execution-dispatch event.
+- No Execution Gateway or broker dealing API.
+- No broker order, cancel, modify, close, fill, position, or reconciliation operation.
+- No LIVE or DEMO financial transaction.
+
+### PR #41 qualification snapshot
+
+- Current PR #41 head: `c9eb73d28c24398dfcb435525118f971aae221e8`; workflow run `44210600813`.
+- Backend Toolchain and Repository Hygiene passed. Mermaid run `44210600930` and Local Sync Safety run `44210600755` passed.
+- Intel x86_64 and Apple Silicon arm64 macOS jobs were still in progress at last inspection. This is not a completed PR #41 platform qualification.
+- These results do not qualify PR #42. PR #42 requires exact-head CI across backend, PostgreSQL, Mermaid, repository hygiene, Intel and Apple Silicon.
+- No local PostgreSQL 18.7 migration or local Mac pull was performed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### PR #42 exact-head qualification update
+
+- Backend type-check and full PostgreSQL 17.12 integration suite passed on earlier code head `d9c4663d8c579e2aaf7eb122c0da67a32f2ee906`: 52 passed, 0 failed, 0 skipped.
+- Repository Hygiene, Mermaid diagram rendering, and Local Sync Safety also passed on that earlier head.
+- Subsequent hardening made both `atheer.orders` and `atheer.order_lifecycle_events` SELECT/INSERT-only for `atheer_app`, with UPDATE/DELETE revoked and explicit denial tests added. Documentation was updated accordingly.
+- These follow-up commits advanced the branch to `995145c6d44435fad1b5ee3c342e994c0852e119`; the prior 52/52 and workflow results do not qualify this new head. A fresh exact-head CI run is required.
+- Intel and Apple Silicon macOS jobs on the earlier run were cancelled before qualification; neither architecture is currently qualified for PR #42.
+- PR #41 current head remains `c9eb73d28c24398dfcb435525118f971aae221e8`; Backend/Hygiene/Mermaid/Local Sync passed, Apple Silicon passed, Intel Debug was still in progress at last inspection.
