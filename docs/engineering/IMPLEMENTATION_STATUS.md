@@ -543,3 +543,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Exact boundary semantics are tested: 10s is not blocked; 15s is not yet stale.
 - Backend and native client share explicit state bands and an entry-specific `newAutomatedEntriesAllowed` field. Position management remains a separate RiskEngine concern.
 - **PENDING:** exact-head hosted backend/Swift CI, owner-Mac build/runtime, authenticated Capital.com DEMO verification. No trading qualification is claimed.
+
+
+
+
+## 2026-11-18 — Authenticated historical DEMO market data
+
+- Historical candle normalization and UTC range validation are ported into the authenticated BrokerSessionManager path on PR #68.
+- Route returns separate Bid/Ask OHLC, UTC timestamp and receipt lineage, quality counts, observed gaps and raw-provider limit metadata; disconnected sessions fail with HTTP 503.
+- Regression test source added for normalization, strict ranges, duplicate handling and authenticated route behavior.
+- Status: IMPLEMENTED ON PR #68 BRANCH; exact-head hosted CI, macOS qualification and provider DEMO runtime verification pending.
