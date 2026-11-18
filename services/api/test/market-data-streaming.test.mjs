@@ -112,6 +112,19 @@ test("DEMO stream connects to provider session endpoint and subscribes with serv
   await runtime.disconnect();
 });
 
+test("stream status never exposes untrusted provider error details", async () => {
+  const runtime = new CapitalDemoStreamingRuntime(
+    async () => { throw new Error("private-security-token"); },
+    () => new FakeWebSocket("wss://api-streaming-capital.backend-capital.com/connect"),
+    () => 1_800_000_000_000,
+    () => 125,
+  );
+
+  await assert.rejects(runtime.subscribe(["AAPL"], () => undefined), /private-security-token/);
+  assert.equal(runtime.status().lastError, "Capital.com streaming connection failed.");
+  assert.equal(JSON.stringify(runtime.status()).includes("private-security-token"), false);
+});
+
 test("stream runtime rejects noncanonical provider WebSocket paths", async () => {
   const runtime = new CapitalDemoStreamingRuntime(
     async () => ({
@@ -200,10 +213,16 @@ test("stream automatically reconnects and restores active subscriptions after in
   const unsubscribe = await runtime.subscribe(["OIL_CRUDE"], () => undefined);
 
   sockets[0].close();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(runtime.status().state, "degraded");
+  assert.equal(runtime.status().activeInstrumentCount, 0);
+
   await new Promise((resolve) => setTimeout(resolve, 1_100));
 
   assert.equal(sockets.length, 2);
   assert.equal(runtime.status().state, "connected");
+  assert.equal(runtime.status().activeInstrumentCount, 1);
   assert.equal(sockets[1].sent[0].destination, "marketData.subscribe");
   assert.deepEqual(sockets[1].sent[0].payload.epics, ["OIL_CRUDE"]);
 
