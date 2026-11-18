@@ -52,7 +52,7 @@ test("Capital.com REST client accepts HTTP-date Retry-After values", async () =>
   let wallClockNow = 1_800_000_000_000;
   let monotonicNow = 0;
   const waits = [];
-  const retryAt = new Date(wallClockNow + 1_500).toUTCString();
+  const retryAt = new Date(wallClockNow + 2_000).toUTCString();
   const client = new CapitalDemoClient(async () => {
     requestCount += 1;
     return requestCount === 1
@@ -71,7 +71,7 @@ test("Capital.com REST client accepts HTTP-date Retry-After values", async () =>
 
   await client.getMarkets(session, "EURUSD");
   assert.equal(requestCount, 2);
-  assert.deepEqual(waits, [1_500]);
+  assert.deepEqual(waits, [2_000]);
 });
 
 test("Capital.com REST client applies deterministic jitter when Retry-After is absent", async () => {
