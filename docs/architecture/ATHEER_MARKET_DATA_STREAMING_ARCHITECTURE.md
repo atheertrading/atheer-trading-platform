@@ -132,8 +132,8 @@ Current PR #37 streaming foundation implements one shared WebSocket runtime, a h
 
 The following Q10 requirements remain incomplete and are tracked under ATP-BRK-003 / ATP-MKT-007:
 
-- Enforce Capital.com's documented one-session-creation-request-per-second-per-API-key limit across sequential retries, not only coalesce concurrent connect calls.
-- Schedule and monitor REST session keepalive using the backend session manager; `CapitalDemoRuntime.ping()` currently exists but is not scheduled.
+- PR #49 now enforces a minimum one-second gap between sequential session-creation attempts in the single runtime owner, in addition to concurrent connect coalescing. The CMS/session manager must guarantee the same throttle across every runtime using the same API key.
+- PR #49 schedules REST `GET /ping` every five minutes, before the documented ten-minute inactivity threshold, and cancels it on disconnect. HTTP 401/403 invalidates the session; transient provider failures move it to `degraded` and a successful keepalive restores `connected`.
 - Allocate the 40 subscription slots by operational priority (open positions, active strategies, manual trading/watchlists, analytics and reserve), rather than only unioning active consumer requests.
 - Expose connection/session/subscription utilization and failure/reconnect metrics to operational diagnostics.
 - Coordinate account switching with WebSocket teardown and subscription restoration.
