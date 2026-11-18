@@ -4,6 +4,9 @@ import SwiftUI
 /// states instead of inventing quotes, balances, positions, or execution activity.
 struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
+    @ObservedObject var marketExplorerModel: MarketExplorerViewModel
+    @ObservedObject var marketWatchlistStore: MarketWatchlistStore
+    let onOpenMarkets: () -> Void
     let onOpenAPIConnection: () -> Void
 
     @StateObject private var workspaceEngine = WorkspaceEngine()
@@ -127,10 +130,16 @@ struct CommandCenterView: View {
         ) {
             CommandCenterStatusItem(
                 title: "MARKET DATA",
-                value: "UNAVAILABLE",
-                detail: "Provider not configured",
+                value: marketExplorerModel.backendStatus?.state.rawValue.uppercased() ?? "UNKNOWN",
+                detail: marketExplorerModel.streamingState == .connected
+                    ? "Capital.com DEMO stream connected"
+                    : marketExplorerModel.backendStatus?.provider ?? "Backend market-data status unavailable",
                 symbol: "waveform.path",
-                tint: ATHEERDesignTokens.ColorRole.attention
+                tint: marketExplorerModel.streamingState == .connected
+                    ? ATHEERDesignTokens.ColorRole.success
+                    : marketExplorerModel.backendStatus?.state == .connected
+                        ? ATHEERDesignTokens.ColorRole.attention
+                        : .secondary
             )
 
             CommandCenterStatusItem(
@@ -261,43 +270,12 @@ struct CommandCenterView: View {
     }
 
     private var marketWatchPanel: some View {
-        CommandCenterPanel(
-            title: "Market Watch",
-            subtitle: "Instrument discovery · Quotes",
-            symbol: "list.bullet.rectangle",
-            status: "NO FEED",
-            statusColor: ATHEERDesignTokens.ColorRole.attention,
-            minHeight: 244
-        ) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("INSTRUMENT")
-                    Spacer()
-                    Text("LAST")
-                    Text("CHANGE")
-                }
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .tracking(0.5)
-                .foregroundColor(.secondary)
-
-                Rectangle()
-                    .fill(ATHEERDesignTokens.ColorRole.separator)
-                    .frame(height: 1)
-
-                VStack(spacing: 8) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: 22))
-                        .foregroundColor(.secondary)
-                    Text("No instruments")
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("A connected provider is required before quotes can be shown.")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, minHeight: 112)
-            }
-        }
+        MarketWatchPanelView(
+            model: marketExplorerModel,
+            watchlistStore: marketWatchlistStore,
+            onOpenMarkets: onOpenMarkets,
+            onOpenAPIConnection: onOpenAPIConnection
+        )
     }
 
     private var accountRiskPanel: some View {
