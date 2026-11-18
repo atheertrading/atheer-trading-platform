@@ -67,3 +67,61 @@ Re-estimation gate: after the shell, Command Center, and Markets have been imple
 
 ## Explicit non-approval
 This record does not approve Phase 01, claim all 12 screens are implemented, enable broker dealing, alter risk limits, change credentials, or authorize LIVE trading.
+
+
+## Follow-up engineering direction — staged delivery and visual asset governance
+
+### Proposed delivery order (owner/authority review pending)
+1. Application Shell + Navigation.
+2. Command Center.
+3. Markets.
+4. Charts & Analysis.
+5. Trading + Risk + Positions.
+6. Remaining product areas: Intelligence & Research, Strategy Center, Automated Trading, Performance & Analytics, Atheer Mind OS, System & Administration.
+
+This order intentionally establishes shell and read-only market/account context before exposing consequential trading workflows. Trading UI is not to be treated as an early standalone screen; it depends on broker data contracts, order intent, RiskEngine, OMS, execution, and reconciliation readiness.
+
+### Stage-level UI estimates
+| Stage | Included work packages | Estimate | Confidence |
+|---|---|---:|---|
+| 1. Foundation + Shell | design-system audit (3–5) + shell/navigation (5–8) | 8–13 engineer-days | Medium |
+| 2. Command Center | account/market/position/service-health read models and screen | 4–6 engineer-days | Medium |
+| 3. Markets | instrument explorer, watchlists, quote provenance/freshness | 5–8 engineer-days | Medium |
+| 4. Charts & Analysis | chart surface, history/stream integration, indicators/drawings | 8–15 engineer-days | Low |
+| 5. Trading + Risk + Positions | governed order UI (8–12) + positions (5–8) + risk (6–10) | 19–30 engineer-days | Low |
+| 6. Remaining areas | research (5–9), strategy (6–10), automation (6–10), analytics (5–9), Mind OS (6–10), administration (5–8) | 33–56 engineer-days | Low |
+| Cross-cutting QA | visual, accessibility, localization/RTL and multi-display QA | 8–12 engineer-days | Medium |
+
+**Corrected total: 85–140 engineer-days.** The previous 81-day lower bound was an arithmetic aggregation error; the individual work-package minima sum to 85. This corrected figure supersedes the earlier lower bound. The upper bound remains 140. Estimates are one engineer's focused full-time effort and exclude substantial backend/domain work, broker qualification, owner-review latency, release certification, and external dependencies. Calendar duration is not implied.
+
+### High-fidelity design asset policy
+- Commit source design assets under `docs/design/assets/<screen-id>/` (or a clearly versioned shared board), using stable names such as `SCR-01-command-center-dark-v1.png`.
+- Maintain a manifest with screen ID, design version, viewport dimensions, appearance, density, locale/direction, state represented, source file/editable format, author, review status, and related issue/PR.
+- Keep editable source (where available) alongside exported PNG/SVG/PDF; avoid lossy-only delivery for diagrams and vector work.
+- One screen per frame/artboard. Do not bundle unrelated screens into one image where screen-specific review is required.
+- Required variants per screen: Dark and Light; English LTR and Arabic RTL; Compact/Balanced/Spacious where layout materially changes; key loading, empty, stale/disconnected, error/rejected, and normal states.
+- Use synthetic placeholder content only when clearly labelled as illustrative. Never use realistic-looking fabricated balances, quotes, risk values, broker statuses, AI confidence, or execution outcomes without persistent "illustrative" labeling.
+- Design images are visual references, not UI implementation, behavior contracts, data fixtures, or approval evidence.
+- Do not overwrite approved assets in place. Increment design version and retain review history.
+- Each asset must link to its screen contract, component inventory, interaction/state specification, and acceptance checklist.
+
+### Screen approval gate
+A screen is not approved by visual appearance alone. Required evidence:
+1. Owner-approved screen frame(s) and documented unresolved decisions.
+2. Design review of hierarchy, typography, semantic tokens, density, and visual consistency.
+3. Engineering review of SwiftUI component ownership, state flow, window/panel lifecycle, performance, and accessibility.
+4. Trading-systems review where account, risk, order, position, broker, or agent state is represented.
+5. Defined view-model/domain contracts and all material UI states.
+6. Dark/Light, RTL, keyboard, VoiceOver, contrast, scaling, and multi-display checks.
+7. Implementation with automated tests, exact-head CI, native macOS build/launch evidence, and screenshot comparison.
+8. Explicit acceptance record; mockup review does not imply implementation completion or trading authorization.
+
+### Immediate next deliverables
+- Repository visual asset manifest and per-screen asset directories.
+- Screen 01 Application Shell + Navigation high-fidelity frame and state inventory.
+- Screen 02 Command Center high-fidelity frame and state inventory.
+- Screen 03 Markets high-fidelity frame and state inventory.
+- Re-estimate after the first three vertical slices using actual implementation and integration evidence.
+
+### Approval boundary
+This follow-up records the requested engineering direction for review. It does not mark these stages complete, approve all 12 screens, authorize a LIVE trading path, or change `CAP_ALLOW_TRADING=false`.
