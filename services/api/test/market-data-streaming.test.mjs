@@ -166,8 +166,10 @@ test("stream automatically reconnects and restores active subscriptions after in
 });
 
 
-test("market-data API rejects browser-origin and unidentified local requests", async () => {
-  const server = createApiServer();
+test("market-data API requires capability auth and rejects browser-origin requests", async () => {
+  const ipcCapability = Buffer.alloc(32, 0x42);
+  const capabilityToken = ipcCapability.toString("base64url");
+  const server = createApiServer(undefined, ipcCapability);
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
@@ -177,27 +179,27 @@ test("market-data API rejects browser-origin and unidentified local requests", a
   const endpoint = "http://127.0.0.1:" + address.port + "/market-data/status";
 
   const unidentified = await fetch(endpoint);
-  assert.equal(unidentified.status, 403);
-  assert.deepEqual(await unidentified.json(), { error: "untrusted_local_client" });
+  assert.equal(unidentified.status, 401);
+  assert.deepEqual(await unidentified.json(), { error: "unauthorized" });
 
   const crossOrigin = await fetch(endpoint, {
     headers: {
-      "X-ATHEER-LOCAL-CLIENT": "macOS",
+      authorization: "Bearer " + capabilityToken,
       Origin: "https://attacker.example",
     },
   });
-  assert.equal(crossOrigin.status, 403);
+  assert.equal(crossOrigin.status, 401);
 
   const crossSite = await fetch(endpoint, {
     headers: {
-      "X-ATHEER-LOCAL-CLIENT": "macOS",
+      authorization: "Bearer " + capabilityToken,
       "Sec-Fetch-Site": "cross-site",
     },
   });
-  assert.equal(crossSite.status, 403);
+  assert.equal(crossSite.status, 401);
 
   const trustedNativeClient = await fetch(endpoint, {
-    headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
+    headers: { authorization: "Bearer " + capabilityToken },
   });
   assert.equal(trustedNativeClient.status, 200);
   assert.equal((await trustedNativeClient.json()).state, "not_configured");
@@ -237,7 +239,9 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
       };
     },
   };
-  const server = createApiServer(marketData, stream);
+  const ipcCapability = Buffer.alloc(32, 0x43);
+  const capabilityToken = ipcCapability.toString("base64url");
+  const server = createApiServer(marketData, ipcCapability, stream);
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
@@ -252,7 +256,7 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
       port: address.port,
       path: "/market-data/stream?epics=AAPL",
       method: "GET",
-      headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
+      headers: { authorization: "Bearer " + capabilityToken },
     }, (response) => {
       try {
         assert.equal(response.statusCode, 200);
@@ -298,7 +302,9 @@ test("local SSE endpoint rejects more than forty instrument epics", async () => 
     latest: () => [],
     async subscribe() { throw new Error("Must not subscribe invalid request."); },
   };
-  const server = createApiServer(marketData, stream);
+  const ipcCapability = Buffer.alloc(32, 0x44);
+  const capabilityToken = ipcCapability.toString("base64url");
+  const server = createApiServer(marketData, ipcCapability, stream);
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
@@ -308,7 +314,7 @@ test("local SSE endpoint rejects more than forty instrument epics", async () => 
 
   const epics = Array.from({ length: 41 }, (_, index) => "EPIC" + index).join(",");
   const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=" + epics, {
-    headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
+    headers: { authorization: "Bearer " + capabilityToken },
   });
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "invalid_stream_instruments" });
