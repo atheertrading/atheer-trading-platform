@@ -52,6 +52,34 @@ private final class BrokerAuthenticationURLProtocol: URLProtocol {
 }
 
 @MainActor
+private final class MockBrokerCredentialIPCTransport: BrokerCredentialIPCTransport {
+    var status = BrokerCredentialIPCStatus(
+        provider: "capital.com",
+        environment: "DEMO",
+        state: "connected",
+        connectedAtMs: 1_800_000_000_000,
+        lastError: nil
+    )
+    var capturedCredentials: BrokerCredential?
+    var connectCount = 0
+    var disconnectCount = 0
+    var disconnectError: Error?
+
+    func connect(credentials: BrokerCredential) async throws -> BrokerCredentialIPCStatus {
+        connectCount += 1
+        capturedCredentials = credentials
+        return status
+    }
+
+    func disconnect() async throws {
+        disconnectCount += 1
+        if let disconnectError {
+            throw disconnectError
+        }
+    }
+}
+
+@MainActor
 final class BackendBrokerAuthenticationServiceTests: XCTestCase {
     private let credential = BrokerCredential(
         apiKey: "demo-api-key",
@@ -59,57 +87,59 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
         password: "demo-secret-password"
     )
 
-    private func makeService() throws -> (BackendBrokerAuthenticationService, String) {
-        let capability = try BackendIPCCapability(testBytes: Data(repeating: 7, count: 32))
-        let encoded = Data(repeating: 7, count: 32).base64EncodedString()
+    private func makeService() throws -> (
+        BackendBrokerAuthenticationService,
+        MockBrokerCredentialIPCTransport,
+        String
+    ) {
+        let rawCapability = Data(repeating: 7, count: 32)
+        let capability = try BackendIPCCapability(testBytes: rawCapability)
+        let encoded = rawCapability.base64EncodedString()
             .replacingOccurrences(of: "=", with: "")
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
         let connection = BackendIPCConnection(
             baseURL: URL(string: "http://127.0.0.1:41023")!,
-            capability: capability
+            capability: capability,
+            credentialSocketURL: URL(fileURLWithPath: "/tmp/atheer-test/broker.sock")
         )
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [BrokerAuthenticationURLProtocol.self]
         let session = URLSession(configuration: configuration)
-        return (BackendBrokerAuthenticationService(connection: connection, session: session), "Bearer " + encoded)
+        let transport = MockBrokerCredentialIPCTransport()
+        let service = BackendBrokerAuthenticationService(
+            connection: connection,
+            session: session,
+            credentialTransport: transport
+        )
+        return (service, transport, "Bearer " + encoded)
     }
 
-    func testCredentialHandoffUsesAuthenticatedLoopbackAndSendsOnlyDEMOFields() async throws {
-        BrokerAuthenticationURLProtocol.configure(
-            status: 200,
-            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"connected","connectedAtMs":1800000000000}"#.utf8)
-        )
-        let (service, expectedAuthorization) = try makeService()
+    func testCredentialHandoffUsesPrivateIPCAndNeverPostsSecretsOverHTTP() async throws {
+        BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
+        let (service, transport, _) = try makeService()
 
         let account = try await service.authenticate(credential, environment: .demo)
 
         XCTAssertEqual(account.maskedLoginIdentifier, "••••1234")
         XCTAssertNil(account.currencyCode)
-        let request = try XCTUnwrap(BrokerAuthenticationURLProtocol.capturedRequests().first)
-        XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(request.url?.path, "/broker-session/connect")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), expectedAuthorization)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
-
-        let body = try XCTUnwrap(request.httpBody)
-        let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
-        XCTAssertEqual(payload["apiKey"], credential.apiKey)
-        XCTAssertEqual(payload["identifier"], credential.identifier)
-        XCTAssertEqual(payload["password"], credential.password)
-        XCTAssertNil(payload["environment"])
+        XCTAssertEqual(transport.connectCount, 1)
+        XCTAssertEqual(transport.capturedCredentials?.apiKey, credential.apiKey)
+        XCTAssertEqual(transport.capturedCredentials?.identifier, credential.identifier)
+        XCTAssertEqual(transport.capturedCredentials?.password, credential.password)
+        XCTAssertTrue(BrokerAuthenticationURLProtocol.capturedRequests().isEmpty)
     }
 
     func testLIVEAuthenticationIsRejectedBeforeAnyIPCRequest() async throws {
         BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
-        let (service, _) = try makeService()
+        let (service, transport, _) = try makeService()
 
         do {
             _ = try await service.authenticate(credential, environment: .live)
             XCTFail("LIVE authentication must remain disabled.")
         } catch let error as BrokerAuthenticationError {
             if case .liveDisabled = error {
+                XCTAssertEqual(transport.connectCount, 0)
                 XCTAssertTrue(BrokerAuthenticationURLProtocol.capturedRequests().isEmpty)
             } else {
                 XCTFail("Unexpected broker authentication error: \(error)")
@@ -118,18 +148,23 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
     }
 
     func testProviderAuthenticationFailureMapsToInvalidCredentials() async throws {
-        BrokerAuthenticationURLProtocol.configure(
-            status: 401,
-            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"error","lastError":"Capital.com DEMO session creation failed with HTTP 401."}"#.utf8)
+        BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
+        let (service, transport, _) = try makeService()
+        transport.status = BrokerCredentialIPCStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: "error",
+            connectedAtMs: nil,
+            lastError: "Capital.com DEMO session creation failed with HTTP 401."
         )
-        let (service, _) = try makeService()
 
         do {
             _ = try await service.authenticate(credential, environment: .demo)
             XCTFail("Invalid provider credentials must not be reported as connected.")
         } catch let error as BrokerAuthenticationError {
             if case .invalidCredentials = error {
-                XCTAssertEqual(BrokerAuthenticationURLProtocol.capturedRequests().count, 1)
+                XCTAssertEqual(transport.connectCount, 1)
+                XCTAssertTrue(BrokerAuthenticationURLProtocol.capturedRequests().isEmpty)
             } else {
                 XCTFail("Unexpected broker authentication error: \(error)")
             }
@@ -137,11 +172,15 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
     }
 
     func testProviderPermissionFailureIsNotMisclassifiedAsInvalidCredentials() async throws {
-        BrokerAuthenticationURLProtocol.configure(
-            status: 403,
-            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"error","lastError":"Capital.com DEMO session creation failed with HTTP 403."}"#.utf8)
+        BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
+        let (service, transport, _) = try makeService()
+        transport.status = BrokerCredentialIPCStatus(
+            provider: "capital.com",
+            environment: "DEMO",
+            state: "error",
+            connectedAtMs: nil,
+            lastError: "Capital.com DEMO session creation failed with HTTP 403."
         )
-        let (service, _) = try makeService()
 
         do {
             _ = try await service.authenticate(credential, environment: .demo)
@@ -155,37 +194,54 @@ final class BackendBrokerAuthenticationServiceTests: XCTestCase {
         }
     }
 
-    func testSessionStatusPreservesRateLimitClassification() async throws {
+    func testSessionStatusUsesAuthenticatedHTTPReadAndPreservesRateLimitClassification() async throws {
         BrokerAuthenticationURLProtocol.configure(
             status: 200,
             body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"error","lastError":"Capital.com DEMO session creation failed with HTTP 429."}"#.utf8)
         )
-        let (service, _) = try makeService()
+        let (service, transport, expectedAuthorization) = try makeService()
 
         do {
             _ = try await service.validateSession()
             XCTFail("Rate-limited session status must not be reported as connected.")
         } catch let error as BrokerAuthenticationError {
             if case .rateLimited = error {
-                XCTAssertEqual(BrokerAuthenticationURLProtocol.capturedRequests().count, 1)
+                XCTAssertEqual(transport.connectCount, 0)
+                let request = try XCTUnwrap(BrokerAuthenticationURLProtocol.capturedRequests().first)
+                XCTAssertEqual(request.httpMethod, "GET")
+                XCTAssertEqual(request.url?.path, "/broker-session/status")
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), expectedAuthorization)
             } else {
                 XCTFail("Unexpected broker authentication error: \(error)")
             }
         }
     }
 
-    func testDisconnectRequiresSuccessfulBackendAcknowledgement() async throws {
-        BrokerAuthenticationURLProtocol.configure(
-            status: 200,
-            body: Data(#"{"provider":"capital.com","environment":"DEMO","state":"disconnected"}"#.utf8)
-        )
-        let (service, expectedAuthorization) = try makeService()
+    func testDisconnectUsesPrivateIPCAndRequiresAcknowledgement() async throws {
+        BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
+        let (service, transport, _) = try makeService()
 
         try await service.disconnect()
 
-        let request = try XCTUnwrap(BrokerAuthenticationURLProtocol.capturedRequests().first)
-        XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(request.url?.path, "/broker-session/disconnect")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), expectedAuthorization)
+        XCTAssertEqual(transport.disconnectCount, 1)
+        XCTAssertTrue(BrokerAuthenticationURLProtocol.capturedRequests().isEmpty)
+    }
+
+    func testDisconnectFailureIsSurfacedWithoutHTTPFallback() async throws {
+        BrokerAuthenticationURLProtocol.configure(status: 200, body: Data())
+        let (service, transport, _) = try makeService()
+        transport.disconnectError = BrokerCredentialIPCError.requestRejected("broker_session_disconnect_failed")
+
+        do {
+            try await service.disconnect()
+            XCTFail("Private IPC disconnect failure must not silently succeed.")
+        } catch let error as BrokerAuthenticationError {
+            if case .unavailable = error {
+                XCTAssertEqual(transport.disconnectCount, 1)
+                XCTAssertTrue(BrokerAuthenticationURLProtocol.capturedRequests().isEmpty)
+            } else {
+                XCTFail("Unexpected broker authentication error: \(error)")
+            }
+        }
     }
 }
