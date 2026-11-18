@@ -1,6 +1,6 @@
 # ATHEER Trading — Task Register
 
-**Snapshot date:** 2026-11-17  
+**Snapshot date:** 2026-11-19  
 **Active milestone:** M00 — Governance baseline merged; M01 — Platform architecture and toolchain foundation
 
 Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = not started; `BLOCKED` = dependency prevents progress; `OWNER DECISION` = requires explicit owner direction.
@@ -443,3 +443,15 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Commits: `9dbc2ef`, `f63f806`, `8c12e59`, `4d35e16`.
 - Exact-head CI on `4d35e16e9c5ccce319f51366d7854088c5282505` is pending; no passing result is claimed. Owner-Mac DEMO authentication qualification remains pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
+
+
+## ATP-SEC-003 / ATP-BRK-003 — Serialized disconnect and Capital.com 429 recovery (2026-11-19)
+
+- **IMPLEMENTED / CI VERIFIED AT CODE HEAD `dfc30ef70b2242166d9269cb4dd9e850b80df288`:** stream teardown callback executes within the serialized BrokerSessionManager disconnect transition; concurrent replacement connect cannot overtake the disconnect.
+- Added UDS and manager lifecycle tests covering teardown order and queued credential replacement.
+- Added bounded HTTP 429 handling in the shared Capital.com REST request path: numeric/date Retry-After, shared process cooldown, three retries, full-jitter fallback and independent 10-second network timeout per attempt.
+- Network timeouts and non-429 failures are not automatically retried. Future dealing endpoints require separate idempotency and reconciliation semantics.
+- A later test adds explicit per-attempt AbortSignal assertions. Current code/test head `dfd0bf238dec3d88e061367251954fc860dffbb4` requires exact-head CI after the additive Session 070 record and status updates.
+- On the code head before Session 070, Backend Toolchain (type-check/build/API tests), Repository Hygiene and Local Sync Safety passed. Intel and Apple Silicon were in progress; this is not a merge qualification.
+- PR #66 remains OPEN / DRAFT and stacked on PR #64; cross-workstream integration remains blocked on ATP-ENG-063 (#77).
+- Evidence: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`.
