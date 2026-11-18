@@ -56,8 +56,9 @@ final class BackendRuntimeViewModelTests: XCTestCase {
         let processManager = try CountingBackendProcessManager()
         let runtime = BackendRuntimeViewModel(
             supervisor: processManager,
-            healthModel: BackendHealthViewModel(client: UnavailableBackendHealthClient()),
-            marketWatchlistPersistence: InMemoryRuntimeWatchlistPersistence()
+            healthModel: BackendHealthViewModel(),
+            marketWatchlistPersistence: InMemoryRuntimeWatchlistPersistence(),
+            healthClientFactory: { _ in UnavailableBackendHealthClient() }
         )
 
         await runtime.start()
