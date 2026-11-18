@@ -1,0 +1,508 @@
+openapi: 3.1.0
+info:
+  title: ATHEER Trading Local Backend API
+  version: 0.1.0
+  summary: Local-only health, authenticated Capital.com DEMO session status, and read-only market-data contract.
+  description: |
+    This contract describes only the routes currently implemented by services/api/src/server.ts.
+    It is a local macOS application backend contract, not a public or production API.
+
+    The process binds only to 127.0.0.1. Broker-sensitive HTTP routes require a fresh
+    per-process 256-bit Bearer capability and a native-request context: Origin must be
+    absent, and Sec-Fetch-Site must be absent or "none". These checks supplement the
+    capability and are not broker-account authorization.
+
+    Credential-bearing connect/disconnect operations are not HTTP endpoints. They use
+    the private, permission-restricted Unix-domain socket protocol between the supervised
+    native parent and the backend process. No HTTP dealing, order, position-mutation,
+    account-mutation, or LIVE endpoint is implemented.
+servers:
+  - url: http://127.0.0.1:4100
+    description: Local development port; PORT may select another loopback port, including an OS-assigned ephemeral port.
+tags:
+  - name: Health
+    description: Process liveness and fail-closed platform readiness.
+  - name: Broker Session
+    description: Sanitized status for the backend-owned Capital.com DEMO session.
+  - name: Market Data
+    description: Authenticated, read-only Capital.com DEMO search, history, and quote streaming.
+paths:
+  /health/live:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      summary: Check whether the local backend process can answer requests.
+      responses:
+        '200':
+          description: Process liveness.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liveness'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /health/ready:
+    get:
+      tags: [Health]
+      operationId: getReadiness
+      summary: Read platform readiness.
+      description: |
+        A 503 not_ready response is expected until required dependencies are implemented
+        and qualified. Liveness does not imply readiness, broker authentication, or trading permission.
+      responses:
+        '503':
+          description: Persistence and complete trading dependencies are not configured; trading is disabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Readiness'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /broker-session/status:
+    get:
+      tags: [Broker Session]
+      operationId: getBrokerSessionStatus
+      summary: Read sanitized Capital.com DEMO broker-session state.
+      security:
+        - localBackendCapability: []
+      x-native-request-context:
+        origin: must_be_absent
+        sec-fetch-site: absent_or_none
+      responses:
+        '200':
+          description: Sanitized broker session state; credentials and provider session tokens are never returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrokerSessionStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/status:
+    get:
+      tags: [Market Data]
+      operationId: getMarketDataStatus
+      summary: Read broker-session and streaming status.
+      security:
+        - localBackendCapability: []
+      x-native-request-context:
+        origin: must_be_absent
+        sec-fetch-site: absent_or_none
+      responses:
+        '200':
+          description: Sanitized broker and stream status. No credentials or session tokens are exposed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/markets:
+    get:
+      tags: [Market Data]
+      operationId: searchMarkets
+      summary: Search Capital.com DEMO instruments.
+      security:
+        - localBackendCapability: []
+      x-native-request-context:
+        origin: must_be_absent
+        sec-fetch-site: absent_or_none
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          description: Trimmed search term; the HTTP boundary accepts 1–100 characters.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: Provider-returned instrument metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketSearchResult'
+        '400':
+          description: Search term is missing, blank after trimming, or longer than 100 characters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Broker session is not connected or its state is not eligible for a market-data read.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/history:
+    get:
+      tags: [Market Data]
+      operationId: getMarketHistory
+      summary: Retrieve Capital.com DEMO historical price records.
+      description: |
+        Price records are returned as provider-shaped opaque objects. This endpoint does
+        not promise a provider-neutral OHLC candle model or assert Bid/Ask and volume
+        semantics that are not represented by the current API contract.
+      security:
+        - localBackendCapability: []
+      x-native-request-context:
+        origin: must_be_absent
+        sec-fetch-site: absent_or_none
+      parameters:
+        - name: epic
+          in: query
+          required: true
+          description: Trimmed Capital.com EPIC.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+            pattern: '^[A-Za-z0-9_.-]{1,64}$'
+        - name: resolution
+          in: query
+          required: false
+          description: Provider-supported price-history resolution.
+          schema:
+            type: string
+            enum: [MINUTE, MINUTE_5, MINUTE_15, MINUTE_30, HOUR, HOUR_4, DAY, WEEK]
+            default: MINUTE
+        - name: max
+          in: query
+          required: false
+          description: Maximum requested provider records.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Provider historical price records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketHistoryResult'
+        '400':
+          description: EPIC, resolution, or max query parameter is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Broker session is not connected or its state is not eligible for a market-data read.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/stream:
+    get:
+      tags: [Market Data]
+      operationId: streamMarketData
+      summary: Subscribe to the authenticated local SSE quote stream.
+      description: |
+        Returns Server-Sent Events. Supported event names are status, quote, and error.
+        Status and quote event data are JSON-encoded. The stream remains local and
+        capability-protected; the backend owns provider WebSocket credentials and sessions.
+        The route accepts 1–40 comma-separated, valid EPIC values per subscription request.
+      security:
+        - localBackendCapability: []
+      x-native-request-context:
+        origin: must_be_absent
+        sec-fetch-site: absent_or_none
+      parameters:
+        - name: epics
+          in: query
+          required: true
+          description: Comma-separated Capital.com EPIC values, 1–40 entries, each 1–64 characters.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Server-Sent Events carrying status, quote, and error events.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              examples:
+                status:
+                  value: |-
+                    event: status
+                    data: {"provider":"capital.com","environment":"DEMO","state":"connected","activeInstrumentCount":1}
+                quote:
+                  value: |-
+                    event: quote
+                    data: {"provider":"capital.com","environment":"DEMO","instrumentId":"EURUSD","bid":1.08,"ask":1.0802,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000100}
+                error:
+                  value: |-
+                    event: error
+                    data: {"error":"market_data_stream_connection_failed"}
+        '400':
+          description: EPIC list is empty, malformed, or exceeds the provider instrument cap.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: Market-data streaming runtime is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+components:
+  securitySchemes:
+    localBackendCapability:
+      type: http
+      scheme: bearer
+      bearerFormat: base64url-encoded 256-bit per-process capability
+      description: |
+        Fresh capability for the supervised backend process. It is delivered through
+        private startup IPC, is not a broker credential, and does not grant trading permission.
+  schemas:
+    Liveness:
+      type: object
+      additionalProperties: false
+      required: [status, service, version, timestamp]
+      properties:
+        status:
+          const: ok
+        service:
+          const: atheer-api
+        version:
+          const: 0.1.0
+        timestamp:
+          type: string
+          format: date-time
+    Readiness:
+      type: object
+      additionalProperties: false
+      required: [status, service, timestamp, dependencies, trading]
+      properties:
+        status:
+          const: not_ready
+        service:
+          const: atheer-api
+        timestamp:
+          type: string
+          format: date-time
+        dependencies:
+          type: object
+          additionalProperties: false
+          required: [persistence, broker]
+          properties:
+            persistence:
+              const: not_configured
+            broker:
+              const: not_configured
+        trading:
+          type: object
+          additionalProperties: false
+          required: [enabled, status]
+          properties:
+            enabled:
+              const: false
+            status:
+              const: disabled
+    BrokerSessionStatus:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, state]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        state:
+          type: string
+          enum: [not_configured, disconnected, connecting, connected, degraded, error]
+        connectedAtMs:
+          type: integer
+          minimum: 1
+          description: Unix epoch timestamp in milliseconds.
+        lastError:
+          type: string
+          description: Sanitized diagnostic without credentials or provider session tokens.
+    MarketDataStreamStatus:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, state, activeInstrumentCount, invalidQuoteCount, outOfOrderQuoteCount, duplicateQuoteCount]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        state:
+          type: string
+          enum: [disconnected, connecting, connected, degraded]
+        activeInstrumentCount:
+          type: integer
+          minimum: 0
+          maximum: 40
+        lastMessageAtMs:
+          type: integer
+          minimum: 1
+        lastError:
+          type: string
+          description: Sanitized transport diagnostic.
+        invalidQuoteCount:
+          type: integer
+          minimum: 0
+        outOfOrderQuoteCount:
+          type: integer
+          minimum: 0
+        duplicateQuoteCount:
+          type: integer
+          minimum: 0
+    MarketDataStatus:
+      allOf:
+        - $ref: '#/components/schemas/BrokerSessionStatus'
+        - type: object
+          required: [streaming]
+          properties:
+            streaming:
+              $ref: '#/components/schemas/MarketDataStreamStatus'
+    CapitalMarket:
+      type: object
+      additionalProperties: false
+      required: [epic]
+      properties:
+        epic:
+          type: string
+          minLength: 1
+        instrumentName:
+          type: string
+        marketStatus:
+          type: string
+        currency:
+          type: string
+    MarketSearchResult:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, markets]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        markets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapitalMarket'
+    MarketHistoryResult:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, prices]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        prices:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            description: Opaque Capital.com provider record; no normalized candle semantics are promised.
+    MarketDataStreamQuote:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, instrumentId, bid, ask, providerTimestampMs, receivedAtMs, receivedAtMonotonicMs, freshness]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        instrumentId:
+          type: string
+        bid:
+          type: number
+          exclusiveMinimum: 0
+        ask:
+          type: number
+          exclusiveMinimum: 0
+        providerTimestampMs:
+          type: integer
+          description: Provider event time, Unix epoch milliseconds.
+        receivedAtMs:
+          type: integer
+          description: Local receipt time, Unix epoch milliseconds.
+        receivedAtMonotonicMs:
+          type: number
+          description: Local monotonic receipt clock for elapsed-time calculations.
+        freshness:
+          $ref: '#/components/schemas/QuoteFreshness'
+    QuoteFreshness:
+      type: object
+      additionalProperties: false
+      required: [state, ageMs, automatedDecisionsAllowed, reason, maximumAgeMs]
+      properties:
+        state:
+          type: string
+          enum: [fresh, stale, invalid]
+        ageMs:
+          type: [integer, number, 'null']
+        automatedDecisionsAllowed:
+          type: boolean
+        reason:
+          type: string
+          enum: [within_policy, quote_too_old, provider_timestamp_in_future, invalid_clock, invalid_policy, invalid_quote]
+        maximumAgeMs:
+          type: integer
+          minimum: 1
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+    MethodNotAllowed:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          const: method_not_allowed
+  responses:
+    Unauthorized:
+      description: Missing, invalid, or unacceptable local IPC capability/request context.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowed:
+      description: HTTP method is not supported for this route. The Allow header identifies the permitted method.
+      headers:
+        Allow:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MethodNotAllowed'
+    ProviderFailure:
+      description: Capital.com rejected the request or the provider adapter failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
