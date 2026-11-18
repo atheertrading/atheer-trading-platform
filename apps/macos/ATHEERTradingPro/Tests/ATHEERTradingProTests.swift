@@ -637,6 +637,18 @@ final class ATHEERTradingProTests: XCTestCase {
         } catch {
             XCTFail("Expected a typed market-search error.")
         }
+
+        MarketSearchURLProtocolStub.handler = { _ in
+            throw URLError(.notConnectedToInternet)
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("Transport failures must map to backendUnavailable.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .backendUnavailable)
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
     }
 
     @MainActor
