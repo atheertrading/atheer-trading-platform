@@ -82,4 +82,4 @@ A source-level integration review found that `WorkspaceHomeView` and `CommandCen
 - `CommandCenterView.swift`: commit `484907de2f308231dac89d5e151beee6e95c250a`.
 - PR #70 exact head after remediation: `484907de2f308231dac89d5e151beee6e95c250a`.
 - Hosted CI was triggered for this exact head; compilation and XCTest results remain pending.
-- PR #71 branch synchronization remains open and is not mergeable at the latest inspection; do not merge it until ancestry and exact-head checks are re-evaluated.
+- PR #71 was closed as redundant, preserving its branch and history. Its only test-fixture change is already byte-for-byte present on PR #70 (blob `c1930bbb87d4ba66898f85ed90faed6c4a4efe56`); PR #70 remains based on the PR #68 head.
