@@ -2,10 +2,15 @@ import SwiftUI
 
 @main
 struct ATHEERTradingProApp: App {
+    @AppStorage(ATHEERAppearance.storageKey)
+    private var appearancePreference = ATHEERAppearance.dark.rawValue
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(
+                    ATHEERAppearance.resolve(appearancePreference).colorScheme
+                )
         }
         .commands {
             TextEditingCommands()

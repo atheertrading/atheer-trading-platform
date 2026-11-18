@@ -1,0 +1,34 @@
+flowchart LR
+    USER["Professional Trader"]
+    subgraph SHELL["ATHEER Application Shell"]
+        NAV["Primary Sidebar"]
+        CONTEXT["Contextual Navigation"]
+        TABS["Workspace Tabs"]
+        COMMAND["Persistent Command Region"]
+        STATUS["Operational State and Alerts"]
+    end
+    subgraph TASKS["Task-Oriented Product Areas"]
+        CC["Command Center"]
+        MKT["Markets"]
+        CHART["Charts and Analysis"]
+        INTEL["Intelligence and Research"]
+        STRAT["Strategy Center"]
+        AUTO["Automated Trading"]
+        TRADE["Trading and Execution"]
+        POS["Positions and Portfolio"]
+        RISK["Risk Management"]
+        PERF["Performance and Analytics"]
+        MIND["Atheer Mind OS"]
+        ADMIN["System and Administration"]
+    end
+    USER --> NAV
+    USER --> COMMAND
+    NAV --> CONTEXT
+    CONTEXT --> TABS
+    TABS --> TASKS
+    COMMAND --> STATUS
+    STATUS -. "Never hidden by workspace customization" .-> SHELL
+    classDef shell fill:#093732,color:#ffffff,stroke:#008080
+    classDef area fill:#001F3F,color:#ffffff,stroke:#008080
+    class NAV,CONTEXT,TABS,COMMAND,STATUS shell
+    class CC,MKT,CHART,INTEL,STRAT,AUTO,TRADE,POS,RISK,PERF,MIND,ADMIN area

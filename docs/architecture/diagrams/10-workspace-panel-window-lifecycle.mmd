@@ -1,0 +1,20 @@
+flowchart TD
+    USER["User workspace action"]
+    MANAGER["Workspace Manager"]
+    VALIDATE{"Layout valid?"}
+    SNAPSHOT["Versioned layout snapshot"]
+    PANEL["Panel instance state"]
+    WINDOW["Native Window Manager"]
+    SERVICE["Independent domain service"]
+    RECOVERY["Recover layout on available display"]
+    ERROR["Reject change and retain last valid layout"]
+
+    USER --> MANAGER
+    MANAGER --> VALIDATE
+    VALIDATE -->|Yes| SNAPSHOT
+    VALIDATE -->|No| ERROR
+    SNAPSHOT --> PANEL
+    USER --> WINDOW
+    WINDOW --> RECOVERY
+    PANEL -. "Presentation reads domain state" .-> SERVICE
+    PANEL -. "Hide/remove does not stop service" .-> SERVICE
