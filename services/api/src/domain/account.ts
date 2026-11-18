@@ -7,6 +7,11 @@ import {
   type TradingEnvironment,
   type UtcTimestamp,
   DomainValidationError,
+  currencyCode,
+  decimalValue,
+  createDataProvenance,
+  tradingEnvironment,
+  utcTimestamp,
   nonEmptyString,
 } from "./shared.ts";
 
@@ -41,6 +46,8 @@ export function validateBrokerAccountIdentity(account: BrokerAccountIdentity): v
   nonEmptyString(account.id, "broker_account_id");
   nonEmptyString(account.brokerId, "broker_id");
   nonEmptyString(account.brokerAccountReference, "broker_account_reference");
+  tradingEnvironment(account.environment);
+  if (account.accountCurrency !== undefined) currencyCode(account.accountCurrency);
 }
 
 export function validateAccountBalanceSnapshot(
@@ -48,6 +55,9 @@ export function validateAccountBalanceSnapshot(
   snapshot: AccountBalanceSnapshot,
 ): void {
   validateBrokerAccountIdentity(account);
+  createDataProvenance(snapshot.provenance);
+  tradingEnvironment(snapshot.environment);
+  utcTimestamp(snapshot.asOf);
   if (snapshot.accountId !== account.id) {
     throw new DomainValidationError("account_snapshot_identity_mismatch", "Balance snapshot must belong to the supplied broker account.");
   }
@@ -75,10 +85,8 @@ export function validateAccountBalanceSnapshot(
   ];
   for (const value of monetaryValues) {
     if (value !== undefined) {
-      nonEmptyString(value.currency, "money_currency");
-      if (!/^[A-Z]{3}$/.test(value.currency)) {
-        throw new DomainValidationError("invalid_money_currency", "Money currency must use three uppercase letters.");
-      }
+      decimalValue(value.amount);
+      currencyCode(value.currency);
     }
   }
 }
