@@ -54,9 +54,7 @@ final class MarketChartViewModel: ObservableObject {
         candles = []
         batch = nil
         lastUpdatedAt = nil
-        state = valid == nil
-            ? .unavailable("Select an instrument in Market Explorer before loading historical candles.")
-            : .idle
+        state = .idle
     }
 
     func selectResolution(_ newResolution: HistoricalPriceResolution) {
@@ -71,7 +69,7 @@ final class MarketChartViewModel: ObservableObject {
 
     func load() async {
         guard let instrumentId = selectedInstrumentId else {
-            state = .unavailable("Select an instrument in Market Explorer before loading historical candles.")
+            state = .idle
             return
         }
         requestGeneration &+= 1
