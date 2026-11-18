@@ -468,3 +468,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - CI run `44268533151` on parent head `df97d30`: backend type-check/tests and repository hygiene passed; CodeQL `44268533257` passed. Mac jobs were cancelled, not passed. Current head Local Sync Safety `44268907711` passed; full exact-head CI remains unverified.
 - Do not merge PR #51 until the Swift app-side process supervisor and authenticated market-data client are implemented. Current native client does not send the capability.
 - Broker credential storage and session ownership are not yet migrated: backend environment credentials remain; Keychain bridge and canonical CMS are pending.
+
+
+## ATP-BRK-002 follow-up — backend process startup contract (PR #52)
+
+- **Implemented in source / CI pending:** `PORT=0` OS-assigned loopback port and `ATHEER_BACKEND_READY <port>` stdout marker after successful bind.
+- **Security preserved:** host remains restricted to `127.0.0.1`; the 256-bit capability remains delivered through private stdin; broker market-data routes remain Bearer-authenticated.
+- **Not yet integrated:** native Swift process supervisor, capability generation, authenticated market-data client, bundled Node/API runtime, Keychain credential handoff, centralized Broker Session Manager.
+- **Qualification:** PR #52 exact-head CI pending; no local Mac/Xcode, process-launch, Keychain, or real broker DEMO qualification is claimed.
