@@ -2,10 +2,12 @@ import process, { env } from "node:process";
 import { loadRuntimeConfig } from "./config/runtime-config.ts";
 import { createCapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
 import { createApiServer } from "./server.ts";
+import { readIPCStartupCapability } from "./security/ipc-capability.ts";
 
 const config = loadRuntimeConfig(env);
 const marketDataRuntime = createCapitalDemoRuntime(env);
-const server = createApiServer(marketDataRuntime);
+const ipcCapability = await readIPCStartupCapability(process.stdin);
+const server = createApiServer(marketDataRuntime, ipcCapability);
 let shuttingDown = false;
 
 server.listen(config.port, config.host, () => {
@@ -21,6 +23,7 @@ function shutdown(): void {
       console.error("ATHEER API shutdown failed.", error.message);
       return;
     }
+    ipcCapability.fill(0);
     console.info("ATHEER API stopped.");
   });
 }
