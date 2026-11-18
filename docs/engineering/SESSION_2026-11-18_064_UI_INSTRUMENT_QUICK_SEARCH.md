@@ -1,4 +1,4 @@
-# Engineering Session 060 — Instrument Quick Search
+# Engineering Session 064 — UI Instrument Quick Search
 
 **Date:** 2026-11-18  
 **Work package:** ATP-UI-QUICKSEARCH-001  
@@ -45,7 +45,8 @@ included. No dealing controls or LIVE permissions are introduced.
 - PR #85 exact-head workflow was created after the feature commits. On code head `5b69910114e184c179d1d747fa34173dc7573e35`, Local Sync Safety passed; Backend toolchain and Repository hygiene passed; Intel and Apple Silicon macOS jobs were queued at inspection. The subsequent engineering-record sync is documentation-only and requires a fresh exact-head workflow.
 - Native Xcode build, XCTest, app launch, keyboard/VoiceOver review, and screenshot
   QA require the owner macOS workstation and remain unverified in this session.
-- The branch is stacked on PR #80 and remains subject to Gate D reconciliation
+- The branch is stacked on PR #80. The shared continuity/status/task/index files are intentionally not changed in this parallel PR because PR #78 edits the same records; reconcile this session into those records during Gate D. The dedicated record and EDL-024 remain independent.
+- The branch remains subject to Gate D reconciliation
   with the charting branch's shared `ContentView.swift` and
   `MarketExplorerView.swift` changes.
 
@@ -60,5 +61,5 @@ reconciled and all required qualification gates pass.
 
 - PR: [#85](https://github.com/atheertrading/atheer-trading-platform/pull/85), Draft.
 - Implementation commits: `e7b4a8a96cf9dda840b72f5da7cd4c5f8b7af39d` and `5b69910114e184c179d1d747fa34173dc7573e35`.
-- A final documentation/continuity commit follows these implementation commits; exact final branch head and its CI must be checked from GitHub before qualification is reported.
+- Engineering-record history includes the documentation attempt at `c30d115aa8c4a048e3934ed775bbfcd815cab7bd`; shared continuity/status/task/index edits from that commit are reverted in the next change to avoid conflicts with PR #78. The final exact branch head and CI must be checked from GitHub before qualification is reported.
 - No commit to `main`, merge, force-push, local-machine pull, or LIVE operation occurred.

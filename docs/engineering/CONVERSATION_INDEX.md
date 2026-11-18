@@ -11,7 +11,7 @@ This index records significant engineering discussions and links them to durable
 | ATP-2026-11-16-001 | 2026-11-16 | Public repository establishment | Owner endorsed public `atheer-trading-platform`, federated knowledge authority, extensible AI architecture, and chronological conversation continuity. | Project Continuity; Decision Log |
 | ATP-2026-11-16-002 | 2026-11-16 | Repository bootstrap | Inspected public repository, initial commit, README, default branch, and missing root agent instructions; created governance bootstrap branch. | This bootstrap PR; Project Continuity |
 
-| ATP-2026-11-18-060 | 2026-11-18 | TEAM A global instrument quick search | Added a `⌘K` instrument-search surface using the existing authenticated read-only Markets client and a one-shot route into Markets; PR #85 remains Draft with exact-head macOS qualification and chart-stack reconciliation pending. | PR #85; ATP-UI-QUICKSEARCH-001; EDL-024; INSTRUMENT_QUICK_SEARCH.md; SESSION_2026-11-18_060_INSTRUMENT_QUICK_SEARCH.md |\n\n## Session record requirements
+## Session record requirements
 
 For each new substantial session, add one row and preserve chronology. The detailed record should include:
 - Session ID and date/time.
