@@ -65,7 +65,7 @@ enum BrokerConnectionState: Equatable {
 }
 
 struct BrokerAccountSnapshot: Equatable {
-    let accountIdentifier: String
+    let maskedLoginIdentifier: String
     let currencyCode: String?
     let authenticatedAt: Date
 }
