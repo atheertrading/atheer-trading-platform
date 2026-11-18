@@ -851,8 +851,20 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 ### Next actions (ordered)
 1. Complete PR #24 Intel job and PR #25 Intel/arm64 qualification.
 2. Reconcile PR #26 base to the intended current PR #25 head; then re-run exact-head CI for #26 and descendants as needed.
-3. Complete PR #43 Intel and arm64 jobs on exact HEAD `25599a3...`; update the implementation snapshot after qualification.
+3. Complete PR #43 Intel and arm64 jobs on exact HEAD `0ba7b82...`; update the implementation snapshot after qualification.
 4. Reconcile stale README and engineering status snapshots; ensure all docs identify exact commit SHAs and distinguish current implementation from target architecture.
 5. Establish main-branch protection/rulesets and an explicit repository license decision.
 6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
 7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
+
+
+## 2026-11-18 — Session 034: ATP-CHART-001 Historical Chart Workspace
+
+- Verified the active repository and current stacked PR chain. PR #43 advanced from 25599a3c to 0ba7b82f while this chart branch was being built; the latest parent changes were reviewed and integrated through a non-destructive merge commit.
+- Created and maintained feat/historical-chart-workspace as a child of the latest PR #43 head. Current PR #44 remains OPEN / DRAFT.
+- Implemented typed MarketHistoryClient transport for the existing /market-data/history endpoint, strict DEMO/provider/instrument/timeframe/OHLC/timestamp/Bid-Ask/volume-lineage validation, and app-scoped MarketChartViewModel.
+- Added native Swift Charts historical candlesticks with separate Bid or Ask selection, watchlist instrument selection, provider timeframes, refresh and truthful loading/empty/unavailable/error states.
+- Replaced the Command Center static chart no-series panel with the same shared chart surface and added Charts & Analysis navigation.
+- Added deterministic decoder/model/view tests, architecture note, Mermaid diagram 15, EDL-015, and updated task, status, screen and conversation records.
+- Historical chart is read-only. No synthetic mid-price series, no fabricated prices, no volume reinterpretation, no live candle aggregation, no order entry, no broker dealing and no strategy execution.
+- Exact-head CI and owner-Mac visual/runtime qualification remain pending. CAP_ALLOW_TRADING=false remains unchanged.

@@ -326,6 +326,7 @@ final class ATHEERTradingProTests: XCTestCase {
                 streamClient: StubMarketDataStreamClient(events: [])
             ),
             marketWatchlistStore: MarketWatchlistStore(persistence: InMemoryMarketWatchlistPersistence()),
+            marketChartModel: MarketChartViewModel(),
             onOpenMarkets: {},
             onOpenAPIConnection: {}
         )

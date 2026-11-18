@@ -458,7 +458,7 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 | ATP-MARKET-001B | P0 | Share one app-scoped market-data model between Market Explorer and Command Center | IMPLEMENTED; CI PENDING | `ContentView`, `WorkspaceHomeView`, `CommandCenterView`, `MarketExplorerView`; dependency injection and shared model tests |
 | ATP-MARKET-001C | P0 | Replace Command Center Market Watch placeholder with real DEMO quote panel | IMPLEMENTED; CI PENDING | `MarketWatchPanelView`; provider Bid/Ask, spread, quote age, freshness, explicit stream controls |
 | ATP-MARKET-001D | P0 | Keep market-data runtime independent from screen/panel visibility | IMPLEMENTED; CI PENDING | Stream model app-scoped; removed screen-disappearance pause; explicit Start/Stop and removal behavior |
-| ATP-MARKET-001E | P1 | Implement native chart/candle engine with authenticated historical and live series | PENDING | Requires verified candle contract, timestamp normalization, aggregation, rendering and deterministic chart tests |
+| ATP-MARKET-001E | P1 | Implement native historical candlestick chart workspace and shared Command Center chart surface | IMPLEMENTED; CI PENDING | Existing normalized /market-data/history contract; MarketHistoryClient, strict payload decoder, shared MarketChartViewModel, native Bid/Ask OHLC chart, deterministic tests; live aggregation and indicators remain pending |
 | ATP-MARKET-001F | P1 | Implement account/positions/risk panels from broker-authoritative snapshots | PENDING | Requires authenticated account API, canonical account/position persistence, RiskEngine integration |
 | ATP-MARKET-001G | P1 | Implement governed order entry and OMS workflow | BLOCKED BY EXECUTION SAFETY GATES | Must use shared RiskEngine → OMS → Execution Gateway path; no UI direct broker calls |
 
@@ -514,3 +514,13 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 5. Establish main-branch protection/rulesets and an explicit repository license decision.
 6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
 7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
+
+
+### ATP-CHART-001 — Historical Chart Workspace (PR #44)
+
+- Historical chart data uses the existing backend /market-data/history endpoint; no duplicate broker adapter is introduced.
+- The client validates provider, DEMO environment, instrument identity, timeframe, timestamp ordering, exact OHLC invariants, Bid/Ask non-crossing, and provider-volume lineage.
+- One app-scoped chart model is shared by Charts & Analysis and the Command Center chart panel.
+- The view supports watchlist instrument selection, provider-supported timeframes, explicit Bid or Ask OHLC, refresh, and truthful loading/empty/unavailable/error states.
+- No mid-price synthesis, live candle aggregation, indicators, drawing tools, account values, or execution capability is introduced.
+- CAP_ALLOW_TRADING=false remains unchanged.

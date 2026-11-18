@@ -565,7 +565,7 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 | Explicit stream lifecycle | IMPLEMENTED; CI PENDING | Start/Stop controls; panel navigation no longer cancels stream |
 | Instrument search/add | IMPLEMENTED; CI PENDING | Shared DEMO catalogue search and add/remove watchlist actions |
 | Broker account/positions | NOT IMPLEMENTED | Market-data session is not broker account authentication |
-| Chart/candle engine | NOT IMPLEMENTED | Command Center still truthfully displays no-series state |
+| Chart/candle engine | IMPLEMENTED; CI PENDING | PR #44 adds provider-backed historical DEMO Bid/Ask OHLC candlesticks; live aggregation and indicators remain pending |
 | Order entry / broker execution | NOT IMPLEMENTED | No dealing actions; centralized risk/OMS/Execution Gateway not qualified |
 
 ### Verification boundary
@@ -619,3 +619,28 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 5. Establish main-branch protection/rulesets and an explicit repository license decision.
 6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
 7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
+
+
+## ATP-CHART-001 — Historical Chart Workspace (PR #44)
+
+**Screen ID:** SCR-CHART-001  
+**Branch:** feat/historical-chart-workspace  
+**Parent:** PR #43 exact head 0ba7b82fe0b303d87bdb740c9049c36ef81ba4ff
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Historical market-data client | IMPLEMENTED; CI PENDING | Typed MarketHistoryClient consumes the existing backend /market-data/history contract |
+| Payload and OHLC validation | IMPLEMENTED; CI PENDING | Provider/environment/instrument/timeframe checks, finite positive values, OHLC integrity, Bid/Ask non-crossing, timestamp ordering and provider-volume lineage |
+| Native candlestick rendering | IMPLEMENTED; CI PENDING | Swift Charts renders provider Bid or Ask OHLC independently; no synthetic mid series |
+| Shared Command Center chart | IMPLEMENTED; CI PENDING | App-scoped MarketChartViewModel injected into Command Center and Charts & Analysis |
+| Watchlist and timeframe controls | IMPLEMENTED; CI PENDING | Instrument selection restricted to persistent watchlist; provider-supported resolutions |
+| Live candle aggregation | NOT IMPLEMENTED | Requires a separate normalized candle aggregation contract and ordering/finality policy |
+| Indicators and drawing tools | NOT IMPLEMENTED | Separate deterministic analytical and presentation increments |
+| Execution and risk actions | NOT IMPLEMENTED | No chart-to-order side effects; centralized risk/OMS/gateway remain mandatory |
+
+### Verification boundary
+
+- Deterministic tests cover provider provenance, Bid/Ask integrity, invalid OHLC, provider-volume lineage, watchlist selection, series clearing, and shared screen construction.
+- Hosted Intel x86_64 and Apple Silicon arm64 CI must pass on the exact PR #44 head.
+- No local Mac build, runtime, visual/accessibility QA, or authenticated Capital.com DEMO history request is claimed until separately evidenced.
+- CAP_ALLOW_TRADING=false remains unchanged.

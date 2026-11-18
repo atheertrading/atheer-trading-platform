@@ -45,6 +45,7 @@ python3 scripts/extract-mermaid-sources.py \
 | `12-postgres-transactional-persistence.mmd` | PostgreSQL migration ledger, environment-scoped records, atomic intent/risk journal, transactional domain outbox, and explicit no-dispatch boundary |
 | `13-oms-authorized-order-persistence.mmd` | Risk-gated OMS order creation, immutable lifecycle event, transactional audit/outbox, and explicit no-broker-dispatch boundary |
 | `14-command-center-live-market-watch.mmd` | App-scoped shared market-data model, persistent instrument watchlist, live DEMO quote panel, and separation from broker/trading authority |
+| `15-historical-candlestick-chart-workspace.mmd` | Historical DEMO candle flow, normalized Bid/Ask OHLC validation, shared chart model, native chart rendering, and read-only boundary |
 
 ### Library archive availability re-check — 2026-11-18
 
