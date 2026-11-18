@@ -18,14 +18,16 @@ export class BrokerSessionManager {
   private lastSessionCreationAttemptAtMs: number | null = null;
   // One REST client per backend process keeps the provider's 10 req/s budget
   // intact across broker-session replacement and runtime recreation.
-  private readonly sharedClient = new CapitalDemoClient();
+  private readonly sharedClient: CapitalDemoClient;
   private readonly runtimeFactory: RuntimeFactory;
 
   constructor(
     runtimeFactory?: RuntimeFactory,
     private readonly now: () => number = Date.now,
     private readonly sessionCreationIntervalMs = DEFAULT_SESSION_CREATION_INTERVAL_MS,
+    sharedClient: CapitalDemoClient = new CapitalDemoClient(),
   ) {
+    this.sharedClient = sharedClient;
     this.runtimeFactory = runtimeFactory ?? ((credentials) =>
       new CapitalDemoRuntime(this.sharedClient, credentials));
   }
