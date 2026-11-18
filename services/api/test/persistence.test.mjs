@@ -42,13 +42,19 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await adminPool.query("GRANT USAGE ON SCHEMA atheer TO atheer_app");
     await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO atheer_app");
     await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT USAGE, SELECT ON SEQUENCES TO atheer_app");
-    const migratorPool = asRole(adminPool, "atheer_migrator");
-    const appPool = asRole(adminPool, "atheer_app");
+    const migratorAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
+    const appAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
+    const migratorPool = asRole(migratorAdminPool, "atheer_migrator");
+    const appPool = asRole(appAdminPool, "atheer_app");
     const migrations = await loadSqlMigrations();
     assert.ok(migrations.length > 0, "No SQL migrations were discovered.");
     await runSqlMigrations(migratorPool);
     await Promise.all([runSqlMigrations(migratorPool), runSqlMigrations(migratorPool)]);
     await verifySqlMigrations(appPool);
+    await assert.rejects(
+      migratorPool.query("CREATE TABLE atheer.migrator_must_not_create (id integer)"),
+      (error) => error && error.code === "42501",
+    );
     await assert.rejects(
       appPool.query("CREATE TABLE atheer.app_must_not_create (id integer)"),
       (error) => error && error.code === "42501",
@@ -197,6 +203,6 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
       assert.equal(dispatch.rows[0].count, "0");
     });
   } finally {
-    await adminPool.end();
+    await Promise.all([adminPool.end(), migratorAdminPool.end(), appAdminPool.end()]);
   }
 });
