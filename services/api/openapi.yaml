@@ -1,0 +1,343 @@
+openapi: 3.1.0
+info:
+  title: ATHEER Trading Local Backend API
+  version: 0.1.0
+  summary: Versioned contract for the current local health and Capital.com DEMO market-data service.
+  description: |
+    This contract describes the implemented local-development API at service version 0.1.0.
+    It is not a production API contract and does not define broker dealing, account mutation,
+    strategy execution, order submission, or LIVE trading.
+
+    Security boundary: this revision binds to 127.0.0.1 only and does not yet enforce a
+    per-request application capability on HTTP routes. Loopback binding is not authentication.
+    Do not expose this service on a LAN or public interface. The authenticated capability and
+    private credential IPC integration must be completed and qualified before treating the
+    service as an authenticated application backend.
+servers:
+  - url: http://127.0.0.1:4100
+    description: Local development instance; PORT may override the default.
+tags:
+  - name: Health
+    description: Process liveness and platform readiness.
+  - name: Market Data
+    description: Read-only Capital.com DEMO instrument search and historical price retrieval.
+paths:
+  /health/live:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      summary: Check API process liveness.
+      responses:
+        '200':
+          description: The process answered the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liveness'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /health/ready:
+    get:
+      tags: [Health]
+      operationId: getReadiness
+      summary: Read platform dependency readiness.
+      description: A valid 503 not_ready response is expected until required dependencies are implemented and qualified. Liveness does not imply readiness or trading permission.
+      responses:
+        '503':
+          description: Platform dependencies are not configured and trading remains disabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Readiness'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/status:
+    get:
+      tags: [Market Data]
+      operationId: getMarketDataStatus
+      summary: Read the Capital.com DEMO market-data session state.
+      responses:
+        '200':
+          description: Session state; credentials and provider session tokens are never returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataStatus'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/connect:
+    post:
+      tags: [Market Data]
+      operationId: connectMarketData
+      summary: Connect the backend-owned Capital.com DEMO market-data session.
+      description: Uses credentials injected into the backend process. The request body must not contain credentials.
+      responses:
+        '200':
+          description: DEMO session connected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataStatus'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Market-data runtime is unavailable or the session did not reach connected state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/disconnect:
+    post:
+      tags: [Market Data]
+      operationId: disconnectMarketData
+      summary: Disconnect the backend-owned Capital.com DEMO market-data session.
+      responses:
+        '200':
+          description: Current session is disconnected or not configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataStatus'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Market-data runtime is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/markets:
+    get:
+      tags: [Market Data]
+      operationId: searchMarkets
+      summary: Search Capital.com DEMO instruments.
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          description: Trimmed provider search term. The adapter accepts 1–100 characters.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: Provider-returned market metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketSearchResult'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Market-data runtime is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /market-data/history:
+    get:
+      tags: [Market Data]
+      operationId: getMarketHistory
+      summary: Retrieve Capital.com DEMO historical price records.
+      description: |
+        The current service returns provider price records as opaque objects. It does not
+        promise a provider-neutral normalized candle shape in this API revision. Consumers
+        must not infer Bid/Ask OHLC semantics or volume meaning from unspecified fields.
+      parameters:
+        - name: epic
+          in: query
+          required: true
+          description: Capital.com instrument EPIC.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+        - name: resolution
+          in: query
+          required: false
+          description: Provider-supported price-history resolution.
+          schema:
+            type: string
+            enum: [MINUTE, MINUTE_5, MINUTE_15, MINUTE_30, HOUR, HOUR_4, DAY, WEEK]
+            default: MINUTE
+        - name: max
+          in: query
+          required: false
+          description: Maximum requested provider records.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Provider historical price records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketHistoryResult'
+        '400':
+          description: Invalid resolution or max query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          $ref: '#/components/responses/ProviderFailure'
+        '503':
+          description: Market-data runtime is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+components:
+  schemas:
+    Liveness:
+      type: object
+      additionalProperties: false
+      required: [status, service, version, timestamp]
+      properties:
+        status:
+          const: ok
+        service:
+          const: atheer-api
+        version:
+          type: string
+          const: 0.1.0
+        timestamp:
+          type: string
+          format: date-time
+    Readiness:
+      type: object
+      additionalProperties: false
+      required: [status, service, timestamp, dependencies, trading]
+      properties:
+        status:
+          const: not_ready
+        service:
+          const: atheer-api
+        timestamp:
+          type: string
+          format: date-time
+        dependencies:
+          type: object
+          additionalProperties: false
+          required: [persistence, broker]
+          properties:
+            persistence:
+              const: not_configured
+            broker:
+              const: not_configured
+        trading:
+          type: object
+          additionalProperties: false
+          required: [enabled, status]
+          properties:
+            enabled:
+              const: false
+            status:
+              const: disabled
+    MarketDataStatus:
+      type: object
+      additionalProperties: false
+      required: [provider, environment, state]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        state:
+          type: string
+          enum: [not_configured, disconnected, connecting, connected, error]
+        connectedAtMs:
+          type: integer
+          minimum: 1
+          description: Unix epoch timestamp in milliseconds, when connected.
+        lastError:
+          type: string
+          description: Sanitized local/provider connection error; never includes credentials or session tokens.
+    CapitalMarket:
+      type: object
+      additionalProperties: true
+      required: [epic]
+      properties:
+        epic:
+          type: string
+          minLength: 1
+        instrumentName:
+          type: string
+        marketStatus:
+          type: string
+        bid:
+          type: number
+        offer:
+          type: number
+        currency:
+          type: string
+    MarketSearchResult:
+      type: object
+      additionalProperties: true
+      required: [provider, environment, markets]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        markets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapitalMarket'
+    MarketHistoryResult:
+      type: object
+      additionalProperties: true
+      required: [provider, environment, prices]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        prices:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+    MethodNotAllowed:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          const: method_not_allowed
+  responses:
+    MethodNotAllowed:
+      description: The HTTP method is not supported for this route. The Allow header identifies the permitted method.
+      headers:
+        Allow:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MethodNotAllowed'
+    ProviderFailure:
+      description: The broker/provider adapter failed or rejected the request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
