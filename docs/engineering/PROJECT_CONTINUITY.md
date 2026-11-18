@@ -648,3 +648,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #55 prior CI runs were superseded/cancelled during active commits. A prior API typecheck completed, but the final-head backend tests and Intel/Apple Silicon matrix are not yet qualified. The final exact-head run must be checked after this documentation commit.
 - No owner-Mac build, visual/accessibility QA, Keychain restart qualification, or real Capital.com DEMO authentication was performed. No credentials or LIVE endpoints were used; trading remains disabled.
 - Full details and remaining gates: `SESSION_2026-11-18_049_BROKER_SESSION_IPC_INTEGRATION.md`.
+
+
+### PR stack ancestry revalidation — 2026-11-18
+
+- The native supervisor parent branch `feat/macos-managed-backend-runtime` advanced from `90dfaef64e0845cb2c968c84086db43f0662aecb` to merge commit `37a085c5a1c5cf22368518dd1550dbbd2facbd53` (`merge: reconcile backend readiness contract into native supervisor stack`). Its latest CI run `44277867553` has Backend Toolchain and Repository Hygiene passing; Intel macOS is in progress and Apple Silicon is queued.
+- PR #55's latest inspected source/test commit is `915223fdbe22c120d77d152b83006f9a2d981021`, which adjusts actor-isolated dependency construction in `BackendRuntimeViewModel`.
+- Current comparison of PR #55 branch against its base branch is 58 commits ahead / 2 behind, with merge base still `90dfaef64e0845cb2c968c84086db43f0662aecb`. Preserve this ancestry; do not rebase or force-push while the parent stack is moving. Resolve the stack only after PR #54 is qualified and integrated.
+- PR #55 Local Sync Safety passed on commit `915223fd` (run `44278139245`). Its CI run `44278138117` was cancelled by subsequent branch updates. A fresh exact-head CI run is required after the next documentation-only continuity update.
