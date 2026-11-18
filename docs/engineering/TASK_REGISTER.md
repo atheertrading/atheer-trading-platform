@@ -312,3 +312,17 @@ Acceptance:
 - ViewModel requires an injected `MarketSearchClient`; it cannot construct a production URLSession client.
 - The app composition root selects and injects the production adapter.
 - Existing query length, DEMO-only provider validation, disconnected-state gating, and stale-search suppression remain covered by XCTest.
+
+
+## 2026-11-18 integration checkpoint — PR #24 / #25 / #26
+
+| Pull request | Result | Merge commit |
+|---|---|---|
+| #24 — Workspace / Command Center foundation | MERGED 2026-11-18 | `bd83fd3c8df481104c347f05d9d4f38537d8b011` |
+| #25 — Capital.com DEMO market-data foundation | MERGED 2026-11-18 | `6b570b8c5a3367784cde7fa2643593c5b5a1eda2` |
+| #26 — Secure Capital.com DEMO broker management | MERGED 2026-11-18 | `6b4668b9355178d5e13219f14cfe8cc847770915` |
+
+- These merge results supersede older task-register statements that PR #24/#25/#26 remained OPEN / DRAFT.
+- PR #26 exact-head hosted CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain, and Repository Hygiene. Dedicated CodeQL `44231098441` and Local Sync Safety `44231098576` passed.
+- `ATP-BROKER-001` remains IN PROGRESS: owner-Mac Keychain restart/runtime QA on the merged head and real Capital.com DEMO authentication are still outstanding. LIVE/dealing remains disabled.
+- PR #33 is retargeted to `main` after PR #26 merge; current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; exact-head CI is running. Do not merge until Intel/Apple Silicon, backend and hygiene checks pass.
