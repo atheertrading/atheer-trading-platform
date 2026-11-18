@@ -443,3 +443,29 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Commits: `9dbc2ef`, `f63f806`, `8c12e59`, `4d35e16`.
 - Exact-head CI on `4d35e16e9c5ccce319f51366d7854088c5282505` is pending; no passing result is claimed. Owner-Mac DEMO authentication qualification remains pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
+
+
+## ATP-MKT-007 — Cached quote replay freshness correction (2026-11-18)
+
+- Found that `CapitalDemoStreamingRuntime.latest()` replayed the original freshness decision for cached quotes; a quote that was fresh at initial receipt could be replayed later still marked fresh and automated-decision eligible.
+- Recompute freshness against the current backend clock using the original provider timestamp; preserve provider and receipt provenance; stale/invalid replays are not eligible for automated decisions.
+- Added deterministic regression coverage advancing the injected clock by 6 seconds.
+- PR #67 is stacked on PR #66. Exact-head hosted CI and owner-side runtime qualification are pending.
+- Session report: `SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY.md`.
+
+
+## ATP-MKT-007 source reconciliation — Library Mermaid and freshness policy
+
+- Reviewed the Library screen/workstation execution directive, curated knowledge-base Mermaid catalogue, and available Q&A archive diagrams. Programmatic inventory found 12 Mermaid blocks across 10 Q&A documents and five curated proposed diagrams. The separate historical 52-block export named in older documentation is not present in the current Library listing; do not claim it was reviewed.
+- Updated canonical `docs/architecture/diagrams/03-market-data-pipeline.mmd` to distinguish live quote distribution from cached replay and require freshness recomputation from the original provider timestamp.
+- Existing stream policy values (5,000 ms max age / 250 ms future skew) were reused, not changed. Reconcile these display/data-quality values with the historical baseline (5-second normal, >10-second entry block, >15-second stale) before RiskEngine integration.
+- No RiskEngine wiring or risk-policy change is part of PR #67.
+
+
+## ATP-MKT-007 — Reconcile approved quote freshness bands (2026-11-18)
+
+- **IMPLEMENTED ON PR #67:** <=5s normal; >5s to 10s aging; >10s to 15s block new automated entries; >15s stale. Exactly 10s remains eligible; exactly 15s is entry-blocked.
+- Replaced the generic `automatedDecisionsAllowed` with `newAutomatedEntriesAllowed`; position management remains a separate RiskEngine decision.
+- Backend initial/replayed quote classification, SSE DTO validation, SwiftUI freshness labels and deterministic boundary tests updated together.
+- Exact-head CI, Swift/XCTest, and owner-Mac DEMO runtime qualification pending.
+- Report: `SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION.md`.

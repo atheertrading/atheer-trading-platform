@@ -721,3 +721,31 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #66 remains OPEN / DRAFT, stacked on PR #64. Preserve its dependency chain; do not merge while checks are pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no credentials or orders were used.
+
+
+## 2026-11-18 — Cached quote freshness replay correction
+
+- Corrected a data-integrity issue in the existing DEMO stream: cached quote replay previously reused its original freshness assessment, which could incorrectly present an old quote as fresh after reconnect.
+- `latest(epics)` now recalculates freshness from the provider timestamp at replay time and preserves original provider/receipt provenance. A stale replay is marked stale and `automatedDecisionsAllowed=false`.
+- Added a deterministic 6-second stale-cache regression test.
+- PR #67 branch `fix/market-data-cached-quote-freshness-2026-11-18`, based on PR #66 head `9c0dd2e87cadabfbe33c4f27046b4991129c19a8`. Code commits `d8ecbf3f2431b057e7104720b6f030401f905628` and `12e32c175c8f05ecb9708879345f31ed31d380ff`.
+- Hosted tests/CI pending; no provider/runtime or automated-trading qualification is claimed.
+- Session report: `SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY.md`. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## 2026-11-18 — Library Mermaid review and market-data freshness governance
+
+- Inspected the available Library screen/workstation directive, curated knowledge-base Mermaid catalogue (five proposed diagrams), and Q&A archive (517 primary Markdown files; 12 Mermaid blocks across 10 documents). The separately referenced historical 52-diagram source export is not in the current Library listing; its contents remain unreviewed.
+- Reviewed repository architecture diagrams 01–11. Updated canonical diagram 03 to show a distinct cached-quote replay path that re-evaluates freshness from the original provider timestamp.
+- The 5,000 ms max-age and 250 ms future-skew policy values in the streaming implementation are inherited values, not newly approved trading-risk limits. The historical baseline also records 5-second normal quote age, >10-second automated-entry blocking and >15-second stale classification; reconcile these semantics against the authoritative specification before RiskEngine wiring.
+- PR #67 remains a data-quality correction only; no risk policy or execution authority is changed.
+
+
+## 2026-11-18 — Session 063: quote freshness policy reconciliation
+
+- Reconciled the Library-approved policy: <=5s normal; >10s block new automated entries; >15s stale. Exact 10s remains eligible; exact 15s is entry-blocked but not yet stale.
+- Replaced single 5s stale cutoff and ambiguous `automatedDecisionsAllowed` with `fresh/aging/entry_blocked/stale/invalid` states and the entry-specific `newAutomatedEntriesAllowed` flag.
+- Backend receipt and cached replay now share the same threshold contract; original provider/receipt timestamps remain immutable. Swift SSE validation and local monotonic age display use the same threshold bands.
+- Position management is not globally disabled by the entry gate; separate RiskEngine protective decisions remain required and are not implemented by this increment.
+- Exact-head CI and owner-Mac qualification are pending. `CAP_ALLOW_TRADING=false` remains unchanged.
+- Report: `SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION.md`.

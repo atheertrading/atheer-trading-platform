@@ -207,6 +207,58 @@ test("stream ignores duplicate and out-of-order quotes while preserving valid up
   await runtime.disconnect();
 });
 
+test("cached quote replay recomputes freshness from the original provider timestamp", async () => {
+  let now = 1_800_000_000_000;
+  const sockets = [];
+  const runtime = trackRuntime(new CapitalDemoStreamingRuntime(
+    async () => streamInfo,
+    (url) => {
+      const socket = new FakeWebSocket(url);
+      sockets.push(socket);
+      return socket;
+    },
+    () => now,
+    () => 125,
+  ));
+  const unsubscribe = await runtime.subscribe(["AAPL"], () => undefined);
+  sockets[0].emitQuote({
+    epic: "AAPL",
+    bid: 199.5,
+    ofr: 199.6,
+    timestamp: now,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const initial = runtime.latest(["AAPL"])[0];
+  assert.equal(initial.freshness.state, "fresh");
+  assert.equal(initial.freshness.ageMs, 0);
+  assert.equal(initial.freshness.newAutomatedEntriesAllowed, true);
+
+  now += 6_000;
+  const aging = runtime.latest(["AAPL"])[0];
+  assert.equal(aging.providerTimestampMs, initial.providerTimestampMs);
+  assert.equal(aging.receivedAtMs, initial.receivedAtMs);
+  assert.equal(aging.freshness.state, "aging");
+  assert.equal(aging.freshness.ageMs, 6_000);
+  assert.equal(aging.freshness.newAutomatedEntriesAllowed, true);
+  assert.equal(aging.freshness.reason, "quote_aging");
+  now += 4_001;
+  const blocked = runtime.latest(["AAPL"])[0];
+  assert.equal(blocked.freshness.state, "entry_blocked");
+  assert.equal(blocked.freshness.ageMs, 10_001);
+  assert.equal(blocked.freshness.newAutomatedEntriesAllowed, false);
+  assert.equal(blocked.freshness.reason, "automated_entries_blocked");
+  now += 5_001;
+  const stale = runtime.latest(["AAPL"])[0];
+  assert.equal(stale.freshness.state, "stale");
+  assert.equal(stale.freshness.ageMs, 15_002);
+  assert.equal(stale.freshness.newAutomatedEntriesAllowed, false);
+  assert.equal(stale.freshness.reason, "quote_stale");
+
+  unsubscribe();
+  await runtime.disconnect();
+});
+
 test("stream automatically reconnects and restores active subscriptions after interruption", async () => {
   const sockets = [];
   const runtime = createStreamingRuntime(sockets);
@@ -281,7 +333,7 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
     providerTimestampMs: 1_800_000_000_000,
     receivedAtMs: 1_800_000_000_000,
     receivedAtMonotonicMs: 100,
-    freshness: { state: "fresh", ageMs: 0, automatedDecisionsAllowed: true, reason: "within_policy" },
+    freshness: { state: "fresh", ageMs: 0, normalAgeMs: 5_000, automatedEntryBlockAgeMs: 10_000, staleAgeMs: 15_000, newAutomatedEntriesAllowed: true, reason: "within_normal_range" },
   };
   const marketData = {
     status: () => ({ provider: "capital.com", environment: "DEMO", state: "connected" }),

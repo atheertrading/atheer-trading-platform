@@ -45,19 +45,32 @@ test("rejects malformed or crossed provider quotes", () => {
   }, 1_800_000_000_010), /provider timestamp/);
 });
 
-test("stale and future-dated quotes block automated decisions", () => {
+test("quote freshness enforces the approved normal, entry-block and stale boundaries", () => {
   const quote = normalizeCapitalQuote({
     epic: "AAPL", bid: 199, ofr: 200, timestamp: 1_800_000_000_000,
   }, 1_800_000_000_010);
-  const policy = { maximumAgeMs: 5_000, maximumFutureSkewMs: 250 };
-
-  assert.equal(evaluateQuoteFreshness(quote, 1_800_000_004_000, policy).automatedDecisionsAllowed, true);
-  const stale = evaluateQuoteFreshness(quote, 1_800_000_006_000, policy);
+  const policy = { normalAgeMs: 5_000, automatedEntryBlockAgeMs: 10_000, staleAgeMs: 15_000, maximumFutureSkewMs: 250 };
+  const normal = evaluateQuoteFreshness(quote, 1_800_000_005_000, policy);
+  assert.equal(normal.state, "fresh");
+  assert.equal(normal.newAutomatedEntriesAllowed, true);
+  const aging = evaluateQuoteFreshness(quote, 1_800_000_005_001, policy);
+  assert.equal(aging.state, "aging");
+  assert.equal(aging.newAutomatedEntriesAllowed, true);
+  const atTenSeconds = evaluateQuoteFreshness(quote, 1_800_000_010_000, policy);
+  assert.equal(atTenSeconds.state, "aging");
+  assert.equal(atTenSeconds.newAutomatedEntriesAllowed, true);
+  const blocked = evaluateQuoteFreshness(quote, 1_800_000_010_001, policy);
+  assert.equal(blocked.state, "entry_blocked");
+  assert.equal(blocked.newAutomatedEntriesAllowed, false);
+  const atFifteenSeconds = evaluateQuoteFreshness(quote, 1_800_000_015_000, policy);
+  assert.equal(atFifteenSeconds.state, "entry_blocked");
+  assert.equal(atFifteenSeconds.newAutomatedEntriesAllowed, false);
+  const stale = evaluateQuoteFreshness(quote, 1_800_000_015_001, policy);
   assert.equal(stale.state, "stale");
-  assert.equal(stale.automatedDecisionsAllowed, false);
+  assert.equal(stale.newAutomatedEntriesAllowed, false);
   const future = evaluateQuoteFreshness(quote, 1_799_999_999_000, policy);
   assert.equal(future.state, "invalid");
-  assert.equal(future.automatedDecisionsAllowed, false);
+  assert.equal(future.newAutomatedEntriesAllowed, false);
 });
 
 test("freshness evaluator rejects forged or malformed quote objects", () => {
@@ -71,11 +84,13 @@ test("freshness evaluator rejects forged or malformed quote objects", () => {
     receivedAtMs: 1_800_000_000_000,
   };
   const result = evaluateQuoteFreshness(malformed, 1_800_000_000_100, {
-    maximumAgeMs: 5_000,
+    normalAgeMs: 5_000,
+    automatedEntryBlockAgeMs: 10_000,
+    staleAgeMs: 15_000,
     maximumFutureSkewMs: 250,
   });
   assert.equal(result.state, "invalid");
-  assert.equal(result.automatedDecisionsAllowed, false);
+  assert.equal(result.newAutomatedEntriesAllowed, false);
   assert.equal(result.reason, "invalid_quote");
 });
 

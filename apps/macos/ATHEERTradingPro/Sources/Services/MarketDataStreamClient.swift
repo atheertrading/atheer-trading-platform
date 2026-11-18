@@ -2,6 +2,8 @@ import Foundation
 
 enum MarketDataQuoteFreshnessState: String, Decodable, Equatable {
     case fresh
+    case aging
+    case entryBlocked = "entry_blocked"
     case stale
     case invalid
 }
@@ -21,8 +23,10 @@ struct MarketDataStreamStatus: Decodable, Equatable {
 struct MarketDataQuoteFreshness: Decodable, Equatable {
     let state: MarketDataQuoteFreshnessState
     let ageMs: Double?
-    let maximumAgeMs: Int
-    let automatedDecisionsAllowed: Bool
+    let normalAgeMs: Int
+    let automatedEntryBlockAgeMs: Int
+    let staleAgeMs: Int
+    let newAutomatedEntriesAllowed: Bool
     let reason: String
 }
 
@@ -115,17 +119,38 @@ struct ServerSentEventParser {
                     $0.isFinite && ($0 >= 0 || freshness.state == .invalid)
                 } ?? (freshness.state == .invalid)
                 let ageMatchesState: Bool
+                let reasonMatchesState: Bool
                 switch freshness.state {
                 case .fresh:
                     ageMatchesState = freshness.ageMs.map {
-                        $0 >= 0 && $0 <= Double(freshness.maximumAgeMs)
+                        $0 >= 0 && $0 <= Double(freshness.normalAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "within_normal_range"
+                case .aging:
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.normalAgeMs) &&
+                        $0 <= Double(freshness.automatedEntryBlockAgeMs)
+                    } ?? false
+                    reasonMatchesState = freshness.reason == "quote_aging"
+                case .entryBlocked:
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.automatedEntryBlockAgeMs) &&
+                        $0 <= Double(freshness.staleAgeMs)
+                    } ?? false
+                    reasonMatchesState = freshness.reason == "automated_entries_blocked"
                 case .stale:
                     ageMatchesState = freshness.ageMs.map {
-                        $0 > Double(freshness.maximumAgeMs)
+                        $0 > Double(freshness.staleAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "quote_stale"
                 case .invalid:
                     ageMatchesState = true
+                    reasonMatchesState = [
+                        "provider_timestamp_in_future",
+                        "invalid_clock",
+                        "invalid_policy",
+                        "invalid_quote"
+                    ].contains(freshness.reason)
                 }
                 guard quote.provider == "capital.com",
                       quote.environment == "DEMO",
@@ -140,12 +165,14 @@ struct ServerSentEventParser {
                       quote.receivedAtMonotonicMs.isFinite,
                       quote.receivedAtMonotonicMs >= 0,
                       ageIsValid,
-                      freshness.maximumAgeMs > 0,
-                      freshness.maximumAgeMs <= 60_000,
+                      freshness.normalAgeMs == 5_000,
+                      freshness.automatedEntryBlockAgeMs == 10_000,
+                      freshness.staleAgeMs == 15_000,
                       ageMatchesState,
+                      reasonMatchesState,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
-                      (freshness.state == .fresh) == freshness.automatedDecisionsAllowed else {
+                      ((freshness.state == .fresh || freshness.state == .aging) == freshness.newAutomatedEntriesAllowed) else {
                     throw MarketDataStreamError.invalidResponse
                 }
                 return .quote(quote)

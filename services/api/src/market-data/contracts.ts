@@ -18,17 +18,22 @@ export interface NormalizedQuote {
 }
 
 export interface QuoteFreshnessPolicy {
-  readonly maximumAgeMs: number;
+  readonly normalAgeMs: number;
+  readonly automatedEntryBlockAgeMs: number;
+  readonly staleAgeMs: number;
   readonly maximumFutureSkewMs: number;
 }
 
 export interface QuoteFreshnessResult {
-  readonly state: "fresh" | "stale" | "invalid";
+  readonly state: "fresh" | "aging" | "entry_blocked" | "stale" | "invalid";
   readonly ageMs: number | null;
-  readonly automatedDecisionsAllowed: boolean;
+  /** Entry-specific gate; position management requires separate risk handling. */
+  readonly newAutomatedEntriesAllowed: boolean;
   readonly reason:
-    | "within_policy"
-    | "quote_too_old"
+    | "within_normal_range"
+    | "quote_aging"
+    | "automated_entries_blocked"
+    | "quote_stale"
     | "provider_timestamp_in_future"
     | "invalid_clock"
     | "invalid_policy"
@@ -80,76 +85,90 @@ export function normalizeCapitalQuote(
   };
 }
 
+function invalidFreshness(
+  reason: "invalid_policy" | "invalid_clock" | "invalid_quote" | "provider_timestamp_in_future",
+  ageMs: number | null = null,
+): QuoteFreshnessResult {
+  return {
+    state: "invalid",
+    ageMs,
+    newAutomatedEntriesAllowed: false,
+    reason,
+  };
+}
+
 export function evaluateQuoteFreshness(
   quote: NormalizedQuote,
   nowMs: number,
   policy: QuoteFreshnessPolicy,
 ): QuoteFreshnessResult {
-  if (
-    !Number.isSafeInteger(policy.maximumAgeMs) ||
-    policy.maximumAgeMs <= 0 ||
-    !Number.isSafeInteger(policy.maximumFutureSkewMs) ||
-    policy.maximumFutureSkewMs < 0
-  ) {
-    return {
-      state: "invalid",
-      ageMs: null,
-      automatedDecisionsAllowed: false,
-      reason: "invalid_policy",
-    };
-  }
+  const policyIsValid =
+    Number.isSafeInteger(policy.normalAgeMs) &&
+    policy.normalAgeMs > 0 &&
+    Number.isSafeInteger(policy.automatedEntryBlockAgeMs) &&
+    policy.automatedEntryBlockAgeMs > policy.normalAgeMs &&
+    Number.isSafeInteger(policy.staleAgeMs) &&
+    policy.staleAgeMs > policy.automatedEntryBlockAgeMs &&
+    Number.isSafeInteger(policy.maximumFutureSkewMs) &&
+    policy.maximumFutureSkewMs >= 0;
+
+  if (!policyIsValid) return invalidFreshness("invalid_policy");
   if (!Number.isSafeInteger(nowMs) || nowMs <= 0) {
-    return {
-      state: "invalid",
-      ageMs: null,
-      automatedDecisionsAllowed: false,
-      reason: "invalid_clock",
-    };
-  }
-  if (
-    quote.provider !== "capital.com" ||
-    quote.environment !== "DEMO" ||
-    typeof quote.instrumentId !== "string" ||
-    quote.instrumentId.trim().length === 0 ||
-    !Number.isFinite(quote.bid) ||
-    quote.bid <= 0 ||
-    !Number.isFinite(quote.ask) ||
-    quote.ask < quote.bid ||
-    !Number.isSafeInteger(quote.providerTimestampMs) ||
-    quote.providerTimestampMs <= 0 ||
-    !Number.isSafeInteger(quote.receivedAtMs) ||
-    quote.receivedAtMs <= 0 ||
-    quote.receivedAtMs > nowMs + policy.maximumFutureSkewMs
-  ) {
-    return {
-      state: "invalid",
-      ageMs: null,
-      automatedDecisionsAllowed: false,
-      reason: "invalid_quote",
-    };
+    return invalidFreshness("invalid_clock");
   }
 
-  const ageMs = nowMs - quote.providerTimestampMs;
-  if (ageMs < -policy.maximumFutureSkewMs) {
-    return {
-      state: "invalid",
-      ageMs,
-      automatedDecisionsAllowed: false,
-      reason: "provider_timestamp_in_future",
-    };
+  const quoteIsValid =
+    quote.provider === "capital.com" &&
+    quote.environment === "DEMO" &&
+    typeof quote.instrumentId === "string" &&
+    quote.instrumentId.trim().length > 0 &&
+    Number.isFinite(quote.bid) &&
+    quote.bid > 0 &&
+    Number.isFinite(quote.ask) &&
+    quote.ask >= quote.bid &&
+    Number.isSafeInteger(quote.providerTimestampMs) &&
+    quote.providerTimestampMs > 0 &&
+    Number.isSafeInteger(quote.receivedAtMs) &&
+    quote.receivedAtMs > 0 &&
+    quote.receivedAtMs <= nowMs + policy.maximumFutureSkewMs;
+
+  if (!quoteIsValid) return invalidFreshness("invalid_quote");
+
+  const rawAgeMs = nowMs - quote.providerTimestampMs;
+  if (rawAgeMs < -policy.maximumFutureSkewMs) {
+    return invalidFreshness("provider_timestamp_in_future", rawAgeMs);
   }
-  if (ageMs > policy.maximumAgeMs) {
+
+  const ageMs = Math.max(0, rawAgeMs);
+  if (ageMs > policy.staleAgeMs) {
     return {
       state: "stale",
       ageMs,
-      automatedDecisionsAllowed: false,
-      reason: "quote_too_old",
+      newAutomatedEntriesAllowed: false,
+      reason: "quote_stale",
     };
   }
+  if (ageMs > policy.automatedEntryBlockAgeMs) {
+    return {
+      state: "entry_blocked",
+      ageMs,
+      newAutomatedEntriesAllowed: false,
+      reason: "automated_entries_blocked",
+    };
+  }
+  if (ageMs > policy.normalAgeMs) {
+    return {
+      state: "aging",
+      ageMs,
+      newAutomatedEntriesAllowed: true,
+      reason: "quote_aging",
+    };
+  }
+
   return {
     state: "fresh",
-    ageMs: Math.max(0, ageMs),
-    automatedDecisionsAllowed: true,
-    reason: "within_policy",
+    ageMs,
+    newAutomatedEntriesAllowed: true,
+    reason: "within_normal_range",
   };
 }
