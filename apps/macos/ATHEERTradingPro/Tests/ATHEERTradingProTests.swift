@@ -458,7 +458,7 @@ final class ATHEERTradingProTests: XCTestCase {
             brokerID: "capital.com",
             environment: .demo
         )
-        let account = BrokerAccountSnapshot(accountIdentifier: "DEMO-ACCOUNT-123", currencyCode: "USD", authenticatedAt: Date())
+        let account = BrokerAccountSnapshot(maskedLoginIdentifier: "DEMO-ACCOUNT-123", currencyCode: "USD", authenticatedAt: Date())
         let model = BrokerManagementViewModel(
             credentialStore: store,
             authentication: StubBrokerAuthenticationService(result: .success(account))
