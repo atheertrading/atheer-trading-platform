@@ -484,6 +484,14 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(live))
     }
 
+
+    func testMarketSearchStatusDecoderRejectsUnknownBackendState() {
+        let payload = Data("""
+        {"provider":"capital.com","environment":"DEMO","state":"future_state"}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(payload))
+    }
+
     func testMarketSearchDecoderPreservesProviderInstrumentMetadata() throws {
         let payload = Data("""
         {
@@ -503,7 +511,7 @@ final class ATHEERTradingProTests: XCTestCase {
         let instruments = try MarketSearchPayloadDecoder().decodeMarkets(payload)
         XCTAssertEqual(instruments.count, 1)
         XCTAssertEqual(instruments[0].epic, "GOLD")
-        XCTAssertEqual(instruments[0].instrumentName, "Gold")
+        XCTAssertEqual(instruments[0].name, "Gold")
         XCTAssertEqual(instruments[0].marketStatus, "TRADEABLE")
         XCTAssertEqual(instruments[0].currency, "USD")
     }
@@ -542,15 +550,15 @@ final class ATHEERTradingProTests: XCTestCase {
 
     @MainActor
     func testMarketExplorerIgnoresStaleSearchResultsAfterQueryChanges() async {
-        let gold = MarketSearchInstrument(
+        let gold = MarketInstrumentSummary(
             epic: "GOLD",
-            instrumentName: "Gold",
+            name: "Gold",
             marketStatus: "TRADEABLE",
             currency: "USD"
         )
-        let silver = MarketSearchInstrument(
+        let silver = MarketInstrumentSummary(
             epic: "SILVER",
-            instrumentName: "Silver",
+            name: "Silver",
             marketStatus: "TRADEABLE",
             currency: "USD"
         )
@@ -601,9 +609,9 @@ final class ATHEERTradingProTests: XCTestCase {
     @MainActor
     func testMarketExplorerPublishesProviderBackedDemoSearchResults() async {
         let instruments = [
-            MarketSearchInstrument(
+            MarketInstrumentSummary(
                 epic: "GOLD",
-                instrumentName: "Gold",
+                name: "Gold",
                 marketStatus: "TRADEABLE",
                 currency: "USD"
             )
@@ -641,10 +649,10 @@ private enum StubBackendHealthError: Error {
 @MainActor
 private final class StubMarketSearchClient: MarketSearchClient {
     private let status: MarketDataBackendStatus
-    private let instruments: [MarketSearchInstrument]
+    private let instruments: [MarketInstrumentSummary]
     private(set) var searchCallCount = 0
 
-    init(status: MarketDataBackendStatus, results: [MarketSearchInstrument]) {
+    init(status: MarketDataBackendStatus, results: [MarketInstrumentSummary]) {
         self.status = status
         self.instruments = results
     }
@@ -653,7 +661,7 @@ private final class StubMarketSearchClient: MarketSearchClient {
         status
     }
 
-    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
         searchCallCount += 1
         return instruments
     }
@@ -661,22 +669,22 @@ private final class StubMarketSearchClient: MarketSearchClient {
 
 @MainActor
 private final class DeferredMarketSearchClient: MarketSearchClient {
-    private var continuations: [CheckedContinuation<[MarketSearchInstrument], Error>] = []
+    private var continuations: [CheckedContinuation<[MarketInstrumentSummary], Error>] = []
     private(set) var pendingSearchCount = 0
 
     func fetchBackendStatus() async throws -> MarketDataBackendStatus {
         MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected)
     }
 
-    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
         try await withCheckedThrowingContinuation {
-            (continuation: CheckedContinuation<[MarketSearchInstrument], Error>) in
+            (continuation: CheckedContinuation<[MarketInstrumentSummary], Error>) in
             continuations.append(continuation)
             pendingSearchCount += 1
         }
     }
 
-    func completeSearch(at index: Int, with results: [MarketSearchInstrument]) {
+    func completeSearch(at index: Int, with results: [MarketInstrumentSummary]) {
         continuations[index].resume(returning: results)
     }
 }
