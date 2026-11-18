@@ -487,3 +487,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Code alignment: shared REST client spaces request starts by 100 ms; session creation is throttled to 1 second; REST and WebSocket pings run every 5 minutes; stream subscription cap is 40.
 - Account-switch interruption is documented; account-switch support remains unqualified. Future OMS must implement the endpoint-specific order budget.
 - Evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md` and EDL-029.
+
+
+## 2026-11-18 — Market Explorer live quote monitor
+
+- Integrated authenticated local SSE transport and native quote stream view model.
+- Added 40-epic selection, timestamped bid/ask/spread, quote age, freshness quality, status telemetry and reconnect/backoff.
+- Preserved existing Market Explorer design tokens, adaptive status layout and accessibility.
+- Backend status events now reflect provider-confirmed subscriptions and reconnect/degraded states; error details are redacted.
+- Display-only DEMO market data; no dealing. Exact-head CI and owner-Mac DEMO validation remain pending.
