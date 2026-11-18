@@ -108,6 +108,22 @@ struct ServerSentEventParser {
             case "quote":
                 let quote = try decoder.decode(MarketDataStreamQuote.self, from: data)
                 let freshness = quote.freshness
+                let ageIsValid = freshness.ageMs.map {
+                    $0.isFinite && ($0 >= 0 || freshness.state == .invalid)
+                } ?? (freshness.state == .invalid)
+                let ageMatchesState: Bool
+                switch freshness.state {
+                case .fresh:
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 >= 0 && $0 <= Double(freshness.maximumAgeMs)
+                    } ?? false
+                case .stale:
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.maximumAgeMs)
+                    } ?? false
+                case .invalid:
+                    ageMatchesState = true
+                }
                 guard quote.provider == "capital.com",
                       quote.environment == "DEMO",
                       !quote.instrumentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -120,8 +136,9 @@ struct ServerSentEventParser {
                       quote.receivedAtMs > 0,
                       quote.receivedAtMonotonicMs.isFinite,
                       quote.receivedAtMonotonicMs >= 0,
-                      freshness.ageMs.map({ $0.isFinite && $0 >= 0 }) ?? true,
+                      ageIsValid,
                       freshness.maximumAgeMs > 0,
+                      ageMatchesState,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
                       (freshness.state == .fresh) == freshness.automatedDecisionsAllowed else {
