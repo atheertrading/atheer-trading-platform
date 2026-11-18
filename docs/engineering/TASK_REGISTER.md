@@ -469,3 +469,13 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - The existing capability-protected route now returns 503 when the broker session is not connected; provider tokens remain server-side.
 - Added normalizer, client, authenticated API, disconnected-session and duplicate-pagination tests. Exact-head hosted CI pending.
 - PR #68 is stacked on PR #67. Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
+
+
+## ATP-CHART-001 — Authenticated historical chart workspace (2026-11-18)
+
+- Ported the historical chart surface into the active authenticated stack; no static backend port or unauthenticated client.
+- Added a dynamic BackendIPCConnection client with bearer capability, safe native context, ephemeral/no-store request handling and strict response validation.
+- Added a Charts navigation destination, Market Explorer Open Chart action and Command Center chart panel using real normalized DEMO Bid/Ask candles.
+- Added timeframe/side selection, manual refresh, receipt-time and quality metadata, plus raw provider-limit warning.
+- Persistent watchlist, live candles, indicators and drawing tools remain separate pending increments. Exact-head CI and owner-Mac qualification pending.
+- PR #69 is stacked on PR #68. Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
