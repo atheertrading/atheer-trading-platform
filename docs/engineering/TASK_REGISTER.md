@@ -452,3 +452,11 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Added deterministic regression coverage advancing the injected clock by 6 seconds.
 - PR #67 is stacked on PR #66. Exact-head hosted CI and owner-side runtime qualification are pending.
 - Session report: `SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY.md`.
+
+
+## ATP-MKT-007 source reconciliation — Library Mermaid and freshness policy
+
+- Reviewed the Library screen/workstation execution directive, curated knowledge-base Mermaid catalogue, and available Q&A archive diagrams. Programmatic inventory found 12 Mermaid blocks across 10 Q&A documents and five curated proposed diagrams. The separate historical 52-block export named in older documentation is not present in the current Library listing; do not claim it was reviewed.
+- Updated canonical `docs/architecture/diagrams/03-market-data-pipeline.mmd` to distinguish live quote distribution from cached replay and require freshness recomputation from the original provider timestamp.
+- Existing stream policy values (5,000 ms max age / 250 ms future skew) were reused, not changed. Reconcile these display/data-quality values with the historical baseline (5-second normal, >10-second entry block, >15-second stale) before RiskEngine integration.
+- No RiskEngine wiring or risk-policy change is part of PR #67.
