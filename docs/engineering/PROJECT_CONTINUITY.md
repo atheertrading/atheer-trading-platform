@@ -769,3 +769,9 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #70 exact head: `484907de2f308231dac89d5e151beee6e95c250a`; exact-head CI is pending.
 - PR #71 was closed as redundant without deleting its branch or rewriting history: its only test-fixture change is already present byte-for-byte on PR #70 (`c1930bbb87d4ba66898f85ed90faed6c4a4efe56`). PR #70 remains based on PR #68 and is mergeable.
 - Owner Mac is not accessible through this session; no local pull/build/runtime verification is claimed.
+
+## 2026-11-18 — Native historical timestamp integrity
+
+- Added an independent client-side guard rejecting future-dated historical candles and an XCTest regression case on PR #70.
+- Commits: `68b70ed2404b4672a86dbb91e05b0157da311391`, `b130e4375444deb9c029299fc6564168d51a636d`.
+- Hosted exact-head macOS CI remains pending. No local build or DEMO provider verification is claimed; `CAP_ALLOW_TRADING=false` remains unchanged.
