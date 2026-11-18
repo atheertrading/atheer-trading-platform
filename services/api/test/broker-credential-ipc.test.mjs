@@ -54,7 +54,7 @@ async function makeServer(manager, beforeSessionReplacement = async () => {}) {
 }
 
 async function closeFixture(fixture) {
-  await closeFixture(fixture);
+  await fixture.server.close();
   await rm(fixture.directory, { recursive: true, force: true });
 }
 
