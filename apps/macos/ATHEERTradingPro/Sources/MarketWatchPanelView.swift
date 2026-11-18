@@ -73,6 +73,31 @@ struct MarketWatchPanelView: View {
             .buttonStyle(.borderless)
             .help("Refresh authenticated DEMO market-data status")
             .accessibilityLabel("Refresh market-data status")
+            Button {
+                if model.isStreamingRequested {
+                    model.stopStream()
+                } else {
+                    for epic in watchlistStore.epics where !model.isSubscribed(to: epic) {
+                        model.toggleStreamSubscription(for: epic)
+                    }
+                    model.startStreaming()
+                }
+            } label: {
+                Label(
+                    model.isStreamingRequested ? "Stop" : "Stream",
+                    systemImage: model.isStreamingRequested ? "stop.fill" : "waveform"
+                )
+                .font(.system(size: 9, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .disabled(!model.isStreamingRequested && watchlistStore.epics.isEmpty && model.selectedEpics.isEmpty)
+            .help(model.isStreamingRequested ? "Stop market-data streaming" : "Stream watchlist instruments")
+            Button(action: onOpenAPIConnection) {
+                Image(systemName: "network")
+            }
+            .buttonStyle(.borderless)
+            .help("Open API connection diagnostics")
+            .accessibilityLabel("Open API diagnostics")
             Button(action: onOpenMarkets) {
                 Image(systemName: "arrow.up.right.square")
             }
@@ -209,7 +234,6 @@ struct MarketWatchPanelView: View {
         let quote = model.streamingQuotes[epic]
         let instrument = model.results.first(where: { $0.epic == epic })
         let isSubscribed = model.isSubscribed(to: epic)
-        let freshness = quote?.freshness.state.lowercased() ?? (isSubscribed ? "waiting" : "not subscribed")
 
         return HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 2) {
