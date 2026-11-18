@@ -3,16 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
-    @StateObject private var brokerManagementModel = BrokerManagementViewModel()
-    @State private var showingBrokers = false
-
-    /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
-    private func scheduleSelectionChange(_ newSelection: AppSection?) {
-        Task { @MainActor in
-            await Task.yield()
-            selection = newSelection
-        }
-    }
 
     var body: some View {
         NavigationSplitView {
@@ -30,10 +20,7 @@ struct ContentView: View {
                 .padding(.horizontal, 14)
                 .padding(.top, 16)
 
-                List(selection: Binding(
-                    get: { selection },
-                    set: { newSelection in scheduleSelectionChange(newSelection) }
-                )) {
+                List(selection: $selection) {
                     Section("WORKSPACE") {
                         Label(AppSection.workspace.title, systemImage: AppSection.workspace.systemImage)
                             .tag(AppSection.workspace)
@@ -41,10 +28,6 @@ struct ContentView: View {
                     Section("SYSTEM") {
                         Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
                             .tag(AppSection.apiConnection)
-                    }
-                    Section("PREFERENCES") {
-                        Label(AppSection.settings.title, systemImage: AppSection.settings.systemImage)
-                            .tag(AppSection.settings)
                     }
                 }
                 .listStyle(.sidebar)
@@ -61,12 +44,6 @@ struct ContentView: View {
                     )
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
-                case .settings:
-                    SettingsHomeView(onOpenBrokers: { showingBrokers = true })
-                        .sheet(isPresented: $showingBrokers) {
-                            BrokerManagementView(model: brokerManagementModel)
-                                .frame(minWidth: 760, minHeight: 560)
-                        }
                 }
             }
             .frame(minWidth: 620, minHeight: 520)
