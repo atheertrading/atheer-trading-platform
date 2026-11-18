@@ -335,3 +335,29 @@ Acceptance:
 | ATP-SEC-001A | P1 | Require native client marker and reject browser-origin access to local market-data routes | IN PROGRESS | PR #33 native Market Search sends `X-ATHEER-LOCAL-CLIENT: macOS`; PR #37 implements server-side Origin/Sec-Fetch-Site enforcement and regression tests. Both PRs must be integrated together. |
 
 The marker is not a secret and does not authenticate arbitrary local processes. It mitigates browser CSRF/cross-origin access only; production still requires a per-launch capability token or authenticated local IPC.
+
+
+## ATP-BRK-002 — Centralized backend credential and broker-session authority
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-BRK-002 | P0 | Unify macOS Keychain credential provisioning, backend CMS, Capital.com authentication and CST/X-SECURITY-TOKEN lifecycle behind one backend session authority | BLOCKING PR #37 integration | Library Broker Integration Q5/Q6; PR #26 Swift direct-auth; PR #37 environment-driven backend auth; EDL-022 |
+
+Required: app-managed backend child process; 256-bit per-launch capability bootstrapped over private stdin/pipe; bearer auth for local control APIs; backend CMS backed by a Keychain helper/adapter; environment credentials test-only; one Broker Session Manager shared by market data, streaming, account data and future OMS. Add isolation, secret-redaction, IPC authorization, reconnect and token lifecycle tests.
+
+## ATP-BRK-003 / ATP-MKT-007 — Connection and subscription orchestration
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-BRK-003 | P1 | Enforce session-creation rate limit, REST keepalive scheduling, session recovery and account-switch coordination | PARTIAL | PR #37 coalesces concurrent connects and exposes `ping()`; sequential throttle and scheduled ping are not implemented |
+| ATP-MKT-007 | P1 | Allocate 40 WebSocket instrument slots by operational priority and restore after reconnect/account switch | PARTIAL | PR #37 shared WebSocket, 40-cap, dedupe, heartbeat and reconnect are implemented; priority allocator and utilization metrics remain |
+
+Do not conflate REST request-rate limits, authenticated REST session inactivity, WebSocket heartbeat/duration and the 40-instrument subscription cap. Do not invent undocumented provider connection limits.
+
+## PR #33 — Market Explorer integration
+
+- Status: MERGED 2026-11-18.
+- Merge commit: `2e8bf9bd5f4274ed5d500474335a778cd6f9b75c`.
+- Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
+- CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
+- Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
