@@ -22,10 +22,49 @@ enum MarketDataBackendConnectionState: Equatable {
     }
 }
 
+enum MarketDataStreamConnectionState: Equatable {
+    case disconnected
+    case connecting
+    case connected
+    case degraded
+
+    var displayLabel: String {
+        switch self {
+        case .disconnected: return "DISCONNECTED"
+        case .connecting: return "CONNECTING"
+        case .connected: return "CONNECTED"
+        case .degraded: return "DEGRADED"
+        }
+    }
+}
+
+struct MarketDataStreamingStatus: Equatable {
+    let state: MarketDataStreamConnectionState
+    let activeInstrumentCount: Int
+    let lastMessageAtMs: Double?
+    let lastError: String?
+    let invalidQuoteCount: Int
+    let outOfOrderQuoteCount: Int
+    let duplicateQuoteCount: Int
+}
+
 struct MarketDataBackendStatus: Equatable {
     let provider: String
     let environment: String
     let state: MarketDataBackendConnectionState
+    let streaming: MarketDataStreamingStatus?
+
+    init(
+        provider: String,
+        environment: String,
+        state: MarketDataBackendConnectionState,
+        streaming: MarketDataStreamingStatus? = nil
+    ) {
+        self.provider = provider
+        self.environment = environment
+        self.state = state
+        self.streaming = streaming
+    }
 }
 
 struct MarketInstrumentSummary: Equatable, Identifiable {
