@@ -136,13 +136,12 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         }
     }
 
-    func disconnect() async {
-        guard var request = try? makeRequest(path: "/broker-session/disconnect", method: "POST") else {
-            clearLocalState()
-            return
+    func disconnect() async throws {
+        let request = try makeRequest(path: "/broker-session/disconnect", method: "POST")
+        let (_, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw BrokerAuthenticationError.unavailable
         }
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        _ = try? await session.data(for: request)
         clearLocalState()
     }
 
@@ -150,7 +149,10 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         guard let authorization = connection.capability.authorizationHeaderValue else {
             throw BrokerAuthenticationError.unavailable
         }
-        var request = URLRequest(url: connection.baseURL.appendingPathComponent(path))
+        let endpoint = path.split(separator: "/").reduce(connection.baseURL) {
+            $0.appendingPathComponent(String($1))
+        }
+        var request = URLRequest(url: endpoint)
         request.httpMethod = method
         request.timeoutInterval = 12
         request.cachePolicy = .reloadIgnoringLocalCacheData
@@ -198,5 +200,5 @@ final class UnavailableBrokerAuthenticationService: BrokerAuthenticationService 
         throw BrokerAuthenticationError.unavailable
     }
 
-    func disconnect() async {}
+    func disconnect() async throws {}
 }
