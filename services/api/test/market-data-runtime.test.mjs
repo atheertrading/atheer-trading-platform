@@ -303,6 +303,19 @@ test("broker session connect accepts bounded DEMO credentials and exposes only s
   assert.equal(JSON.stringify(connectedStatus).includes("demo-password"), false);
   assert.equal(JSON.stringify(connectedStatus).includes("secret-cst"), false);
 
+  const accountSwitch = await fetch(baseUrl + "/broker-session/connect", {
+    method: "POST",
+    headers: { ...authorization, "content-type": "application/json" },
+    body: JSON.stringify({
+      apiKey: "second-key",
+      identifier: "second-user",
+      password: "second-password",
+    }),
+  });
+  assert.equal(accountSwitch.status, 429);
+  assert.equal((await accountSwitch.json()).state, "error");
+  assert.equal(serverRuntime.status().state, "connected");
+
   const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple", { headers: authorization });
   const payload = await markets.json();
   assert.equal(markets.status, 200);
