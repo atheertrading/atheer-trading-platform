@@ -43,12 +43,6 @@ export class BrokerSessionManager {
     beforeSessionReplacement?: () => Promise<void>,
   ): Promise<BrokerSessionStatus> {
     if (credentials) {
-      // Do not let repeated native connect calls recreate a runtime with the
-      // same credentials after the provider has explicitly rejected them.
-      if (this.runtime?.isAuthenticationBlockedFor(credentials)) {
-        return this.runtime.status();
-      }
-
       const now = this.now();
       if (
         this.lastSessionCreationAttemptAtMs !== null &&
