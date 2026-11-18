@@ -21,7 +21,7 @@ struct LiveMarketWatchPanel: View {
         case .degraded:
             return "DEGRADED"
         case .disconnected:
-            return model.isMonitoring ? "DISCONNECTED" : "READY"
+            return model.isMonitoring ? "DISCONNECTED" : "STOPPED"
         }
     }
 
