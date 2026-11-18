@@ -18,7 +18,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
 
     private let connection: BackendIPCConnection
     private let requestExecutor: URLSessionRequestExecutor
-    private var maskedAccountIdentifier: String?
+    private var maskedLoginIdentifier: String?
     private var authenticatedAt: Date?
 
     init(connection: BackendIPCConnection, session: URLSession? = nil) {
@@ -79,10 +79,10 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             let timestamp = payload.connectedAtMs.map {
                 Date(timeIntervalSince1970: $0 / 1_000)
             } ?? Date()
-            maskedAccountIdentifier = Self.maskIdentifier(credential.identifier)
+            maskedLoginIdentifier = Self.maskIdentifier(credential.identifier)
             authenticatedAt = timestamp
             return BrokerAccountSnapshot(
-                maskedLoginIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
+                maskedLoginIdentifier: maskedLoginIdentifier ?? "Capital.com DEMO",
                 currencyCode: nil,
                 authenticatedAt: timestamp
             )
@@ -131,7 +131,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             } ?? authenticatedAt ?? Date()
             authenticatedAt = timestamp
             return BrokerAccountSnapshot(
-                accountIdentifier: maskedAccountIdentifier ?? "Capital.com DEMO",
+                accountIdentifier: maskedLoginIdentifier ?? "Capital.com DEMO",
                 currencyCode: nil,
                 authenticatedAt: timestamp
             )
@@ -192,7 +192,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
     }
 
     private func clearLocalState() {
-        maskedAccountIdentifier = nil
+        maskedLoginIdentifier = nil
         authenticatedAt = nil
     }
 
