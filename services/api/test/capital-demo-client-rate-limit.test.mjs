@@ -22,7 +22,9 @@ test("Capital.com REST client honors Retry-After seconds before retrying", async
   let requestCount = 0;
   let monotonicNow = 0;
   const waits = [];
-  const client = new CapitalDemoClient(async () => {
+  const signals = [];
+  const client = new CapitalDemoClient(async (_input, init) => {
+    signals.push(init?.signal);
     requestCount += 1;
     if (requestCount === 1) {
       return new Response(null, {
@@ -45,6 +47,9 @@ test("Capital.com REST client honors Retry-After seconds before retrying", async
   assert.equal(result.markets[0].epic, "EURUSD");
   assert.equal(requestCount, 2);
   assert.deepEqual(waits, [2_000]);
+  assert.equal(signals.length, 2);
+  assert.ok(signals.every((signal) => signal instanceof AbortSignal && !signal.aborted));
+  assert.notEqual(signals[0], signals[1]);
 });
 
 test("Capital.com REST client accepts HTTP-date Retry-After values", async () => {
