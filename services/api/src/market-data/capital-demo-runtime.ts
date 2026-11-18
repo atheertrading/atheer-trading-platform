@@ -61,8 +61,16 @@ export class CapitalDemoRuntime {
     timing: CapitalDemoRuntimeTiming = {},
   ) {
     this.connectionState = credentials ? "disconnected" : "not_configured";
-    this.sessionCreationIntervalMs = timing.sessionCreationIntervalMs ?? DEFAULT_SESSION_CREATION_INTERVAL_MS;
-    this.keepaliveIntervalMs = timing.keepaliveIntervalMs ?? DEFAULT_KEEPALIVE_INTERVAL_MS;
+    const sessionCreationIntervalMs = timing.sessionCreationIntervalMs ?? DEFAULT_SESSION_CREATION_INTERVAL_MS;
+    const keepaliveIntervalMs = timing.keepaliveIntervalMs ?? DEFAULT_KEEPALIVE_INTERVAL_MS;
+    if (!Number.isSafeInteger(sessionCreationIntervalMs) || sessionCreationIntervalMs < 1_000) {
+      throw new Error("Capital.com session creation must be throttled to at least one second.");
+    }
+    if (!Number.isSafeInteger(keepaliveIntervalMs) || keepaliveIntervalMs <= 0 || keepaliveIntervalMs >= 10 * 60 * 1_000) {
+      throw new Error("Capital.com REST keepalive must run before the ten-minute inactivity limit.");
+    }
+    this.sessionCreationIntervalMs = sessionCreationIntervalMs;
+    this.keepaliveIntervalMs = keepaliveIntervalMs;
     this.sleep = timing.sleep ?? sleep;
     this.scheduler = timing.scheduler ?? defaultScheduler;
   }
