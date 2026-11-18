@@ -140,3 +140,12 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Rationale:** Prevent ordinary browser pages from triggering local broker connect/disconnect operations or reading market-data streams through cross-origin requests.
 - **Threat-model limitation:** The marker header is public and is not authentication against local processes. Before production or multi-user use, add a per-launch capability token or authenticated local IPC.
 - **Verification:** Server tests cover unidentified, cross-origin, cross-site and native-marker requests; SSE contract test sends the marker. Exact-head CI pending.
+
+
+## EDL-021 — Instrument catalogue is not a live quote source
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #37 branch; exact-head CI pending.
+- **Decision:** Treat `GET /markets` as instrument discovery metadata only. Allow-list identity/name/market-status/currency fields and strip provider bid/offer values. Only validated streaming quote events may populate live Bid/Ask consumers.
+- **Rationale:** Prevent stale or un-timestamped catalogue values from being mistaken for current market prices or entering chart/strategy/risk decisions.
+- **Verification:** Backend regression test proves provider bid/offer fields are not exposed by market catalogue results. Exact-head CI pending.
