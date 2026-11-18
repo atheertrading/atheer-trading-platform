@@ -398,3 +398,13 @@ PR integration order is top-down into parent branches: #55 into #56, #56 into #5
 | ATP-MKT-008 — Native live quote monitor | P1 | IN PROGRESS — PR #58 | Native authenticated SSE client and display-only quote monitor are implemented on a draft branch. Parent ancestry, exact-head CI, real DEMO quote delivery and owner-Mac acceptance remain. |
 
 PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8fdd901b3e09`; exact-head CI `44286676363` was not complete at report time. PR #57 compile correction head `b1dcda177cf0ff2330a85a09f8f41040392e625c`; Local Sync Safety passed, CI pending. Neither result authorizes a merge.
+
+
+## ATP-BRK-003 / ATP-MKT-007 — Official Capital.com limits verified (2026-11-18)
+
+- Official reference confirms 10 REST requests/second per user and 1 `POST /session` request/second per API key.
+- REST inactivity and WebSocket session duration are 10 minutes; current runtime uses 5-minute REST keepalive and 5-minute WebSocket application ping.
+- Official sources confirm a 40-epic market-data subscription maximum.
+- DEMO position/working-order endpoints are limited to 1,000 requests/hour; OMS/dealing is not implemented in this slice and must enforce the limit before future dealing.
+- Account changes using `PUT /session` interrupt streaming; any future account-switch flow must invalidate and rebuild the WebSocket subscription set.
+- Source-to-code evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`; official references are recorded in EDL-029.
