@@ -19,10 +19,13 @@ import {
   DomainValidationError,
   assertPositiveDecimal,
   compareDecimal,
+  createDataProvenance,
+  currencyCode,
   decimalValue,
   deepFreeze,
   nonEmptyString,
   tradingEnvironment,
+  unitCode,
   utcTimestamp,
 } from "./shared.ts";
 import type { Price, Quantity } from "./instrument.ts";
@@ -109,13 +112,15 @@ export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   }
   if (input.payload.quantity !== undefined) {
     assertPositiveDecimal(input.payload.quantity.value, "intent_quantity");
-    nonEmptyString(input.payload.quantity.unit, "intent_quantity_unit");
+    unitCode(input.payload.quantity.unit);
   }
   if (input.payload.orderTypeCode !== undefined) nonEmptyString(input.payload.orderTypeCode, "order_type_code");
   if (input.payload.timeInForceCode !== undefined) nonEmptyString(input.payload.timeInForceCode, "time_in_force_code");
   for (const parameter of input.payload.priceParameters ?? []) {
     nonEmptyString(parameter.code, "price_parameter_code");
-    nonEmptyString(parameter.price.unit, "price_parameter_unit");
+    decimalValue(parameter.price.value);
+    unitCode(parameter.price.unit);
+    if (parameter.price.currency !== undefined) currencyCode(parameter.price.currency);
   }
   if (!Number.isSafeInteger(input.intentVersion) || input.intentVersion < 1) {
     throw new DomainValidationError("invalid_intent_version", "Intent version must be a positive integer.");
@@ -163,6 +168,8 @@ export function createRiskAssessment(input: RiskAssessment): RiskAssessment {
   nonEmptyString(input.id, "risk_assessment_id");
   nonEmptyString(input.intentId, "risk_intent_id");
   nonEmptyString(input.policyVersion, "risk_policy_version");
+  utcTimestamp(input.evaluatedAt);
+  createDataProvenance(input.provenance);
   if (input.outcome !== "AUTHORIZED" && input.outcome !== "REJECTED" && input.outcome !== "HELD") {
     throw new DomainValidationError("invalid_risk_outcome", "Risk outcome must be AUTHORIZED, REJECTED, or HELD.");
   }
@@ -258,6 +265,13 @@ export function validateBrokerOrderRecord(order: BrokerOrderRecord): void {
   nonEmptyString(order.brokerId, "order_broker_id");
   nonEmptyString(order.brokerOrderReference, "broker_order_reference");
   nonEmptyString(order.brokerStatusCode, "broker_order_status_code");
+  tradingEnvironment(order.environment);
+  utcTimestamp(order.observedAt);
+  createDataProvenance(order.provenance);
+  decimalValue(order.orderedQuantity.value);
+  decimalValue(order.filledQuantity.value);
+  unitCode(order.orderedQuantity.unit);
+  unitCode(order.filledQuantity.unit);
   if (
     order.provenance.source.sourceType !== "BROKER" ||
     String(order.provenance.source.sourceId) !== String(order.brokerId) ||
@@ -287,6 +301,16 @@ export function validatePositionSnapshot(position: PositionSnapshot): void {
   nonEmptyString(position.brokerId, "position_broker_id");
   nonEmptyString(position.brokerPositionReference, "broker_position_reference");
   nonEmptyString(position.brokerStatusCode, "broker_position_status_code");
+  tradingEnvironment(position.environment);
+  utcTimestamp(position.observedAt);
+  createDataProvenance(position.provenance);
+  decimalValue(position.quantity.value);
+  unitCode(position.quantity.unit);
+  if (position.averageOpenPrice !== undefined) {
+    decimalValue(position.averageOpenPrice.value);
+    unitCode(position.averageOpenPrice.unit);
+    if (position.averageOpenPrice.currency !== undefined) currencyCode(position.averageOpenPrice.currency);
+  }
   if (
     position.provenance.source.sourceType !== "BROKER" ||
     String(position.provenance.source.sourceId) !== String(position.brokerId) ||
@@ -311,8 +335,14 @@ export function validateExecutionFill(fill: ExecutionFill): void {
   nonEmptyString(fill.orderId, "execution_order_id");
   nonEmptyString(fill.brokerExecutionReference, "broker_execution_reference");
   assertPositiveDecimal(fill.quantity.value, "execution_quantity");
-  nonEmptyString(fill.quantity.unit, "execution_quantity_unit");
-  nonEmptyString(fill.executionPrice.unit, "execution_price_unit");
+  unitCode(fill.quantity.unit);
+  decimalValue(fill.executionPrice.value);
+  unitCode(fill.executionPrice.unit);
+  if (fill.executionPrice.currency !== undefined) currencyCode(fill.executionPrice.currency);
+  tradingEnvironment(fill.environment);
+  utcTimestamp(fill.executedAt);
+  utcTimestamp(fill.receivedAt);
+  createDataProvenance(fill.provenance);
   if (
     fill.provenance.source.sourceType !== "BROKER" ||
     String(fill.provenance.source.sourceId) !== String(fill.brokerId)
@@ -347,6 +377,10 @@ export function createExecutionEvent<TPayload extends object>(input: ExecutionEv
   nonEmptyString(input.id, "execution_event_id");
   nonEmptyString(input.aggregateId, "execution_aggregate_id");
   nonEmptyString(input.eventCode, "execution_event_code");
+  tradingEnvironment(input.environment);
+  utcTimestamp(input.occurredAt);
+  utcTimestamp(input.receivedAt);
+  createDataProvenance(input.provenance);
   if (input.environment !== input.provenance.environment) {
     throw new DomainValidationError("execution_event_environment_mismatch", "Execution event and provenance environments must match.");
   }
@@ -371,6 +405,12 @@ export function createReconciliationEvent(input: ReconciliationEvent): Reconcili
   nonEmptyString(input.id, "reconciliation_event_id");
   nonEmptyString(input.aggregateId, "reconciliation_aggregate_id");
   nonEmptyString(input.outcomeCode, "reconciliation_outcome_code");
+  if (!["ACCOUNT", "ORDER", "POSITION", "EXECUTION"].includes(input.aggregateType)) {
+    throw new DomainValidationError("invalid_reconciliation_aggregate", "Reconciliation aggregate type is not recognized.");
+  }
+  tradingEnvironment(input.environment);
+  utcTimestamp(input.occurredAt);
+  createDataProvenance(input.provenance);
   if (input.environment !== input.provenance.environment || input.occurredAt !== input.provenance.eventAt) {
     throw new DomainValidationError("reconciliation_provenance_mismatch", "Reconciliation event must match its source environment and event time.");
   }
@@ -401,6 +441,12 @@ export function createAuditEvent(input: AuditEvent): AuditEvent {
   nonEmptyString(input.subjectId, "audit_subject_id");
   nonEmptyString(input.outcomeCode, "audit_outcome_code");
   nonEmptyString(input.correlationId, "audit_correlation_id");
+  if (!["USER", "SYSTEM", "STRATEGY", "AI_AGENT", "BROKER"].includes(input.actorKind)) {
+    throw new DomainValidationError("invalid_audit_actor_kind", "Audit actor kind is not recognized.");
+  }
+  tradingEnvironment(input.environment);
+  utcTimestamp(input.occurredAt);
+  if (input.provenance !== undefined) createDataProvenance(input.provenance);
   if (input.provenance !== undefined && input.provenance.environment !== input.environment) {
     throw new DomainValidationError("audit_provenance_mismatch", "Audit event and provenance environments must match.");
   }
