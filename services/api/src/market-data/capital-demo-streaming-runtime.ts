@@ -8,6 +8,7 @@ import type { CapitalDemoStreamingConnectionInfo } from "./capital-demo-client.t
 
 const MAX_INSTRUMENTS_PER_PROVIDER_SESSION = 40;
 const REQUEST_TIMEOUT_MS = 10_000;
+const SOCKET_CLOSE_TIMEOUT_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
@@ -160,7 +161,27 @@ export class CapitalDemoStreamingRuntime {
     this.subscribedEpics.clear();
     if (socket) {
       this.intentionallyClosing.add(socket);
-      socket.close(1000, "ATHEER streaming runtime disconnected");
+      await new Promise<void>((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeout);
+          socket.removeEventListener("close", finish);
+          resolve();
+        };
+        const timeout = setTimeout(finish, SOCKET_CLOSE_TIMEOUT_MS);
+        if (socket.readyState === WebSocket.CLOSED) {
+          finish();
+          return;
+        }
+        socket.addEventListener("close", finish, { once: true });
+        try {
+          socket.close(1000, "ATHEER streaming runtime disconnected");
+        } catch {
+          finish();
+        }
+      });
     }
     this.state = "disconnected";
     this.lastError = undefined;
