@@ -115,3 +115,12 @@ This is a browser-origin/CSRF mitigation, not a secret token and not authenticat
 ## Catalogue metadata versus live quote authority
 
 The Capital.com instrument catalogue is discovery metadata only. The backend normalizes and allow-lists `epic`, instrument name, market status and currency, and deliberately strips provider `bid`/`offer` fields from catalogue responses. Live Bid/Ask values may enter the application only through the validated streaming quote path, which preserves provider timestamp, receive timestamp, monotonic receive time, duplicate/out-of-order checks and freshness evaluation. Catalogue prices must never seed Market Watch, charts, strategy inputs or execution decisions.
+
+
+## Credential and broker-session ownership — integration gate
+
+The approved architecture requires a centralized backend Credential Management Service and Broker Session Manager. The backend must be the sole authority for broker authentication, CST/`X-SECURITY-TOKEN` lifecycle, reconnection and session status. All Market Data, streaming, Account Data and future OMS consumers must use this same managed session.
+
+The current Swift Keychain/direct-auth path in PR #26 and environment-credential/direct-auth path in PR #37 are separate temporary implementations. They create independent sessions and can report inconsistent connection state. They are not an accepted final integration.
+
+PR #37 remains a draft until the backend CMS is connected to the secure credential vault, the macOS Broker Management UI delegates to the backend session manager, and the local IPC/request boundary is authenticated. Environment variables are test/development fixtures only, not the production credential authority.
