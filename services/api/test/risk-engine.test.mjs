@@ -6,7 +6,6 @@ import {
   brokerAccountReference,
   brokerId,
   brokerInstrumentId,
-  brokerAccountId as accountIdFactory,
   commandId,
   correlationId,
   createDataProvenance,
@@ -96,6 +95,9 @@ function makeFixtures(options = {}) {
     origin: {
       kind: options.originKind ?? "HUMAN",
       sourceId: sourceId("test-origin"),
+      ...(options.originKind && options.originKind !== "HUMAN"
+        ? { permissionProfileReference: options.permissionProfileReference ?? "permission-profile-demo" }
+        : {}),
     },
     createdAt: utcTimestamp(now - 1_000),
     intentVersion: 1,
@@ -178,6 +180,7 @@ function makeFixtures(options = {}) {
     environment: tradingEnvironment("DEMO"),
     accountCurrency: "USD",
     allowedIntentOrigins: ["HUMAN", "STRATEGY", "ALGORITHM", "POSITION_MANAGEMENT", "RISK_MANAGEMENT", "AI_AGENT", "SYSTEM"],
+    allowedPermissionProfileReferences: ["permission-profile-demo"],
     riskIncreasingOperationCodes: ["OPEN", "INCREASE"],
     requiredAccountFields: ["equity", "availableFunds", "availableMargin"],
     maximumOrderQuantity: quantity("5", unitCode("CONTRACT")),
@@ -189,6 +192,9 @@ function makeFixtures(options = {}) {
     maximumDailyLoss: money("300"),
     maximumDrawdown: money("500"),
     maximumSpread: price("0.05", unitCode("USD_PER_UNIT"), currencyCode("USD")),
+    minimumAvailableFunds: money("100"),
+    minimumAvailableMargin: money("100"),
+    maximumUsedMargin: money("9000"),
     freshness: {
       normalQuoteAgeMs: 5_000,
       automatedEntryBlockAfterMs: 10_000,
@@ -376,7 +382,7 @@ test("required stop loss is present and protective relative to the provider quot
 
 test("invalid portfolio provenance and missing broker price increments fail closed", async () => {
   const invalidPortfolio = makeFixtures({
-    portfolioOverrides: { intentId: accountIdFactory("different-intent") },
+    portfolioOverrides: { intentId: orderIntentId("different-intent") },
   });
   const invalidEvidence = await createEngine(invalidPortfolio).evaluate(invalidPortfolio.intent);
   assert.equal(invalidEvidence.outcome, "HELD");
@@ -394,3 +400,62 @@ test("disabled production trading controls cannot authorize", async () => {
   assert.equal(assessment.outcome, "HELD");
   assert.ok(assessment.reasonCodes.includes("TRADING_DISABLED"));
 });
+test("policy environment mismatch and unsupported intent authority never authorize", async () => {
+  const environmentMismatch = makeFixtures();
+  environmentMismatch.policy.environment = tradingEnvironment("SIMULATION");
+  const mismatch = await createEngine(environmentMismatch).evaluate(environmentMismatch.intent);
+  assert.equal(mismatch.outcome, "HELD");
+  assert.ok(mismatch.reasonCodes.includes("RISK_POLICY_ENVIRONMENT_MISMATCH"));
+
+  const unsupportedOperation = makeFixtures({ operationCode: "CLOSE_ALL" });
+  const operationAssessment = await createEngine(unsupportedOperation).evaluate(unsupportedOperation.intent);
+  assert.equal(operationAssessment.outcome, "REJECTED");
+  assert.ok(operationAssessment.reasonCodes.includes("UNSUPPORTED_RISK_OPERATION"));
+
+  const disallowedOrigin = makeFixtures({ originKind: "AI_AGENT", permissionProfileReference: "unapproved-profile" });
+  const originAssessment = await createEngine(disallowedOrigin).evaluate(disallowedOrigin.intent);
+  assert.equal(originAssessment.outcome, "REJECTED");
+  assert.ok(originAssessment.reasonCodes.includes("PERMISSION_PROFILE_NOT_AUTHORIZED"));
+
+  const originNotAllowed = makeFixtures();
+  originNotAllowed.policy.allowedIntentOrigins = ["STRATEGY"];
+  const deniedHuman = await createEngine(originNotAllowed).evaluate(originNotAllowed.intent);
+  assert.equal(deniedHuman.outcome, "REJECTED");
+  assert.ok(deniedHuman.reasonCodes.includes("INTENT_ORIGIN_NOT_PERMITTED"));
+});
+
+test("margin and available-funds constraints are explicit policy inputs", async () => {
+  const lowFunds = makeFixtures({ availableFunds: money("99.99") });
+  const fundsAssessment = await createEngine(lowFunds).evaluate(lowFunds.intent);
+  assert.equal(fundsAssessment.outcome, "REJECTED");
+  assert.ok(fundsAssessment.reasonCodes.includes("MINIMUM_AVAILABLE_FUNDS_NOT_MET"));
+
+  const lowMargin = makeFixtures({ accountSnapshotOverrides: { availableMargin: money("99.99") } });
+  const marginAssessment = await createEngine(lowMargin).evaluate(lowMargin.intent);
+  assert.equal(marginAssessment.outcome, "REJECTED");
+  assert.ok(marginAssessment.reasonCodes.includes("MINIMUM_AVAILABLE_MARGIN_NOT_MET"));
+
+  const highUsedMargin = makeFixtures({ accountSnapshotOverrides: { usedMargin: money("9000.01") } });
+  const usedMarginAssessment = await createEngine(highUsedMargin).evaluate(highUsedMargin.intent);
+  assert.equal(usedMarginAssessment.outcome, "REJECTED");
+  assert.ok(usedMarginAssessment.reasonCodes.includes("MAXIMUM_USED_MARGIN_EXCEEDED"));
+});
+
+test("broker minimum-deal-size metadata is required before authorization", async () => {
+  const missingMinimum = makeFixtures({ specificationOverrides: { minimumDealSize: undefined } });
+  const assessment = await createEngine(missingMinimum).evaluate(missingMinimum.intent);
+  assert.equal(assessment.outcome, "HELD");
+  assert.ok(assessment.reasonCodes.includes("BROKER_MINIMUM_DEAL_SIZE_UNAVAILABLE"));
+});
+
+test("trading-control provider failures fail closed", async () => {
+  const fixtures = makeFixtures();
+  const controls = {
+    isTradingEnabled() { throw new Error("control service unavailable"); },
+    isEmergencyHalted() { return false; },
+  };
+  const assessment = await createEngine(fixtures, { controls }).evaluate(fixtures.intent);
+  assert.equal(assessment.outcome, "HELD");
+  assert.ok(assessment.reasonCodes.includes("TRADING_CONTROLS_UNAVAILABLE"));
+});
+
