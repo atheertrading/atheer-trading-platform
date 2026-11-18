@@ -685,3 +685,29 @@ This audit supersedes conflicting or over-broad CI statements in earlier convers
 5. Keep local PostgreSQL 18.7 migrations blocked pending controlled backup/restore and explicit migration qualification.
 6. Reconcile authoritative OMS/Execution specifications before implementing durable command outbox processing or any dispatcher.
 7. Verify branch protection/rulesets and repository license; current integration evidence is insufficient to claim these controls are configured.
+
+
+## CI status correction — 2026-11-18 (latest exact-head recheck)
+
+This section supersedes the earlier same-day cross-PR audit's stale/incomplete CI snapshot. Workflow runs and individual jobs were rechecked directly against the recorded SHAs.
+
+| PR | Reviewed HEAD | Latest inspected result |
+|---|---|---|
+| #24 | e34c7155c45e9108e5f95156fb8f2e1363d63e60 | Intel, Apple Silicon, Backend, Repository Hygiene all passed |
+| #25 | 3112637a014e1573078056dee5fefc61b495ff4f | Backend/Local Sync passed; both inspected CI attempts cancelled; macOS qualification incomplete |
+| #26 | 9f46a5ce9fc313e73dbff9e78680804c4dd1692f | Intel, Apple Silicon, Backend, Repository Hygiene all passed; PR #25 base mismatch still requires dependency reconciliation |
+| #33 | 3b609eb259f8961d1e4c1b350a7e8edce1cf1ef1 | Intel, Apple Silicon, Backend, Repository Hygiene all passed |
+| #37 | 5edddffcd0fa1f9f77514f2b8a20bd99abb946e9 | Intel, Apple Silicon, Backend, Repository Hygiene all passed; this does not establish authenticated Capital.com provider runtime |
+| #38 | 0d37f11a8f91d09c82b39c443e346622a7df3530 | Backend/Repository Hygiene passed; Intel failed and Apple Silicon cancelled; aggregate CI failed |
+| #39 | 36a475e505cc4c2e7e235aeed7d53737912c1fa3 | Backend/Repository Hygiene passed; Intel and Apple Silicon jobs cancelled; aggregate CI cancelled |
+| #40 | 8d4afc4e59b2787a9252269cbcf11fa379bc65b6 | Intel, Apple Silicon, Backend, Repository Hygiene passed |
+| #41 | c9eb73d28c24398dfcb435525118f971aae221e8 | Intel, Apple Silicon, Backend, Repository Hygiene passed; PostgreSQL suite 49/49 |
+| #42 | ff7af23585b8d7272d826fd29b03111ed57492bf | Intel, Apple Silicon, Backend, Repository Hygiene passed; Backend suite 52/52 |
+| #43 | 0ba7b82fe0b303d87bdb740c9049c36ef81ba4ff | Apple Silicon, Backend, Repository Hygiene passed; Intel still in progress |
+| #44 | 6a9e10f20d81ac0850e97b594a361450b53281c9 | Apple Silicon, Backend, Repository Hygiene passed; Intel still in progress |
+
+Mermaid and Local Sync Safety passed on the reviewed #43/#44 heads. PR #40–#42 also passed Mermaid and Local Sync Safety on their recorded heads. PR #25's cancelled CI attempts are not source failures, but they are incomplete qualification. PR #38's Intel failure requires inspecting the failed job logs and correcting or explaining the failure before retry. PR #39 cancellation is incomplete evidence, not a pass or source failure.
+
+The dependency mismatch between PR #26's declared base bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b and PR #25 reviewed head 3112637a014e1573078056dee5fefc61b495ff4f remains a separate integration blocker despite PR #26's green CI.
+
+All green results above are exact-SHA hosted checks only. They do not prove owner-Mac runtime/visual/accessibility acceptance, real DEMO authentication, live quote delivery, or trading readiness.
