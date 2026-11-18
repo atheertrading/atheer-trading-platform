@@ -40,8 +40,16 @@ final class BackendProcessSupervisorTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
 
+        let socketPathFile = directory.appendingPathComponent("credential-socket-path.txt")
+        let tradingFlagFile = directory.appendingPathComponent("trading-flag.txt")
         let scriptURL = directory.appendingPathComponent("wait-for-signal.sh")
-        try Data("trap 'exit 0' TERM\nwhile true; do /bin/sleep 1; done\n".utf8).write(to: scriptURL)
+        let script = """
+        printf '%s\\n' "$ATHEER_CREDENTIAL_SOCKET_PATH" > "\(socketPathFile.path)"
+        printf '%s\\n' "$CAP_ALLOW_TRADING" > "\(tradingFlagFile.path)"
+        trap 'exit 0' TERM
+        while true; do /bin/sleep 1; done
+        """
+        try Data(script.utf8).write(to: scriptURL)
 
         let artifacts = BackendRuntimeArtifacts(
             nodeExecutableURL: URL(fileURLWithPath: "/bin/sh"),
@@ -63,6 +71,19 @@ final class BackendProcessSupervisorTests: XCTestCase {
         }
         XCTAssertTrue(supervisor.isManagedProcessRunning)
 
+        let socketPath = try String(contentsOf: socketPathFile, encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        XCTAssertFalse(socketPath.isEmpty)
+        XCTAssertEqual(
+            try String(contentsOf: tradingFlagFile, encoding: .utf8)
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            "false"
+        )
+        let socketDirectoryURL = URL(fileURLWithPath: socketPath).deletingLastPathComponent()
+        let socketDirectoryAttributes = try FileManager.default.attributesOfItem(atPath: socketDirectoryURL.path)
+        let socketDirectoryPermissions = (socketDirectoryAttributes[.posixPermissions] as? NSNumber)?.intValue ?? -1
+        XCTAssertEqual(socketDirectoryPermissions & 0o777, 0o700)
+
         async let firstStop: Void = supervisor.stop()
         async let secondStop: Void = supervisor.stop()
         try await firstStop
@@ -76,6 +97,7 @@ final class BackendProcessSupervisorTests: XCTestCase {
         }
 
         XCTAssertEqual(unexpectedTerminationCount, 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: socketDirectoryURL.path))
         try await supervisor.stop()
         XCTAssertFalse(supervisor.isManagedProcessRunning)
     }
