@@ -53,7 +53,7 @@ interface ReadinessResponse {
   readonly timestamp: string;
   readonly dependencies: {
     readonly persistence: "not_configured";
-    readonly broker: "not_configured";
+    readonly broker: "not_configured" | "disconnected" | "connecting" | "connected" | "degraded" | "error";
   };
   readonly trading: {
     readonly enabled: false;
@@ -126,7 +126,10 @@ export function createApiServer(
       status: "not_ready",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
-      dependencies: { persistence: "not_configured", broker: "not_configured" },
+      dependencies: {
+        persistence: "not_configured",
+        broker: marketData?.status().state ?? "not_configured",
+      },
       trading: { enabled: false, status: "disabled" },
     };
     sendJson(response, 503, payload);
