@@ -72,3 +72,14 @@ PR #70 is stacked on PR #68, which is stacked on PR #67. The older PR #43/#44 ch
 ## Safety
 
 No broker credentials, provider DEMO session, order placement, risk-policy change or LIVE execution was used. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## Follow-up review remediation — 2026-11-18
+
+A source-level integration review found that `WorkspaceHomeView` and `CommandCenterView` declared injected dependencies as immutable stored properties with default values. Their call sites supplied those dependencies through synthesized memberwise initializers, which do not expose initialized immutable properties as parameters. Added explicit initializers that accept and assign the backend health model, authenticated history client, selected instrument, and navigation closures.
+
+- `WorkspaceHomeView.swift`: commit `bd12cc67526c71550b31737763b3e05e012da8e3`.
+- `CommandCenterView.swift`: commit `484907de2f308231dac89d5e151beee6e95c250a`.
+- PR #70 exact head after remediation: `484907de2f308231dac89d5e151beee6e95c250a`.
+- Hosted CI was triggered for this exact head; compilation and XCTest results remain pending.
+- PR #71 branch synchronization remains open and is not mergeable at the latest inspection; do not merge it until ancestry and exact-head checks are re-evaluated.
