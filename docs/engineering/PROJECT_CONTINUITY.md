@@ -6,9 +6,9 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `work/local-pr18-qualification` (local qualification branch tracking PR #18 source branch `feat/macos-workspace-visual-foundation`; PR chain #10 → #17 → #18) |
-| Record status | Initial baseline; further source reconciliation required |
-| Last reviewed | 2026-11-17 |
+| Current work branch | `fix/broker-credential-unix-domain-ipc` — Team B backend continuation on PR #66; parallel domain foundation PR #76 is tracked separately |
+| Record status | Active continuity updated through 2026-11-19; source reconciliation and integration qualification remain in progress |
+| Last reviewed | 2026-11-19 |
 
 ## 1. Current verified state
 
@@ -721,3 +721,16 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #66 remains OPEN / DRAFT, stacked on PR #64. Preserve its dependency chain; do not merge while checks are pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no credentials or orders were used.
+
+
+## 2026-11-19 — Backend session-ordering and rate-limit recovery (Session 070)
+
+- Closed a disconnect-ordering race: stream teardown now executes inside the same serialized `BrokerSessionManager` transition as broker-session release. A queued replacement connect cannot be accidentally closed by an earlier IPC disconnect.
+- Added deterministic lifecycle coverage for a blocked stream teardown while a credential replacement is queued; added IPC callback-order coverage.
+- Added bounded REST HTTP 429 recovery in the shared Capital.com client: numeric/HTTP-date `Retry-After`, process-wide cooldown, maximum three retries, full-jitter fallback, and 10-second network timeout per actual attempt.
+- Network timeouts and non-429 failures are not automatically retried. No order/dealing API exists in this read-only adapter.
+- Final timeout-signal refactor received a separate regression assertion. Exact-head CI for commit `dfd0bf238dec3d88e061367251954fc860dffbb4` is required because the session record is an additive documentation commit after that code head.
+- Code-head evidence before the report commit: backend TypeScript build and API suite passed; Repository Hygiene and Local Sync Safety passed; Intel and Apple Silicon were still running. No final report-head Xcode pass is claimed.
+- PR #66 remains Draft, stacked on PR #64, and is not merge-qualified until exact-head macOS checks and cross-workstream dependency reconciliation complete.
+- Evidence: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`; source Q&A Q8/Q9 and ATP-MER-001 Mermaid catalogue reviewed.
+- `CAP_ALLOW_TRADING=false`; DEMO read-only; no credentials or broker orders used.
