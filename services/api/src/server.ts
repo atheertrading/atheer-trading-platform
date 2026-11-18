@@ -14,6 +14,32 @@ import { hasValidIPCCapability } from "./security/ipc-capability.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
+const MAX_SEARCH_TERM_LENGTH = 100;
+const MAX_HISTORY_RECORDS = 1_000;
+const ALLOWED_HISTORY_RESOLUTIONS = [
+  "MINUTE",
+  "MINUTE_5",
+  "MINUTE_15",
+  "MINUTE_30",
+  "HOUR",
+  "HOUR_4",
+  "DAY",
+  "WEEK",
+] as const;
+type HistoryResolution = typeof ALLOWED_HISTORY_RESOLUTIONS[number];
+
+function isValidEpic(value: string): boolean {
+  return /^[A-Za-z0-9_.-]{1,64}$/.test(value);
+}
+
+function isSessionUnavailable(runtime: BrokerSessionManager): boolean {
+  const state = runtime.status().state;
+  return state === "not_configured" ||
+    state === "disconnected" ||
+    state === "connecting" ||
+    state === "degraded" ||
+    state === "error";
+}
 
 interface LiveHealthResponse {
   readonly status: "ok";
@@ -217,14 +243,18 @@ async function handleMarketDataRequest(
     return;
   }
 
-  if (!runtime) {
-    sendJson(response, 503, { error: "broker_session_manager_unavailable" });
+  if (!runtime || isSessionUnavailable(runtime)) {
+    sendJson(response, 503, { error: "broker_session_unavailable" });
     return;
   }
 
   try {
     if (pathname === "/market-data/markets" && method === "GET") {
-      const searchTerm = url.searchParams.get("searchTerm") ?? "";
+      const searchTerm = (url.searchParams.get("searchTerm") ?? "").trim();
+      if (searchTerm.length < 1 || searchTerm.length > MAX_SEARCH_TERM_LENGTH) {
+        sendJson(response, 400, { error: "invalid_search_term" });
+        return;
+      }
       const result = await runtime.getMarkets(searchTerm);
       sendJson(response, 200, {
         provider: "capital.com",
@@ -234,32 +264,28 @@ async function handleMarketDataRequest(
       return;
     }
     if (pathname === "/market-data/history" && method === "GET") {
-      const epic = url.searchParams.get("epic") ?? "";
+      const epic = (url.searchParams.get("epic") ?? "").trim();
+      if (!isValidEpic(epic)) {
+        sendJson(response, 400, { error: "invalid_epic" });
+        return;
+      }
       const resolution = url.searchParams.get("resolution") ?? "MINUTE";
-      const allowedResolutions = [
-        "MINUTE",
-        "MINUTE_5",
-        "MINUTE_15",
-        "MINUTE_30",
-        "HOUR",
-        "HOUR_4",
-        "DAY",
-        "WEEK",
-      ];
-      if (!allowedResolutions.includes(resolution)) {
+      if (!ALLOWED_HISTORY_RESOLUTIONS.includes(resolution as HistoryResolution)) {
         sendJson(response, 400, { error: "invalid_resolution" });
         return;
       }
       const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\d+$/.test(rawMax)) {
+      const max = Number(rawMax);
+      if (
+        !/^\\d+$/.test(rawMax) ||
+        !Number.isSafeInteger(max) ||
+        max < 1 ||
+        max > MAX_HISTORY_RECORDS
+      ) {
         sendJson(response, 400, { error: "invalid_max" });
         return;
       }
-      const result = await runtime.getPriceHistory(
-        epic,
-        resolution as "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
-        Number(rawMax),
-      );
+      const result = await runtime.getPriceHistory(epic, resolution as HistoryResolution, max);
       sendJson(response, 200, {
         provider: "capital.com",
         environment: "DEMO",
