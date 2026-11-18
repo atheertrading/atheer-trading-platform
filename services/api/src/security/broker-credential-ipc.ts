@@ -127,7 +127,7 @@ async function handleRequest(
     if (!credentials) {
       return { requestId: request.requestId, ok: false, errorCode: "invalid_request" };
     }
-    const managerCredentials: CapitalDemoCredentials = {
+    const managerCredentials = {
       apiKey: credentials.apiKey,
       identifier: credentials.identifier,
       password: credentials.password,
