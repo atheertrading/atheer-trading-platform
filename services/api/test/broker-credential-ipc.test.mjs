@@ -128,6 +128,38 @@ test("private Unix-domain IPC rejects an invalid capability before broker access
   }
 });
 
+test("private IPC rejects environment overrides and unexpected credential fields", async () => {
+  let connectCount = 0;
+  const manager = {
+    async connect() {
+      connectCount += 1;
+      return connectedStatus;
+    },
+    async disconnect() {
+      return disconnectedStatus;
+    },
+  };
+  const fixture = await makeServer(manager);
+  try {
+    const response = await sendRequest(fixture.socketPath, {
+      requestId: "request-0006",
+      capability: fixture.capability.toString("base64url"),
+      action: "connect",
+      environment: "LIVE",
+      credentials: {
+        apiKey: "synthetic-demo-key",
+        identifier: "synthetic.identity",
+        password: "synthetic-demo-password",
+      },
+    });
+    assert.equal(response.ok, false);
+    assert.equal(response.errorCode, "invalid_request");
+    assert.equal(connectCount, 0);
+  } finally {
+    await fixture.server.close();
+  }
+});
+
 test("private Unix-domain IPC disconnects streaming before releasing the broker session", async () => {
   const order = [];
   const manager = {
