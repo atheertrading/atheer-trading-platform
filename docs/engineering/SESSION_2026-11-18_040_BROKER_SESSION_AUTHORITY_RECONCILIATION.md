@@ -51,3 +51,11 @@ PR #37 remains draft and must not be merged as the completed broker integration 
 ## Safety
 
 No real broker credentials or sessions were accessed. No LIVE authentication, dealing or order execution was enabled.
+
+
+## Q10 connection orchestration review
+
+- PR #37 implements one shared WebSocket, 40-instrument cap, deduplication, five-minute ping, reconnect/backoff and quote-quality counters.
+- Q10 gaps remain: 1 session-creation request/second/API-key enforcement across sequential attempts, scheduled REST keepalive, priority allocation for open positions/strategies/watchlists, account-switch restoration and utilization metrics.
+- `CapitalDemoRuntime.connect()` coalesces concurrent requests but does not enforce sequential throttling; `ping()` is not scheduled.
+- Tracked in ATP-BRK-003 / ATP-MKT-007 and EDL-023.
