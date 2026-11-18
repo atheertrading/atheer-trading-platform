@@ -670,3 +670,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - This does not complete native process supervision or make PR #51 merge-ready. Swift capability generation, authenticated market-data client, bundled Node/API runtime, lifecycle tests, Keychain credential handoff and one backend CMS remain open.
 - The startup marker is not sufficient readiness evidence by itself. The native supervisor must additionally verify process liveness and a capability-authenticated market-data endpoint.
 - No local Mac/Xcode qualification, broker credentials, real DEMO session, dealing API, or LIVE behavior was used or verified.
+
+
+## 2026-11-18 — ATP-BRK-002 native process supervisor (PR #53)
+
+- PR #53: https://github.com/atheertrading/atheer-trading-platform/pull/53, branch `feat/macos-managed-backend-runtime`, stacked on PR #52 → PR #51.
+- The native app now has a supervised child-process integration in source: 256-bit `SecRandomCopyBytes` capability, private-stdin bootstrap, OS-assigned loopback port, readiness marker parsing, liveness plus authenticated market-data probes, and controlled termination.
+- The Swift market-data client requires the managed connection and sends Bearer authorization on every market-data request. The former unauthenticated default client path is removed.
+- The app bundles a universal Node.js 24.22.3 runtime and compiled API assets. Both official architecture archives are SHA-256 checked; Node's license is included.
+- Node 24 official macOS binaries require macOS 13.5+. The app deployment target remains 13.0; the supervisor reports a controlled failure below 13.5. The recorded owner Mac version 13.7.8 meets the runtime requirement.
+- Swift tests cover capability formatting/clearing and readiness parsing; API integration test exercises real process bootstrap and auth. PR #52 CI initially found missing TypeScript declarations for `process.stdout` and `process.exitCode`; fixed in PR #52 commit `426b3a9`, rerun pending.
+- **Not complete:** Keychain-to-backend credential handoff, backend-owned Broker Session Manager, one broker-session authority, real DEMO session, and owner-Mac Xcode/runtime qualification. Backend currently starts without credentials and reports `not_configured`; trading remains disabled.
+- Keep PRs #51–#53 stacked and unmerged until the full CI chain is green and the native runtime is qualified.
