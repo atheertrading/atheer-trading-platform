@@ -150,3 +150,24 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Rationale:** Avoid repeating the Swift 5.8 non-Sendable URLSessionTaskDelegate workaround in each service and keep transport execution outside presentation actors.
 - **Session policy:** Market Explorer uses an ephemeral URLSession with cookie storage and URL cache disabled. The caller can inject a URLSession for deterministic URLProtocol tests.
 - **Verification:** URLProtocol tests cover status and markets GET routes, query encoding, no-store headers, 503/500 mapping, and transport failure mapping. Exact-head CI pending.
+
+
+## EDL-022 — Single backend broker credential and session authority
+
+- **Date:** 2026-11-18
+- **Status:** Required architecture decision; implementation pending.
+- **Authority:** Library Broker Integration Q5 and Q6.
+- **Decision:** One backend CMS and Broker Session Manager is the sole authority for broker credentials, Capital.com authentication, CST/X-SECURITY-TOKEN lifecycle, renewal, reconnect and session status. The macOS app is a secure credential-entry/management client, not an independent broker-session owner.
+- **Current discrepancy:** PR #26 authenticates directly from Swift using Keychain credentials; PR #37 authenticates separately using backend environment credentials.
+- **Target:** app-managed backend child process; 256-bit per-launch capability bootstrapped over private stdin/pipe; bearer authorization on local control endpoints; backend CMS with a Keychain-backed storage adapter/helper; environment credentials test-only.
+- **Merge gate:** PR #37 must not be merged as completed broker integration until this architecture is implemented and DEMO-qualified. LIVE remains disabled.
+
+## EDL-023 — Centralized broker connection and subscription orchestration
+
+- **Date:** 2026-11-18
+- **Status:** Partially implemented; remaining work tracked in ATP-BRK-003 / ATP-MKT-007.
+- **Authority:** Library Broker Integration Q10.
+- **Decision:** Centralize REST session lifecycle, authentication rate limiting, WebSocket lifecycle, subscription registry, priority allocation, recovery and observability. Distinguish REST request rate, authenticated session inactivity, WebSocket heartbeat/duration and instrument subscription capacity.
+- **Implemented in unmerged PR #37:** shared WebSocket runtime, 40-instrument cap, deduplication, five-minute heartbeat, reconnect/backoff and quote-quality counters.
+- **Pending:** sequential session-creation rate limit, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection utilization metrics.
+- **Constraint:** Do not invent undocumented provider-wide REST or WebSocket connection limits.
