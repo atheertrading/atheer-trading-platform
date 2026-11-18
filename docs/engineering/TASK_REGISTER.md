@@ -511,3 +511,10 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Corrected stale Unix-domain IPC error-description assertion to match the production private-channel wording.
 - Propagated test-only corrections through PR #55–#70 dependency branches where the affected tests exist.
 - Exact-head CI reruns pending; see session 058 for diagnosis.
+
+## ATP-CHART-003 — PR #70 ancestry reconciliation
+
+- Merged the current PR #68 base into PR #70 using a two-parent Git merge commit; both branch histories are preserved.
+- Merge commit: `b38902d0342962b3d12f327ff3a90881ed063fd0`.
+- PR #70 comparison is now 52 ahead / 0 behind; exact-head CI and code review remain pending.
+- No force-push, history rewrite, or direct merge to `main` was performed.
