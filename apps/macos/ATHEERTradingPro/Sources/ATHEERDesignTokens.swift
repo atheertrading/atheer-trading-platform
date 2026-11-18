@@ -31,7 +31,7 @@ enum ATHEERDesignTokens {
         static let brandGold = rgb(0xFFD700)
 
         static let attention = adaptive(dark: 0xFFD700, light: 0x8A6200)
-        static let danger = adaptive(dark: 0xD32F2F, light: 0xB42318)
+        static let danger = adaptive(dark: 0xEF5350, light: 0xB42318)
         static let success = adaptive(dark: 0x00C853, light: 0x15803D)
         static let neutral = adaptive(dark: 0x384959, light: 0x52616B)
 

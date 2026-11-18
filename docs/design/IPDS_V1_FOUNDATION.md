@@ -101,6 +101,8 @@ Raw palette values must not be assigned directly by feature screens. The design 
 
 Profit/loss, market direction, connection state, selected navigation, and command emphasis are separate semantic concepts. Do not reuse one accent color for all of them. Buy and Sell actions require distinct, unmistakable action treatments and must not be confused with P&L colors; their final component colors require a dedicated trading-control specification.
 
+The brand palette remains unchanged, while semantic foreground mappings may use an appearance-specific shade to preserve legibility. A static sRGB contrast spot-check of the initial text/status mappings against the main canvas yields: dark primary 17.06:1, dark secondary 9.00:1, dark accent 9.51:1, dark warning 13.36:1, dark positive 8.37:1, and dark danger 5.37:1; light primary 15.21:1, light secondary 5.82:1, light accent 4.64:1, light warning 5.09:1, light positive 4.66:1, and light danger 6.10:1. The dark semantic danger shade is #EF5350; the original owner brand/reference red #D32F2F remains preserved in the palette. These are targeted foreground/canvas calculations, not a complete WCAG audit of every component, state, text size, or panel surface.
+
 ### 3.4 Theme direction
 
 Dark is the default appearance. Light is a complete supported appearance, not an inverted dark palette. Theme preference is presentation state and must not alter market-data processing, strategy configuration, risk policy, broker connectivity, or execution state.
