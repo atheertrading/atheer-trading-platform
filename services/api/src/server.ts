@@ -229,6 +229,10 @@ async function handleMarketDataRequest(
 
   try {
     if (pathname === "/market-data/markets" && method === "GET") {
+      if (runtime.status().state !== "connected") {
+        sendJson(response, 503, { error: "broker_session_not_connected" });
+        return;
+      }
       const searchTerm = url.searchParams.get("searchTerm") ?? "";
       const result = await runtime.getMarkets(searchTerm);
       sendJson(response, 200, {
@@ -273,6 +277,11 @@ async function handleMarketDataRequest(
           sendJson(response, 400, { error: "invalid_date_range" });
           return;
         }
+      }
+
+      if (runtime.status().state !== "connected") {
+        sendJson(response, 503, { error: "broker_session_not_connected" });
+        return;
       }
 
       const max = Number(rawMax);
