@@ -17,6 +17,15 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    var groupTitle: String {
+        switch self {
+        case .workspace: return "WORKSPACE"
+        case .markets: return "MARKETS"
+        case .apiConnection: return "SYSTEM"
+        case .settings: return "PREFERENCES"
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .workspace: return "square.grid.2x2"

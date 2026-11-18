@@ -14,6 +14,15 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
+    func testNavigationMetadataMapsOnlyImplementedDestinationsToStableGroups() {
+        XCTAssertEqual(
+            AppSection.allCases.map(\.groupTitle),
+            ["WORKSPACE", "MARKETS", "SYSTEM", "PREFERENCES"]
+        )
+        XCTAssertEqual(Set(AppSection.allCases.map(\.id)).count, AppSection.allCases.count)
+        XCTAssertTrue(AppSection.allCases.allSatisfy { !$0.systemImage.isEmpty })
+    }
+
     @MainActor
     func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
         let persistence = InMemoryWorkspacePersistence()
