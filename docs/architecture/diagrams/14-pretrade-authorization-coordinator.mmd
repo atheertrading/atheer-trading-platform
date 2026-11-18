@@ -1,0 +1,21 @@
+sequenceDiagram
+    autonumber
+    participant Source as Manual / Strategy / Algorithm / AI
+    participant Service as PreTradeAuthorizationService
+    participant Domain as Canonical Trading Domain
+    participant Risk as RiskEngine
+    participant Journal as PostgreSQL Trading Journal
+
+    Source->>Service: Submit typed OrderIntentEnvelope
+    Service->>Domain: Validate and freeze intent
+    Domain-->>Service: Valid immutable intent
+    Service->>Risk: Evaluate intent and current risk context
+    Risk-->>Service: AUTHORIZED / REJECTED / HELD RiskAssessment
+    Service->>Domain: Validate assessment and intent/environment binding
+    Service->>Journal: Persist intent and assessment
+    Note over Journal: One transaction: intent, risk assessment, audit, domain outbox
+    Journal-->>Service: Commit receipt
+    Service-->>Source: Persisted pre-trade decision
+
+    Note over Service,Journal: No OMS order creation or broker dispatch in this coordinator
+    Note over Source,Risk: RiskEngine remains the sole deterministic risk authority
