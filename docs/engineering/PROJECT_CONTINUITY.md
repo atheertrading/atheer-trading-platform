@@ -645,3 +645,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Estimates are planning ranges, not delivery commitments: controlled DEMO core 47–83 person-days from the reviewed baseline, excluding advanced strategy/AI and broad charting polish; apply 25–40% integration/qualification contingency.
 - This is a governance/planning record only. No source implementation, PR merge, broker permission, production deployment, risk-limit change or LIVE dealing was performed by this documentation update.
 - Preserve the existing PR #37 ancestry; re-fetch current exact heads/checks before integration. Keep `CAP_ALLOW_TRADING=false`.
+
+## 2026-11-18 — ATP-MA-ENG-001 multi-agent operating model
+
+- Added [ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md](ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md) on review branch `docs/multi-agent-engineering-operating-model-2026-11-18`.
+- Document commit: `aa0a55cf05b89c182e9d2c699ae55f02dc342e97`.
+- The model defines the Chief Engineering Orchestrator, Backend & Infrastructure, UI/UX & macOS, QA & Integration, and Architecture & Security logical roles; task and file ownership; contract-first parallelism; handoffs; least-privilege access; Git/PR workflow; quality gates; escalation; and trading safety invariants.
+- Created [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60) for owner review, agent/tool provisioning, contract definition and a read-only Market Explorer pilot.
+- Registered M03-001 through M03-006 in `TASK_REGISTER.md`. The pilot is blocked pending actual agent/tool qualification, a versioned interface contract and revalidation of current PR ancestry.
+- This is a documentation/governance proposal on a review branch, not evidence that multiple agents are provisioned or running. No application/backend source, CI workflow, credentials, broker permissions, risk limits, production settings or trading behavior changed. No tests or agent runtime checks are claimed.
+- Existing controls remain binding: agents cannot call broker dealing APIs directly; all order intents remain governed by RiskEngine → OMS → Execution Gateway; `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
