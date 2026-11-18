@@ -28,7 +28,7 @@ final class BackendRuntimeViewModel: ObservableObject {
 
     let healthModel: BackendHealthViewModel
     let brokerManagementModel: BrokerManagementViewModel
-    private let supervisor: BackendProcessManaging
+    private var supervisor: BackendProcessManaging
 
     init(
         supervisor: BackendProcessManaging? = nil,
