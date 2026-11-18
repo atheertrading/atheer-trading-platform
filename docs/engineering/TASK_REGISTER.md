@@ -35,7 +35,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M01-002 | P1 | Define canonical trading-domain model and lifecycle contracts | PENDING |
 | M01-003 | P1 | Define market-data contracts, timestamps, freshness, and recovery | PENDING |
 | M01-004 | P1 | Define centralized RiskEngine and authorization contracts | PENDING |
-| M01-005 | P1 | Define OMS, Execution Gateway, idempotency, outbox, and reconciliation | PENDING |
+| M01-005 | P1 | Define OMS, Execution Gateway, idempotency, outbox, and reconciliation | IN PROGRESS — ATP-OMS-001 | OEL-12 and risk-gated durable OMS order persistence implemented in PR #42; outbox consumer, Gateway, broker events, fills, and reconciliation remain pending |
 | M01-006 | P1 | Define AI orchestration, agent permissions, and tool contracts | PENDING |
 
 ## M02 — Product foundations
@@ -428,3 +428,23 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
 - The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
 - Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.
+
+
+## M01 / ATP-OMS-001 — Authorized OMS lifecycle persistence (PR #42)
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-OMS-001A | P0 | Define OEL-12 state vocabulary and source-specific transition authority | IMPLEMENTED; CI PENDING | `services/api/src/domain/order-lifecycle.ts`; Q&A Section 18 Q1/Q11/Q12/Q16/Q17/Q18/Q20; domain tests |
+| ATP-OMS-001B | P0 | Add environment-scoped durable OMS orders and append-only lifecycle events | IMPLEMENTED; CI PENDING | Migration `002_oms_lifecycle.sql`; exact risk-assessment/intent/account/instrument FKs; PostgreSQL integration tests |
+| ATP-OMS-001C | P0 | Persist OMS order only from exact persisted AUTHORIZED assessment | IMPLEMENTED; CI PENDING | `persistAuthorizedOrder`; atomic order/event/audit/outbox transaction; idempotent replay and conflict tests |
+| ATP-OMS-001D | P1 | Implement durable outbox lease/claim, fencing, and internal consumer | PENDING | Must prevent stale workers and duplicate delivery; no broker dispatch in this task |
+| ATP-OMS-001E | P1 | Implement broker observation ingestion, execution fill ledger, and reconciliation | PENDING | Broker-authoritative state, duplicate/out-of-order protection, uncertain submission handling |
+| ATP-OMS-001F | P1 | Implement Execution Gateway and DEMO-only qualification | BLOCKED BY SAFETY GATES | Only after outbox ownership, RiskEngine scope/expiry, capability checks, broker docs, reconciliation, and execution safety controls are qualified; preserve `CAP_ALLOW_TRADING=false` |
+
+### ATP-OMS-001 guardrails
+
+- `oms.order.persisted` is a domain notification only; no publisher, dispatch event, Execution Gateway, or broker dealing is implemented.
+- No broker acknowledgement is represented as a fill. Only broker-confirmed execution reports may create fills.
+- `UNKNOWN` and `RECONCILIATION_REQUIRED` are unresolved exception states. Never blindly retransmit uncertain submissions.
+- Manual, strategy, algorithmic, and AI intents remain on the same centralized RiskEngine → OMS path.
+- LIVE, broker permissions, and production financial actions remain protected.
