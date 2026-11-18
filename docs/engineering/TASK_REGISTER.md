@@ -400,3 +400,9 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Owner local foundation: Postgres.app PostgreSQL 18.7 on macOS 13.7.8 Intel, loopback-only at 127.0.0.1:5432; database `atheer_trading`, schema `atheer`, roles `atheer_db_owner`, `atheer_migrator`, `atheer_app`.
 - Do not run local migrations until ATP-PERSISTENCE-004 exit conditions are met. Do not grant CREATE to `atheer_app` or PUBLIC; do not weaken role separation; keep `CAP_ALLOW_TRADING=false`.
 - PR #41 remains OPEN / DRAFT and stacked on PR #40; no merge or approval is recorded.
+
+### Follow-up batch snapshot — branch HEAD `434ae1191c6a66cafe30e98f21c5ee03a8a4faf8`
+
+- Sequence privilege regression test and documentation reconciliation are committed; this branch HEAD is newer than the previously reported code-bearing head `94cc13d...`.
+- Current exact-head workflows: Mermaid run `44209957024` in progress; Local Sync Safety run `44209957152` passed; CI run `44209957185` has Backend queued and Intel/Apple Silicon/Repository Hygiene in progress at inspection.
+- The 49/49 Backend result applies to `94cc13d...` only and does not include the new sequence regression test. Do not carry it forward to `434ae119...`.
