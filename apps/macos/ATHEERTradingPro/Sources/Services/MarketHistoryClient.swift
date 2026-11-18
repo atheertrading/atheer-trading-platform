@@ -310,6 +310,8 @@ struct URLSessionMarketHistoryClient: MarketHistoryClient {
             throw error
         } catch is CancellationError {
             throw CancellationError()
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            throw CancellationError()
         } catch {
             throw MarketHistoryError.providerUnavailable
         }
