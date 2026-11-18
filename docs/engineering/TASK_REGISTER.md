@@ -560,13 +560,14 @@ Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or pr
 
 | ID | Priority | Task | Status | Acceptance evidence / dependency |
 |---|---|---|---|---|
-| ATP-MKT-006A | P0 | Deliver every validated stream quote to analytical consumers before UI throttling | IMPLEMENTED; CI PENDING | App-scoped MarketDataQuoteEventBus; publish before 100 ms presentation coalescing |
-| ATP-MKT-006B | P0 | Aggregate fresh DEMO Bid/Ask quotes into deterministic intraday OHLC bars | IMPLEMENTED; CI PENDING | Pure LiveCandleAggregator; MINUTE through HOUR; immutable open, extrema high/low, latest close |
-| ATP-MKT-006C | P0 | Reject stale, future, wrong-instrument, duplicate and out-of-order quote events | IMPLEMENTED; CI PENDING | Provider/environment/freshness/timestamp validation and deterministic XCTest |
-| ATP-MKT-006D | P0 | Integrate live bars into the shared Command Center and Charts & Analysis model | IMPLEMENTED; CI PENDING | Shared app-scoped MarketChartViewModel; source-labelled chart projection |
+| ATP-MKT-006A | P0 | Deliver every validated stream quote to analytical consumers before UI throttling | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | App-scoped MarketDataQuoteEventBus; publish before 100 ms presentation coalescing |
+| ATP-MKT-006B | P0 | Aggregate fresh DEMO Bid/Ask quotes into deterministic intraday OHLC bars | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Pure LiveCandleAggregator; MINUTE through HOUR; immutable open, extrema high/low, latest close |
+| ATP-MKT-006C | P0 | Reject stale, future, wrong-instrument, duplicate and out-of-order quote events | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Provider/environment/freshness/timestamp validation and deterministic XCTest |
+| ATP-MKT-006D | P0 | Integrate live bars into the shared Command Center and Charts & Analysis model | IMPLEMENTED; PR #45 CI PASS; PR #47 hardening CI PENDING | Shared app-scoped MarketChartViewModel; source-labelled chart projection |
 | ATP-MKT-006E | P1 | Define market-session/calendar alignment for HOUR_4, DAY and WEEK | PENDING | Must use authoritative provider/calendar semantics; no guessed UTC/session boundaries |
 | ATP-MKT-006F | P1 | Add reconnect recovery, gap observation and historical backfill policy | PENDING | Must not synthesize bars; distinguish market closures from missing data |
 | ATP-MKT-006G | P2 | Add volume, indicators and drawing tools | NOT STARTED | Separate provider semantics and analytical contracts required |
+| ATP-MKT-006H | P1 | Bound live candle retention to the 500-bar historical bootstrap maximum | IN PROGRESS | PR #47; exact-head CI pending; deterministic 501-bar regression test added |
 
 ### ATP-MKT-006 guardrails
 - Stream owner remains MarketExplorerViewModel; the quote bus only fans out validated DEMO events.
