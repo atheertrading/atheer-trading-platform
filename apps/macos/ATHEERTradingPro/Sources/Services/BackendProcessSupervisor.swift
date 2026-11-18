@@ -210,6 +210,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             capability?.clear()
             capability = nil
             connection = nil
+            credentialSocketDirectory?.remove()
+            credentialSocketDirectory = nil
             self.process = nil
         }
         guard #available(macOS 13.5, *) else {
