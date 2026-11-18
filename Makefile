@@ -1,14 +1,15 @@
 SHELL := /bin/bash
 REPOSITORY_DIR ?= $(CURDIR)
 
-.PHONY: help doctor tools sync bootstrap generate build test app-run backend-setup backend-check backend-start safe-sync-test clean
+.PHONY: help doctor tools sync bootstrap generate build test app-run backend-setup backend-check backend-package backend-start safe-sync-test clean
 
 help:
 	@printf '%s\n' \
 	  'make doctor          Check local prerequisites and repository state (read-only)' \
 	  'make sync            Safely fast-forward local main and preserve local work' \
 	  'make bootstrap       Sync, verify tools, install backend dependencies, generate Xcode project' \
-	  'make generate        Generate the Xcode project from project.yml' \
+	  'make generate        Package backend runtime and generate the Xcode project' \
+  'make backend-package Build API and bundle verified universal Node runtime' \
 	  'make build           Build the macOS application' \
 	  'make test            Run macOS XCTest suite' \
 	  'make app-run         Build and request launch of the macOS application' \
@@ -30,7 +31,10 @@ sync:
 bootstrap:
 	@bash scripts/bootstrap-local.sh "$(REPOSITORY_DIR)"
 
-generate: tools
+backend-package:
+	@bash scripts/package-backend-runtime.sh
+
+generate: tools backend-package
 	@cd apps/macos/ATHEERTradingPro && "$(HOME)/.local/bin/xcodegen" generate
 
 build: generate
