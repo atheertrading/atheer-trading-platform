@@ -659,3 +659,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - The backend still sources broker credentials from environment configuration; Keychain-to-backend credential handoff and single broker-session ownership remain open.
 - No owner-Mac shell, local Xcode, broker credentials, or real DEMO session were accessed.
 - Next: implement the Swift backend process supervisor, secure capability provider, authenticated market-data client, and Keychain-backed credential handoff before merging PR #51.
+
+
+## 2026-11-18 — ATP-BRK-002 ephemeral-port startup contract
+
+- PR #52: https://github.com/atheertrading/atheer-trading-platform/pull/52, branch `feat/backend-ephemeral-port-readiness`, stacked on PR #51 head `1e312352696bcc5e18ba00a15dc426d37aa26c5a`.
+- Backend runtime configuration now accepts `PORT=0` while retaining the loopback-only `127.0.0.1` host restriction and default developer port 4100.
+- After binding, the backend emits the non-secret `ATHEER_BACKEND_READY <assigned-port>` marker for the future Swift process supervisor.
+- Configuration tests cover default, ephemeral, malformed/out-of-range ports and non-loopback host rejection. Exact-head CI is pending.
+- This does not complete native process supervision or make PR #51 merge-ready. Swift capability generation, authenticated market-data client, bundled Node/API runtime, lifecycle tests, Keychain credential handoff and one backend CMS remain open.
+- The startup marker is not sufficient readiness evidence by itself. The native supervisor must additionally verify process liveness and a capability-authenticated market-data endpoint.
+- No local Mac/Xcode qualification, broker credentials, real DEMO session, dealing API, or LIVE behavior was used or verified.
