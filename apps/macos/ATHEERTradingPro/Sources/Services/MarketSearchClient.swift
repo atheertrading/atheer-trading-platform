@@ -140,7 +140,15 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
 
-        let (data, response) = try await requestExecutor.data(for: request)
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await requestExecutor.data(for: request)
+        } catch let error as MarketSearchError {
+            throw error
+        } catch {
+            throw MarketSearchError.backendUnavailable
+        }
+
         guard let http = response as? HTTPURLResponse else {
             throw MarketSearchError.invalidResponse
         }
