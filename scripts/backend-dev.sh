@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 API_DIR="$ROOT/services/api"
 BUILD_DIR="$ROOT/.build"
-CAPABILITY_FILE="$BUILD_DIR/backend-ipc-capability"
+CAPABILITY_FILE=""
 
 [[ -x "$API_DIR/node_modules/.bin/tsc" ]] || {
   echo "Backend dependencies are missing. Run make backend-setup first." >&2
@@ -14,6 +14,7 @@ CAPABILITY_FILE="$BUILD_DIR/backend-ipc-capability"
 mkdir -p "$BUILD_DIR"
 chmod 700 "$BUILD_DIR"
 umask 077
+CAPABILITY_FILE="$(mktemp "$BUILD_DIR/backend-ipc-capability.XXXXXX")"
 node --input-type=module -e 'import { randomBytes } from "node:crypto"; process.stdout.write(randomBytes(32).toString("base64url"))' > "$CAPABILITY_FILE"
 chmod 600 "$CAPABILITY_FILE"
 
