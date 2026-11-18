@@ -22,7 +22,7 @@ npm ci
 npm run migrate
 ```
 
-The command requires `DATABASE_URL`, obtains a PostgreSQL advisory lock, applies ordered SQL migrations transactionally, and records checksums. It does not print the connection string. Production migrations must be reviewed and executed through a separately approved operational change; do not run the migration command against production as an incidental application startup action.
+The command requires `DATABASE_URL` to authenticate as `atheer_migrator` (or an equivalently constrained migration principal that is a member of `atheer_db_owner`). It obtains a PostgreSQL advisory lock, executes `SET LOCAL ROLE atheer_db_owner` inside the migration transaction, applies ordered SQL migrations, and records checksums in the explicitly qualified `atheer.atheer_schema_migrations` ledger. The canonical schema `atheer` must already exist and be owned by `atheer_db_owner`; migrations and repository statements explicitly qualify every project relation with `atheer.`. The runtime `atheer_app` role needs schema USAGE and table DML/default sequence privileges only; it must not have CREATE. The command does not print the connection string. Production migrations must be reviewed and executed through a separately approved operational change; do not run the migration command against production as an incidental application startup action.
 
 ## Verification
 
@@ -31,7 +31,7 @@ npm run typecheck
 npm test
 ```
 
-When `DATABASE_URL` is set, `test/persistence.test.mjs` runs against the configured PostgreSQL instance. CI provisions an ephemeral PostgreSQL 17 service and injects a test-only connection string. The test suite applies migrations, verifies concurrent startup and checksum drift handling, exercises intent/risk idempotency and transaction rollback, and confirms the outbox contains no execution-dispatch event.
+When `DATABASE_URL` is set, `test/persistence.test.mjs` runs against the configured PostgreSQL instance. The integration test provisions an owner role, a NOINHERIT migrator with explicit owner membership, an app role without CREATE, the canonical `atheer` schema, and owner default table/sequence grants; it applies migrations as migrator and exercises repository reads/writes as app. CI provisions an ephemeral PostgreSQL 17 service and injects a test-only connection string. The test suite applies migrations, verifies concurrent startup and checksum drift handling, exercises intent/risk idempotency and transaction rollback, and confirms the outbox contains no execution-dispatch event.
 
 ## Backup, restore, retention, and recovery
 
@@ -59,14 +59,14 @@ The owner verified app connectivity and CREATE denial, migrator authentication a
 
 **Do not run `npm run migrate` against this local database with the current PR #41 implementation.**
 
-The current migration CLI connects as `atheer_migrator`, but the migration runner does not execute `SET ROLE atheer_db_owner`. Because the role is NOINHERIT, owner privileges are not inherited automatically. In addition, the migration ledger, migration DDL, and repository statements use unqualified relation names; they do not explicitly target the owner's canonical `atheer` schema. The runbook's generic `DATABASE_URL` instruction is therefore insufficient for this role/schema configuration.
+The current migration CLI connects as `atheer_migrator`. Because the role is NOINHERIT, owner privileges are not inherited automatically. The corrected runner must execute `SET LOCAL ROLE atheer_db_owner` inside its migration transaction. The migration ledger, migration DDL, and repository statements must explicitly target the canonical `atheer` schema. The runbook's generic `DATABASE_URL` instruction is therefore insufficient for this role/schema configuration.
 
 Required correction before local migration:
 
 1. Keep `atheer` as the canonical schema; do not weaken the local grants.
-2. Have the migration transaction explicitly assume `atheer_db_owner` (for example, transaction-local role switching) before creating or recording schema objects.
-3. Schema-qualify the migration ledger, every migration object, and repository SQL, or prove an equally strict and consistently applied schema configuration.
-4. Add PostgreSQL integration tests using least-privilege `atheer_migrator` and `atheer_app` roles. Verify app DML on owner-created tables and continued CREATE denial.
+2. Execute `SET LOCAL ROLE atheer_db_owner` transaction-locally before creating or recording schema objects.
+3. Schema-qualify the migration ledger, every migration object, and all repository SQL with `atheer.`.
+4. Test with a NOINHERIT `atheer_migrator` explicitly granted membership in `atheer_db_owner`, and an `atheer_app` role with schema USAGE plus owner-default DML/sequence grants but no CREATE.
 5. Re-run CI on the corrected exact PR head, then prepare a separate controlled local migration qualification.
 
 The existing PostgreSQL 17 CI integration pass does not prove this owner's PostgreSQL 18.7 role/schema configuration. Do not create production tables, alter role grants as a workaround, or infer local compatibility from CI.
