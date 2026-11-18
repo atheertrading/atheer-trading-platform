@@ -104,6 +104,47 @@ test("Capital DEMO session uses only the official DEMO host and returns session 
   assert.equal(body.encryptedPassword, false);
 });
 
+test("Capital DEMO session stream endpoint is normalized to the documented WebSocket connect path", async () => {
+  const client = new CapitalDemoClient(async () => response({
+    streamEndpoint: "wss://api-streaming-capital.backend-capital.com/",
+  }));
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  const connection = await client.getStreamingConnectionInfo(session);
+
+  assert.equal(
+    connection.streamEndpoint,
+    "wss://api-streaming-capital.backend-capital.com/connect",
+  );
+  assert.equal(connection.cst, session.cst);
+  assert.equal(connection.securityToken, session.securityToken);
+});
+
+test("Capital DEMO session rejects untrusted WebSocket endpoint paths and ports", async () => {
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+  for (const streamEndpoint of [
+    "wss://attacker.example/connect",
+    "wss://api-streaming-capital.backend-capital.com:8443/connect",
+    "wss://api-streaming-capital.backend-capital.com/private",
+  ]) {
+    const client = new CapitalDemoClient(async () => response({ streamEndpoint }));
+    await assert.rejects(
+      client.getStreamingConnectionInfo(session),
+      /untrusted streaming endpoint/,
+    );
+  }
+});
+
 test("Capital DEMO REST client shares a ten-requests-per-second budget across endpoints", async () => {
   const calls = [];
   const waits = [];
