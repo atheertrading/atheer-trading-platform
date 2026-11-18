@@ -469,3 +469,48 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - No fake price, balance, position, P&L, market depth or fill is displayed.
 - Removing a watchlist instrument removes its subscription; hiding a panel does not stop the app-scoped market-data runtime.
 - No order creation or broker dealing action is exposed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## Cross-PR engineering review — verified 2026-11-18
+
+### Repository governance
+- Default branch `main` was observed at `4875fc30e68b3611c036f4e9b1c9bbe9f0fb59c6` during this review.
+- GitHub repository rulesets endpoint returned no rulesets; `main` branch protection was not enabled at review time. Treat this as a governance gap: require PR review/status checks, block force-push and branch deletion, and define merge policy before production collaboration.
+- Repository is public and no repository license was identified in the reviewed metadata. Public visibility does not itself grant reuse rights; owner should select an appropriate license before inviting external reuse.
+- README contains stale PR status references (for example PR #10 still described as unmerged although it is merged). Reconcile project-facing documentation against actual merged history.
+
+### Current PR state and exact-head CI evidence
+- PRs #24–#43 in the current delivery chain remain OPEN / DRAFT / unmerged at review time.
+- PR #24 HEAD `e34c7155c45e9108e5f95156fb8f2e1363d63e60`: Backend and Repository Hygiene passed; Apple Silicon passed; Intel job remains in progress. CodeQL workflow passed, but Intel job completion is still pending.
+- PR #25 HEAD `3112637a014e1573078056dee5fefc61b495ff4f`: Backend and Repository Hygiene passed; Intel job remains in progress; Apple Silicon job in the inspected CI run was cancelled. Do not qualify until a complete current-head run passes both architectures.
+- PR #26 HEAD `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`: CI and Local Sync Safety passed. However its declared base SHA `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b` does not equal PR #25 current HEAD `3112637a014e1573078056dee5fefc61b495ff4f`; reconcile/rebase the stack and re-run exact-head CI before ordered merge.
+- PRs #33, #37, #38, #39, and #40: previously inspected current-head CI suites passed. They remain open/draft and must be merged only after their upstream base chain is reconciled.
+- PR #41 HEAD `c9eb73d28c24398dfcb435525118f971aae221e8`: current-head CI now passed. Intel x86_64, Apple Silicon arm64, Backend, and Repository Hygiene all completed successfully; Mermaid architecture and Local Sync Safety also passed. Backend includes 49/49 PostgreSQL integration tests. This supersedes the earlier note that its new documentation HEAD had no CI.
+- PR #42 HEAD `ff7af23585b8d7272d826fd29b03111ed57492bf`: current-head CI passed on Intel x86_64, Apple Silicon arm64, Backend, and Repository Hygiene; Mermaid and Local Sync Safety passed. Backend test suite reported 52/52.
+- PR #43 current HEAD `25599a3c65ad21ee71871c64759118ad98a63619`: Backend and Repository Hygiene passed; Mermaid and Local Sync Safety passed; Intel and Apple Silicon jobs are queued. Do not mark macOS qualification complete until both jobs and their Debug/XCTest/Release steps pass.
+- PR #43 documentation previously mentioned code head `42ee04d878f0554f17bef54a5abfd688ffe9a016`; that is superseded by current HEAD `25599a3c65ad21ee71871c64759118ad98a63619`. Reconcile the snapshot after the queued jobs complete.
+- These CI statements are SHA-specific. Any subsequent documentation or code commit creates a new HEAD and requires fresh exact-head verification.
+
+### Implementation maturity
+- Merged baseline includes engineering governance, platform foundation, backend/macOS health, safe local sync, navigable workspace, shared visual foundation, and adaptive workspace layout (PRs #1, #2, #6–#11, #17, #18, #22).
+- PRs #24–#26 establish the macOS Command Center/workspace and Capital.com DEMO REST/credential foundations, but they are not yet merged or owner-runtime qualified.
+- PRs #33, #37–#39 establish Market Explorer, Capital.com DEMO streaming, native timestamped quote consumption, and historical candle/UTC normalization. They do not establish a completed chart engine, indicators, or drawing engine.
+- PR #40 establishes canonical trading-domain contracts; it is not a complete RiskEngine or execution system.
+- PR #41 establishes PostgreSQL migration/repository foundations and domain-record outbox persistence. It does not implement an outbox consumer, OMS worker, Execution Gateway dispatcher, or broker order dispatch.
+- PR #42 establishes risk-gated OEL-12 order persistence and atomic lifecycle/audit/outbox records. It is OMS persistence foundation, not a complete lifecycle processor, fill processor, position projection, or broker reconciliation worker.
+- PR #43 integrates a persisted local watchlist and app-scoped DEMO quote consumer into the Command Center. Its latest code includes stream lifecycle, unsubscribe, row actions, and quote freshness presentation; it remains unmerged and current-head macOS CI is pending.
+- No PR in this chain establishes production readiness or LIVE execution. `CAP_ALLOW_TRADING=false` remains mandatory.
+
+### Outstanding owner / operational qualification
+- No owner-side Capital.com DEMO authentication/session validation or end-to-end live quote acceptance is established by hosted CI alone.
+- Local PostgreSQL 18.7 has not been migrated or qualified. Do not run `npm run migrate` without an approved backup/restore and controlled migration qualification plan.
+- Owner-side macOS visual, accessibility/VoiceOver, Keychain, multi-display, and runtime acceptance remain pending.
+- No broker execution, production deployment, credential permission change, or LIVE trading action was performed.
+
+### Next actions (ordered)
+1. Complete PR #24 Intel job and PR #25 Intel/arm64 qualification.
+2. Reconcile PR #26 base to the intended current PR #25 head; then re-run exact-head CI for #26 and descendants as needed.
+3. Complete PR #43 Intel and arm64 jobs on exact HEAD `25599a3...`; update the implementation snapshot after qualification.
+4. Reconcile stale README and engineering status snapshots; ensure all docs identify exact commit SHAs and distinguish current implementation from target architecture.
+5. Establish main-branch protection/rulesets and an explicit repository license decision.
+6. Merge the dependency chain only in verified order, rechecking each base/head and required checks after each merge.
+7. Continue ATP-OMS-002 design only after authoritative OMS/Execution source reconciliation; keep domain-event outbox distinct from broker-command outbox. No broker dispatch in that batch.
