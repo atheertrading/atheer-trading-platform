@@ -167,6 +167,49 @@ struct ServerSentEventParser {
     }
 }
 
+enum MarketDataStreamRequestBuilder {
+    static func makeRequest(
+        baseURL: URL,
+        epics: [String],
+        authorization: String
+    ) throws -> URLRequest {
+        let normalized = Array(
+            Set(epics.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) })
+        ).sorted()
+        guard baseURL.scheme == "http",
+              baseURL.host == "127.0.0.1",
+              baseURL.port != nil,
+              !normalized.isEmpty,
+              normalized.count <= 40,
+              normalized.allSatisfy({ !$0.isEmpty && $0.count <= 64 }),
+              authorization.hasPrefix("Bearer "),
+              authorization.count > "Bearer ".count else {
+            throw MarketDataStreamError.invalidURL
+        }
+
+        let streamURL = ["market-data", "stream"].reduce(baseURL) {
+            $0.appendingPathComponent($1)
+        }
+        var components = URLComponents(url: streamURL, resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "epics", value: normalized.joined(separator: ","))
+        ]
+        guard let url = components?.url else {
+            throw MarketDataStreamError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 60
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+        request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
+        request.setValue(authorization, forHTTPHeaderField: "Authorization")
+        return request
+    }
+}
+
 @MainActor
 struct URLSessionMarketDataStreamClient: MarketDataStreamClient {
     private let baseURL: URL
@@ -210,29 +253,11 @@ struct URLSessionMarketDataStreamClient: MarketDataStreamClient {
 
             let task = Task.detached(priority: .userInitiated) {
                 do {
-                    let streamURL = ["market-data", "stream"].reduce(baseURL) {
-                        $0.appendingPathComponent($1)
-                    }
-                    var components = URLComponents(
-                        url: streamURL,
-                        resolvingAgainstBaseURL: false
+                    let request = try MarketDataStreamRequestBuilder.makeRequest(
+                        baseURL: baseURL,
+                        epics: normalized,
+                        authorization: authorization
                     )
-                    components?.queryItems = [
-                        URLQueryItem(name: "epics", value: normalized.joined(separator: ","))
-                    ]
-                    guard let url = components?.url else {
-                        throw MarketDataStreamError.invalidURL
-                    }
-
-                    var request = URLRequest(url: url)
-                    request.httpMethod = "GET"
-                    request.timeoutInterval = 60
-                    request.cachePolicy = .reloadIgnoringLocalCacheData
-                    request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-                    request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-                    request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
-                    request.setValue(authorization, forHTTPHeaderField: "Authorization")
-
                     let (bytes, response) = try await session.bytes(for: request)
                     guard let http = response as? HTTPURLResponse else {
                         throw MarketDataStreamError.invalidResponse
