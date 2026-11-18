@@ -157,6 +157,20 @@ final class MarketChartTests: XCTestCase {
         ))
     }
 
+    func testHistoricalDecoderAcceptsCandleTimestampEqualToReceiptTime() throws {
+        let receiptTimeCandle = validPayload.replacingOccurrences(
+            of: "\"timestampMs\": 1795000000000",
+            with: "\"timestampMs\": 1795000001000"
+        )
+        let batch = try MarketHistoryPayloadDecoder().decode(
+            Data(receiptTimeCandle.utf8),
+            expectedInstrumentId: "GOLD",
+            expectedResolution: .minute,
+            maximum: 500
+        )
+        XCTAssertEqual(batch.candles.count, 1)
+    }
+
     @MainActor
     func testRequestBuilderUsesDynamicBackendPortAndPrivateCapability() throws {
         let capability = try BackendIPCCapability(testBytes: Data(repeating: 0x42, count: 32))
