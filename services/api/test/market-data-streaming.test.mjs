@@ -23,6 +23,11 @@ class FakeWebSocket {
     this.listeners.set(type, listeners);
   }
 
+  removeEventListener(type, listener) {
+    const listeners = this.listeners.get(type) ?? [];
+    this.listeners.set(type, listeners.filter((candidate) => candidate !== listener));
+  }
+
   send(raw) {
     const message = JSON.parse(raw);
     this.sent.push(message);
@@ -105,6 +110,29 @@ test("DEMO stream connects to provider session endpoint and subscribes with serv
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(runtime.status().state, "disconnected");
   await runtime.disconnect();
+});
+
+test("stream disconnect waits for the WebSocket close handshake before returning", async () => {
+  const sockets = [];
+  const runtime = createStreamingRuntime(sockets);
+  const unsubscribe = await runtime.subscribe(["WTI"], () => undefined);
+  unsubscribe();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await runtime.subscribe(["WTI"], () => undefined);
+
+  const socket = sockets[sockets.length - 1];
+  const originalClose = socket.close.bind(socket);
+  let closeConfirmed = false;
+  socket.close = (...args) => {
+    setTimeout(() => {
+      originalClose(...args);
+      closeConfirmed = true;
+    }, 25);
+  };
+
+  await runtime.disconnect();
+  assert.equal(closeConfirmed, true);
+  assert.equal(runtime.status().state, "disconnected");
 });
 
 test("stream rejects invalid, duplicate, and over-capacity instrument subscriptions", async () => {
