@@ -295,3 +295,53 @@ test("private Unix-domain IPC bounds request size and applies private filesystem
     await closeFixture(fixture);
   }
 });
+
+test("credential IPC close drains an authenticated in-flight request before resolving", async () => {
+  let releaseConnect;
+  let signalConnectStarted;
+  const connectStarted = new Promise((resolve) => { signalConnectStarted = resolve; });
+  const connectGate = new Promise((resolve) => { releaseConnect = resolve; });
+  const manager = {
+    async connect() {
+      signalConnectStarted();
+      await connectGate;
+      return connectedStatus;
+    },
+    async disconnect() {
+      return disconnectedStatus;
+    },
+  };
+  const fixture = await makeServer(manager);
+
+  try {
+    const responsePromise = sendRequest(fixture.socketPath, {
+      requestId: "request-drain-01",
+      capability: fixture.capability.toString("base64url"),
+      action: "connect",
+      credentials: {
+        apiKey: "synthetic-demo-key",
+        identifier: "synthetic.identity",
+        password: "synthetic-demo-password",
+      },
+    });
+    await connectStarted;
+
+    let closeResolved = false;
+    const closing = fixture.server.close().then(() => { closeResolved = true; });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(closeResolved, false, "close must wait while an authenticated operation is active");
+
+    releaseConnect(connectedStatus);
+    const response = await responsePromise;
+    await closing;
+
+    assert.equal(response.ok, true);
+    assert.deepEqual(response.status, connectedStatus);
+    assert.equal(closeResolved, true);
+    await assert.rejects(stat(fixture.socketPath), { code: "ENOENT" });
+  } finally {
+    releaseConnect?.(connectedStatus);
+    await fixture.server.close();
+    await rm(fixture.directory, { recursive: true, force: true });
+  }
+});
