@@ -104,6 +104,41 @@ test("Capital DEMO session uses only the official DEMO host and returns session 
   assert.equal(body.encryptedPassword, false);
 });
 
+test("Capital DEMO REST client shares a ten-requests-per-second budget across endpoints", async () => {
+  const calls = [];
+  const waits = [];
+  let monotonicNow = 0;
+  const client = new CapitalDemoClient(async (url, init) => {
+    calls.push({ url: String(url), init });
+    if (String(url).endsWith("/prices/AAPL?resolution=MINUTE&max=20")) {
+      return response({ prices: [] });
+    }
+    return response({ markets: [] });
+  }, Date.now, {
+    requestIntervalMs: 100,
+    monotonicNow: () => monotonicNow,
+    sleep: async (milliseconds) => {
+      waits.push(milliseconds);
+      monotonicNow += milliseconds;
+    },
+  });
+  const session = {
+    cst: "demo-cst",
+    securityToken: "demo-security-token",
+    createdAtMs: 1_800_000_000_000,
+    environment: "DEMO",
+  };
+
+  await Promise.all([
+    client.getMarkets(session, "Apple"),
+    client.ping(session),
+    client.getPriceHistory(session, "AAPL", "MINUTE", 20),
+  ]);
+
+  assert.equal(calls.length, 3);
+  assert.deepEqual(waits, [100, 100]);
+});
+
 test("market search and history requests carry DEMO session headers", async () => {
   const calls = [];
   const client = new CapitalDemoClient(async (url, init) => {
