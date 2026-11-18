@@ -551,3 +551,10 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Market Explorer instrument selection routes to Charts; Command Center chart panel uses the same client contract.
 - Swift Charts renders Bid or Ask candles with timeframe selection, receipt-time/quality metadata and a provider-limit warning.
 - Status: IMPLEMENTED ON PR #70 BRANCH; exact-head CI, Apple Silicon qualification and owner-Mac verification pending. Persistent watchlist and live candles are not yet integrated.
+
+
+## 2026-11-18 — Authenticated chart workspace follow-up
+
+- `WorkspaceHomeView` and `CommandCenterView` now use explicit dependency initializers for the authenticated market-history client, selected instrument, backend health model, and navigation closures.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
+- Classification: IMPLEMENTED ON PR #70 BRANCH; hosted exact-head build/XCTest pending. No local Xcode, broker DEMO session, or runtime result is claimed.
