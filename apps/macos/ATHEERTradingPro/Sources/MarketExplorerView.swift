@@ -5,15 +5,18 @@ struct MarketExplorerView: View {
     @StateObject private var model: MarketExplorerViewModel
     @StateObject private var streamModel: MarketDataStreamViewModel
     let onOpenAPIConnection: () -> Void
+    let onOpenChart: (String) -> Void
 
     init(
         client: MarketSearchClient,
         streamClient: MarketDataStreamClient,
-        onOpenAPIConnection: @escaping () -> Void
+        onOpenAPIConnection: @escaping () -> Void,
+        onOpenChart: @escaping (String) -> Void = { _ in }
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
         _streamModel = StateObject(wrappedValue: MarketDataStreamViewModel(client: streamClient))
         self.onOpenAPIConnection = onOpenAPIConnection
+        self.onOpenChart = onOpenChart
     }
 
     var body: some View {
@@ -345,6 +348,17 @@ struct MarketExplorerView: View {
                     ? "Remove \(instrument.epic) from live quote monitor"
                     : "Add \(instrument.epic) to live quote monitor"
             )
+
+            Button {
+                onOpenChart(instrument.epic)
+            } label: {
+                Label("Chart", systemImage: "chart.xyaxis.line")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .frame(width: 62, alignment: .trailing)
+            .help("Open historical DEMO candles for this instrument")
+            .accessibilityLabel("Open chart for \(instrument.epic)")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
