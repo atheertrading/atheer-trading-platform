@@ -155,7 +155,8 @@ struct MarketHistoryPayloadDecoder {
                   candle.bid.isValid(),
                   candle.ask.isValid(),
                   candle.providerVolume.map({ $0.isFinite && $0 >= 0 }) ?? true,
-                  candle.providerVolumeField.map({ $0 == "lastTradedVolume" }) ?? true,
+                  (candle.providerVolume == nil && candle.providerVolumeField == nil)
+                    || (candle.providerVolume != nil && candle.providerVolumeField == "lastTradedVolume"),
                   candle.ask.open >= candle.bid.open,
                   candle.ask.high >= candle.bid.high,
                   candle.ask.low >= candle.bid.low,

@@ -67,6 +67,19 @@ final class MarketChartTests: XCTestCase {
         XCTAssertThrowsError(try MarketHistoryPayloadDecoder().decode(Data(invalidOHLC.utf8), expectedInstrumentId: "GOLD", expectedResolution: .minute, maximum: 500))
     }
 
+    func testHistoricalDecoderRejectsIncompleteProviderVolumeLineage() {
+        let incompleteLineage = validPayload.replacingOccurrences(
+            of: "\"providerVolumeField\": \"lastTradedVolume\"",
+            with: "\"providerVolumeField\": null"
+        )
+        XCTAssertThrowsError(try MarketHistoryPayloadDecoder().decode(
+            Data(incompleteLineage.utf8),
+            expectedInstrumentId: "GOLD",
+            expectedResolution: .minute,
+            maximum: 500
+        ))
+    }
+
     @MainActor
     func testChartViewModelLoadsOnlyTheSelectedWatchlistInstrument() async throws {
         let batch = try MarketHistoryPayloadDecoder().decode(Data(validPayload.utf8), expectedInstrumentId: "GOLD", expectedResolution: .minute, maximum: 500)

@@ -129,7 +129,7 @@ struct MarketChartSurfaceView: View {
             let isRising = values.close >= values.open
             let candleColor = isRising
                 ? ATHEERDesignTokens.ColorRole.success
-                : ATHEERDesignTokens.ColorRole.attention
+                : ATHEERDesignTokens.ColorRole.danger
             let halfWidth = Double(model.resolution.intervalMilliseconds) / 1_000 * 0.34
 
             RuleMark(x: .value("Time", candle.date),
