@@ -171,3 +171,14 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Implemented:** Shared WebSocket runtime, 40-instrument cap, deduplication, five-minute ping, reconnect/backoff and quote-quality counters.
 - **Pending:** One session creation per second per API key, REST keepalive scheduling, priority-based subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented global connection limits; confirm them with Capital.com.
+
+
+### EDL-022 implementation direction
+
+- The macOS app will launch the local backend as a managed child process for production packaging.
+- Generate a 256-bit per-launch capability token in the native app and deliver it to the backend over a private stdin/pipe bootstrap channel; do not put it in command-line arguments, persistent files or environment variables.
+- Require `Authorization: Bearer <capability>` on local broker/session and market-data control endpoints, in addition to the native-client marker and browser-origin checks.
+- Implement a backend-owned CMS that persists credentials through a Keychain-backed storage adapter/helper. The SwiftUI/ViewModel layer must not retain or independently authenticate with raw credentials after provisioning.
+- The backend Broker Session Manager owns CST/`X-SECURITY-TOKEN` in memory, expiry, renewal, reconnect, account/environment isolation and audit-safe status.
+- The app's Broker Management UI becomes a client of the backend CMS/session API. All data and future execution services consume the same session authority.
+- Keep environment-based credentials only for isolated development/test fixtures, behind an explicit opt-in that cannot be enabled in production builds.
