@@ -235,6 +235,26 @@ test("runtime marks failed provider authentication as error without leaking cred
   assert.equal(JSON.stringify(runtime.status()).includes("demo-password"), false);
 });
 
+test("provider credential rejection blocks automatic session recreation until credentials are explicitly replaced", async () => {
+  const client = createMockClient();
+  client.startSession = async (value) => {
+    client.calls.push(["connect", value]);
+    throw new CapitalDemoApiError("authentication rejected HTTP 401", 401);
+  };
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, Date.now, {
+    scheduler: { schedule: () => "timer", cancel: () => {} },
+  });
+
+  await assert.rejects(runtime.connect(), /HTTP 401/);
+  assert.equal(runtime.status().state, "error");
+  await runtime.connect();
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
+});
+
 test("broker session manager preserves creation throttling across account replacement", async () => {
   let now = 1_800_000_000_000;
   let factoryCalls = 0;
