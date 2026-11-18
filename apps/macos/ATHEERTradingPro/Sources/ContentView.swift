@@ -71,16 +71,17 @@ struct ContentView: View {
                     WorkspaceHomeView(
                         backendHealthModel: backendRuntimeModel.healthModel,
                         marketHistoryClient: backendRuntimeModel.marketHistoryClient,
+                        marketDataStreamModel: backendRuntimeModel.marketDataStreamModel,
                         selectedChartInstrumentId: selectedChartInstrumentId,
                         onOpenAPIConnection: { selection = .apiConnection },
                         onOpenMarkets: { selection = .markets }
                     )
                 case .markets:
                     if let client = backendRuntimeModel.marketSearchClient,
-                       let streamClient = backendRuntimeModel.marketDataStreamClient {
+                       let streamModel = backendRuntimeModel.marketDataStreamModel {
                         MarketExplorerView(
                             client: client,
-                            streamClient: streamClient,
+                            streamModel: streamModel,
                             onOpenAPIConnection: { selection = .apiConnection },
                             onOpenChart: { instrumentId in
                                 selectedChartInstrumentId = instrumentId
