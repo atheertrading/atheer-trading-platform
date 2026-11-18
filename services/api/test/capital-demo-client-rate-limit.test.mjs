@@ -135,6 +135,14 @@ test("Capital.com REST client bounds 429 retries and does not retry other failur
   });
   await assert.rejects(unavailable.getMarkets(session, "EURUSD"), { statusCode: 503 });
   assert.equal(unavailableRequests, 1);
+
+  let networkRequests = 0;
+  const networkFailure = new CapitalDemoClient(async () => {
+    networkRequests += 1;
+    throw new TypeError("fetch failed");
+  });
+  await assert.rejects(networkFailure.getMarkets(session, "EURUSD"), /fetch failed/);
+  assert.equal(networkRequests, 1);
 });
 
 test("final exhausted 429 still delays subsequent requests through the shared cooldown", async () => {
