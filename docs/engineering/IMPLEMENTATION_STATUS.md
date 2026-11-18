@@ -426,3 +426,24 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - PR #33 now sends `X-ATHEER-LOCAL-CLIENT: macOS` on both backend status and market search GET requests.
 - Server-side rejection of missing markers, browser Origin and cross-site Fetch Metadata is implemented in dependent PR #37.
 - The client/server contract is not considered complete until both PRs are integrated and exact-head CI passes.
+
+
+## 2026-11-18 — PR #33 Market Explorer integration merged
+
+- PR #33 merged into `main` with squash merge commit `2e8bf9bd5f4274ed5d500474335a778cd6f9b75c`.
+- Merged source head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
+- Exact-head CI run `44235123474`: Intel x86_64 macOS build/XCTest/Swift CodeQL passed; Apple Silicon arm64 Debug/XCTest/Release passed; Backend Toolchain and Repository Hygiene passed.
+- Dedicated CodeQL run `44235124217` and Local Sync Safety run `44235123457` passed.
+- The successful CI is hosted verification only. Physical Mac runtime, visual/accessibility QA, Keychain restart persistence and authenticated Capital.com DEMO acceptance remain separate owner-workstation gates.
+
+### Broker and connection integration gates
+
+- ATP-BRK-002 / EDL-022: one backend CMS and Broker Session Manager must own broker credentials and CST/X-SECURITY-TOKEN lifecycle. PR #26's Swift Keychain/direct-auth path and PR #37's environment-driven backend-auth path are separate authorities and must be reconciled before PR #37 is merged as a completed broker integration.
+- Selected secure bootstrap direction: app-managed backend child process; 256-bit per-launch capability delivered over private stdin/pipe; bearer authorization on local control routes; backend CMS uses a Keychain-backed storage adapter/helper; environment credentials remain test/development-only.
+- ATP-BRK-003 / ATP-MKT-007 / EDL-023: PR #37's current shared WebSocket, 40-instrument cap, deduplication, five-minute ping, reconnect/backoff and quote-quality counters are implemented; sequential session-creation rate limiting, scheduled REST keepalive, priority-based subscription allocation, account-switch restoration and utilization metrics remain incomplete.
+- PR #37 remains draft and is not merge-qualified. Its branch diverges from the new `main` history (91 ahead / 33 behind when compared to the PR #33 squash merge); do not retarget or rewrite history. Resolve the dependency graph with a preservation-first integration plan.
+
+### Downstream charting batch
+
+- PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
+- These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.

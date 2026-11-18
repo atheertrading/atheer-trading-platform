@@ -624,3 +624,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Native Market Search in PR #33 sends `X-ATHEER-LOCAL-CLIENT: macOS`.
 - Dependent PR #37 enforces the marker and rejects browser Origin / cross-site Fetch Metadata.
 - Integrate PR #33 before PR #37. The marker is not a secret and does not authenticate arbitrary local processes.
+
+
+## 2026-11-18 — PR #33 merged and integration gates refreshed
+
+- PR #33 Market Explorer merged to `main` at `2e8bf9bd5f4274ed5d500474335a778cd6f9b75c` (squash); exact tested head `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
+- CI `44235123474` passed Intel x86_64, Apple Silicon arm64, Backend Toolchain and Repository Hygiene. Dedicated CodeQL `44235124217` and Local Sync Safety `44235123457` passed.
+- Hosted CI does not qualify owner-Mac launch/visual/accessibility QA, Keychain persistence or real Capital.com DEMO authentication.
+- PR #37 remains draft. It is 91 commits ahead / 33 behind the PR #33 squash merge when compared directly and must not be silently retargeted, rebased or force-updated. The native Market Explorer client/server contract is therefore not yet integrated into main.
+- ATP-BRK-002 / EDL-022 remains a mandatory integration gate: PR #26 direct Swift Keychain authentication and PR #37 environment-driven backend authentication are duplicate session authorities. One backend CMS/session manager must own credentials and session tokens; native app provisioning must use authenticated private IPC/per-launch capability; environment credentials remain test-only.
+- ATP-BRK-003 / ATP-MKT-007 / EDL-023 tracks sequential authentication throttling, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection metrics. Existing shared WebSocket/40-subscription/ping/reconnect code remains unmerged in PR #37.
+- PR #44/#45/#47 have green exact-head CI but remain draft, stacked on feature branches. Preserve the stack and resolve ancestry before mainline integration.

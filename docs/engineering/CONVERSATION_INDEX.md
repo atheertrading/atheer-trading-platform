@@ -100,3 +100,8 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-038 | 2026-11-18 | PR #26 secure Capital.com DEMO broker-management merge | Qualified exact PR #26 head across Intel/Apple Silicon, backend, hygiene, CodeQL and Local Sync Safety; merged PR #26 with history preservation; retargeted PR #33 to main; updated integration status and owner-Mac/DEMO acceptance boundaries. | PR #24/#25/#26; merge commit 6b4668b9355178d5e13219f14cfe8cc847770915; PR #33; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; SESSION_2026-11-18_038_PR26_MERGE |
+
+
+
+| ATP-2026-11-18-043 | 2026-11-18 | PR #33 Market Explorer merge and broker integration gate refresh | Merged exact qualified PR #33 at `2e8bf9bd`; recorded successful Intel/Apple Silicon/backend/hygiene/CodeQL/sync checks; reconciled Library Q5/Q6/Q10 with PR #26 and PR #37 duplicate session authorities and connection orchestration gaps; documented PR #37 ancestry divergence and downstream chart PR stack status. | PR #33; PR #37; PR #44/#45/#47; ATP-BRK-002; ATP-BRK-003; ATP-MKT-007; EDL-022; EDL-023; SESSION_2026-11-18_041_MARKET_EXPLORER_MERGE_AND_BROKER_GATES |
+
