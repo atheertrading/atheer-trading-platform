@@ -148,36 +148,140 @@ struct CommandCenterView: View {
         ) {
             CommandCenterStatusItem(
                 title: "MARKET DATA",
-                value: "UNAVAILABLE",
-                detail: "Provider not configured",
-                symbol: "waveform.path",
-                tint: ATHEERDesignTokens.ColorRole.attention
+                value: marketDataStatus.value,
+                detail: marketDataStatus.detail,
+                symbol: marketDataStatus.symbol,
+                tint: marketDataStatus.tint
             )
 
             CommandCenterStatusItem(
                 title: "BROKER",
-                value: "DISCONNECTED",
-                detail: "No broker adapter",
+                value: brokerStatus.value,
+                detail: brokerStatus.detail,
                 symbol: "building.columns",
-                tint: .secondary
+                tint: brokerStatus.tint
             )
 
             CommandCenterStatusItem(
                 title: "ACCOUNT",
-                value: "NO SNAPSHOT",
-                detail: "Account state unavailable",
+                value: "NOT AVAILABLE",
+                detail: "Authenticated account read model is not integrated",
                 symbol: "person.crop.rectangle",
                 tint: .secondary
             )
 
             CommandCenterStatusItem(
-                title: "EXECUTION",
-                value: "DISABLED",
-                detail: "Trading gate is closed",
-                symbol: "lock",
-                tint: ATHEERDesignTokens.ColorRole.attention
+                title: "TRADING GATE",
+                value: tradingGateStatus.value,
+                detail: tradingGateStatus.detail,
+                symbol: tradingGateStatus.symbol,
+                tint: tradingGateStatus.tint
             )
         }
+    }
+
+    private var marketDataStatus: (value: String, detail: String, symbol: String, tint: Color) {
+        guard let model = marketDataStreamModel else {
+            return (
+                "UNAVAILABLE",
+                "Managed backend market stream is not available",
+                "waveform.path",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        }
+
+        switch model.connectionState {
+        case .connected:
+            if model.quotes.isEmpty {
+                return (
+                    "CONNECTED · WAITING",
+                    "Stream connected; awaiting the first provider quote",
+                    "waveform.path",
+                    ATHEERDesignTokens.ColorRole.attention
+                )
+            }
+            return (
+                "STREAMING",
+                "\(model.quotes.count) provider quote(s) · \(model.selectedCount) selected",
+                "waveform.path",
+                ATHEERDesignTokens.ColorRole.success
+            )
+        case .connecting:
+            return (
+                "CONNECTING",
+                "\(model.selectedCount) selected instrument(s)",
+                "arrow.triangle.2.circlepath",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .degraded:
+            return (
+                "DEGRADED",
+                model.lastError ?? "Market-data stream recovery is in progress",
+                "exclamationmark.triangle",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .disconnected:
+            let value = model.selectedEpics.isEmpty ? "NO WATCHLIST" : "STOPPED"
+            return (
+                value,
+                model.selectedEpics.isEmpty
+                    ? "Open Markets to select DEMO instruments"
+                    : "Last quote snapshots retain their age and freshness state",
+                "waveform.path",
+                .secondary
+            )
+        }
+    }
+
+    private var brokerStatus: (value: String, detail: String, tint: Color) {
+        guard case .connected(let snapshot) = backendHealthModel.state,
+              snapshot.readinessFailure == nil,
+              let status = snapshot.brokerStatus else {
+            return (
+                "NOT VERIFIED",
+                "Backend readiness has not confirmed broker state",
+                .secondary
+            )
+        }
+
+        let value = status
+            .replacingOccurrences(of: "_", with: " ")
+            .uppercased()
+        let isConnected = status.lowercased() == "connected"
+        return (
+            value,
+            "Backend-reported broker dependency state",
+            isConnected ? ATHEERDesignTokens.ColorRole.success : ATHEERDesignTokens.ColorRole.attention
+        )
+    }
+
+    private var tradingGateStatus: (value: String, detail: String, symbol: String, tint: Color) {
+        guard case .connected(let snapshot) = backendHealthModel.state,
+              snapshot.readinessFailure == nil,
+              let enabled = snapshot.tradingEnabled else {
+            return (
+                "NOT VERIFIED",
+                "No verified backend trading-permission snapshot",
+                "questionmark.circle",
+                .secondary
+            )
+        }
+
+        if enabled {
+            return (
+                "ENABLED",
+                "Backend-reported permission; no dealing controls are exposed here",
+                "exclamationmark.triangle",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        }
+
+        return (
+            "DISABLED",
+            "Backend confirms the trading gate is disabled",
+            "lock",
+            .secondary
+        )
     }
 
     private var primaryWorkspace: some View {
