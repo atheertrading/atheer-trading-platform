@@ -40,10 +40,10 @@ private final class UnixDomainSocketFixtureServer: @unchecked Sendable {
         }
         guard Darwin.listen(descriptor, 1) == 0 else {
             _ = Darwin.close(descriptor)
-            _ = Darwin.unlink(socketPath)
+            socketPath.withCString { _ = Darwin.unlink($0) }
             throw BrokerCredentialIPCError.connectionFailed(errno)
         }
-        _ = chmod(socketPath, 0o600)
+        socketPath.withCString { _ = chmod($0, 0o600) }
     }
 
     deinit {
