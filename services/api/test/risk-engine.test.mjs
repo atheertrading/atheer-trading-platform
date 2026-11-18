@@ -458,4 +458,18 @@ test("trading-control provider failures fail closed", async () => {
   assert.equal(assessment.outcome, "HELD");
   assert.ok(assessment.reasonCodes.includes("TRADING_CONTROLS_UNAVAILABLE"));
 });
+test("risk-increasing operations require an explicit BUY or SELL direction", async () => {
+  const fixtures = makeFixtures();
+  fixtures.intent.payload.direction = undefined;
+  const assessment = await createEngine(fixtures).evaluate(fixtures.intent);
+  assert.equal(assessment.outcome, "REJECTED");
+  assert.ok(assessment.reasonCodes.includes("ORDER_DIRECTION_REQUIRED"));
+});
 
+test("margin policy constraints force account evidence to be present", async () => {
+  const fixtures = makeFixtures({ accountSnapshotOverrides: { availableFunds: undefined } });
+  fixtures.policy.requiredAccountFields = ["equity"];
+  const assessment = await createEngine(fixtures).evaluate(fixtures.intent);
+  assert.equal(assessment.outcome, "HELD");
+  assert.ok(assessment.reasonCodes.includes("ACCOUNT_FIELD_UNAVAILABLE:availableFunds"));
+});
