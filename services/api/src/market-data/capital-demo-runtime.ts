@@ -183,7 +183,11 @@ export class CapitalDemoRuntime {
   private startKeepalive(): void {
     if (this.keepaliveHandle !== null || !this.session) return;
     this.keepaliveHandle = this.scheduler.schedule(
-      () => this.runKeepalive(),
+      async () => {
+        // A scheduled keepalive updates runtime health internally. Contain its
+        // rejection here so timer-driven failures never become unhandled promises.
+        await this.runKeepalive().catch(() => undefined);
+      },
       this.keepaliveIntervalMs,
     );
   }
