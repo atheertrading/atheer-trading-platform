@@ -184,3 +184,17 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
 - The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
 - Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.
+
+
+## EDL-013 — OEL-12 order lifecycle and risk-gated OMS persistence
+
+- **Date:** 2026-11-18
+- **Status:** Accepted under delegated internal decision authority; implementation in PR #42, hosted qualification pending.
+- **Authority:** Library document `Atheer Q&A Repository/Owner and Developer Approval/Owner and Developer Approval.md` delegates routine product, architecture, engineering, and professional-trading design decisions. Protected financial actions remain excluded.
+- **Source basis:** Library Q&A archive, PART VI / Section 18: Q1 (12-stage order lifecycle), Q11 (persistent idempotency), Q12 (exclusive Execution Gateway), Q16 (timeout policy), Q17 (unknown execution resolution), Q18 (duplicate prevention/concurrency/fencing), and Q20 (Gateway failure/recovery). Canonical repository diagrams 04, 05, 11, and 12.
+- **Decision:** Adopt OEL-12 as the canonical order state vocabulary and enforce source-specific transition authority (OMS, Execution Gateway, Broker, Reconciliation). An order may be created in the OMS only when the exact immutable intent and its exact persisted `AUTHORIZED` RiskAssessment match account, instrument, and environment.
+- **Consistency:** Persist order, first lifecycle event, audit record, and `oms.order.persisted` domain outbox notification atomically. Enforce one OMS order per intent and risk assessment; preserve exact decimal quantities using PostgreSQL `numeric`.
+- **Append-only history:** OMS lifecycle events are insert-only for `atheer_app`; updates and deletes are revoked.
+- **No-dispatch boundary:** This increment creates no outbox publisher/worker, Execution Gateway, broker API operation, or execution-dispatch event. `oms.order.persisted` is an internal domain notification, not a broker command. Any later dispatcher requires durable ownership/fencing, uncertain-submission reconciliation, and independently qualified execution controls.
+- **Consequences:** Q1's state model and exception states are now reflected in typed domain policy and tests. Broker-specific status mapping, event ordering, fills, cancel/replace races, position versions, and reconciliation remain subsequent implementation work.
+- **Evidence:** PR #42, `ATP_OMS_LIFECYCLE_FOUNDATION.md`, Mermaid diagram 13, domain and PostgreSQL integration tests. No broker dealing or LIVE operation is claimed.
