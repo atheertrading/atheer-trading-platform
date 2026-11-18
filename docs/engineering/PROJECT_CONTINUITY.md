@@ -751,9 +751,58 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Last documented Mac qualification is from 2026-11-17 on old commit `0e7f25e`; current Mac state is not accessible and no local pull/build is claimed.
 - Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`. `CAP_ALLOW_TRADING=false` unchanged.
 
+
+## 2026-11-18 — Authenticated historical chart workspace
+
+- Added PR #70 on `feat/authenticated-chart-workspace-2026-11-18`, stacked on PR #68. The chart client uses the supervised dynamic BackendIPCConnection base URL and private bearer IPC capability; the old PR #44 static-port unauthenticated client is not reused.
+- Added strict historical payload decoding, separate Bid/Ask candlestick rendering, timeframe and side selection, manual refresh, duplicate/gap/receipt metadata and raw-provider limit warning.
+- Added Charts navigation, Open Chart from Market Explorer, and a real historical chart surface in the Command Center. No fabricated data or LIVE execution path.
+- Persistent Market Watch, live candle aggregation, indicators, drawings, replay and UI date-range selection remain pending.
+- PR #66 CI uncovered a missing credentialSocketURL in the MarketSearch test fixture. Corrected on updated PR #66 head and propagated to PR #67/#68/#69 branches; new exact-head CI pending. Previous run remains failed and Apple Silicon qualification must be rerun.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`. `CAP_ALLOW_TRADING=false` unchanged.
+
+
+## 2026-11-18 — Chart workspace review remediation
+
+- Source review identified missing explicit initializers for injected immutable chart dependencies in `WorkspaceHomeView` and `CommandCenterView`; both were corrected on PR #70.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
+- PR #70 exact head: `484907de2f308231dac89d5e151beee6e95c250a`; exact-head CI is pending.
+- PR #71 was closed as redundant without deleting its branch or rewriting history: its only test-fixture change is already present byte-for-byte on PR #70 (`c1930bbb87d4ba66898f85ed90faed6c4a4efe56`). PR #70 remains based on PR #68 and is mergeable.
+- Owner Mac is not accessible through this session; no local pull/build/runtime verification is claimed.
+
+## 2026-11-18 — Native historical timestamp integrity
+
+- Added an independent client-side guard rejecting future-dated historical candles and an XCTest regression case on PR #70.
+- Commits: `68b70ed2404b4672a86dbb91e05b0157da311391`, `b130e4375444deb9c029299fc6564168d51a636d`.
+- Hosted exact-head macOS CI remains pending. No local build or DEMO provider verification is claimed; `CAP_ALLOW_TRADING=false` remains unchanged.
+
 ## 2026-11-18 — Historical candle timestamp integrity
 
 - Source review found that the historical normalizer accepted a syntactically valid provider candle timestamp later than local receipt time.
 - Added backend fail-closed validation and a deterministic regression test on PR #68.
 - Commits: `aa425f9af869987367e12c274292bf00733a1559`, `b9f1a719556bc291c4430e7e273f023aa5409eae`.
 - Exact-head hosted CI remains pending. No provider or trading execution was used; `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## 2026-11-18 — PR #70 ancestry reconciliation
+
+- PR #70 was 51 commits ahead / 11 behind its PR #68 base due to independent updates on the parent branch.
+- Reconciled the branches without rewriting either history: created merge commit `b38902d0342962b3d12f327ff3a90881ed063fd0` with PR #68 head `96da1112eb2ca7eff8dd13ee165e36cbf625ef51` as first parent and prior PR #70 head `9916767a272de737497cffd88adc75d836d5849a` as second parent.
+- Merged tree preserves the current PR #68 backend/historical-data validation and documentation, then overlays the chart-specific SwiftUI/client/test/architecture files from PR #70. Conflicting shared test files retain the corrected PR #68 versions.
+- GitHub compare now reports PR #70 as 52 commits ahead / 0 behind its base. This resolves ancestry divergence; it does not establish merge readiness or CI success.
+- New exact-head CI and source review are required before merge.
+
+## 2026-11-18 — Broker-to-chart PR stack ancestry consolidation
+
+The stacked implementation branches were reconciled top-down using two-parent merge commits. Each child retains its original feature history; no force-push or history rewrite was used.
+
+| Pull request | Parent branch head | Child head before merge | Reconciliation merge commit |
+|---|---|---|---|
+| #64 | PR #55: `0849f2318c6b6a0eed261997043da69daec4884f` | `98197bf524a0e1e6bebae64f419da73b7b13dc25` | `1a49ea48c3497c30c68557013c749c8d8be7bbe6` |
+| #66 | PR #64: `1a49ea48c3497c30c68557013c749c8d8be7bbe6` | `98ce9d5c8808446c7db597f8ad012a079d3eeae3` | `46d9d7bd6ad5c247c04cf6645f0a548e53582ae1` |
+| #67 | PR #66: `46d9d7bd6ad5c247c04cf6645f0a548e53582ae1` | `8ff12c3ac0d2ca89991d651639e4d8a8af6c6e63` | `1abf1dafb17d346b903fe69a053976bd359b9245` |
+| #68 | PR #67: `1abf1dafb17d346b903fe69a053976bd359b9245` | `407de768925e171770825a7917fd41beb7b2eb1b` | `96df364562b3af4a123f41b440ad0c7f525a6566` |
+| #70 | PR #68: `96df364562b3af4a123f41b440ad0c7f525a6566` | `76de3a0db94396d0bc85bd09a2011f97bf7d115b` | `458d36b92b3c6769e8c8fda6d7ebdcb4668841d2` |
+
+Post-reconciliation GitHub compare results: PR #64 25 ahead / 0 behind; #66 72/0; #67 20/0; #68 32/0; #70 57/0. All five PRs report mergeable true at the latest inspection.
+
+These are branch ancestry merges only. The PRs remain draft; hosted exact-head CI, code review, owner-Mac build/runtime, authenticated DEMO broker verification and risk/execution qualification remain separate gates. No PR was merged into `main`.
