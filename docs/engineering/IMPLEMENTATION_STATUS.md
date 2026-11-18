@@ -377,3 +377,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Added API tests for missing marker, cross-origin Origin, cross-site Fetch Metadata, accepted native request, and SSE request marker.
 - Exact-head hosted CI pending.
 - The marker is a browser CSRF mitigation, not a secret or local-process authentication. Production requires per-launch capability token or authenticated local IPC.
+
+
+## ATP-MKT-006I — Catalogue metadata versus live quote separation — 2026-11-18
+
+- `CapitalDemoClient.getMarkets` now maps provider catalogue records into an allow-listed metadata shape (epic, instrument name, market status, currency).
+- Provider `bid` and `offer` fields are stripped and are not exposed as market quotes.
+- The streaming path remains the only source of live Bid/Ask, with provider timestamps, receive timestamps, monotonic receive time, freshness and duplicate/out-of-order validation.
+- Regression coverage supplies catalogue bid/offer values and asserts they are absent from the returned catalogue model.
+- Exact-head hosted CI pending.
