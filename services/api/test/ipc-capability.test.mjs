@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readIPCStartupCapability } from "../dist/security/ipc-capability.js";
+import { hasValidIPCCapabilityValue, readIPCStartupCapability } from "../dist/security/ipc-capability.js";
 
 async function* chunks(...values) {
   for (const value of values) yield Buffer.from(value);
@@ -29,4 +29,16 @@ test("private stdin bootstrap rejects malformed and non-256-bit values", async (
 
 test("private stdin bootstrap enforces a strict input size limit", async () => {
   await assert.rejects(readIPCStartupCapability(chunks("x".repeat(129) + "\n")), /size limit/);
+});
+
+
+test("constant-time IPC capability validator accepts only the matching canonical value", () => {
+  const expected = Buffer.alloc(32, 31);
+  const valid = expected.toString("base64url");
+  assert.equal(hasValidIPCCapabilityValue(valid, expected), true);
+  assert.equal(hasValidIPCCapabilityValue(Buffer.alloc(32, 32).toString("base64url"), expected), false);
+  assert.equal(hasValidIPCCapabilityValue("not-base64url!", expected), false);
+  assert.equal(hasValidIPCCapabilityValue(undefined, expected), false);
+  assert.equal(hasValidIPCCapabilityValue(valid, undefined), false);
+  expected.fill(0);
 });
