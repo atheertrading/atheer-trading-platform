@@ -13,7 +13,7 @@ Extend the historical chart with live quote-derived candles while preserving pro
 ## Data flow and ownership
 
 - MarketExplorerViewModel remains the owner of the DEMO SSE stream lifecycle and selected instrument subscriptions.
-- MarketDataQuoteEventBus is an app-scoped in-process fan-out boundary. It publishes each accepted stream event before the presentation throttle.
+- MarketDataQuoteEventBus is an app-scoped in-process fan-out boundary. It publishes each accepted stream event before the presentation throttle. The chart aggregator processes every tick into a private working series, while MarketChartViewModel publishes a coalesced presentation snapshot at 100 ms.
 - LiveCandleAggregator is a deterministic value-type component. It owns UTC interval bucketing, monotonic provider-timestamp checks, and Bid/Ask OHLC updates.
 - MarketChartViewModel owns the chart projection, request lifecycle, historical bootstrap, and volatile live updates.
 - SwiftUI chart surfaces render MarketChartCandle; they do not aggregate prices or access broker APIs.

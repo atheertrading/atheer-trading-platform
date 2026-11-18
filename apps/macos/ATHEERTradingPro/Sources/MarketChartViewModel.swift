@@ -34,6 +34,10 @@ final class MarketChartViewModel: ObservableObject {
     private let quoteEventBus: MarketDataQuoteEventBus?
     private var quoteSubscriptionID: UUID?
     private var liveCandleAggregator = LiveCandleAggregator()
+    private var workingCandles: [MarketChartCandle] = []
+    private var livePresentationTask: Task<Void, Never>?
+    private var pendingLiveUpdatedAt: Date?
+    private var pendingLiveUpdateCount = 0
     private var requestGeneration: UInt64 = 0
 
     init(
@@ -68,11 +72,10 @@ final class MarketChartViewModel: ObservableObject {
         requestGeneration &+= 1
         selectedInstrumentId = valid
         candles = []
+        workingCandles = []
         batch = nil
         lastUpdatedAt = nil
-        liveUpdatedAt = nil
-        liveCandleUpdateCount = 0
-        liveCandleAggregator.reset()
+        resetLivePresentation()
         state = valid == nil
             ? .unavailable("Add an instrument to Market Watch before loading historical chart data.")
             : .idle
@@ -83,11 +86,10 @@ final class MarketChartViewModel: ObservableObject {
         requestGeneration &+= 1
         resolution = newResolution
         candles = []
+        workingCandles = []
         batch = nil
         lastUpdatedAt = nil
-        liveUpdatedAt = nil
-        liveCandleUpdateCount = 0
-        liveCandleAggregator.reset()
+        resetLivePresentation()
         state = .idle
     }
 
@@ -100,9 +102,7 @@ final class MarketChartViewModel: ObservableObject {
         let generation = requestGeneration
         let requestedResolution = resolution
         state = .loading
-        liveCandleAggregator.reset()
-        liveUpdatedAt = nil
-        liveCandleUpdateCount = 0
+        resetLivePresentation()
         do {
             let result = try await client.fetchHistory(
                 instrumentId: instrumentId,
@@ -113,7 +113,8 @@ final class MarketChartViewModel: ObservableObject {
                   selectedInstrumentId == instrumentId,
                   resolution == requestedResolution else { return }
             batch = result
-            candles = result.candles.map(MarketChartCandle.init(historical:))
+            workingCandles = result.candles.map(MarketChartCandle.init(historical:))
+            candles = workingCandles
             lastUpdatedAt = Date()
             state = result.candles.isEmpty ? .empty : .loaded
         } catch {
@@ -123,6 +124,7 @@ final class MarketChartViewModel: ObservableObject {
                 return
             }
             candles = []
+            workingCandles = []
             batch = nil
             lastUpdatedAt = nil
             if let historyError = error as? MarketHistoryError,
@@ -136,22 +138,52 @@ final class MarketChartViewModel: ObservableObject {
     
     private func ingestLiveQuote(_ quote: MarketDataStreamQuote) {
         guard state == .loaded || state == .empty,
-              let instrumentId = selectedInstrumentId else {
+              let instrumentId = selectedInstrumentId,
+              liveCandleAggregator.ingest(
+                  quote,
+                  instrumentId: instrumentId,
+                  resolution: resolution,
+                  candles: &workingCandles
+              ) else {
             return
         }
-        var updatedCandles = candles
-        guard liveCandleAggregator.ingest(
-            quote,
-            instrumentId: instrumentId,
-            resolution: resolution,
-            candles: &updatedCandles
-        ) else {
-            return
+        pendingLiveUpdatedAt = Date(timeIntervalSince1970: Double(quote.receivedAtMs) / 1_000)
+        pendingLiveUpdateCount += 1
+        scheduleLivePresentation()
+    }
+
+    private func scheduleLivePresentation() {
+        guard livePresentationTask == nil else { return }
+        livePresentationTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: 100_000_000)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            self?.flushLivePresentation()
         }
-        candles = updatedCandles
-        liveUpdatedAt = Date(timeIntervalSince1970: Double(quote.receivedAtMs) / 1_000)
-        liveCandleUpdateCount += 1
+    }
+
+    private func flushLivePresentation() {
+        livePresentationTask = nil
+        guard pendingLiveUpdateCount > 0 else { return }
+        candles = workingCandles
+        liveUpdatedAt = pendingLiveUpdatedAt
+        liveCandleUpdateCount += pendingLiveUpdateCount
+        pendingLiveUpdatedAt = nil
+        pendingLiveUpdateCount = 0
         state = .loaded
+    }
+
+    private func resetLivePresentation() {
+        livePresentationTask?.cancel()
+        livePresentationTask = nil
+        pendingLiveUpdatedAt = nil
+        pendingLiveUpdateCount = 0
+        liveUpdatedAt = nil
+        liveCandleUpdateCount = 0
+        liveCandleAggregator.reset()
     }
 
 }

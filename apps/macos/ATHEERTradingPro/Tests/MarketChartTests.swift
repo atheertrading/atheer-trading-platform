@@ -210,6 +210,8 @@ final class MarketChartTests: XCTestCase {
         await model.load()
         bus.publish(makeQuote(timestampMs: bucket + 5_000, bid: 110, ask: 110.2))
         bus.publish(makeQuote(timestampMs: bucket + 10_000, bid: 101, ask: 101.2))
+        XCTAssertEqual(model.liveCandleUpdateCount, 0, "Stream ingestion must not publish every tick to SwiftUI.")
+        try await Task.sleep(nanoseconds: 150_000_000)
         XCTAssertEqual(model.candles.count, 1)
         XCTAssertEqual(model.candles[0].bid.high, 110)
         XCTAssertEqual(model.candles[0].bid.close, 101)
