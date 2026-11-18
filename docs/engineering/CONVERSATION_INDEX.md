@@ -91,3 +91,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-039 | 2026-11-18 | Local market-data API browser-origin security boundary | Restricted market-data endpoints to loopback native-client requests, added Origin/Sec-Fetch-Site rejection and a required client marker; updated Swift client and API tests; recorded the limitation that local processes are not authenticated. | PR #33; PR #37; ATP-SEC-001A; EDL-020; SECURITY.md; SESSION_2026-11-18_039_LOCAL_API_BROWSER_ORIGIN_GUARD |
+
+
+| ATP-2026-11-18-040 | 2026-11-18 | Catalogue metadata and live quote authority | Removed unvalidated provider bid/offer from market catalogue responses; validated streaming events remain the only live quote source; added regression test and EDL-021. | PR #37; ATP-MKT-006I; EDL-021; ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE |
