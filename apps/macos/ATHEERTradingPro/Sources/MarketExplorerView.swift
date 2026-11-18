@@ -1,372 +1,448 @@
 import SwiftUI
 
+@MainActor
 struct MarketExplorerView: View {
     @StateObject private var model: MarketExplorerViewModel
-    let onOpenAPIConnection: () -> Void
+    @StateObject private var streamModel: MarketDataStreamViewModel
+    private let onOpenAPIConnection: () -> Void
 
     init(
         client: MarketSearchClient,
+        streamClient: MarketDataStreamClient,
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
+        _streamModel = StateObject(wrappedValue: MarketDataStreamViewModel(client: streamClient))
         self.onOpenAPIConnection = onOpenAPIConnection
     }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: ATHEERDesignTokens.Spacing.section) {
+            VStack(alignment: .leading, spacing: 18) {
                 header
-                connectionPanel
+                backendStatus
                 searchPanel
                 resultsPanel
+                streamPanel
                 integrationBoundary
             }
-            .padding(ATHEERDesignTokens.Spacing.page)
+            .padding(24)
             .frame(maxWidth: 1120, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .task {
             await model.refreshBackendStatus()
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(nanoseconds: 15_000_000_000)
+                } catch {
+                    return
+                }
+                await model.refreshBackendStatus()
+            }
         }
-        .background(ATHEERDesignTokens.ColorRole.canvas)
+        .onChange(of: model.backendStatus?.state) { newState in
+            if newState != .connected {
+                streamModel.stopMonitoring()
+            }
+        }
+        .onDisappear {
+            streamModel.stopMonitoring(clearQuotes: true)
+        }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Market Explorer")
-                        .font(ATHEERDesignTokens.Typography.screenTitle)
-                    Text("Discover instruments from the authenticated Capital.com DEMO market catalogue.")
-                        .font(ATHEERDesignTokens.Typography.body)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Text("DEMO")
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(1)
-                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(ATHEERDesignTokens.ColorRole.attention.opacity(0.12))
-                    .clipShape(Capsule())
-            }
+        VStack(alignment: .leading, spacing: 6) {
+            Text("MARKET EXPLORER")
+                .font(.system(size: 25, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+            Text("Search broker instruments, select markets, and monitor verified DEMO quotes.")
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
         }
-        .accessibilityElement(children: .combine)
     }
 
-    private var connectionPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label("Backend Market Data", systemImage: "server.rack")
-                    .font(ATHEERDesignTokens.Typography.panelTitle)
-                Spacer()
-                Button(action: onOpenAPIConnection) {
-                    Label("API Diagnostics", systemImage: "network")
-                }
-                .buttonStyle(.borderless)
-                Button {
-                    Task { await model.refreshBackendStatus() }
-                } label: {
-                    Label("Refresh Status", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(.borderless)
-                .disabled(model.state == .searching)
+    private var backendStatus: some View {
+        HStack(spacing: 16) {
+            statusMetric("PROVIDER", value: model.backendStatus?.provider.uppercased() ?? "—")
+            statusMetric("ENVIRONMENT", value: model.backendStatus?.environment ?? "—")
+            statusMetric("REST SESSION", value: model.backendStatus?.state.displayLabel ?? "UNKNOWN")
+            statusMetric(
+                "WEBSOCKET",
+                value: model.backendStatus?.streaming?.state.displayLabel ?? "UNKNOWN"
+            )
+            statusMetric(
+                "SUBSCRIPTIONS",
+                value: "\(model.backendStatus?.streaming?.activeInstrumentCount ?? 0)/40"
+            )
+            Spacer(minLength: 0)
+            Button {
+                Task { await model.refreshBackendStatus() }
+            } label: {
+                Image(systemName: "arrow.clockwise")
             }
-
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 112), alignment: .leading)],
-                alignment: .leading,
-                spacing: 14
-            ) {
-                statusMetric(
-                    title: "PROVIDER",
-                    value: model.backendStatus?.provider.uppercased() ?? "UNAVAILABLE"
-                )
-                statusMetric(
-                    title: "ENVIRONMENT",
-                    value: model.backendStatus?.environment ?? "—",
-                    tint: ATHEERDesignTokens.ColorRole.attention
-                )
-                statusMetric(
-                    title: "REST SESSION",
-                    value: model.backendStatus?.state.displayLabel ?? "UNKNOWN",
-                    tint: model.backendStatus?.state == .connected
-                        ? ATHEERDesignTokens.ColorRole.success
-                        : ATHEERDesignTokens.ColorRole.attention
-                )
-                statusMetric(
-                    title: "STREAMING",
-                    value: model.backendStatus?.streaming?.state.displayLabel ?? "UNKNOWN",
-                    tint: streamingTint
-                )
-                statusMetric(
-                    title: "SUBSCRIPTIONS",
-                    value: "\(model.backendStatus?.streaming?.activeInstrumentCount ?? 0)/40",
-                    tint: .secondary
-                )
-                statusMetric(
-                    title: "TRADING",
-                    value: "DISABLED",
-                    tint: .secondary
-                )
-            }
-
-            if model.backendStatus?.state != .connected {
-                Label(
-                    "Instrument search requires an active backend DEMO REST session. Credentials are stored in macOS Keychain and provisioned over authenticated private IPC; provider session tokens remain backend-only.",
-                    systemImage: "info.circle"
-                )
-                .font(.system(size: 11))
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            }
+            .buttonStyle(.borderless)
+            .help("Refresh backend status")
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
         .background(ATHEERDesignTokens.ColorRole.panel)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
     }
 
     private var searchPanel: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("INSTRUMENT SEARCH")
-                .font(ATHEERDesignTokens.Typography.caption)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("INSTRUMENT SEARCH")
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.1)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("CAPITAL.COM DEMO")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(0.8)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.accent)
+            }
 
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                TextField("Search by instrument name or provider search term", text: $model.searchTerm)
+                TextField("Search by instrument name or epic", text: $model.searchTerm)
                     .textFieldStyle(.plain)
                     .onSubmit {
                         Task { await model.search() }
                     }
-                    .accessibilityLabel("Search Capital.com DEMO instruments")
-                if !model.searchTerm.isEmpty {
-                    Button {
-                        model.searchTerm = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Clear instrument search")
-                }
-                Button {
+                Button("Search") {
                     Task { await model.search() }
-                } label: {
-                    if model.state == .searching {
-                        ProgressView()
-                            .controlSize(.small)
-                        Text("Searching")
-                    } else {
-                        Label("Search", systemImage: "arrow.right")
-                    }
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(ATHEERDesignTokens.ColorRole.teal)
-                .disabled(!model.canSearch)
+                .disabled(model.state == .searching || !model.canSearch)
             }
-            .padding(12)
-            .background(ATHEERDesignTokens.ColorRole.panelElevated)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            HStack {
-                Text("Read-only REST catalogue search. Search results are instrument metadata, not live quotes.")
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-                Spacer(minLength: 8)
-                Text("\(model.searchTerm.count)/100")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(model.searchTerm.count > 100
-                        ? ATHEERDesignTokens.ColorRole.attention
-                        : .secondary)
-                    .accessibilityLabel("Search query length: \(model.searchTerm.count) of 100 characters")
+            if let message = model.errorMessage {
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .font(.system(size: 12))
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
             }
         }
         .padding(16)
         .background(ATHEERDesignTokens.ColorRole.panel)
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
+        }
     }
 
-    @ViewBuilder
     private var resultsPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("INSTRUMENTS")
-                    .font(ATHEERDesignTokens.Typography.caption)
+                Text("BROKER INSTRUMENTS")
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.1)
                     .foregroundColor(.secondary)
                 Spacer()
-                if !model.results.isEmpty {
-                    Text("\(model.results.count) results")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundColor(.secondary)
-                }
+                Text("\(model.results.count) RESULTS")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.secondary)
             }
 
-            switch model.state {
-            case .idle:
-                emptyState(
-                    title: "Search the instrument catalogue",
-                    message: "Enter an instrument name or symbol to retrieve provider-backed DEMO catalogue results.",
-                    symbol: "magnifyingglass"
-                )
-            case .searching:
-                HStack(spacing: 10) {
-                    ProgressView()
-                    Text("Querying Capital.com DEMO market catalogue…")
-                        .font(ATHEERDesignTokens.Typography.body)
-                        .foregroundColor(.secondary)
+            if model.state == .searching {
+                ProgressView("Searching Capital.com DEMO…")
+                    .controlSize(.small)
+                    .padding(.vertical, 12)
+            } else if model.results.isEmpty {
+                emptyResults
+            } else {
+                resultHeader
+                ForEach(model.results) { instrument in
+                    instrumentRow(instrument)
                 }
-                .frame(maxWidth: .infinity, minHeight: 100)
-            case .results:
-                VStack(spacing: 0) {
-                    resultHeader
-                    ForEach(model.results.indices, id: \.self) { index in
-                        instrumentRow(model.results[index])
-                        if index < model.results.count - 1 {
-                            Divider().overlay(ATHEERDesignTokens.ColorRole.separator)
-                        }
-                    }
-                }
-                .background(ATHEERDesignTokens.ColorRole.panel)
-                .clipShape(RoundedRectangle(cornerRadius: 9))
-            case .empty:
-                emptyState(
-                    title: "No matching instruments",
-                    message: "The provider returned no instruments for this search term.",
-                    symbol: "line.3.horizontal.decrease.circle"
-                )
-            case .unavailable(let message):
-                emptyState(
-                    title: "Market search unavailable",
-                    message: message,
-                    symbol: "exclamationmark.triangle"
-                )
-            case .failed(let message):
-                emptyState(
-                    title: "Search failed",
-                    message: message,
-                    symbol: "xmark.octagon"
-                )
             }
         }
+        .padding(16)
+        .background(ATHEERDesignTokens.ColorRole.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
+        }
+    }
+
+    private var emptyResults: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("No instruments loaded")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.primary)
+            Text("Search the connected DEMO catalogue. No synthetic instruments or prices are generated.")
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 16)
     }
 
     private var resultHeader: some View {
         HStack(spacing: 12) {
-            Text("INSTRUMENT")
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text("EPIC")
-                .frame(width: 150, alignment: .leading)
-            Text("MARKET STATUS")
-                .frame(width: 150, alignment: .leading)
-            Text("CURRENCY")
-                .frame(width: 90, alignment: .leading)
+            Text("INSTRUMENT").frame(maxWidth: .infinity, alignment: .leading)
+            Text("EPIC").frame(width: 150, alignment: .leading)
+            Text("STATUS").frame(width: 100, alignment: .leading)
+            Text("CURRENCY").frame(width: 75, alignment: .leading)
+            Text("MONITOR").frame(width: 96, alignment: .trailing)
         }
-        .font(.system(size: 9, weight: .semibold))
-        .tracking(0.6)
+        .font(.system(size: 9, weight: .bold))
+        .tracking(0.8)
         .foregroundColor(.secondary)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(ATHEERDesignTokens.ColorRole.panelElevated)
+        .padding(.vertical, 8)
     }
 
     private func instrumentRow(_ instrument: MarketInstrumentSummary) -> some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(instrument.name ?? instrument.epic)
-                    .font(.system(size: 12, weight: .semibold))
+            Text(instrument.name ?? instrument.epic)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(1)
+            Text(instrument.epic)
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(.secondary)
+                .frame(width: 150, alignment: .leading)
+                .lineLimit(1)
+            Text(instrument.marketStatus ?? "UNKNOWN")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+                .frame(width: 100, alignment: .leading)
+                .lineLimit(1)
+            Text(instrument.currency ?? "—")
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(.secondary)
+                .frame(width: 75, alignment: .leading)
+            Button {
+                streamModel.toggleSelection(instrument.epic)
+            } label: {
+                Label(
+                    streamModel.isSelected(instrument.epic) ? "Selected" : "Monitor",
+                    systemImage: streamModel.isSelected(instrument.epic) ? "checkmark.circle.fill" : "plus.circle"
+                )
+                .font(.system(size: 10, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .disabled(!streamModel.canSelect(instrument.epic))
+            .frame(width: 96, alignment: .trailing)
+            .help("Add or remove this instrument from the live quote monitor")
+        }
+        .padding(.vertical, 9)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(ATHEERDesignTokens.ColorRole.separator)
+                .frame(height: 1)
+        }
+    }
+
+    private var streamPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("LIVE QUOTE MONITOR")
+                        .font(.system(size: 11, weight: .bold))
+                        .tracking(1.1)
+                        .foregroundColor(.secondary)
+                    Text("Selected instruments: \(streamModel.selectedCount)/40")
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("Clear") {
+                    streamModel.clearSelection()
+                }
+                .buttonStyle(.bordered)
+                .disabled(streamModel.selectedEpics.isEmpty)
+                Button(streamModel.isMonitoring ? "Stop" : "Start Monitoring") {
+                    if streamModel.isMonitoring {
+                        streamModel.stopMonitoring()
+                        Task { await model.refreshBackendStatus() }
+                    } else {
+                        streamModel.startMonitoring()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(
+                    !streamModel.isMonitoring &&
+                    (!streamModel.canStartMonitoring || model.backendStatus?.state != .connected)
+                )
+            }
+
+            HStack(spacing: 18) {
+                statusMetric("STREAM", value: streamModel.connectionState.displayLabel)
+                statusMetric(
+                    "ACTIVE",
+                    value: "\(streamModel.status?.activeInstrumentCount ?? model.backendStatus?.streaming?.activeInstrumentCount ?? 0)/40"
+                )
+                statusMetric(
+                    "LAST MESSAGE",
+                    value: lastMessageLabel
+                )
+                statusMetric(
+                    "INVALID / OUT OF ORDER / DUPLICATE",
+                    value: "\(streamModel.status?.invalidQuoteCount ?? model.backendStatus?.streaming?.invalidQuoteCount ?? 0) / \(streamModel.status?.outOfOrderQuoteCount ?? model.backendStatus?.streaming?.outOfOrderQuoteCount ?? 0) / \(streamModel.status?.duplicateQuoteCount ?? model.backendStatus?.streaming?.duplicateQuoteCount ?? 0)"
+                )
+                Spacer(minLength: 0)
+            }
+
+            if let error = streamModel.lastError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .font(.system(size: 11))
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
+            }
+
+            if streamModel.quotes.isEmpty {
+                Text(streamModel.isMonitoring
+                     ? "Waiting for verified Capital.com DEMO quote events…"
+                     : "Select instruments above, then start monitoring to receive live broker quotes.")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 14)
+            } else {
+                quoteHeader
+                ForEach(streamModel.quotes.values.sorted { $0.id < $1.id }) { snapshot in
+                    quoteRow(snapshot)
+                }
+            }
+
+            Text("Display-only market data. Freshness is provider-evaluated; this monitor has no order or execution authority.")
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+        }
+        .padding(16)
+        .background(ATHEERDesignTokens.ColorRole.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
+        }
+    }
+
+    private var quoteHeader: some View {
+        HStack(spacing: 12) {
+            Text("INSTRUMENT / EPIC").frame(maxWidth: .infinity, alignment: .leading)
+            Text("BID").frame(width: 105, alignment: .trailing)
+            Text("ASK").frame(width: 105, alignment: .trailing)
+            Text("SPREAD").frame(width: 90, alignment: .trailing)
+            Text("AGE").frame(width: 80, alignment: .trailing)
+            Text("QUALITY").frame(width: 90, alignment: .trailing)
+        }
+        .font(.system(size: 9, weight: .bold))
+        .tracking(0.8)
+        .foregroundColor(.secondary)
+        .padding(.vertical, 8)
+    }
+
+    private func quoteRow(_ snapshot: MarketDataStreamQuoteSnapshot) -> some View {
+        let quote = snapshot.quote
+        let quality = snapshot.effectiveFreshnessState
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.results.first(where: { $0.epic == quote.instrumentId })?.name ?? quote.instrumentId)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.primary)
                     .lineLimit(1)
-                Text("Capital.com · DEMO")
-                    .font(.system(size: 9))
+                Text(quote.instrumentId)
+                    .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text(instrument.epic)
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .frame(width: 150, alignment: .leading)
-                .textSelection(.enabled)
-
-            Text(instrument.marketStatus ?? "Not supplied")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.secondary)
-                .frame(width: 150, alignment: .leading)
-
-            Text(instrument.currency ?? "—")
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .frame(width: 90, alignment: .leading)
+            Text(formatPrice(quote.bid))
+                .frame(width: 105, alignment: .trailing)
+            Text(formatPrice(quote.ask))
+                .frame(width: 105, alignment: .trailing)
+            Text(formatPrice(quote.ask - quote.bid))
+                .frame(width: 90, alignment: .trailing)
+            Text(formatAge(snapshot.ageMilliseconds))
+                .frame(width: 80, alignment: .trailing)
+            Text(quality.rawValue.uppercased())
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(qualityColor(quality))
+                .frame(width: 90, alignment: .trailing)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .font(.system(size: 11, design: .monospaced))
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(ATHEERDesignTokens.ColorRole.separator)
+                .frame(height: 1)
+        }
     }
 
     private var integrationBoundary: some View {
-        HStack(alignment: .top, spacing: 9) {
-            Image(systemName: "shield.lefthalf.filled")
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "lock.shield")
                 .foregroundColor(ATHEERDesignTokens.ColorRole.accent)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Data and execution boundary")
-                    .font(.system(size: 11, weight: .semibold))
-                Text("This screen does not display bid/ask values from an untimestamped search response or subscribe to live quotes. Streaming health is read from the backend session runtime; chart subscriptions, charting, and trading remain separate qualification milestones. No order or dealing action is exposed.")
-                    .font(.system(size: 10))
+                Text("INTEGRATION BOUNDARY")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(0.9)
+                Text("Instrument search and quote streaming use the authenticated local backend and the same backend-owned Capital.com DEMO session. Provider tokens remain server-side. No mock prices, order submission, or LIVE trading are available in this module.")
+                    .font(.system(size: 11))
                     .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            Spacer()
+            Button("Connection Settings", action: onOpenAPIConnection)
+                .buttonStyle(.bordered)
         }
         .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(ATHEERDesignTokens.ColorRole.panelElevated)
-        .clipShape(RoundedRectangle(cornerRadius: 9))
+        .background(ATHEERDesignTokens.ColorRole.deepTeal.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private var streamingTint: Color {
-        switch model.backendStatus?.streaming?.state {
-        case .some(.connected):
-            return ATHEERDesignTokens.ColorRole.success
-        case .some(.connecting), .some(.degraded):
-            return ATHEERDesignTokens.ColorRole.attention
-        case .some(.disconnected), .none:
-            return .secondary
+    private var lastMessageLabel: String {
+        if let timestamp = streamModel.status?.lastMessageAtMs {
+            return Date(timeIntervalSince1970: Double(timestamp) / 1_000).formatted(date: .omitted, time: .standard)
         }
+        if let timestamp = model.backendStatus?.streaming?.lastMessageAtMs {
+            return Date(timeIntervalSince1970: timestamp / 1_000).formatted(date: .omitted, time: .standard)
+        }
+        return "—"
     }
 
-    private func statusMetric(title: String, value: String, tint: Color = .primary) -> some View {
+    private func statusMetric(_ title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 8, weight: .bold))
+                .tracking(0.7)
                 .foregroundColor(.secondary)
             Text(value)
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                .foregroundColor(tint)
-                .lineLimit(1)
+                .foregroundColor(.primary)
         }
-        .frame(maxWidth: 150, alignment: .leading)
     }
 
-    private func emptyState(title: String, message: String, symbol: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemName: symbol)
-                .font(.system(size: 22))
-                .foregroundColor(.secondary)
-            Text(title)
-                .font(.system(size: 12, weight: .semibold))
-            Text(message)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 440)
+    private func formatPrice(_ value: Double) -> String {
+        value.formatted(.number.precision(.significantDigits(1...8)))
+    }
+
+    private func formatAge(_ milliseconds: Double?) -> String {
+        guard let milliseconds, milliseconds.isFinite, milliseconds >= 0 else { return "—" }
+        if milliseconds < 1_000 {
+            return "\(Int(milliseconds.rounded())) ms"
         }
-        .frame(maxWidth: .infinity, minHeight: 132)
-        .padding(14)
-        .background(ATHEERDesignTokens.ColorRole.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 9))
+        if milliseconds < 60_000 {
+            return String(format: "%.1f s", milliseconds / 1_000)
+        }
+        return String(format: "%.1f m", milliseconds / 60_000)
+    }
+
+    private func qualityColor(_ quality: MarketDataQuoteFreshnessState) -> Color {
+        switch quality {
+        case .fresh:
+            return ATHEERDesignTokens.ColorRole.success
+        case .stale:
+            return ATHEERDesignTokens.ColorRole.attention
+        case .invalid:
+            return ATHEERDesignTokens.ColorRole.danger
+        }
     }
 }
