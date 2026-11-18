@@ -32,18 +32,23 @@ final class BackendRuntimeViewModel: ObservableObject {
     let healthModel: BackendHealthViewModel
     let brokerManagementModel: BrokerManagementViewModel
     private let marketWatchlistPersistence: MarketWatchlistPersistence
+    private let healthClientFactory: @MainActor (BackendIPCConnection) -> BackendHealthClient
     private var supervisor: BackendProcessManaging
 
     init(
         supervisor: BackendProcessManaging? = nil,
         healthModel: BackendHealthViewModel = BackendHealthViewModel(),
         brokerManagementModel: BrokerManagementViewModel? = nil,
-        marketWatchlistPersistence: MarketWatchlistPersistence = UserDefaultsMarketWatchlistPersistence()
+        marketWatchlistPersistence: MarketWatchlistPersistence = UserDefaultsMarketWatchlistPersistence(),
+        healthClientFactory: (@MainActor (BackendIPCConnection) -> BackendHealthClient)? = nil
     ) {
         self.supervisor = supervisor ?? BackendProcessSupervisor()
         self.healthModel = healthModel
         self.brokerManagementModel = brokerManagementModel ?? BrokerManagementViewModel()
         self.marketWatchlistPersistence = marketWatchlistPersistence
+        self.healthClientFactory = healthClientFactory ?? {
+            URLSessionBackendHealthClient(baseURL: $0.baseURL)
+        }
         self.supervisor.onUnexpectedTermination = { [weak self] message in
             self?.marketDataStreamModel?.stopMonitoring(clearQuotes: true)
             self?.marketDataStreamModel = nil
@@ -61,9 +66,7 @@ final class BackendRuntimeViewModel: ObservableObject {
         state = .starting
         do {
             let connection = try await supervisor.start()
-            healthModel.configure(
-                client: URLSessionBackendHealthClient(baseURL: connection.baseURL)
-            )
+            healthModel.configure(client: healthClientFactory(connection))
             brokerManagementModel.configure(
                 authentication: BackendBrokerAuthenticationService(connection: connection)
             )
