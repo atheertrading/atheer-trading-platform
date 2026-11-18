@@ -739,3 +739,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Reviewed repository architecture diagrams 01–11. Updated canonical diagram 03 to show a distinct cached-quote replay path that re-evaluates freshness from the original provider timestamp.
 - The 5,000 ms max-age and 250 ms future-skew policy values in the streaming implementation are inherited values, not newly approved trading-risk limits. The historical baseline also records 5-second normal quote age, >10-second automated-entry blocking and >15-second stale classification; reconcile these semantics against the authoritative specification before RiskEngine wiring.
 - PR #67 remains a data-quality correction only; no risk policy or execution authority is changed.
+
+
+## 2026-11-18 — Authenticated historical DEMO market data
+
+- Ported ATP-MKT-005 from the older PR #38/#39 feature stack onto the current secure broker stack as PR #68. The active backend now uses private IPC capability validation, BrokerSessionManager, CapitalDemoRuntime and CapitalDemoClient for historical requests.
+- Added strict paired UTC range support, separate Bid/Ask OHLC normalization, provider timestamp and receipt lineage, duplicate conflict handling, observed gaps (calendar-dependent), and raw-provider pagination metadata.
+- Added a 503 guard for disconnected broker sessions and deterministic tests for the route, range, normalizer, duplicates and provider-count semantics.
+- PR #68 branch `feat/authenticated-historical-market-data-2026-11-18`, base PR #67 head `2b1469263678e69fb87c9e47c6450b87bf821f20`. Exact-head CI pending.
+- PR #37 and #38 are non-mergeable; #38 parent diverged 13 ahead / 36 behind. PRs #39–#47 inherit that stale branch and overlap newer authenticated Market Explorer code. Preserve their branches; port independent features incrementally rather than merging the stale stack wholesale.
+- Last documented Mac qualification is from 2026-11-17 on old commit `0e7f25e`; current Mac state is not accessible and no local pull/build is claimed.
+- Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`. `CAP_ALLOW_TRADING=false` unchanged.
