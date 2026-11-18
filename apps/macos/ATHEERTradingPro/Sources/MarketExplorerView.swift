@@ -5,7 +5,7 @@ struct MarketExplorerView: View {
     let onOpenAPIConnection: () -> Void
 
     init(
-        client: MarketSearchClient? = nil,
+        client: MarketSearchClient,
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
@@ -89,7 +89,7 @@ struct MarketExplorerView: View {
                 )
                 statusMetric(
                     title: "REST SESSION",
-                    value: model.backendStatus?.state.rawValue.uppercased() ?? "UNKNOWN",
+                    value: model.backendStatus?.state.displayLabel ?? "UNKNOWN",
                     tint: model.backendStatus?.state == .connected
                         ? ATHEERDesignTokens.ColorRole.success
                         : ATHEERDesignTokens.ColorRole.attention
@@ -274,7 +274,7 @@ struct MarketExplorerView: View {
     private func instrumentRow(_ instrument: MarketSearchInstrument) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
-                Text(instrument.instrumentName ?? instrument.epic)
+                Text(instrument.name ?? instrument.epic)
                     .font(.system(size: 12, weight: .semibold))
                     .lineLimit(1)
                 Text("Capital.com · DEMO")
