@@ -1,18 +1,17 @@
 import SwiftUI
 
 struct MarketExplorerView: View {
-    @StateObject private var model: MarketExplorerViewModel
+    @ObservedObject var model: MarketExplorerViewModel
+    @ObservedObject var watchlistStore: MarketWatchlistStore
     let onOpenAPIConnection: () -> Void
 
     init(
-        client: MarketSearchClient? = nil,
-        streamClient: MarketDataStreamClient? = nil,
+        model: MarketExplorerViewModel,
+        watchlistStore: MarketWatchlistStore,
         onOpenAPIConnection: @escaping () -> Void
     ) {
-        _model = StateObject(wrappedValue: MarketExplorerViewModel(
-            client: client,
-            streamClient: streamClient
-        ))
+        self.model = model
+        self.watchlistStore = watchlistStore
         self.onOpenAPIConnection = onOpenAPIConnection
     }
 
@@ -31,9 +30,6 @@ struct MarketExplorerView: View {
         .task {
             await model.refreshBackendStatus()
             model.resumeStreamIfNeeded()
-        }
-        .onDisappear {
-            model.pauseStream()
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
     }
@@ -324,6 +320,8 @@ struct MarketExplorerView: View {
                 .frame(width: 72, alignment: .trailing)
             Text("STREAM")
                 .frame(width: 76, alignment: .trailing)
+            Text("WATCHLIST")
+                .frame(width: 82, alignment: .trailing)
         }
         .font(.system(size: 9, weight: .semibold))
         .tracking(0.6)
@@ -406,6 +404,31 @@ struct MarketExplorerView: View {
                 isSubscribed
                     ? "Remove \(instrument.epic) from live quote selection"
                     : "Select \(instrument.epic) for live quote streaming"
+            )
+
+            Button {
+                if watchlistStore.contains(instrument.epic) {
+                    _ = watchlistStore.remove(instrument.epic)
+                } else {
+                    _ = watchlistStore.add(instrument.epic)
+                }
+            } label: {
+                Label(
+                    watchlistStore.contains(instrument.epic) ? "SAVED" : "ADD",
+                    systemImage: watchlistStore.contains(instrument.epic) ? "bookmark.fill" : "bookmark"
+                )
+                .font(.system(size: 9, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .disabled(
+                !watchlistStore.contains(instrument.epic) &&
+                watchlistStore.epics.count >= MarketWatchlistStore.maximumInstrumentCount
+            )
+            .frame(width: 82, alignment: .trailing)
+            .accessibilityLabel(
+                watchlistStore.contains(instrument.epic)
+                    ? "Remove \(instrument.epic) from watchlist"
+                    : "Add \(instrument.epic) to watchlist"
             )
         }
         .padding(.horizontal, 14)
