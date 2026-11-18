@@ -133,3 +133,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-18-057A | 2026-11-18 | Library Mermaid and quote freshness source reconciliation | Inspected available curated and Q&A Mermaid diagrams; updated canonical market-data pipeline diagram for cache replay freshness. Separate 52-block archive not accessible; freshness policy reconciliation remains pending. | PR #67; SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY |
 
 | ATP-2026-11-18-063 | 2026-11-18 | Quote freshness policy reconciliation | Restored the approved 5s normal / >10s new-entry block / >15s stale semantics; split entry eligibility from generic automated-decision permission; backend and Swift boundary tests updated. Exact-head CI pending. | PR #67; commit pending in Session 063; SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION |
+
+
+| ATP-2026-11-18-058 | 2026-11-18 | Authenticated historical DEMO market data | Port historical normalization and strict UTC ranges into secure BrokerSessionManager path; add API/client/normalizer tests and Mermaid diagram 10. CI pending. | PR #68; SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA |
