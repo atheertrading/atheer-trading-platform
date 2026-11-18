@@ -209,7 +209,13 @@ export async function createBrokerCredentialIPCServer(options: {
   }
 
   const sockets = new Set<Socket>();
+  const inFlight = new Map<Socket, Promise<void>>();
+  let closing = false;
   const server = createServer((socket) => {
+    if (closing) {
+      socket.destroy();
+      return;
+    }
     sockets.add(socket);
     socket.setNoDelay(true);
     socket.setTimeout(REQUEST_TIMEOUT_MS, () => socket.destroy());
@@ -219,7 +225,9 @@ export async function createBrokerCredentialIPCServer(options: {
     let buffer = Buffer.alloc(0);
     let handled = false;
     socket.on("data", (chunk: Buffer) => {
-      if (handled) {
+      if (closing || handled) {
+        buffer.fill(0);
+        buffer = Buffer.alloc(0);
         socket.destroy();
         return;
       }
@@ -246,14 +254,19 @@ export async function createBrokerCredentialIPCServer(options: {
       const payload = Buffer.from(buffer.subarray(0, newlineIndex));
       buffer.fill(0);
       buffer = Buffer.alloc(0);
-      void handleRequest(payload, expectedCapability, manager, beforeSessionReplacement)
+      let operation: Promise<void>;
+      operation = handleRequest(payload, expectedCapability, manager, beforeSessionReplacement)
         .then((response) => writeResponse(socket, response))
         .catch(() => writeResponse(socket, {
           requestId: "invalid",
           ok: false,
           errorCode: "broker_session_ipc_failed",
         }))
-        .finally(() => payload.fill(0));
+        .finally(() => {
+          payload.fill(0);
+          if (inFlight.get(socket) === operation) inFlight.delete(socket);
+        });
+      inFlight.set(socket, operation);
     });
     socket.on("end", () => {
       if (!handled) socket.destroy();
@@ -276,16 +289,28 @@ export async function createBrokerCredentialIPCServer(options: {
     throw error;
   }
 
-  let closed = false;
+  let closePromise: Promise<void> | null = null;
   return {
-    close: async () => {
-      if (closed) return;
-      closed = true;
-      for (const socket of sockets) socket.destroy();
-      await new Promise<void>((resolve, reject) => {
-        server.close((error) => error ? reject(error) : resolve());
-      });
-      await unlink(socketPath).catch(() => {});
+    close: () => {
+      if (closePromise) return closePromise;
+      closing = true;
+      closePromise = (async () => {
+        // Stop accepting new clients first. Incomplete requests are discarded;
+        // complete authenticated operations are drained before broker teardown.
+        const listenerClosed = new Promise<void>((resolve, reject) => {
+          server.close((error) => error ? reject(error) : resolve());
+        });
+        for (const socket of sockets) {
+          if (!inFlight.has(socket)) socket.destroy();
+        }
+        await Promise.all([...inFlight.values()]);
+        for (const socket of sockets) {
+          if (!socket.destroyed) socket.end();
+        }
+        await listenerClosed;
+        await unlink(socketPath).catch(() => {});
+      })();
+      return closePromise;
     },
   };
 }
