@@ -457,3 +457,31 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
 - This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
 - `CAP_ALLOW_TRADING=false`; no LIVE authorization.
+
+
+## Current mainline evidence addendum — 2026-11-18
+
+**Verified baseline:** GitHub `main` at `31e3e5547c9204645427ec56426e741d4bcfa955`.
+
+### Present on main
+- Native SwiftUI macOS application shell and workspace/Command Center foundation.
+- Shared provisional design-token and workspace-panel foundation.
+- Broker-management UI and macOS Keychain credential-storage foundation.
+- Market Explorer with provider-backed DEMO instrument catalogue search.
+- Node.js 24 / TypeScript backend health and limited Capital.com market-data REST foundation.
+- Repository CI/security workflows and eight canonical Mermaid source diagrams.
+
+### Not established on main
+- A single backend-owned authenticated Broker Session Manager with secure Keychain-to-backend credential provisioning.
+- Fully integrated authenticated private IPC and managed backend process lifecycle.
+- Qualified real Capital.com DEMO authentication, streaming, historical-data response, or market-data soak/reconnect.
+- Canonical provider-neutral multi-asset trading domain and operational PostgreSQL persistence/audit.
+- Integrated central RiskEngine, durable OMS/outbox, exclusive Execution Gateway, broker order/fill reconciliation, and controlled DEMO order lifecycle.
+- Strategy runtime, production-grade backtesting/replay, portfolio accounting, multi-broker capability packs, or AI agent execution workflows.
+- Complete 12-screen IPDS, approved final semantic token system, screen-level visual assets, Arabic RTL and accessibility qualification.
+- LIVE trading or production readiness.
+
+### Evidence and qualification rules
+Open PR branches are not mainline implementation. CI results apply only to their exact tested commit SHA. Cancelled, queued, running, stale-head or dirty-merge states are not passes. Hosted Intel/arm64 CI does not replace owner-Mac launch, visual/accessibility, Keychain restart and real DEMO verification.
+
+The current PR qualification snapshot and delivery blockers are recorded in `TASK_REGISTER.md` and Issue #59. `CAP_ALLOW_TRADING=false` remains unchanged.

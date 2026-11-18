@@ -380,3 +380,41 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
 - No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
 - Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
+
+
+## 2026-11-18 audit addendum — current mainline and delivery blockers
+
+**Baseline:** `main` `31e3e5547c9204645427ec56426e741d4bcfa955`. This addendum supersedes older PR-state snapshots only where it records a newer live GitHub inspection. Issue #59 remains the live integration tracker.
+
+| Priority | Workstream | Current evidence / state | Required exit gate |
+|---|---|---|---|
+| P0 | Repository governance | GitHub reports `main.protected=false` and no required status checks enforced | Configure and verify branch protection/rulesets and required checks through repository settings |
+| P0 | Authenticated IPC + managed backend lifecycle | PR #51 checks green; #52 arm64 rerun requested; #53 Intel failed; #56/#57 follow-up macOS reruns requested | Fresh exact-head Intel + arm64 builds/tests, capability bootstrap, supervisor lifecycle, shutdown and invalidation |
+| P0 | Unified broker session + credential confidentiality | PR #55/#66 remain Draft; #66 merge state dirty; private UDS credential transport is proposed/implemented on branch, not main | One backend-owned Broker Session Manager; private credential IPC; Keychain provisioning; no secret HTTP body; DEMO auth/reconnect/restart tests |
+| P1 | Authenticated live market data | PR #64 pending CI; PR #67 only sync evidence; PR #68 backend running/macOS queued | Exact-head CI, provider contract evidence, freshness/gap/reconnect/subscription tests and authenticated DEMO observation |
+| P1 | Historical data and chart workspace | PR #68 and #70 open; #70 reported dirty | Resolve ancestry/conflicts; exact-head CI; separate Bid/Ask candles, timestamp lineage, pagination/gap correctness and owner-Mac UI qualification |
+| P0 | Canonical multi-asset domain + persistence | Not present on current main; older PR #40/#41 stack is not the active authenticated-session integration path | Provider-neutral instrument/account/order/fill/position contracts, asset capability metadata, migrations, audit, idempotent event handling |
+| P0 | Central RiskEngine + OMS + Execution Gateway | Not present on current main | Shared manual/strategy/agent intent path; deterministic risk authorization; durable OMS/outbox; exclusive broker dealing boundary; ambiguity/replay/fill/reconciliation tests |
+| P0 | Controlled DEMO execution | Not qualified; `CAP_ALLOW_TRADING=false` | Authenticated broker DEMO, broker-confirmed order/fill/position reconciliation, failure injection and recovery; no LIVE |
+| P1 | IPDS and 12-screen experience | PR #69 macOS jobs rerun requested; PR #73 partial CI and Draft; #73 stacked on #69 | Parent-first merge, exact-head Intel/arm64 CI, token decision closure, per-screen specs/assets, visual/accessibility/RTL/owner-Mac acceptance |
+| P2 | Multi-broker / additional asset capability packs | Product target only | Verify broker, jurisdiction, instrument contract, sessions, precision, margin, financing, order and data entitlements per capability |
+
+### Current PR qualification snapshot
+
+- #51: exact-head backend, hygiene, Intel, arm64 and Local Sync Safety recorded passed; still open and subject to dependent integration gates.
+- #52: arm64 cancellation; targeted rerun requested.
+- #53: Intel compile failure (actor-isolation construction and process assignment); #56/#57 are remediation branches, but their prior macOS jobs were cancelled and reruns requested.
+- #55/#64: backend/macOS work in progress or queued.
+- #66: dirty merge state; only Local Sync Safety recorded.
+- #67: only Local Sync Safety recorded.
+- #68: hygiene, Mermaid and sync passed; backend in progress; Intel/arm64 queued.
+- #69: hygiene/backend/Mermaid/sync passed; Intel/arm64 cancelled and rerun requested.
+- #70: dirty merge state; only Local Sync Safety recorded.
+- #73: backend/hygiene/sync passed; Intel in progress; arm64 queued; remains Draft.
+- #74: documentation-only system-context boundary correction; exact-head CI/Mermaid/CodeQL queued or in progress; remains Draft.
+
+Do not merge based on green checks alone when parent ancestry, security boundaries, or required architecture are incomplete. No PR is treated as merged in this addendum.
+
+### Scope and estimation control
+
+The PR #73 UI estimate is 85–140 engineer-days and excludes major backend/domain work, broker qualification, review latency and release certification. The separate 47–83 person-day controlled-DEMO core estimate in the engineering review is a different workstream/baseline; do not add the ranges without reconciling overlap and remaining work. Re-estimate after exact-head integration spikes and measured Shell/Command Center/Markets delivery.
