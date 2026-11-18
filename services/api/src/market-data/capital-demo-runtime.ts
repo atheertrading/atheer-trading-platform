@@ -93,6 +93,10 @@ export class CapitalDemoRuntime {
       this.credentials.password === credentials.password;
   }
 
+  isAuthenticationBlockedFor(credentials: CapitalDemoCredentials): boolean {
+    return this.authenticationBlocked && this.usesCredentials(credentials);
+  }
+
   async connect(): Promise<CapitalDemoRuntimeStatus> {
     if (this.authenticationBlocked) return this.status();
     if (this.session && this.connectionState === "connected") return this.status();
