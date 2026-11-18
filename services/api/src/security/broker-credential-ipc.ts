@@ -83,7 +83,7 @@ function parseRequest(payload: Buffer): CredentialIPCRequest | null {
   if (
     apiKey.length === 0 || apiKey.length > 512 ||
     identifier.length === 0 || identifier.length > 512 ||
-    password.length === 0 || password.length > 2_048
+    password.trim().length === 0 || password.length > 2_048
   ) return null;
 
   return {
