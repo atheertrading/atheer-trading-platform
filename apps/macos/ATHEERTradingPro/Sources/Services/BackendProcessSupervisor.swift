@@ -176,7 +176,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
     init(
         resolver: BackendRuntimeResolving? = nil,
         startupTimeoutNanoseconds: UInt64 = 15_000_000_000,
-        gracefulShutdownTimeoutNanoseconds: UInt64 = 2_000_000_000,
+        gracefulShutdownTimeoutNanoseconds: UInt64 = 25_000_000_000,
         forcedShutdownTimeoutNanoseconds: UInt64 = 2_000_000_000
     ) {
         self.resolver = resolver ?? BundledBackendRuntimeResolver()
