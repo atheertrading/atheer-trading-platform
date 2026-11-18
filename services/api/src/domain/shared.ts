@@ -119,7 +119,9 @@ function alignDecimalParts(left: DecimalParts, right: DecimalParts): readonly [b
 }
 
 export function compareDecimal(left: DecimalValue, right: DecimalValue): -1 | 0 | 1 {
-  const [a, b] = alignDecimalParts(decimalParts(left), decimalParts(right));
+  const normalizedLeft = decimalValue(left);
+  const normalizedRight = decimalValue(right);
+  const [a, b] = alignDecimalParts(decimalParts(normalizedLeft), decimalParts(normalizedRight));
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
@@ -128,10 +130,12 @@ export function isPositiveDecimal(value: DecimalValue): boolean {
 }
 
 export function isMultipleOfIncrement(value: DecimalValue, increment: DecimalValue): boolean {
-  if (!isPositiveDecimal(increment)) {
+  const normalizedValue = decimalValue(value);
+  const normalizedIncrement = decimalValue(increment);
+  if (!isPositiveDecimal(normalizedIncrement)) {
     throw new DomainValidationError("invalid_increment", "A decimal increment must be greater than zero.");
   }
-  const [amount, step] = alignDecimalParts(decimalParts(value), decimalParts(increment));
+  const [amount, step] = alignDecimalParts(decimalParts(normalizedValue), decimalParts(normalizedIncrement));
   return amount % step === 0n;
 }
 
@@ -254,7 +258,8 @@ export function deepFreeze<T>(value: T, seen: WeakSet<object> = new WeakSet<obje
 }
 
 export function assertPositiveDecimal(value: DecimalValue, field: string): void {
-  if (!isPositiveDecimal(value)) {
+  const normalized = decimalValue(value);
+  if (!isPositiveDecimal(normalized)) {
     throw new DomainValidationError("invalid_" + field, field + " must be greater than zero.");
   }
 }
