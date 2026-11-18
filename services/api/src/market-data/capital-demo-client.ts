@@ -1,5 +1,9 @@
 const CAPITAL_DEMO_BASE_URL = "https://demo-api-capital.backend-capital.com/api/v1";
 const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_RATE_LIMIT_RETRIES = 3;
+const INITIAL_RATE_LIMIT_BACKOFF_MS = 500;
+const MAX_RATE_LIMIT_BACKOFF_MS = 10_000;
+const MAX_RETRY_AFTER_MS = 60_000;
 
 export interface CapitalDemoCredentials {
   readonly apiKey: string;
@@ -45,6 +49,26 @@ export interface CapitalDemoClientOptions {
   readonly requestIntervalMs?: number;
   readonly monotonicNow?: () => number;
   readonly sleep?: (milliseconds: number) => Promise<void>;
+  readonly random?: () => number;
+}
+
+
+function parseRetryAfterMilliseconds(value: string | null, nowMs: number): number | undefined {
+  if (value === null) return undefined;
+  const normalized = value.trim();
+  if (normalized.length === 0) return undefined;
+
+  let delayMs: number;
+  if (/^\\d+(?:\\.\\d+)?$/.test(normalized)) {
+    delayMs = Number(normalized) * 1_000;
+  } else {
+    const retryAtMs = Date.parse(normalized);
+    if (!Number.isFinite(retryAtMs)) return undefined;
+    delayMs = retryAtMs - nowMs;
+  }
+
+  if (!Number.isFinite(delayMs) || delayMs < 0) return undefined;
+  return Math.min(MAX_RETRY_AFTER_MS, Math.ceil(delayMs));
 }
 
 export class CapitalDemoApiError extends Error {
@@ -70,6 +94,8 @@ export class CapitalDemoClient {
   private readonly requestIntervalMs: number;
   private readonly monotonicNow: () => number;
   private readonly sleep: (milliseconds: number) => Promise<void>;
+  private readonly random: () => number;
+  private rateLimitBlockedUntilMs = 0;
 
   constructor(
     private readonly fetcher: FetchLike = fetch,
@@ -80,6 +106,7 @@ export class CapitalDemoClient {
     this.monotonicNow = options.monotonicNow ?? (() => performance.now());
     this.sleep = options.sleep ?? ((milliseconds) =>
       new Promise((resolve) => setTimeout(resolve, milliseconds)));
+    this.random = options.random ?? Math.random;
   }
 
   async startSession(credentials: CapitalDemoCredentials): Promise<CapitalDemoSession> {
@@ -220,24 +247,67 @@ export class CapitalDemoClient {
     input: string | URL,
     init?: RequestInit,
   ): Promise<Response> {
-    const previous = this.requestQueue;
-    let release!: () => void;
-    this.requestQueue = new Promise<void>((resolve) => { release = resolve; });
-    await previous;
+    let retryAttempt = 0;
 
-    try {
-      if (this.hasStartedRequest) {
-        const elapsed = this.monotonicNow() - this.lastRequestStartedAtMs;
-        const wait = Math.max(0, this.requestIntervalMs - elapsed);
-        if (wait > 0) await this.sleep(wait);
+    while (true) {
+      const previous = this.requestQueue;
+      let release!: () => void;
+      this.requestQueue = new Promise<void>((resolve) => { release = resolve; });
+      await previous;
+
+      try {
+        // One shared queue enforces both the provider request-start budget and
+        // a Retry-After cooldown observed by any request in this process.
+        while (true) {
+          const now = this.monotonicNow();
+          const spacingWait = this.hasStartedRequest
+            ? Math.max(0, this.requestIntervalMs - (now - this.lastRequestStartedAtMs))
+            : 0;
+          const cooldownWait = Math.max(0, this.rateLimitBlockedUntilMs - now);
+          const wait = Math.max(spacingWait, cooldownWait);
+          if (wait <= 0) break;
+          await this.sleep(wait);
+        }
+
+        this.lastRequestStartedAtMs = this.monotonicNow();
+        this.hasStartedRequest = true;
+      } finally {
+        release();
       }
-      this.lastRequestStartedAtMs = this.monotonicNow();
-      this.hasStartedRequest = true;
-    } finally {
-      release();
-    }
 
-    return this.fetcher(input, init);
+      // The 10s timeout applies to each network attempt, not to the provider's
+      // server-directed rate-limit delay preceding a retry.
+      const response = await this.fetcher(input, {
+        ...init,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+
+      if (response.status !== 429 || retryAttempt >= MAX_RATE_LIMIT_RETRIES) {
+        return response;
+      }
+
+      const retryAfterMs = parseRetryAfterMilliseconds(
+        response.headers.get("Retry-After"),
+        this.now(),
+      );
+      const exponentialCapMs = Math.min(
+        INITIAL_RATE_LIMIT_BACKOFF_MS * (2 ** retryAttempt),
+        MAX_RATE_LIMIT_BACKOFF_MS,
+      );
+      const sample = this.random();
+      const boundedSample = Number.isFinite(sample)
+        ? Math.min(1, Math.max(0, sample))
+        : 0.5;
+      const jitterDelayMs = Math.max(1, Math.floor(boundedSample * exponentialCapMs));
+      const delayMs = retryAfterMs ?? jitterDelayMs;
+
+      this.rateLimitBlockedUntilMs = Math.max(
+        this.rateLimitBlockedUntilMs,
+        this.monotonicNow() + delayMs,
+      );
+      retryAttempt += 1;
+      await response.body?.cancel();
+    }
   }
 
   private async authorizedGet(
