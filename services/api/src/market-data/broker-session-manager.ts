@@ -102,8 +102,11 @@ export class BrokerSessionManager {
     }
   }
 
-  disconnect(): Promise<BrokerSessionStatus> {
-    return this.serializeTransition(() => this.disconnectInternal());
+  disconnect(beforeSessionReplacement?: () => Promise<void>): Promise<BrokerSessionStatus> {
+    return this.serializeTransition(async () => {
+      await beforeSessionReplacement?.();
+      return this.disconnectInternal();
+    });
   }
 
   private async disconnectInternal(): Promise<BrokerSessionStatus> {
