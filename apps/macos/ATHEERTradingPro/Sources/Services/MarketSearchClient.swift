@@ -308,7 +308,12 @@ final class MarketExplorerViewModel: ObservableObject {
             streamingQuotes.removeValue(forKey: epic)
             pendingStreamingQuotes.removeValue(forKey: epic)
             streamingError = nil
-            if streamingRequested { restartStream() }
+            if selectedEpics.isEmpty {
+                streamingRequested = false
+                pauseStream()
+            } else if streamingRequested {
+                restartStream()
+            }
             return
         }
 
@@ -327,7 +332,8 @@ final class MarketExplorerViewModel: ObservableObject {
         streamingQuotes.removeAll()
         pendingStreamingQuotes.removeAll()
         streamingError = nil
-        if streamingRequested { restartStream() }
+        streamingRequested = false
+        pauseStream()
     }
 
     func startStreaming() {
