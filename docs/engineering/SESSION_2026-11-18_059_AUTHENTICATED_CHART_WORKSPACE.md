@@ -93,3 +93,13 @@ The native historical payload decoder now independently rejects candles whose ma
 - Commits: `68b70ed2404b4672a86dbb91e05b0157da311391`, `b130e4375444deb9c029299fc6564168d51a636d`.
 - Exact-head macOS CI and dependent backend checks are required; no build or test pass is claimed.
 - The chart remains historical DEMO/read-only. No execution path was added.
+
+## CI failure analysis and regression correction — 2026-11-18
+
+The inherited Intel macOS test run identified a stale error-description assertion in `UnixDomainSocketBrokerCredentialIPCClientTests`. Production returns the security-specific text "The private broker credential request was rejected (...)." The test expected the older text without "private". Updated the assertion to match the actual contract.
+
+The inherited broker authentication URLProtocol fixture also assumed request bodies were always available through `URLRequest.httpBody`. The macOS runner surfaced the body via `httpBodyStream`; the fixture now captures either representation, uses a bounded stream read, and enforces the existing 8 KiB request limit.
+
+- Corrections propagated through PR #66, #67, #68 and #70.
+- No production broker transport or execution behavior was changed by these test fixes.
+- Exact-head CI reruns are pending; no test pass is claimed.
