@@ -11,11 +11,12 @@ protocol BackendHealthClient {
 struct URLSessionBackendHealthClient: BackendHealthClient {
     static let baseURLString = "http://127.0.0.1:4100"
 
-    private let baseURL = URL(string: URLSessionBackendHealthClient.baseURLString)!
+    private let baseURL: URL
     private let session: URLSession
     private let decoder = BackendHealthPayloadDecoder()
 
-    init(session: URLSession = .shared) {
+    init(baseURL: URL = URL(string: URLSessionBackendHealthClient.baseURLString)!, session: URLSession = .shared) {
+        self.baseURL = baseURL
         self.session = session
     }
 

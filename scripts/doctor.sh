@@ -61,16 +61,28 @@ else
 fi
 
 if command -v node >/dev/null 2>&1; then
-  node_major="$(node -p 'process.versions.node.split(".")[0]')"
-  if [[ "$node_major" == "24" ]]; then
-    printf 'OK       Node.js 24 (%s)\n' "$(node --version)"
+  if [[ "$(node --version)" == "v24.22.3" ]]; then
+    printf 'OK       Node.js 24.22.3 (pinned backend runtime)\n'
   else
-    printf 'MISMATCH Node.js major version %s (expected 24)\n' "$node_major"
+    printf 'MISMATCH Node.js version %s (expected v24.22.3)\n' "$(node --version)"
     failures=$((failures + 1))
   fi
 else
-  printf 'MISSING  Node.js 24\n'
+  printf 'MISSING  Node.js 24.22.3\n'
   failures=$((failures + 1))
+fi
+
+if command -v sw_vers >/dev/null 2>&1; then
+  macos_version="$(sw_vers -productVersion)"
+  macos_major="${macos_version%%.*}"
+  macos_minor="${macos_version#*.}"
+  macos_minor="${macos_minor%%.*}"
+  if (( macos_major > 13 || (macos_major == 13 && macos_minor >= 5) )); then
+    printf 'OK       macOS %s supports the bundled Node.js runtime\n' "$macos_version"
+  else
+    printf 'MISMATCH macOS %s (bundled Node.js runtime requires 13.5 or later)\n' "$macos_version"
+    failures=$((failures + 1))
+  fi
 fi
 check "npm" npm --version
 

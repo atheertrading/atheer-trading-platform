@@ -93,12 +93,16 @@ struct MarketSearchPayloadDecoder {
 
 // MARK: - Capital.com DEMO backend adapter
 
+@MainActor
 struct URLSessionMarketSearchClient: MarketSearchClient {
-    private let baseURL = URL(string: URLSessionBackendHealthClient.baseURLString)!
+    private let baseURL: URL
+    private let capability: BackendIPCCapability
     private let requestExecutor: URLSessionRequestExecutor
     private let decoder = MarketSearchPayloadDecoder()
 
-    init(session: URLSession? = nil) {
+    init(connection: BackendIPCConnection, session: URLSession? = nil) {
+        self.baseURL = connection.baseURL
+        self.capability = connection.capability
         let resolvedSession = session ?? Self.makeEphemeralSession()
         self.requestExecutor = URLSessionRequestExecutor(session: resolvedSession)
     }
@@ -140,6 +144,10 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
+        guard let authorization = capability.authorizationHeaderValue else {
+            throw MarketSearchError.backendUnavailable
+        }
+        request.setValue(authorization, forHTTPHeaderField: "Authorization")
 
         let (data, response): (Data, URLResponse)
         do {
@@ -170,6 +178,10 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
         request.setValue("macOS", forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT")
+        guard let authorization = capability.authorizationHeaderValue else {
+            throw MarketSearchError.backendUnavailable
+        }
+        request.setValue(authorization, forHTTPHeaderField: "Authorization")
 
         do {
             let (data, response) = try await requestExecutor.data(for: request)

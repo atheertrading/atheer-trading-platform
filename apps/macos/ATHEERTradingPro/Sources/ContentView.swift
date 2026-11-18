@@ -1,10 +1,15 @@
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
-    @State private var selection: AppSection? = .workspace
-    @StateObject private var backendHealthModel = BackendHealthViewModel()
+    @ObservedObject private var backendRuntimeModel: BackendRuntimeViewModel
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
+    @State private var selection: AppSection? = .workspace
     @State private var showingBrokers = false
+
+    init(backendRuntimeModel: BackendRuntimeViewModel = BackendRuntimeViewModel()) {
+        self.backendRuntimeModel = backendRuntimeModel
+    }
 
     /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
     private func scheduleSelectionChange(_ newSelection: AppSection?) {
@@ -60,13 +65,24 @@ struct ContentView: View {
                 switch selection ?? .workspace {
                 case .workspace:
                     WorkspaceHomeView(
-                        backendHealthModel: backendHealthModel,
+                        backendHealthModel: backendRuntimeModel.healthModel,
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
                 case .markets:
-                    MarketExplorerView(client: URLSessionMarketSearchClient(), onOpenAPIConnection: { selection = .apiConnection })
+                    if let client = backendRuntimeModel.marketSearchClient {
+                        MarketExplorerView(
+                            client: client,
+                            onOpenAPIConnection: { selection = .apiConnection }
+                        )
+                    } else {
+                        BackendRuntimeUnavailableView(
+                            state: backendRuntimeModel.state,
+                            onRetry: { Task { await backendRuntimeModel.start() } },
+                            onOpenAPIConnection: { selection = .apiConnection }
+                        )
+                    }
                 case .apiConnection:
-                    APIConnectionView(model: backendHealthModel)
+                    APIConnectionView(model: backendRuntimeModel.healthModel)
                 case .settings:
                     SettingsHomeView(onOpenBrokers: { showingBrokers = true })
                         .sheet(isPresented: $showingBrokers) {
@@ -81,7 +97,7 @@ struct ContentView: View {
         }
         .frame(minWidth: 900, minHeight: 600)
         .task {
-            await backendHealthModel.refresh()
+            await backendRuntimeModel.start()
         }
     }
 }

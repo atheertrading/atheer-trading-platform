@@ -18,6 +18,8 @@ credentials/
 
 # Xcode / Swift
 apps/macos/ATHEERTradingPro/ATHEERTradingPro.xcodeproj/
+apps/macos/ATHEERTradingPro/Resources/Backend/
+apps/macos/ATHEERTradingPro/Resources/Runtime/
 build/
 .build/
 DerivedData/

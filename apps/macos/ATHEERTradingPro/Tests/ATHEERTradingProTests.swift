@@ -549,7 +549,7 @@ final class ATHEERTradingProTests: XCTestCase {
             session.invalidateAndCancel()
         }
 
-        let client = URLSessionMarketSearchClient(session: session)
+        let client = makeMarketSearchClient(session: session)
         let status = try await client.fetchBackendStatus()
 
         XCTAssertEqual(status.provider, "capital.com")
@@ -560,6 +560,7 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertTrue(request.url?.path.hasSuffix("/market-data/status") == true)
         XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), expectedTestAuthorizationHeader())
     }
 
     @MainActor
@@ -591,7 +592,7 @@ final class ATHEERTradingProTests: XCTestCase {
             session.invalidateAndCancel()
         }
 
-        let client = URLSessionMarketSearchClient(session: session)
+        let client = makeMarketSearchClient(session: session)
         let instruments = try await client.searchMarkets("Gold & Silver")
 
         XCTAssertEqual(instruments.count, 1)
@@ -604,6 +605,7 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(components.queryItems?.first(where: { $0.name == "searchTerm" })?.value, "Gold & Silver")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), expectedTestAuthorizationHeader())
     }
 
     @MainActor
@@ -614,7 +616,7 @@ final class ATHEERTradingProTests: XCTestCase {
             MarketSearchURLProtocolStub.requestObserver = nil
             session.invalidateAndCancel()
         }
-        let client = URLSessionMarketSearchClient(session: session)
+        let client = makeMarketSearchClient(session: session)
 
         MarketSearchURLProtocolStub.handler = { request in
             (HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!, Data())
@@ -814,6 +816,25 @@ private final class DeferredMarketSearchClient: MarketSearchClient {
     }
 }
 
+
+
+@MainActor
+private func makeMarketSearchClient(session: URLSession) -> URLSessionMarketSearchClient {
+    let capability = try! BackendIPCCapability(testBytes: Data(repeating: 7, count: 32))
+    let connection = BackendIPCConnection(
+        baseURL: URL(string: URLSessionBackendHealthClient.baseURLString)!,
+        capability: capability
+    )
+    return URLSessionMarketSearchClient(connection: connection, session: session)
+}
+
+private func expectedTestAuthorizationHeader() -> String {
+    let encoded = Data(repeating: 7, count: 32).base64EncodedString()
+        .replacingOccurrences(of: "=", with: "")
+        .replacingOccurrences(of: "+", with: "-")
+        .replacingOccurrences(of: "/", with: "_")
+    return "Bearer " + encoded
+}
 
 private func marketSearchStubSession() -> URLSession {
     let configuration = URLSessionConfiguration.ephemeral
