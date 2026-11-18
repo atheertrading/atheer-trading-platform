@@ -11,6 +11,7 @@ final class ATHEERApplicationDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
+@MainActor
 struct ATHEERTradingProApp: App {
     @NSApplicationDelegateAdaptor(ATHEERApplicationDelegate.self) private var appDelegate
     @StateObject private var backendRuntimeModel = BackendRuntimeViewModel()
