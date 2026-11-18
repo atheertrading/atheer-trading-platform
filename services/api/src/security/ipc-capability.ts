@@ -87,7 +87,7 @@ export function hasValidIPCCapability(
     candidate.fill(0);
     return false;
   }
-  const expected = expectedCapability.slice();
+  const expected = Uint8Array.from(expectedCapability);
   const valid = timingSafeEqual(candidate, expected);
   candidate.fill(0);
   expected.fill(0);
