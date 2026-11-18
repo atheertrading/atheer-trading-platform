@@ -14,6 +14,65 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     @MainActor
+    func testMarketWatchlistPersistsAddsRemovesAndReordersInStableOrder() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        let store = MarketWatchlistStore(persistence: persistence)
+
+        XCTAssertTrue(store.add("GOLD"))
+        XCTAssertTrue(store.add("US500"))
+        XCTAssertTrue(store.add("EURUSD"))
+        XCTAssertTrue(store.add("GOLD"), "Adding an existing instrument is idempotent.")
+        XCTAssertEqual(store.epics, ["GOLD", "US500", "EURUSD"])
+
+        XCTAssertTrue(store.move("EURUSD", to: 0))
+        XCTAssertEqual(store.epics, ["EURUSD", "GOLD", "US500"])
+        XCTAssertTrue(store.remove("GOLD"))
+        XCTAssertEqual(store.epics, ["EURUSD", "US500"])
+
+        let restored = MarketWatchlistStore(persistence: persistence)
+        XCTAssertEqual(restored.epics, ["EURUSD", "US500"])
+    }
+
+    @MainActor
+    func testMarketWatchlistRejectsInvalidIdentifiersAndEnforcesProviderSubscriptionLimit() {
+        let store = MarketWatchlistStore(persistence: InMemoryMarketWatchlistPersistence())
+
+        XCTAssertFalse(store.add("GOLD INDEX"))
+        XCTAssertFalse(store.add(""))
+        XCTAssertTrue(store.epics.isEmpty)
+
+        for index in 0..<MarketWatchlistStore.maximumInstrumentCount {
+            XCTAssertTrue(store.add("EPIC\\(index)"))
+        }
+        XCTAssertFalse(store.add("EPIC\\(MarketWatchlistStore.maximumInstrumentCount)"))
+        XCTAssertEqual(store.epics.count, MarketWatchlistStore.maximumInstrumentCount)
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    @MainActor
+    func testMarketWatchlistDoesNotOverwriteUnsupportedPersistedSchema() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        persistence.snapshot = MarketWatchlistSnapshot(schemaVersion: 99, epics: ["GOLD"])
+
+        let store = MarketWatchlistStore(persistence: persistence)
+
+        XCTAssertTrue(store.epics.isEmpty)
+        XCTAssertNotNil(store.recoveryMessage)
+        XCTAssertEqual(persistence.saveCallCount, 0, "Recovery must not silently overwrite unknown persisted user data.")
+    }
+
+    @MainActor
+    func testMarketWatchlistPersistenceFailureDoesNotPublishUncommittedChanges() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        persistence.saveError = MarketWatchlistStubError.unavailable
+        let store = MarketWatchlistStore(persistence: persistence)
+
+        XCTAssertFalse(store.add("GOLD"))
+        XCTAssertTrue(store.epics.isEmpty)
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    @MainActor
     func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
         let persistence = InMemoryWorkspacePersistence()
         let engine = WorkspaceEngine(persistence: persistence)
@@ -215,6 +274,15 @@ final class ATHEERTradingProTests: XCTestCase {
         )
         let view = CommandCenterView(
             backendHealthModel: model,
+            marketExplorerModel: MarketExplorerViewModel(
+                client: StubMarketSearchClient(
+                    status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .disconnected),
+                    results: []
+                ),
+                streamClient: StubMarketDataStreamClient(events: [])
+            ),
+            marketWatchlistStore: MarketWatchlistStore(persistence: InMemoryMarketWatchlistPersistence()),
+            onOpenMarkets: {},
             onOpenAPIConnection: {}
         )
 
@@ -927,6 +995,28 @@ private final class StubMarketDataStreamClient: MarketDataStreamClient {
                 continuation.yield(event)
             }
         }
+    }
+}
+
+private enum MarketWatchlistStubError: Error {
+    case unavailable
+}
+
+private final class InMemoryMarketWatchlistPersistence: MarketWatchlistPersistence {
+    var snapshot: MarketWatchlistSnapshot?
+    var loadError: Error?
+    var saveError: Error?
+    private(set) var saveCallCount = 0
+
+    func load() throws -> MarketWatchlistSnapshot? {
+        if let loadError { throw loadError }
+        return snapshot
+    }
+
+    func save(_ snapshot: MarketWatchlistSnapshot) throws {
+        saveCallCount += 1
+        if let saveError { throw saveError }
+        self.snapshot = snapshot
     }
 }
 
