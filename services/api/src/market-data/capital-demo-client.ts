@@ -18,8 +18,6 @@ export interface CapitalMarket {
   readonly epic: string;
   readonly instrumentName?: string;
   readonly marketStatus?: string;
-  readonly bid?: number;
-  readonly offer?: number;
   readonly currency?: string;
 }
 
@@ -135,10 +133,18 @@ export class CapitalDemoClient {
     const query = new URLSearchParams({ searchTerm: normalizedSearch });
     const response = await this.authorizedGet(session, `/markets?${query.toString()}`);
     const payload: unknown = await response.json();
-    if (!isRecord(payload) || !Array.isArray(payload.markets) || !payload.markets.every(isCapitalMarket)) {
+    if (!isRecord(payload) || !Array.isArray(payload.markets)) {
       throw new Error("Capital.com returned an invalid market search response.");
     }
-    return { markets: payload.markets };
+    const markets: CapitalMarket[] = [];
+    for (const value of payload.markets) {
+      const market = normalizeCapitalMarket(value);
+      if (!market) {
+        throw new Error("Capital.com returned an invalid market search response.");
+      }
+      markets.push(market);
+    }
+    return { markets };
   }
 
   async getPriceHistory(
@@ -238,7 +244,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isCapitalMarket(value: unknown): value is CapitalMarket {
-  if (!isRecord(value)) return false;
-  return typeof value.epic === "string" && value.epic.length > 0;
+function normalizeCapitalMarket(value: unknown): CapitalMarket | null {
+  if (!isRecord(value) || typeof value.epic !== "string" || value.epic.trim().length === 0) {
+    return null;
+  }
+  return {
+    epic: value.epic,
+    ...(typeof value.instrumentName === "string" ? { instrumentName: value.instrumentName } : {}),
+    ...(typeof value.marketStatus === "string" ? { marketStatus: value.marketStatus } : {}),
+    ...(typeof value.currency === "string" ? { currency: value.currency } : {}),
+  };
 }
