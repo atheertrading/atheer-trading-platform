@@ -171,3 +171,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Implemented in unmerged PR #37:** shared WebSocket runtime, 40-instrument cap, deduplication, five-minute heartbeat, reconnect/backoff and quote-quality counters.
 - **Pending:** sequential session-creation rate limit, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented provider-wide REST or WebSocket connection limits.
+
+
+## EDL-022 implementation addendum — 2026-11-18 (PR #55)
+
+- **Status:** Partially implemented on unmerged PR #55; not accepted as a qualified broker integration.
+- **Implemented:** backend `BrokerSessionManager` owns the provider credentials/session runtime; native Keychain credentials are handed over capability-authenticated loopback IPC; provider session tokens remain backend-only; status/connect/disconnect APIs are bounded and sanitized.
+- **Session policy:** enforce the Library-documented one session-creation request per second per API key. Preserve distinct HTTP 401 (authentication), 403 (permission), and 429 (rate limit) semantics. Do not map all provider failures to invalid credentials.
+- **Account switch:** disconnect the stream only after the manager accepts a session replacement attempt; a rate-limited request must not tear down the existing stream.
+- **Logout:** attempt broker REST logout even if stream shutdown reports an error. Drop the credential-bearing runtime reference in all logout outcomes; never return a success response when the complete shutdown was not confirmed.
+- **Remaining:** exact-head CI; ordered PR #51/#54/#55 integration; owner-Mac Keychain persistence and process lifecycle; authenticated Capital.com DEMO acceptance; stream recovery/reconciliation qualification. LIVE and dealing remain disabled.
