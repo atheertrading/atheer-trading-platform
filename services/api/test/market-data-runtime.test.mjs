@@ -203,6 +203,42 @@ test("runtime marks failed provider authentication as error without leaking cred
   assert.equal(JSON.stringify(runtime.status()).includes("demo-password"), false);
 });
 
+test("broker session manager preserves creation throttling across account replacement", async () => {
+  let now = 1_800_000_000_000;
+  let factoryCalls = 0;
+  const client = createMockClient();
+  const manager = new BrokerSessionManager(
+    (value) => {
+      factoryCalls += 1;
+      return new CapitalDemoRuntime(client, value, () => now);
+    },
+    () => now,
+    10_000,
+  );
+  const firstCredentials = {
+    apiKey: "first-key",
+    identifier: "first-user",
+    password: "first-password",
+  };
+  const secondCredentials = {
+    apiKey: "second-key",
+    identifier: "second-user",
+    password: "second-password",
+  };
+
+  assert.equal((await manager.connect(firstCredentials)).state, "connected");
+  const throttled = await manager.connect(secondCredentials);
+  assert.equal(throttled.state, "error");
+  assert.match(throttled.lastError, /rate-limited/);
+  assert.equal(factoryCalls, 1);
+  assert.equal(manager.status().state, "connected");
+
+  now += 10_000;
+  assert.equal((await manager.connect(secondCredentials)).state, "connected");
+  assert.equal(factoryCalls, 2);
+  assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect", "connect"]);
+});
+
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
