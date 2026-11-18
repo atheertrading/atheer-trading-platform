@@ -11,6 +11,8 @@ This index records significant engineering discussions and links them to durable
 | ATP-2026-11-16-001 | 2026-11-16 | Public repository establishment | Owner endorsed public `atheer-trading-platform`, federated knowledge authority, extensible AI architecture, and chronological conversation continuity. | Project Continuity; Decision Log |
 | ATP-2026-11-16-002 | 2026-11-16 | Repository bootstrap | Inspected public repository, initial commit, README, default branch, and missing root agent instructions; created governance bootstrap branch. | This bootstrap PR; Project Continuity |
 
+| ATP-2026-11-19-070 | 2026-11-19 | Broker disconnect serialization and REST 429 recovery | Moved stream teardown into the serialized broker-session transition; implemented process-wide Retry-After/jitter cooldown and deterministic tests. Reviewed Library Q8/Q9 and proposed ATP-MER-001 flows; exact-head macOS qualification remains pending. | PR #66; SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY; ATP-ENG-063 (#77) |
+
 ## Session record requirements
 
 For each new substantial session, add one row and preserve chronology. The detailed record should include:
