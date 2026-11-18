@@ -181,3 +181,12 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Account switch:** disconnect the stream only after the manager accepts a session replacement attempt; a rate-limited request must not tear down the existing stream.
 - **Logout:** attempt broker REST logout even if stream shutdown reports an error. Drop the credential-bearing runtime reference in all logout outcomes; never return a success response when the complete shutdown was not confirmed.
 - **Remaining:** exact-head CI; ordered PR #51/#54/#55 integration; owner-Mac Keychain persistence and process lifecycle; authenticated Capital.com DEMO acceptance; stream recovery/reconciliation qualification. LIVE and dealing remain disabled.
+
+
+## EDL-022 security qualification addendum — 2026-11-18
+
+- **Status:** Partially implemented; confidentiality qualification remains open.
+- **Finding:** The current app-to-backend credential request uses authenticated plain HTTP to `127.0.0.1`. The per-process 256-bit bearer capability provides authentication and route authorization; it does not encrypt the credential body.
+- **Decision:** Do not treat loopback binding or bearer authentication as payload confidentiality. Keep PR #55 and dependent broker integration blocked from security-qualified merge until credential transfer uses a private local IPC channel with appropriate process/peer controls, or the relevant authority explicitly accepts a documented same-host threat boundary.
+- **Preferred implementation direction:** private stdio RPC between the supervised parent and backend child, or a protected Unix-domain socket, for credential payloads. Retain capability-authenticated HTTP for non-secret local control and market-data operations unless a broader redesign is justified.
+- **Safety:** No credential was used in this batch. LIVE, dealing and trading remain disabled.
