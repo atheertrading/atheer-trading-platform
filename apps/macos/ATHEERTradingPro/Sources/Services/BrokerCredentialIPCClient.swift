@@ -85,8 +85,9 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
             }
         }
 
+        let requestData = payload
         let response = try await Task.detached(priority: .userInitiated) {
-            try Self.exchange(socketPath: socketPath, payload: payload)
+            try Self.exchange(socketPath: socketPath, payload: requestData)
         }.value
 
         guard response.requestId == request.requestId else {
