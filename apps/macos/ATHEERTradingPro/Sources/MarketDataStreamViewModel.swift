@@ -12,6 +12,15 @@ struct MarketDataStreamQuoteSnapshot: Identifiable {
         let elapsed = max(0, ProcessInfo.processInfo.systemUptime - receivedAtUptime) * 1_000
         return providerAge + elapsed
     }
+
+    var effectiveFreshnessState: MarketDataQuoteFreshnessState {
+        guard let ageMilliseconds else { return .invalid }
+        if quote.freshness.state == .fresh &&
+            ageMilliseconds > Double(quote.freshness.maximumAgeMs) {
+            return .stale
+        }
+        return quote.freshness.state
+    }
 }
 
 @MainActor
