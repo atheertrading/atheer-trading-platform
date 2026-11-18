@@ -259,7 +259,9 @@ struct MarketWatchPanelView: View {
 
             Text(quote.map { $0.ask.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundColor(quote == nil ? .secondary : ATHEERDesignTokens.ColorRole.success)
+                .foregroundColor(quote == nil ? .secondary : quote?.freshness.state == "fresh"
+                    ? ATHEERDesignTokens.ColorRole.success
+                    : ATHEERDesignTokens.ColorRole.attention)
                 .frame(width: 68, alignment: .trailing)
 
             Text(quote.map { ($0.ask - $0.bid).formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
@@ -280,7 +282,7 @@ struct MarketWatchPanelView: View {
                     if !model.isStreamingRequested { model.startStreaming() }
                 }
             } label: {
-                Text(isSubscribed ? "ON" : "ADD")
+                Text(isSubscribed ? (quote?.freshness.state.uppercased() ?? "WAIT") : "ADD")
                     .font(.system(size: 8, weight: .bold, design: .monospaced))
             }
             .buttonStyle(.borderless)
