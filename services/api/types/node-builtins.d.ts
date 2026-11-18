@@ -2,6 +2,7 @@ declare module "node:http" {
   export interface IncomingMessage {
     method?: string;
     url?: string;
+    headers: Readonly<Record<string, string | string[] | undefined>>;
   }
   export interface ServerResponse {
     statusCode: number;
@@ -20,6 +21,7 @@ declare module "node:http" {
 
 declare module "node:process" {
   export interface Process {
+    stdin: AsyncIterable<Uint8Array>;
     on(event: "SIGINT" | "SIGTERM", listener: () => void): this;
   }
   const process: Process;
