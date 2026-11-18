@@ -67,7 +67,11 @@ function brokerSessionResponseStatus(
   status: ReturnType<BrokerSessionManager["status"]>,
 ): number {
   if (status.state === "connected") return 200;
-  if (status.lastError?.includes("HTTP 401") || status.lastError?.includes("HTTP 403")) return 401;
+  if (
+    status.lastError?.includes("HTTP 401") ||
+    status.lastError?.includes("HTTP 403") ||
+    status.lastError?.includes("rejected or expired")
+  ) return 401;
   if (status.lastError?.includes("HTTP 429")) return 429;
   return 503;
 }
