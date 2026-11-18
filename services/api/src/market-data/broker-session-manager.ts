@@ -1,4 +1,5 @@
 import { CapitalDemoClient, type CapitalDemoCredentials } from "./capital-demo-client.ts";
+import type { HistoricalPriceResolution } from "./historical-prices.ts";
 import { CapitalDemoRuntime } from "./capital-demo-runtime.ts";
 
 const DEFAULT_SESSION_CREATION_INTERVAL_MS = 1_000;
@@ -113,10 +114,12 @@ export class BrokerSessionManager {
 
   async getPriceHistory(
     epic: string,
-    resolution: "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
+    resolution: HistoricalPriceResolution,
     max: number,
+    from?: string,
+    to?: string,
   ) {
-    return this.requireRuntime().getPriceHistory(epic, resolution, max);
+    return this.requireRuntime().getPriceHistory(epic, resolution, max, from, to);
   }
 
   async ping(): Promise<void> {
