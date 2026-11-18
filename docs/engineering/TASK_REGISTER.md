@@ -361,3 +361,16 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
 - CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
 - Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
+
+
+## 2026-11-18 — ATP-BRK-002 / ATP-BRK-003 implementation update
+
+| Work item | Priority | Updated status | Evidence / remaining gates |
+|---|---:|---|---|
+| ATP-BRK-002 — Single backend broker credential/session authority | P0 | IN PROGRESS — PR #51 → #54 → #55 stack | PR #55 adds backend BrokerSessionManager and authenticated Keychain handoff. Remaining: exact-head CI, ordered merges, owner-Mac Keychain/restart and real DEMO qualification. |
+| ATP-BRK-003 — Session lifecycle and recovery | P1 | PARTIAL — PR #55 | 1-second session-creation throttle, status classification and backend-owned lifecycle implemented. Full automatic recovery classification, bounded backoff, account reconciliation and operator alerting remain. |
+| ATP-MKT-007 — Streaming orchestration | P1 | PARTIAL — PR #55 | Existing shared WebSocket runtime, 40-instrument cap, quote validation and reconnect behavior retained. Priority allocator and utilization metrics remain. |
+
+Library Broker Integration Q4 records the Capital.com session-creation ceiling as one request per second per API key, REST session inactivity as ten minutes, and a 40-instrument WebSocket subscription limit. These are integration parameters that must be revalidated against current official provider documentation before release. Q8 requires 401 authentication failure, 403 permission restriction, 429 rate limiting, and WebSocket disconnection to remain distinct operational states.
+
+PR #55 remains draft and unmerged. The final exact-head CI and the owner-Mac / DEMO acceptance gates are mandatory. Do not interpret a saved credential or successful REST authentication as proof that streaming, account reconciliation, or trading readiness is complete.
