@@ -11,11 +11,11 @@ export function loadRuntimeConfig(
 ): ApiRuntimeConfig {
   const rawPort = environment.PORT ?? String(DEFAULT_PORT);
   if (!/^\d+$/.test(rawPort)) {
-    throw new Error("PORT must be an integer between 1 and 65535.");
+    throw new Error("PORT must be an integer between 0 and 65535.");
   }
   const port = Number(rawPort);
-  if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
-    throw new Error("PORT must be an integer between 1 and 65535.");
+  if (!Number.isSafeInteger(port) || port < 0 || port > 65_535) {
+    throw new Error("PORT must be an integer between 0 and 65535.");
   }
   const host = environment.HOST ?? LOOPBACK_HOST;
   if (host !== LOOPBACK_HOST) {

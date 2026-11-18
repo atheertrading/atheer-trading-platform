@@ -11,7 +11,16 @@ const server = createApiServer(marketDataRuntime, ipcCapability);
 let shuttingDown = false;
 
 server.listen(config.port, config.host, () => {
-  console.info("ATHEER API listening on http://" + config.host + ":" + config.port);
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    console.error("ATHEER API could not determine its bound loopback port.");
+    process.exitCode = 1;
+    return;
+  }
+
+  // The native process supervisor consumes this non-secret readiness marker.
+  // Port 0 requests an OS-assigned port and avoids fixed-port collisions.
+  process.stdout.write(`ATHEER_BACKEND_READY ${address.port}\n`);
 });
 
 function shutdown(): void {

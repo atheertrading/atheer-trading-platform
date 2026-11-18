@@ -61,8 +61,13 @@ test("runtime configuration defaults to loopback and a non-privileged port", () 
   assert.deepEqual(loadRuntimeConfig({}), { host: "127.0.0.1", port: 4100 });
 });
 
+test("runtime configuration permits an OS-assigned ephemeral port", () => {
+  assert.deepEqual(loadRuntimeConfig({ PORT: "0" }), { host: "127.0.0.1", port: 0 });
+});
+
 test("runtime configuration rejects invalid ports and non-loopback hosts", () => {
-  assert.throws(() => loadRuntimeConfig({ PORT: "0" }), /PORT must be an integer/);
+  assert.throws(() => loadRuntimeConfig({ PORT: "-1" }), /PORT must be an integer/);
   assert.throws(() => loadRuntimeConfig({ PORT: "70000" }), /PORT must be an integer/);
+  assert.throws(() => loadRuntimeConfig({ PORT: "invalid" }), /PORT must be an integer/);
   assert.throws(() => loadRuntimeConfig({ HOST: "0.0.0.0" }), /restricted to 127.0.0.1/);
 });
