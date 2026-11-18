@@ -323,7 +323,7 @@ test("broker session manager enforces Capital.com one-session-per-second limit",
   await manager.disconnect();
 });
 
-test("broker session manager does not retry rejected credentials until they are replaced", async () => {
+test("broker session manager permits explicit re-submission of the same rejected credentials", async () => {
   let now = 1_800_000_000_000;
   const client = createMockClient();
   client.startSession = async (value) => {
@@ -347,16 +347,12 @@ test("broker session manager does not retry rejected credentials until they are 
 
   assert.equal((await manager.connect(rejectedCredentials)).state, "error");
   now += 1_000;
-  const sameCredentials = await manager.connect(rejectedCredentials);
-  assert.equal(sameCredentials.state, "error");
+  const automaticRetry = await manager.connect();
+  assert.equal(automaticRetry.state, "error");
   assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
 
   now += 1_000;
-  const replacementCredentials = {
-    ...rejectedCredentials,
-    password: "replacement-password",
-  };
-  assert.equal((await manager.connect(replacementCredentials)).state, "error");
+  assert.equal((await manager.connect(rejectedCredentials)).state, "error");
   assert.equal(client.calls.filter((call) => call[0] === "connect").length, 2);
 });
 
