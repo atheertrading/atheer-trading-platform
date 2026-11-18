@@ -6,6 +6,7 @@ import XCTest
 private final class MockMarketDataStreamClient: MarketDataStreamClient {
     private(set) var requestedEpics: [String] = []
     private var continuation: AsyncThrowingStream<MarketDataStreamEvent, Error>.Continuation?
+    var isReady: Bool { continuation != nil }
 
     func events(for epics: [String]) -> AsyncThrowingStream<MarketDataStreamEvent, Error> {
         requestedEpics = epics
@@ -92,7 +93,7 @@ final class MarketDataStreamClientTests: XCTestCase {
         model.startMonitoring()
 
         let subscriptionDeadline = Date().addingTimeInterval(1)
-        while client.requestedEpics.isEmpty && Date() < subscriptionDeadline {
+        while !client.isReady && Date() < subscriptionDeadline {
             try? await Task.sleep(nanoseconds: 10_000_000)
         }
         XCTAssertEqual(client.requestedEpics, ["AAPL"])
