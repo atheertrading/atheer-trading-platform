@@ -685,3 +685,7 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Added deterministic XCTest coverage for backend status mapping and non-inference of unavailable values.
 - Session report: [SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md](SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md).
 - Verification state at implementation: exact-head CI and owner-Mac visual/runtime checks pending; no test pass or broker-session result is claimed here. Keep `CAP_ALLOW_TRADING=false`.
+
+
+- Team A source audit: [UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md](UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md). It records the actual four-destination app baseline and separates the open UI shell chain from parallel chart/market PR #70/#83.
+- Integration warning: PR #70 and child PR #83 both change `CommandCenterView.swift`, `ContentView.swift` and `WorkspaceHomeView.swift`, which overlap UI PR #91. Preserve branch ancestry and perform a deliberate shared-file reconciliation before integrating the live Market Watch/chart stack.

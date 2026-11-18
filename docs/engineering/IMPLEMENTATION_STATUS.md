@@ -483,3 +483,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Branch: `feat/ui-command-center-status-integration`; parent PR #90 at `c0f386c1e7701f6445d1e70eea6ee87545c7e954`.
 - Exact-head hosted CI, owner-Mac launch, visual comparison, keyboard/VoiceOver, Light/RTL and authenticated DEMO acceptance remain separate gates.
 - Trading remains disabled; no LIVE or dealing path was introduced.
+
+
+## ATP-UI-BASELINE-001 — Source-verified UI baseline (2026-11-19)
+
+- Audit: [UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md](UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md).
+- The current UI feature chain has four actual app destinations; the 12 PR #90 SVG compositions are design-review artifacts, not 12 completed SwiftUI screens.
+- The Command Center backend-status slice is implemented on PR #91; exact-head CI and owner-Mac qualification remain pending.
+- PR #70 / #83 form a separate chart/market-data chain and overlap the same three app-shell files as PR #91. Integration must be source-reviewed and history-preserving.

@@ -389,3 +389,12 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 | ATP-UI-CC-STATUS-001 | P1 | Replace static Command Center status labels with injected, backend-derived market-data REST, broker-readiness and trading-gate presentation; preserve truthful account unavailability | IMPLEMENTED ON UI BRANCH — EXACT-HEAD CI PENDING | Branch `feat/ui-command-center-status-integration`; parent PR #90 / `c0f386c1e7701f6445d1e70eea6ee87545c7e954`; session `SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION.md` |
 
 Acceptance: no invented endpoint or broker status; REST is not presented as streaming; account remains unavailable until a backend account snapshot contract is published; unknown/unavailable readiness is not treated as connected or authorized; XCTest and exact-head CI required. Preserve `CAP_ALLOW_TRADING=false`.
+
+
+## ATP-UI-BASELINE-001 — Team A source-verified baseline audit
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-UI-BASELINE-001 | P0 | Reconcile main, current UI PR ancestry, actual screen inventory, IPDS, workspace, ViewModel/client boundaries, tests, cross-stream overlap and blockers | COMPLETED — AUDIT ONLY | `UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md`; main `31e3e554...`; UI PR chain #69/#80/#85/#89/#90/#91 |
+
+The audit is not product completion or CI qualification. Track the #70/#83 shared-file integration as a separate dependency; do not merge it independently with PR #91. Keep `CAP_ALLOW_TRADING=false`.

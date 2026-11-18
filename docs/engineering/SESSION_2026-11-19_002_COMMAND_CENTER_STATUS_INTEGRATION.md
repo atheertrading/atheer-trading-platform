@@ -48,3 +48,10 @@ Replace static Command Center operational labels with a deterministic presentati
 
 - Source review and deterministic test cases added.
 - Exact-head hosted CI, owner-Mac build/launch, authenticated DEMO status, visual QA, VoiceOver, keyboard, Light appearance and Arabic RTL remain pending until independently evidenced.
+
+
+## Baseline and integration reconciliation
+
+- Published the source-verified UI baseline as [UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md](UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md), including the actual four-destination app inventory, workspace/design/client boundaries, test inventory, and the open UI dependency chain.
+- Identified parallel market/chart branches #70 and #83. PR #70 changes `CommandCenterView.swift`, `ContentView.swift` and `WorkspaceHomeView.swift`; PR #83 changes those same files and depends on #70. These overlap PR #91's touched files and are a mandatory history-preserving integration dependency, not a reason to rebase or merge independently.
+- PR #83 exact head at audit: `abf87d40c866a2b6ef7efffbd1b8d7186165f095`; PR #70 exact head: `031c88e73d7a172601138aea8904371a0f630a02`. Their latest inspected macOS jobs were cancelled, so no source pass is inferred from their summary states.
