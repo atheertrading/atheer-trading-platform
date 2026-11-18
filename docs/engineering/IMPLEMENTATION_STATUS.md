@@ -388,3 +388,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Added an unknown backend-state rejection test and migrated search lifecycle tests to semantic models.
 - Code commits: `448fc017d8729fe047a6437f0f9c77bb81b53063`, `a4ea2355a7865eec3284605e0a1a4097ef954ded`, `e3cf9c04bb27bd7c3311ce04825a99688514afd5`, `65b53535304117aff11f71aa7f83bd89c5636c43`, `4b19bc34fbb7599f42673303a08b4a7ab53e6001`, `82d67fde50d56bad020e51d455b653e6901c6237`.
 - Exact-head hosted CI is pending. No local Mac/Xcode run is claimed for the refactor.
+
+
+### ATP-UI-ARCH-001A transport and HTTP-contract completion
+
+- Extracted the immutable-session `URLSessionRequestExecutor` into shared infrastructure and changed Capital.com authentication and Market Explorer to use it, explicitly passing `delegate: nil` to avoid Swift 5.8 actor-boundary Sendable diagnostics.
+- Market Explorer now defaults to an ephemeral URLSession with cookie storage and URL cache disabled.
+- Added URLProtocol-backed HTTP contract tests for GET status endpoint, GET markets endpoint, encoded searchTerm, no-store headers, DEMO status mapping, 503/500 mapping, and transport-failure mapping.
+- Exact-head hosted CI remains pending.
