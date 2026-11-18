@@ -86,6 +86,7 @@ final class MarketDataStreamViewModel: ObservableObject {
         let epics = selectedEpics.sorted()
 
         isMonitoring = true
+        status = nil
         connectionState = .connecting
         lastError = nil
         streamTask = Task { [weak self] in
@@ -99,6 +100,7 @@ final class MarketDataStreamViewModel: ObservableObject {
         streamTask?.cancel()
         streamTask = nil
         isMonitoring = false
+        status = nil
         connectionState = .disconnected
         lastError = nil
 
@@ -167,6 +169,9 @@ final class MarketDataStreamViewModel: ObservableObject {
 
         case .quote(let quote):
             guard selectedEpics.contains(quote.instrumentId) else { return }
+            if connectionState == .connecting {
+                connectionState = .connected
+            }
             quotes[quote.instrumentId] = MarketDataStreamQuoteSnapshot(
                 quote: quote,
                 receivedAtUptime: ProcessInfo.processInfo.systemUptime
