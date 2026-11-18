@@ -269,23 +269,6 @@ protocol BrokerAuthenticationService {
     func disconnect() async
 }
 
-/// Isolates URLSession's async transport API from the UI actor.
-///
-/// URLSession is thread-safe. The wrapper owns one immutable session reference and
-/// exposes only request execution, keeping URLSessionTaskDelegate's non-Sendable
-/// default argument out of the MainActor call site on the Swift 5.8 toolchain.
-private final class URLSessionRequestExecutor: @unchecked Sendable {
-    private let session: URLSession
-
-    init(session: URLSession) {
-        self.session = session
-    }
-
-    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        try await session.data(for: request, delegate: nil)
-    }
-}
-
 @MainActor
 final class CapitalComAuthenticationService: BrokerAuthenticationService {
     private struct SessionPayload: Decodable {
