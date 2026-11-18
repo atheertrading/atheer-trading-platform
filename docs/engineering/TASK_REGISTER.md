@@ -376,3 +376,10 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Backend tests/type-check and CodeQL passed on parent head `df97d30`; latest Local Sync Safety passed on `1e312352`. Current exact-head full CI is not yet verified.
 - Do not merge until the native app has a supervised backend process and authenticated market-data client. Current native client does not send the new capability.
 - Keychain credential handoff and single backend broker-session ownership remain outstanding.
+
+
+### 2026-11-18 — PR #52 backend process-startup prerequisite
+
+- PR #52 adds OS-assigned loopback port support and a non-secret bound-port readiness marker.
+- This advances ATP-BRK-002 but does not satisfy its native app integration acceptance criteria.
+- Swift process supervision, authenticated market-data requests, packaged runtime assets, Keychain credential handoff, and exact-head macOS qualification remain pending.
