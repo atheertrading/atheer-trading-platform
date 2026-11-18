@@ -85,3 +85,9 @@ On `94cc13d13f56fd1f2efa450747e72dc841f65017`, run `44207522335`:
 - Sequence privilege regression test was added in commit `78a774289de6ccea0fe49c89c7877f65c8246828`; the above results predate that test and must not be carried forward to the new head.
 
 Hosted PostgreSQL 17 tests do not certify the owner's PostgreSQL 18.7 operational environment. Backup/restore, PITR, retention, restore drills, production TLS, and production role provisioning remain unqualified.
+
+### Follow-up batch snapshot — branch HEAD `434ae1191c6a66cafe30e98f21c5ee03a8a4faf8`
+
+- Sequence privilege regression test and documentation reconciliation are committed; this branch HEAD is newer than the previously reported code-bearing head `94cc13d...`.
+- Current exact-head workflows: Mermaid run `44209957024` in progress; Local Sync Safety run `44209957152` passed; CI run `44209957185` has Backend queued and Intel/Apple Silicon/Repository Hygiene in progress at inspection.
+- The 49/49 Backend result applies to `94cc13d...` only and does not include the new sequence regression test. Do not carry it forward to `434ae119...`.
