@@ -118,3 +118,15 @@ Every material decision must state its source, date, scope, status, rationale, c
 ### EDL-008 implementation invariant clarification — 2026-11-16
 
 The native health client is constrained to the loopback endpoint `127.0.0.1:4100`. The client must reject contradictory readiness payloads that report platform `not_ready` while trading is enabled. This is a fail-closed client validation invariant; it does not grant or implement trading authority.
+
+
+## EDL-010 — Native macOS broker credential custody and DEMO authentication
+
+- Date: 2026-11-17
+- Status: Owner-directed implementation decision for the native desktop client.
+- Decision: The native ATHEER Trading Pro macOS application stores broker credentials in macOS Keychain, isolated by broker, environment, and account login identity. Capital.com DEMO authentication is performed by a dedicated native provider service using the verified REST session contract. CST and X-SECURITY-TOKEN remain in memory only.
+- Scope: This decision applies to the owner-directed local macOS credential workflow. It does not change the backend-owned credential boundary for remote clients, hosted services, or future multi-client deployments; those must use a dedicated secure backend vault and explicit account authorization.
+- Rationale: The native desktop product requires local secure credential entry, persistence, editing, and deletion in Keychain. The existing backend adapter is environment-configured and does not provide an authenticated user credential-management API.
+- Mandatory constraints: DEMO only; LIVE rejected; no dealing, order, position mutation, or account mutation methods; no secrets in UserDefaults, logs, diagnostics, source control, or network response payloads; no trading authorization or risk-control changes. Capital.com API keys are trading-capable and are not read-only, so the native feature must remain capability-restricted and trading-disabled.
+- Consequences: API credentials are present in the native process memory while authenticating and are transmitted only to the fixed official DEMO HTTPS endpoint. This local trust boundary is not appropriate for remote or multi-user clients. REST session authentication does not establish streaming or trading readiness.
+- Verification: Official Capital.com API documentation and the existing backend adapter/specification were inspected. Hosted macOS build/XCTest and real provider authentication remain pending.

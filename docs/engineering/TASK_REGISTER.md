@@ -220,3 +220,43 @@ The historical Mermaid count is 31 source documents containing 52 Mermaid blocks
 | ATP-MD-001F | P1 | Bind Charting Engine to validated provider candles | BLOCKED | Requires streaming/candle contracts and provider integration evidence |
 
 PR #25 is stacked on PR #24 to preserve the existing Command Center and Workspace. No synthetic market data or dealing capability is permitted.
+
+
+## Broker Management and Capital.com DEMO Authentication — 2026-11-17
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-BROKER-001A | P0 | Add Settings → Brokers native navigation and broker-management screen | IN PROGRESS | Feature branch `feat/broker-management-keychain-demo`; runtime verification pending |
+| ATP-BROKER-001B | P0 | Add Keychain-backed broker/environment credential storage | IN PROGRESS | Keychain implementation isolates broker, environment, and account login identity inside the protected Keychain item; update operations preserve the existing device-only accessibility policy; account-specific load/delete tests added; macOS execution pending |
+| ATP-BROKER-001C | P0 | Add Capital.com DEMO REST authentication and session verification | IN PROGRESS | POST /session + GET /session + DELETE /session implemented from official contract; URLProtocol tests cover request fields, token headers, 401 redaction, and LIVE rejection; no owner credentials or live DEMO result |
+| ATP-BROKER-001D | P1 | Add session expiry monitoring and safe re-authentication | IN PROGRESS | Read-only GET /session health verification runs every 60 seconds while the Brokers view is active; explicit re-authentication remains manual |
+| ATP-BROKER-001E | P1 | Complete credential deletion, failure, cancellation, and persistence qualification | IN PROGRESS | Source paths and XCTest coverage added for storage, account/environment isolation, deletion, auth failures, and network contract; timestamp persistence and owner-Mac verification remain pending |
+| ATP-BROKER-001F | P1 | Perform real Capital.com DEMO authentication and capture sanitized evidence | BLOCKED | Requires owner-provided DEMO credentials through local Keychain only |
+| ATP-BROKER-001G | P0 | Resolve Swift 5.8 MainActor default-argument build failure found during owner-Mac qualification | IMPLEMENTED — requalification pending | Injected authentication dependency now defaults to nil and is constructed inside the MainActor-isolated ViewModel initializer; added default-composition XCTest; exact-head Debug/XCTest/Release and owner-Mac rerun required |
+
+The implementation branch is stacked on PR #25 head to retain the existing app and DEMO provider baseline. PR #24 and PR #25 source branches and HEADs are not modified. LIVE remains blocked; market streaming and trading remain separate and disabled.
+
+
+## PR #26 qualification remediation — 2026-11-17
+
+- Owner-Mac qualification after commit `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9` confirmed Debug compilation and 34 of 35 XCTest cases passing; the single failure is `CapitalComAuthenticationTests.testDemoAuthenticationUsesOfficialRequestContractAndVerifiesSession()` at the post-URLSession `httpBody` unwrap. The exact-head hosted macOS XCTest job failed at the same assertion; its Release step was skipped and the Apple Silicon job was cancelled.
+- GitHub defect reports: [#27 request-body capture](https://github.com/atheertrading/atheer-trading-platform/issues/27), [#28 URLSession Sendable diagnostics](https://github.com/atheertrading/atheer-trading-platform/issues/28), and [#29 Brokers UI freeze investigation](https://github.com/atheertrading/atheer-trading-platform/issues/29).
+- Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
+- Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
+- This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+## PR #26 owner-Mac qualification and AppKit/concurrency remediation — 2026-11-17
+
+- Session report: `SESSION_2026-11-17_020_PR26_OWNER_MAC_QUALIFICATION.md`.
+- Baseline owner report **The terminal on Hossam's Mac - 02** confirms exact source HEAD `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`, Intel/macOS 13.7.8/Xcode 14.3.1/Swift 5.8.1, Debug and Release build success, and 35/35 XCTest success.
+- The Release log explicitly shows a universal `arm64 x86_64` binary creation step. This is build-slice evidence, not Apple Silicon runtime qualification.
+- Baseline runtime diagnostics: four URLSession Sendable warnings; SwiftUI List-backed panel row mutations identified as the AppKit NSTableView reentrancy path; backend liveness connection refused because the local process was not listening.
+- Remediation now present in source: isolated URLSession request executor and deferred panel List row mutations. Post-remediation build/tests remain pending exact-head CI and owner-Mac rerun.
+- Baseline exact-SHA CI #222: repository hygiene and backend toolchain passed; Intel and Apple Silicon macOS jobs were cancelled. Local Sync Safety #319 passed.
+- ATP-BROKER-001 remains IN PROGRESS. Real Keychain restart test, normal Intel runtime/visual QA, backend integration with service running, Apple Silicon runtime QA, and real DEMO auth remain outstanding.
+- PR #26 remains Open/Draft. LIVE and dealing remain disabled; no RiskEngine, execution, or broker-permission changes.
+
+
+
+- Follow-up `f22cac58682910256049541c252b6e54bf17c682` also defers ContentView sidebar selection changes outside the NSTableView delegate callback. The reentrancy warning is not marked resolved until owner-Mac runtime confirms it no longer occurs.

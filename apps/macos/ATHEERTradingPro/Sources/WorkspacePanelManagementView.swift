@@ -18,6 +18,14 @@ struct WorkspacePanelManagementView: View {
         }
     }
 
+    /// Defer mutations of List-backed data until AppKit has left its NSTableView delegate callback.
+    private func schedulePanelMutation(_ mutation: @escaping @MainActor () -> Void) {
+        Task { @MainActor in
+            await Task.yield()
+            mutation()
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
@@ -53,7 +61,9 @@ struct WorkspacePanelManagementView: View {
                                 Label(panelID.title, systemImage: "rectangle")
                                 Spacer()
                                 Button {
-                                    _ = engine.addPanel(panelID)
+                                    schedulePanelMutation {
+                                        _ = engine.addPanel(panelID)
+                                    }
                                 } label: {
                                     Label("Add", systemImage: "plus")
                                 }
@@ -114,7 +124,11 @@ struct WorkspacePanelManagementView: View {
                 "Visible",
                 isOn: Binding(
                     get: { configuration.isVisible },
-                    set: { engine.setPanelVisibility(configuration.panelID, isVisible: $0) }
+                    set: { isVisible in
+                        schedulePanelMutation {
+                            engine.setPanelVisibility(configuration.panelID, isVisible: isVisible)
+                        }
+                    }
                 )
             )
             .labelsHidden()
@@ -124,7 +138,9 @@ struct WorkspacePanelManagementView: View {
                 guard regionIndex > 0 else { return }
                 let previous = regionPanels[regionIndex - 1].panelID
                 let destination = engine.orderedPanels.firstIndex(where: { $0.panelID == previous }) ?? globalIndex
-                _ = engine.movePanel(configuration.panelID, to: destination)
+                schedulePanelMutation {
+                    _ = engine.movePanel(configuration.panelID, to: destination)
+                }
             } label: {
                 Image(systemName: "arrow.up")
             }
@@ -136,7 +152,9 @@ struct WorkspacePanelManagementView: View {
                 guard regionIndex + 1 < regionPanels.count else { return }
                 let next = regionPanels[regionIndex + 1].panelID
                 let destination = engine.orderedPanels.firstIndex(where: { $0.panelID == next }) ?? globalIndex
-                _ = engine.movePanel(configuration.panelID, to: destination)
+                schedulePanelMutation {
+                    _ = engine.movePanel(configuration.panelID, to: destination)
+                }
             } label: {
                 Image(systemName: "arrow.down")
             }
@@ -145,7 +163,9 @@ struct WorkspacePanelManagementView: View {
             .help("Move panel down")
 
             Button(role: .destructive) {
-                _ = engine.removePanel(configuration.panelID)
+                schedulePanelMutation {
+                    _ = engine.removePanel(configuration.panelID)
+                }
             } label: {
                 Image(systemName: "minus.circle")
             }

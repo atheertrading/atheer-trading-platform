@@ -287,3 +287,57 @@ The health client destination is fixed to loopback rather than accepting an arbi
 | LIVE trading / dealing | DISABLED / NOT IMPLEMENTED | No LIVE or dealing routes introduced |
 
 Mocked tests and compilation do not prove broker connectivity. Status must be upgraded only with exact-head CI and provider-side integration evidence.
+
+
+## ATP-BROKER-001 — Native Broker Management and Capital.com DEMO (2026-11-17)
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Settings → Brokers navigation | IMPLEMENTED IN SOURCE | PR #26, existing ContentView/AppSection/SettingsHomeView |
+| Capital.com broker workspace | IMPLEMENTED IN SOURCE | PR #26, explicit DEMO/auth/session/stream/trading states |
+| Credential entry/edit/clear | IMPLEMENTED IN SOURCE | SecureField, validation, confirmation-based clear |
+| Keychain credential storage | IMPLEMENTED IN SOURCE | KeychainBrokerCredentialStore; device-only accessibility; broker/environment/account-login isolation |
+| Capital.com DEMO authentication | IMPLEMENTED IN SOURCE | POST /session, CST/X-SECURITY-TOKEN memory-only, GET /session verification |
+| Session health monitoring | IMPLEMENTED IN SOURCE | Read-only GET /session every 60 seconds while Brokers screen is active |
+| Network/authentication contract tests | PRESENT IN SOURCE | CapitalComAuthenticationTests covers request contract, 401 redaction, and LIVE rejection |
+| Credential-store and view-model tests | PRESENT IN SOURCE | Persistence, account/environment isolation, deletion, invalid input, and connection-state coverage |
+| Hosted macOS Debug/XCTest/Release | PENDING — remediation committed; fresh exact-head CI required | The owner-Mac log exposed a Swift 5.8 MainActor initializer error at BrokerManagementServices.swift:444; fix is committed, but no passing rebuild is claimed |
+| Local macOS build/runtime/Keychain restart QA | PENDING | Owner Mac verification required |
+| Real Capital.com DEMO authentication | NOT VERIFIED | No owner credentials supplied; no provider session claimed |
+| Market-data WebSocket streaming | NOT IMPLEMENTED BY THIS FEATURE | REST authentication and streaming remain separate |
+| LIVE dealing / trading | DISABLED | No dealing methods; risk and execution controls unchanged |
+
+PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25. Do not mark ATP-BROKER-001 complete until exact-head macOS CI, owner-side runtime/Keychain verification, and real DEMO authentication evidence are available.
+
+
+### Owner-Mac qualification finding and compile remediation — 2026-11-17
+
+- First owner-Mac qualification evidence was supplied from macOS 13.7.8, Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1.
+- `make doctor` and `make generate` completed successfully. Debug build, XCTest build, and Release build were blocked by a Swift concurrency error at `BrokerManagementServices.swift:444:55`: a `@MainActor` authentication-service initializer was invoked from a synchronous nonisolated default argument.
+- Corrected dependency construction by making the authentication initializer parameter optional and constructing the default `CapitalComAuthenticationService` inside the `@MainActor` ViewModel initializer. Added an XCTest that exercises default dependency composition without authenticating or making network requests.
+- This is a source-level remediation only. It has not yet been compiled or executed on the owner Mac or by fresh exact-head CI. URLSession `Sendable` diagnostics in the original log remain warnings requiring review after the primary compile blocker is cleared.
+- No broker credentials, provider session, trading permissions, risk policy, LIVE capability, or dealing behavior were changed.
+
+
+## PR #26 qualification remediation — 2026-11-17
+
+- Owner-Mac qualification after commit `a1c6c471a0a9a7cfc82a9a30299e7bbdffa9cfb9` confirmed Debug compilation and 34 of 35 XCTest cases passing; the single failure is `CapitalComAuthenticationTests.testDemoAuthenticationUsesOfficialRequestContractAndVerifiesSession()` at the post-URLSession `httpBody` unwrap. The exact-head hosted macOS XCTest job failed at the same assertion; its Release step was skipped and the Apple Silicon job was cancelled.
+- GitHub defect reports: [#27 request-body capture](https://github.com/atheertrading/atheer-trading-platform/issues/27), [#28 URLSession Sendable diagnostics](https://github.com/atheertrading/atheer-trading-platform/issues/28), and [#29 Brokers UI freeze investigation](https://github.com/atheertrading/atheer-trading-platform/issues/29).
+- Remediation prepared: the test recorder captures request bytes at the URLProtocol interception boundary, supporting both `httpBody` and `httpBodyStream`; assertions decode JSON and verify identifier, password, and encryptedPassword=false. Production authentication code is unchanged in this correction.
+- Next gates: focused Capital.com test and full XCTest; resolve/justify Swift 5.8 URLSession Sendable diagnostics; reproduce and isolate the UI freeze; then complete Debug → XCTest → Release on Intel and Apple Silicon and owner-Mac runtime/navigation QA.
+- This record does not claim the new test patch has compiled or passed. PR #26 remains Open/Draft; PR #24/#25, LIVE restrictions, dealing boundaries, and risk controls are unchanged.
+
+
+### PR #26 owner-Mac qualification — 2026-11-17 (ATP-2026-11-17-020)
+
+- The owner-provided terminal report confirms baseline HEAD `0e7f25edb65e6a6a41b86b6f4513231d36edf79e`, Intel macOS 13.7.8 / Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Debug build success, Release build success, and 35 XCTest passing with zero failures.
+- Release build output explicitly invokes `CreateUniversalBinary` for `arm64 x86_64`; this is architecture-slice build evidence only, not Apple Silicon runtime QA.
+- Runtime warnings: four URLSession Sendable diagnostics, AppKit NSTableView reentrancy, test-host window ordering, and backend loopback connection refused. The latter indicates backend health was unavailable during test launch, not a test failure.
+- Remediation source now uses a narrow non-MainActor URLSession request executor and defers mutations originating from the panel manager's SwiftUI List row callbacks.
+- Post-remediation qualification has not yet run. Exact-SHA hosted macOS jobs on the baseline were cancelled; repository hygiene and backend toolchain passed.
+- Still pending: owner rerun with backend running; inspect the AppKit warning under normal app activation; actual Keychain persistence across app restart; Apple Silicon runtime QA; and real Capital.com DEMO auth.
+- PR #26 remains Open/Draft; no LIVE, dealing, or risk-control changes.
+
+
+
+- Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` defers the always-visible navigation sidebar List selection state update as an additional AppKit reentrancy safeguard. This is source-level mitigation; owner runtime confirmation remains pending.

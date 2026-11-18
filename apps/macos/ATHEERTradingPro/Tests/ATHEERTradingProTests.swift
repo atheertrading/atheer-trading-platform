@@ -9,8 +9,8 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection])
-        XCTAssertEqual(AppSection.apiConnection.title, "API Connection")
+        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
     @MainActor
@@ -346,6 +346,129 @@ final class ATHEERTradingProTests: XCTestCase {
 
         XCTAssertEqual(model.state, .serverError(502))
     }
+
+    func testBrokerCredentialStorePersistsAndRetrievesCredentials() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let credential = BrokerCredential(apiKey: "api-key-value", identifier: "demo-login", password: "secret")
+        try store.save(credential, brokerID: "capital.com", environment: .demo)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), credential)
+        XCTAssertEqual(keychain.itemCount, 1)
+    }
+
+    func testBrokerCredentialStoreIsolatesBrokerAndEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let demo = BrokerCredential(apiKey: "demo-key", identifier: "demo-user", password: "demo-password")
+        let live = BrokerCredential(apiKey: "live-key", identifier: "live-user", password: "live-password")
+        try store.save(demo, brokerID: "capital.com", environment: .demo)
+        try store.save(live, brokerID: "capital.com", environment: .live)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), demo)
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .live), live)
+        XCTAssertEqual(keychain.itemCount, 2)
+    }
+
+    func testBrokerCredentialStoreDeletesOnlySelectedEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let demo = BrokerCredential(apiKey: "demo-key", identifier: "demo-user", password: "demo-password")
+        let live = BrokerCredential(apiKey: "live-key", identifier: "live-user", password: "live-password")
+        try store.save(demo, brokerID: "capital.com", environment: .demo)
+        try store.save(live, brokerID: "capital.com", environment: .live)
+        try store.delete(brokerID: "capital.com", environment: .demo)
+        XCTAssertNil(try store.load(brokerID: "capital.com", environment: .demo))
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .live), live)
+    }
+
+    func testBrokerCredentialStoreSeparatesAccountsWithinTheSameEnvironment() throws {
+        let keychain = InMemoryKeychainAccess()
+        let store = KeychainBrokerCredentialStore(keychain: keychain)
+        let first = BrokerCredential(apiKey: "first-key", identifier: "first-login@example.invalid", password: "first-password")
+        let second = BrokerCredential(apiKey: "second-key", identifier: "second-login@example.invalid", password: "second-password")
+
+        try store.save(first, brokerID: "capital.com", environment: .demo)
+        try store.save(second, brokerID: "capital.com", environment: .demo)
+
+        XCTAssertEqual(
+            try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid"),
+            first
+        )
+        XCTAssertEqual(
+            try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "second-login@example.invalid"),
+            second
+        )
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), second)
+
+        try store.delete(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid")
+        XCTAssertNil(try store.load(brokerID: "capital.com", environment: .demo, accountIdentity: "first-login@example.invalid"))
+        XCTAssertEqual(try store.load(brokerID: "capital.com", environment: .demo), second)
+    }
+
+    func testBrokerCredentialStoreRejectsIncompleteCredentials() {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let invalid = BrokerCredential(apiKey: "", identifier: "demo-user", password: "secret")
+        XCTAssertThrowsError(try store.save(invalid, brokerID: "capital.com", environment: .demo))
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelConstructsDefaultAuthenticationDependency() {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let model = BrokerManagementViewModel(credentialStore: store)
+
+        XCTAssertEqual(model.state, .notConfigured)
+        XCTAssertFalse(model.hasSavedCredentials)
+        XCTAssertNil(model.account)
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelDoesNotReportConnectedBeforeAuthentication() async throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .failure(BrokerAuthenticationError.invalidCredentials))
+        )
+        XCTAssertEqual(model.state, .notConfigured)
+        try await model.saveCredentials(BrokerCredential(apiKey: "key", identifier: "login", password: "password"))
+        XCTAssertEqual(model.state, .credentialsSaved)
+        XCTAssertNotEqual(model.state, .connected)
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelReportsAuthenticationFailure() async throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        try store.save(
+            BrokerCredential(apiKey: "key", identifier: "login", password: "password"),
+            brokerID: "capital.com",
+            environment: .demo
+        )
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .failure(BrokerAuthenticationError.invalidCredentials))
+        )
+        await model.testConnection()
+        XCTAssertEqual(model.state, .authenticationFailed(BrokerAuthenticationError.invalidCredentials.localizedDescription))
+        XCTAssertNil(model.account)
+    }
+
+    @MainActor
+    func testBrokerManagementViewModelPublishesAccountOnlyAfterAuthentication() async throws {
+        let store = KeychainBrokerCredentialStore(keychain: InMemoryKeychainAccess())
+        try store.save(
+            BrokerCredential(apiKey: "key", identifier: "login", password: "password"),
+            brokerID: "capital.com",
+            environment: .demo
+        )
+        let account = BrokerAccountSnapshot(accountIdentifier: "DEMO-ACCOUNT-123", currencyCode: "USD", authenticatedAt: Date())
+        let model = BrokerManagementViewModel(
+            credentialStore: store,
+            authentication: StubBrokerAuthenticationService(result: .success(account))
+        )
+        await model.testConnection()
+        XCTAssertEqual(model.state, .connected)
+        XCTAssertEqual(model.account, account)
+        XCTAssertEqual(model.lastSuccessfulConnection, account.authenticatedAt)
+    }
+
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {
@@ -374,5 +497,38 @@ private final class InMemoryWorkspacePersistence: WorkspacePersistence {
 
     func save(_ snapshot: WorkspaceSnapshot) throws {
         self.snapshot = snapshot
+    }
+}
+
+
+private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
+    let result: Result<BrokerAccountSnapshot, Error>
+
+    @MainActor
+    func authenticate(_ credential: BrokerCredential, environment: BrokerEnvironment) async throws -> BrokerAccountSnapshot {
+        try result.get()
+    }
+
+    @MainActor
+    func validateSession() async throws -> BrokerAccountSnapshot { try result.get() }
+
+    @MainActor
+    func disconnect() async {}
+}
+
+private final class InMemoryKeychainAccess: KeychainAccessing {
+    private var values: [String: Data] = [:]
+    var itemCount: Int { values.count }
+
+    func read(service: String, account: String) throws -> Data? {
+        values["\(service):\(account)"]
+    }
+
+    func write(_ data: Data, service: String, account: String) throws {
+        values["\(service):\(account)"] = data
+    }
+
+    func delete(service: String, account: String) throws {
+        values.removeValue(forKey: "\(service):\(account)")
     }
 }
