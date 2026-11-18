@@ -27,7 +27,7 @@ final class BackendRuntimeViewModel: ObservableObject {
     @Published private(set) var marketSearchClient: MarketSearchClient?
 
     let healthModel: BackendHealthViewModel
-    private let supervisor: BackendProcessManaging
+    private var supervisor: BackendProcessManaging
 
     init(
         supervisor: BackendProcessManaging? = nil,
