@@ -55,3 +55,12 @@ PR #45 exact HEAD `218d07c637738c14541482d067954325f16da224`:
 ## Next action
 
 Open a focused draft PR against `feat/live-candle-aggregation`, then verify the exact final head across Intel, Apple Silicon, backend, repository hygiene, Mermaid, and Local Sync Safety.
+
+
+## Governing Library and Mermaid review
+
+- Read the governing **Screen Implementation, Application Development & Professional Trading Workstation** execution directive.
+- Revalidated the current Library archive location and SHA-256 of the Q&A archive; it matches the previously registered source digest.
+- Enumerated and inspected the 12 fenced Mermaid blocks in the Q&A archive and 5 standalone `.mmd` sources in Codex.zip.
+- Inspected repository Mermaid diagrams 03, 04, 05, 07, 14, 15, and 16.
+- Applied the governing market-data freshness/provenance, typed order-intent, centralized risk, manual-override, strategy-suspension, reconciliation, emergency-recovery, and AI evidence-separation constraints. This candle-retention change remains read-only and does not implement any trading/dealing path.
