@@ -4,7 +4,8 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { CapitalDemoRuntime } from "./market-data/capital-demo-runtime.ts";
+import type { CapitalDemoCredentials } from "./market-data/capital-demo-runtime.ts";
+import type { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import type {
   CapitalDemoStreamingRuntime,
   MarketDataStreamQuote,
@@ -14,6 +15,7 @@ import { hasValidIPCCapability } from "./security/ipc-capability.ts";
 
 const SERVICE_NAME = "atheer-api";
 const SERVICE_VERSION = "0.1.0";
+const MAX_CREDENTIAL_BODY_BYTES = 8_192;
 
 interface LiveHealthResponse {
   readonly status: "ok";
@@ -34,11 +36,20 @@ interface ReadinessResponse {
     readonly status: "disabled";
   };
 }
+class RequestBodyError extends Error {
+  constructor(
+    readonly statusCode: number,
+    readonly errorCode: string,
+  ) {
+    super(errorCode);
+  }
+}
 
 function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
   response.statusCode = statusCode;
   response.setHeader("content-type", "application/json; charset=utf-8");
   response.setHeader("cache-control", "no-store");
+  response.setHeader("pragma", "no-cache");
   response.end(JSON.stringify(payload));
 }
 
@@ -48,8 +59,74 @@ function hasSafeNativeRequestContext(request: IncomingMessage): boolean {
   return origin === undefined && (fetchSite === undefined || fetchSite === "none");
 }
 
+function headerValue(value: string | string[] | undefined): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+async function readBrokerCredentials(request: IncomingMessage): Promise<CapitalDemoCredentials> {
+  const contentType = headerValue(request.headers["content-type"]);
+  if (contentType?.split(";")[0]?.trim().toLowerCase() !== "application/json") {
+    throw new RequestBodyError(415, "unsupported_media_type");
+  }
+
+  const contentLength = headerValue(request.headers["content-length"]);
+  if (contentLength !== undefined) {
+    if (!/^\d+$/.test(contentLength)) {
+      throw new RequestBodyError(400, "invalid_content_length");
+    }
+    if (Number(contentLength) > MAX_CREDENTIAL_BODY_BYTES) {
+      throw new RequestBodyError(413, "payload_too_large");
+    }
+  }
+
+  const decoder = new TextDecoder();
+  let body = "";
+  let totalBytes = 0;
+  for await (const chunk of request) {
+    totalBytes += chunk.byteLength;
+    if (totalBytes > MAX_CREDENTIAL_BODY_BYTES) {
+      throw new RequestBodyError(413, "payload_too_large");
+    }
+    body += decoder.decode(chunk, { stream: true });
+  }
+  body += decoder.decode();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    body = "";
+    throw new RequestBodyError(400, "invalid_json");
+  }
+  body = "";
+
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new RequestBodyError(400, "invalid_credentials_payload");
+  }
+
+  const payload = parsed as Record<string, unknown>;
+  const allowedKeys = ["apiKey", "identifier", "password"];
+  const keys = Object.keys(payload);
+  if (keys.length !== allowedKeys.length || keys.some((key) => !allowedKeys.includes(key))) {
+    throw new RequestBodyError(400, "invalid_credentials_payload");
+  }
+
+  const apiKey = typeof payload.apiKey === "string" ? payload.apiKey.trim() : "";
+  const identifier = typeof payload.identifier === "string" ? payload.identifier.trim() : "";
+  const password = typeof payload.password === "string" ? payload.password : "";
+  if (
+    apiKey.length === 0 || apiKey.length > 512 ||
+    identifier.length === 0 || identifier.length > 512 ||
+    password.length === 0 || password.length > 2_048
+  ) {
+    throw new RequestBodyError(400, "invalid_credentials_payload");
+  }
+
+  return { apiKey, identifier, password };
+}
+
 export function createApiServer(
-  marketData: CapitalDemoRuntime | undefined,
+  marketData: BrokerSessionManager | undefined,
   ipcCapability: Uint8Array | undefined,
   marketDataStream?: CapitalDemoStreamingRuntime,
 ): Server {
@@ -57,7 +134,7 @@ export function createApiServer(
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
     const pathname = url.pathname;
 
-    if (pathname.startsWith("/market-data/")) {
+    if (pathname.startsWith("/market-data/") || pathname.startsWith("/broker-session/")) {
       if (
         !hasValidIPCCapability(request, ipcCapability) ||
         !hasSafeNativeRequestContext(request)
@@ -66,7 +143,7 @@ export function createApiServer(
         return;
       }
       void handleMarketDataRequest(
-        request.method ?? "GET",
+        request,
         url,
         response,
         marketData,
@@ -107,13 +184,58 @@ export function createApiServer(
 }
 
 async function handleMarketDataRequest(
-  method: string,
+  request: IncomingMessage,
   url: URL,
   response: ServerResponse,
-  runtime: CapitalDemoRuntime | undefined,
+  runtime: BrokerSessionManager | undefined,
   streamRuntime: CapitalDemoStreamingRuntime | undefined,
 ): Promise<void> {
+  const method = request.method ?? "GET";
   const pathname = url.pathname;
+
+  if (pathname === "/broker-session/status" && method === "GET") {
+    sendJson(response, 200, runtime?.status() ?? {
+      provider: "capital.com",
+      environment: "DEMO",
+      state: "not_configured",
+    });
+    return;
+  }
+
+  if (pathname === "/broker-session/connect" && method === "POST") {
+    if (!runtime) {
+      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
+      return;
+    }
+    try {
+      const credentials = await readBrokerCredentials(request);
+      await streamRuntime?.disconnect();
+      const status = await runtime.connect(credentials);
+      sendJson(response, status.state === "connected" ? 200 : 401, status);
+    } catch (error) {
+      if (error instanceof RequestBodyError) {
+        sendJson(response, error.statusCode, { error: error.errorCode });
+        return;
+      }
+      sendJson(response, 502, { error: "broker_session_connect_failed" });
+    }
+    return;
+  }
+
+  if (pathname === "/broker-session/disconnect" && method === "POST") {
+    if (!runtime) {
+      sendJson(response, 503, { error: "broker_session_manager_unavailable" });
+      return;
+    }
+    try {
+      await streamRuntime?.disconnect();
+      sendJson(response, 200, await runtime.disconnect());
+    } catch {
+      sendJson(response, 502, { error: "broker_session_disconnect_failed" });
+    }
+    return;
+  }
+
   if (pathname === "/market-data/status" && method === "GET") {
     sendJson(response, 200, {
       ...(runtime?.status() ?? {
@@ -198,21 +320,11 @@ async function handleMarketDataRequest(
   }
 
   if (!runtime) {
-    sendJson(response, 503, { error: "market_data_runtime_unavailable" });
+    sendJson(response, 503, { error: "broker_session_manager_unavailable" });
     return;
   }
 
   try {
-    if (pathname === "/market-data/connect" && method === "POST") {
-      const status = await runtime.connect();
-      sendJson(response, status.state === "connected" ? 200 : 503, status);
-      return;
-    }
-    if (pathname === "/market-data/disconnect" && method === "POST") {
-      await streamRuntime?.disconnect();
-      sendJson(response, 200, await runtime.disconnect());
-      return;
-    }
     if (pathname === "/market-data/markets" && method === "GET") {
       const searchTerm = url.searchParams.get("searchTerm") ?? "";
       const result = await runtime.getMarkets(searchTerm);
@@ -265,9 +377,11 @@ async function handleMarketDataRequest(
     return;
   }
 
-  const allowedMethod = pathname === "/market-data/connect" || pathname === "/market-data/disconnect"
+  const allowedMethod = pathname === "/broker-session/connect" ||
+      pathname === "/broker-session/disconnect"
     ? "POST"
-    : pathname === "/market-data/status" ||
+    : pathname === "/broker-session/status" ||
+      pathname === "/market-data/status" ||
       pathname === "/market-data/markets" ||
       pathname === "/market-data/history" ||
       pathname === "/market-data/stream"
