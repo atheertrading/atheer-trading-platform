@@ -547,7 +547,7 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 ## 2026-11-18 — Authenticated historical chart workspace
 
-- Charts workspace is implemented on PR #69 branch using the authenticated historical DEMO endpoint and dynamic backend IPC capability.
+- Charts workspace is implemented on PR #70 branch using the authenticated historical DEMO endpoint and dynamic backend IPC capability.
 - Market Explorer instrument selection routes to Charts; Command Center chart panel uses the same client contract.
 - Swift Charts renders Bid or Ask candles with timeframe selection, receipt-time/quality metadata and a provider-limit warning.
-- Status: IMPLEMENTED ON PR #69 BRANCH; exact-head CI, Apple Silicon qualification and owner-Mac verification pending. Persistent watchlist and live candles are not yet integrated.
+- Status: IMPLEMENTED ON PR #70 BRANCH; exact-head CI, Apple Silicon qualification and owner-Mac verification pending. Persistent watchlist and live candles are not yet integrated.
