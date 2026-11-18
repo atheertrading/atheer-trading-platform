@@ -171,3 +171,14 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Implemented in unmerged PR #37:** shared WebSocket runtime, 40-instrument cap, deduplication, five-minute heartbeat, reconnect/backoff and quote-quality counters.
 - **Pending:** sequential session-creation rate limit, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection utilization metrics.
 - **Constraint:** Do not invent undocumented provider-wide REST or WebSocket connection limits.
+
+
+## EDL-024 — Scheduled broker keepalive failure containment
+
+- **Date:** 2026-11-18
+- **Status:** Implemented on PR #49 head; exact-head CI pending.
+- **Authority:** Broker Integration Q5/Q6/Q10 and ATP-BRK-003.
+- **Decision:** Scheduled REST keepalive callbacks must contain rejected promises after the runtime records the corresponding health transition. A timer-triggered transient provider failure must not become an unhandled promise rejection or terminate the service. The runtime still transitions to `degraded`/disconnected/error according to the provider response.
+- **Caller semantics:** Explicit/manual `ping()` retains its rejection behavior so request callers can observe failure. The scheduled callback alone contains the rejection after state handling.
+- **Verification:** Added deterministic coverage for scheduled HTTP 503 degradation, callback settlement, and recovery after a successful ping. Exact-head CI run `44266234067` remains queued/in progress; no pass is claimed.
+- **Scope:** Read-only Capital.com DEMO session health. No dealing, trading authorization, credential access, or LIVE behavior.
