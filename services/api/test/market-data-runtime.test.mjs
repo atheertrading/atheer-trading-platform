@@ -239,6 +239,37 @@ test("broker session manager preserves creation throttling across account replac
   assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect", "connect"]);
 });
 
+test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
+  let now = 1_800_000_000_000;
+  const client = createMockClient();
+  const manager = new BrokerSessionManager(
+    (value) => new CapitalDemoRuntime(
+      client,
+      value,
+      () => now,
+      { scheduler: { schedule: () => "timer", cancel: () => {} } },
+    ),
+    () => now,
+  );
+  const credentials = {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  };
+
+  assert.equal((await manager.connect(credentials)).state, "connected");
+  now += 999;
+  const limited = await manager.connect(credentials);
+  assert.equal(limited.state, "error");
+  assert.match(limited.lastError, /Retry in 1 seconds/);
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
+
+  now += 1;
+  assert.equal((await manager.connect(credentials)).state, "connected");
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 2);
+  await manager.disconnect();
+});
+
 test("broker session manager releases credential-bearing runtime after provider logout failure", async () => {
   const client = createMockClient();
   client.endSession = async () => {
