@@ -17,13 +17,13 @@ server.listen(config.port, config.host, () => {
 function shutdown(): void {
   if (shuttingDown) return;
   shuttingDown = true;
+  ipcCapability.fill(0);
   void marketDataRuntime.disconnect().catch(() => undefined);
   server.close((error) => {
     if (error) {
       console.error("ATHEER API shutdown failed.", error.message);
       return;
     }
-    ipcCapability.fill(0);
     console.info("ATHEER API stopped.");
   });
 }
