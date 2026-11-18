@@ -57,6 +57,7 @@ final class BackendIPCCapability {
 struct BackendIPCConnection {
     let baseURL: URL
     let capability: BackendIPCCapability
+    let credentialSocketURL: URL
 }
 
 struct BackendRuntimeArtifacts {
@@ -121,6 +122,7 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
     case authenticationProbeFailed(Int)
     case startupInProgress
     case terminationTimedOut
+    case invalidCredentialSocketPath
     
     var errorDescription: String? {
         switch self {
@@ -152,6 +154,8 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
             return "The managed backend is already starting."
         case .terminationTimedOut:
             return "The managed backend did not exit after graceful and forced shutdown deadlines."
+        case .invalidCredentialSocketPath:
+            return "A private broker credential socket path could not be created within the macOS Unix-domain socket limit."
         }
     }
 }
@@ -165,6 +169,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
     private var outputHandle: FileHandle?
     private var capability: BackendIPCCapability?
     private var connection: BackendIPCConnection?
+    private var credentialSocketDirectory: BackendCredentialSocketDirectory?
     private var readyPort: Int?
     private var outputBuffer = Data()
     private var readyContinuation: CheckedContinuation<Int, Error>?
@@ -214,6 +219,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         do {
             let artifacts = try resolver.resolve()
             let newCapability = try BackendIPCCapability()
+            let socketDirectory = try BackendCredentialSocketDirectory.create()
+            credentialSocketDirectory = socketDirectory
             let inputPipe = Pipe()
             let outputPipe = Pipe()
             let child = Process()
@@ -226,6 +233,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
                 "PORT": "0",
                 "NODE_ENV": "production",
                 "CAP_ALLOW_TRADING": "false",
+                "ATHEER_CREDENTIAL_SOCKET_PATH": socketDirectory.socketURL.path,
                 "PATH": "/usr/bin:/bin"
             ]
             child.standardInput = inputPipe
@@ -267,7 +275,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             let baseURL = URL(string: "http://127.0.0.1:\(port)")!
             let newConnection = BackendIPCConnection(
                 baseURL: baseURL,
-                capability: newCapability
+                capability: newCapability,
+                credentialSocketURL: socketDirectory.socketURL
             )
             try await verifyConnection(newConnection)
             guard process?.isRunning == true,
@@ -407,6 +416,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         capability?.clear()
         capability = nil
         connection = nil
+        credentialSocketDirectory?.remove()
+        credentialSocketDirectory = nil
         readyPort = nil
         outputBuffer.resetBytes(in: 0..<outputBuffer.count)
         outputBuffer.removeAll(keepingCapacity: false)
