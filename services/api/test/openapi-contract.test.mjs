@@ -47,7 +47,7 @@ test("OpenAPI component references resolve to declared schemas and responses", (
 });
 
 test("historical market query parameters are separate, named OpenAPI entries", () => {
-  const historySection = contract.split("  /market-data/history:\\n")[1]?.split("\\ncomponents:\\n")[0] ?? "";
+  const historySection = contract.split("  /market-data/history:\n")[1]?.split("\ncomponents:\n")[0] ?? "";
   const parameterNames = [...historySection.matchAll(/^        - name: ([A-Za-z][A-Za-z0-9]*)$/gm)]
     .map((match) => match[1]);
 
@@ -55,7 +55,7 @@ test("historical market query parameters are separate, named OpenAPI entries", (
   assert.equal((contract.match(/^        - name: resolution$/gm) ?? []).length, 1);
 
   const parameterBlocks = [...historySection.matchAll(
-    /^        - name: ([A-Za-z][A-Za-z0-9]*)$([\\s\\S]*?)(?=^        - name: |^      responses:)/gm,
+    /^        - name: ([A-Za-z][A-Za-z0-9]*)$([\s\S]*?)(?=^        - name: |^      responses:)/gm,
   )];
   assert.equal(parameterBlocks.length, 3);
   for (const [, name, body] of parameterBlocks) {
