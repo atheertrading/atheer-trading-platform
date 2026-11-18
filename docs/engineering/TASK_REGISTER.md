@@ -322,3 +322,13 @@ Required implementation:
 - Market Data, streaming, Account Data and future OMS must share the same managed session.
 - Add tests for credential isolation, session lifecycle, no-secret logging, IPC authorization and reconnect.
 - Demo qualification precedes any Live authorization. LIVE remains disabled.
+
+
+## ATP-BRK-003 / ATP-MKT-007 — Centralized connection and subscription orchestration
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-BRK-003 | P1 | Centralize REST session keepalive, one-session-creation-per-second rate limit, connection health and account-switch recovery | IN PROGRESS | PR #37 coalesces concurrent connect calls and has WebSocket heartbeat/reconnect; REST keepalive and sequential authentication throttle remain |
+| ATP-MKT-007 | P1 | Allocate the 40-instrument WebSocket capacity by operational priority and restore subscriptions after reconnect/account switch | PARTIAL | PR #37 implements one shared stream, 40 cap, dedupe, 5-minute ping, reconnect and quality counters; position/strategy/watchlist priority allocator remains |
+
+The Library's Q10 distinguishes REST requests, persistent WebSocket sessions, authenticated broker sessions and individual subscriptions. Do not treat them as one universal connection limit or invent undocumented provider limits.
