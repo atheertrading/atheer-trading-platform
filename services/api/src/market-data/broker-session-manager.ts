@@ -1,8 +1,5 @@
-import { CapitalDemoClient } from "./capital-demo-client.ts";
-import {
-  CapitalDemoRuntime,
-  type CapitalDemoCredentials,
-} from "./capital-demo-runtime.ts";
+import { CapitalDemoClient, type CapitalDemoCredentials } from "./capital-demo-client.ts";
+import { CapitalDemoRuntime } from "./capital-demo-runtime.ts";
 
 export type BrokerSessionStatus = ReturnType<CapitalDemoRuntime["status"]>;
 type RuntimeFactory = (credentials: CapitalDemoCredentials) => CapitalDemoRuntime;
