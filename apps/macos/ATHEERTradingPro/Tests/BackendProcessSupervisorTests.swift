@@ -57,7 +57,10 @@ final class BackendProcessSupervisorTests: XCTestCase {
         supervisor.onUnexpectedTermination = { _ in unexpectedTerminationCount += 1 }
 
         let startTask = Task { try await supervisor.start() }
-        try await Task.sleep(nanoseconds: 200_000_000)
+        let startupDeadline = Date().addingTimeInterval(3)
+        while !supervisor.isManagedProcessRunning && Date() < startupDeadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
         XCTAssertTrue(supervisor.isManagedProcessRunning)
 
         async let firstStop: Void = supervisor.stop()
