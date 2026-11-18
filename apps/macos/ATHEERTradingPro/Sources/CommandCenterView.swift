@@ -146,13 +146,17 @@ struct CommandCenterView: View {
             alignment: .leading,
             spacing: 10
         ) {
-            CommandCenterStatusItem(
-                title: "MARKET DATA",
-                value: marketDataStatus.value,
-                detail: marketDataStatus.detail,
-                symbol: marketDataStatus.symbol,
-                tint: marketDataStatus.tint
-            )
+            if let marketDataStreamModel {
+                CommandCenterMarketDataStatusItem(model: marketDataStreamModel)
+            } else {
+                CommandCenterStatusItem(
+                    title: "MARKET DATA",
+                    value: "UNAVAILABLE",
+                    detail: "Managed backend market stream is not available",
+                    symbol: "waveform.path",
+                    tint: ATHEERDesignTokens.ColorRole.attention
+                )
+            }
 
             CommandCenterStatusItem(
                 title: "BROKER",
@@ -176,59 +180,6 @@ struct CommandCenterView: View {
                 detail: tradingGateStatus.detail,
                 symbol: tradingGateStatus.symbol,
                 tint: tradingGateStatus.tint
-            )
-        }
-    }
-
-    private var marketDataStatus: (value: String, detail: String, symbol: String, tint: Color) {
-        guard let model = marketDataStreamModel else {
-            return (
-                "UNAVAILABLE",
-                "Managed backend market stream is not available",
-                "waveform.path",
-                ATHEERDesignTokens.ColorRole.attention
-            )
-        }
-
-        switch model.connectionState {
-        case .connected:
-            if model.quotes.isEmpty {
-                return (
-                    "CONNECTED · WAITING",
-                    "Stream connected; awaiting the first provider quote",
-                    "waveform.path",
-                    ATHEERDesignTokens.ColorRole.attention
-                )
-            }
-            return (
-                "STREAMING",
-                "\(model.quotes.count) provider quote(s) · \(model.selectedCount) selected",
-                "waveform.path",
-                ATHEERDesignTokens.ColorRole.success
-            )
-        case .connecting:
-            return (
-                "CONNECTING",
-                "\(model.selectedCount) selected instrument(s)",
-                "arrow.triangle.2.circlepath",
-                ATHEERDesignTokens.ColorRole.attention
-            )
-        case .degraded:
-            return (
-                "DEGRADED",
-                model.lastError ?? "Market-data stream recovery is in progress",
-                "exclamationmark.triangle",
-                ATHEERDesignTokens.ColorRole.attention
-            )
-        case .disconnected:
-            let value = model.selectedEpics.isEmpty ? "NO WATCHLIST" : "STOPPED"
-            return (
-                value,
-                model.selectedEpics.isEmpty
-                    ? "Open Markets to select DEMO instruments"
-                    : "Last quote snapshots retain their age and freshness state",
-                "waveform.path",
-                .secondary
             )
         }
     }
@@ -545,6 +496,60 @@ private struct CommandCenterPanel<Content: View>: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .contain)
+    }
+}
+
+@MainActor
+private struct CommandCenterMarketDataStatusItem: View {
+    @ObservedObject var model: MarketDataStreamViewModel
+
+    private var presentation: (value: String, detail: String, tint: Color) {
+        switch model.connectionState {
+        case .connected:
+            if model.quotes.isEmpty {
+                return (
+                    "CONNECTED · WAITING",
+                    "Stream connected; awaiting the first provider quote",
+                    ATHEERDesignTokens.ColorRole.attention
+                )
+            }
+            return (
+                "STREAMING",
+                "\(model.quotes.count) provider quote(s) · \(model.selectedCount) selected",
+                ATHEERDesignTokens.ColorRole.success
+            )
+        case .connecting:
+            return (
+                "CONNECTING",
+                "\(model.selectedCount) selected instrument(s)",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .degraded:
+            return (
+                "DEGRADED",
+                model.lastError ?? "Market-data stream recovery is in progress",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .disconnected:
+            return (
+                model.selectedEpics.isEmpty ? "NO WATCHLIST" : "STOPPED",
+                model.selectedEpics.isEmpty
+                    ? "Open Markets to select DEMO instruments"
+                    : "Last quote snapshots retain their age and freshness state",
+                .secondary
+            )
+        }
+    }
+
+    var body: some View {
+        let status = presentation
+        CommandCenterStatusItem(
+            title: "MARKET DATA",
+            value: status.value,
+            detail: status.detail,
+            symbol: "waveform.path",
+            tint: status.tint
+        )
     }
 }
 
