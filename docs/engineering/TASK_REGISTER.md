@@ -524,3 +524,19 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - The view supports watchlist instrument selection, provider-supported timeframes, explicit Bid or Ask OHLC, refresh, and truthful loading/empty/unavailable/error states.
 - No mid-price synthesis, live candle aggregation, indicators, drawing tools, account values, or execution capability is introduced.
 - CAP_ALLOW_TRADING=false remains unchanged.
+
+
+### Cross-PR audit correction — 2026-11-18
+
+Use the commit-specific qualification record in `IMPLEMENTATION_STATUS.md` as the current review reference. Do not infer macOS qualification from a passing Backend Toolchain job.
+
+- **Rerun required:** PR #25, #38, #39 (macOS jobs cancelled or aggregate CI failed).
+- **Dependency repair required:** PR #26 base SHA must be reconciled with the intended current PR #25 head; Apple Silicon qualification was still pending.
+- **Architecture checks pending at audit time:** PR #24 Intel; PR #33 and #37 Intel/Apple Silicon; PR #43 Intel; PR #44 Intel and Apple Silicon.
+- **Exact-head green:** PR #40, #41, #42 only, for the reviewed SHAs documented in the implementation status record.
+- **Runtime qualification still outstanding:** owner-Mac app build/launch/visual/accessibility checks, Keychain persistence, and authenticated Capital.com DEMO requests/streaming.
+- **Database safety:** no local PostgreSQL 18.7 migration until exact-head CI, controlled backup/restore, and the migration plan are qualified.
+- **Execution safety:** domain outbox and OMS persistence are not broker dispatch. No outbox consumer, Execution Gateway, or broker dealing is approved by this audit.
+- **Governance:** branch protection/rulesets and license decision remain open verification/configuration tasks.
+
+Preserve `CAP_ALLOW_TRADING=false`. Merge only after current-head, parent/base, and required-check verification.
