@@ -535,3 +535,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Canonical Mermaid diagram 03 now represents cached quote replay as a separate path with freshness recomputed from the original provider timestamp.
 - Library review evidence: five proposed curated Mermaid diagrams and 12 Q&A Mermaid blocks were inspected; the separate 52-block historical export is unavailable in the current Library listing and is not claimed as reviewed.
 - Freshness threshold reconciliation remains pending before any RiskEngine authorization integration.
+
+
+## 2026-11-18 — Authenticated historical DEMO market data
+
+- Historical candle normalization and UTC range validation are ported into the authenticated BrokerSessionManager path on PR #68.
+- Route returns separate Bid/Ask OHLC, UTC timestamp and receipt lineage, quality counts, observed gaps and raw-provider limit metadata; disconnected sessions fail with HTTP 503.
+- Regression test source added for normalization, strict ranges, duplicate handling and authenticated route behavior.
+- Status: IMPLEMENTED ON PR #68 BRANCH; exact-head hosted CI, macOS qualification and provider DEMO runtime verification pending.
