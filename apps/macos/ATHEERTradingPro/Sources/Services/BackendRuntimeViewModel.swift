@@ -64,6 +64,7 @@ final class BackendRuntimeViewModel: ObservableObject {
             await healthModel.refresh()
             state = .ready
         } catch {
+            try? await supervisor.stop()
             marketSearchClient = nil
             marketDataStreamClient = nil
             healthModel.setUnavailable(error.localizedDescription)
