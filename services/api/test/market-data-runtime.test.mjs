@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { CapitalDemoRuntime, createCapitalDemoRuntime } from "../dist/market-data/capital-demo-runtime.js";
+import { CapitalDemoApiError } from "../dist/market-data/capital-demo-client.js";
 import { createApiServer } from "../dist/server.js";
 
 const credentials = {
@@ -66,6 +67,92 @@ test("runtime connects, reads market data, and disconnects without exposing sess
   assert.equal(JSON.stringify(status).includes("secret-security-token"), false);
   assert.equal((await runtime.disconnect()).state, "disconnected");
   assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "markets", "disconnect"]);
+});
+
+test("session creation is throttled to one attempt per second across reconnects", async () => {
+  let now = 1_800_000_000_000;
+  const waits = [];
+  const client = createMockClient();
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, () => now, {
+    sessionCreationIntervalMs: 1_000,
+    keepaliveIntervalMs: 300_000,
+    sleep: async (milliseconds) => {
+      waits.push(milliseconds);
+      now += milliseconds;
+    },
+    scheduler: { schedule: () => "timer", cancel: () => {} },
+  });
+
+  await runtime.connect();
+  await runtime.disconnect();
+  await runtime.connect();
+
+  assert.deepEqual(waits, [1_000]);
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 2);
+  await runtime.disconnect();
+});
+
+test("REST keepalive is scheduled, renews session activity, and stops on disconnect", async () => {
+  const client = createMockClient();
+  let scheduledInterval = 0;
+  let scheduledTask = null;
+  let cancelled = false;
+  const scheduler = {
+    schedule(task, intervalMs) {
+      scheduledTask = task;
+      scheduledInterval = intervalMs;
+      return "keepalive";
+    },
+    cancel(handle) {
+      assert.equal(handle, "keepalive");
+      cancelled = true;
+    },
+  };
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, Date.now, { keepaliveIntervalMs: 300_000, scheduler });
+
+  await runtime.connect();
+  assert.equal(scheduledInterval, 300_000);
+  assert.equal(typeof scheduledTask, "function");
+  await scheduledTask();
+  assert.equal(client.calls.filter((call) => call[0] === "ping").length, 1);
+  assert.equal(runtime.status().state, "connected");
+
+  await runtime.disconnect();
+  assert.equal(cancelled, true);
+});
+
+test("temporary keepalive failures degrade the session and a successful ping restores it", async () => {
+  const client = createMockClient();
+  client.ping = async (session) => {
+    client.calls.push(["ping", session]);
+    throw new CapitalDemoApiError("provider unavailable", 503);
+  };
+  const runtime = new CapitalDemoRuntime(client, {
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  }, Date.now, {
+    scheduler: { schedule: () => "timer", cancel: () => {} },
+  });
+
+  await runtime.connect();
+  await assert.rejects(runtime.ping(), /503/);
+  assert.equal(runtime.status().state, "degraded");
+  assert.match(runtime.status().lastError, /degraded/);
+
+  client.ping = async (session) => { client.calls.push(["ping", session]); };
+  await runtime.ping();
+  assert.equal(runtime.status().state, "connected");
+  assert.equal(runtime.status().lastError, undefined);
+  await runtime.disconnect();
 });
 
 test("runtime marks failed provider authentication as error without leaking credentials", async () => {
