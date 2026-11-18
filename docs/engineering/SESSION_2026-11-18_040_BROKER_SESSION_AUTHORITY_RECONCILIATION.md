@@ -59,3 +59,13 @@ No real broker credentials or sessions were accessed. No LIVE authentication, de
 - Q10 gaps remain: 1 session-creation request/second/API-key enforcement across sequential attempts, scheduled REST keepalive, priority allocation for open positions/strategies/watchlists, account-switch restoration and utilization metrics.
 - `CapitalDemoRuntime.connect()` coalesces concurrent requests but does not enforce sequential throttling; `ping()` is not scheduled.
 - Tracked in ATP-BRK-003 / ATP-MKT-007 and EDL-023.
+
+
+## Chosen local credential/session topology
+
+- The native app launches the backend as a managed child process in production.
+- Generate a 256-bit per-launch capability token in the app and deliver it to the backend over a private stdin/pipe bootstrap channel; never use command-line arguments, persistent plaintext files or environment variables for the token.
+- Require the capability token on local broker/session and market-data control endpoints, in addition to the browser-origin marker and Origin/Sec-Fetch checks.
+- Backend CMS persists credentials through a Keychain-backed storage adapter/helper; the SwiftUI/ViewModel layer does not retain or directly authenticate with credentials after provisioning.
+- Backend Broker Session Manager owns CST/`X-SECURITY-TOKEN` in memory and provides one session authority to all services.
+- Environment credentials remain test/development fixtures only, with explicit non-production opt-in.
