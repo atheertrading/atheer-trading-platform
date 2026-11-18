@@ -82,7 +82,7 @@ struct BrokerManagementView: View {
                 metric("AUTHENTICATION", value: model.state.title)
                 metric("SESSION", value: model.state == .connected ? "Active" : (model.state == .sessionExpired ? "Expired" : "Inactive"))
                 metric("LAST CONNECTED", value: model.lastSuccessfulConnection?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified this session")
-                metric("LAST BACKEND STATUS CHECK", value: model.lastSessionVerification?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
+                metric("LAST BACKEND STATUS CHECK", value: model.lastBackendStatusCheck?.formatted(date: .abbreviated, time: .shortened) ?? "Not verified")
                 metric("MARKET STREAM", value: "Not connected", tint: .secondary)
                 metric("TRADING", value: "Disabled", tint: .secondary)
             }
