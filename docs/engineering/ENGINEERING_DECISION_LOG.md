@@ -227,3 +227,17 @@ Broker API key, identifier and password must never be sent in a loopback HTTP re
 The native supervisor owns the socket directory lifecycle, validates the Darwin socket-path limit, verifies socket permissions before reporting readiness, and removes the directory only after confirmed child termination. HTTP remains capability-authenticated for non-secret status and market-data operations; HTTP credential connect/disconnect routes are removed.
 
 This decision supersedes the earlier open design choice between private stdio RPC and a protected Unix-domain channel. UDS is selected because it separates credential transport from readiness/log output and has explicit filesystem permissions and lifecycle ownership. LIVE execution remains disabled.
+
+
+## EDL-032 — Centralized Capital.com 429 recovery (2026-11-19)
+
+The shared Capital.com REST client remains the single process-level request scheduler. In addition to its 100 ms request-start spacing and independent one-second session-creation throttle, it observes HTTP 429 responses and applies one shared cooldown to subsequent REST requests.
+
+- Prefer numeric-seconds or HTTP-date `Retry-After` values; bound the server-directed delay to 60 seconds.
+- If the header is absent or invalid, use exponential full jitter.
+- Limit each request to three 429 retries.
+- Apply a fresh 10-second timeout to each network attempt, separately from the server-directed wait.
+- Do not automatically retry network timeouts or other uncertain transport failures.
+- Future order/dealing methods must not inherit this retry behavior without explicit idempotency, acknowledgement, and reconciliation semantics. A 429 refusal is distinct from an ambiguous execution timeout.
+
+This decision governs only the current read-only Capital.com DEMO adapter and session operations. It does not introduce OMS or broker-dealing capability. Evidence and qualification scope: `SESSION_2026-11-19_070_SERIALIZED_DISCONNECT_AND_429_RECOVERY.md`.
