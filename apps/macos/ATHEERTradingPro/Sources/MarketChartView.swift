@@ -12,7 +12,7 @@ struct ChartWorkspaceView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Charts & Analysis").font(ATHEERDesignTokens.Typography.screenTitle)
-                        Text("Provider-normalized historical candles from the Capital.com DEMO market-data service.")
+                        Text("Historical DEMO candles with validated live quote aggregation.")
                             .font(ATHEERDesignTokens.Typography.body)
                             .foregroundColor(.secondary)
                     }
@@ -172,7 +172,7 @@ struct MarketChartSurfaceView: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundColor(ATHEERDesignTokens.ColorRole.accent)
             if let batch = model.batch {
-                Text("\(batch.candles.count) CANDLES")
+                Text("\(model.candles.count) CANDLES")
                     .font(.system(size: 9, weight: .medium, design: .monospaced))
                     .foregroundColor(.secondary)
                 Text("\(batch.quality.duplicateCount) DUPLICATES")
@@ -181,6 +181,11 @@ struct MarketChartSurfaceView: View {
                 Text("\(batch.quality.observedGaps.count) OBSERVED GAPS")
                     .font(.system(size: 9, weight: .medium, design: .monospaced))
                     .foregroundColor(.secondary)
+                if model.liveUpdatedAt != nil {
+                    Text("LIVE QUOTES · \(model.liveCandleUpdateCount) UPDATES")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundColor(ATHEERDesignTokens.ColorRole.success)
+                }
             }
             Spacer(minLength: 4)
             if let lastUpdatedAt = model.lastUpdatedAt {

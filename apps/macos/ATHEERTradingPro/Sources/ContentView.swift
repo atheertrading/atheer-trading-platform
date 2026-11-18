@@ -3,11 +3,19 @@ import SwiftUI
 struct ContentView: View {
     @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
-    @StateObject private var marketExplorerModel = MarketExplorerViewModel()
+    @StateObject private var marketDataQuoteEventBus: MarketDataQuoteEventBus
+    @StateObject private var marketExplorerModel: MarketExplorerViewModel
     @StateObject private var marketWatchlistStore = MarketWatchlistStore()
     @StateObject private var marketChartModel = MarketChartViewModel()
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
+
+    init() {
+        let quoteEventBus = MarketDataQuoteEventBus()
+        _marketDataQuoteEventBus = StateObject(wrappedValue: quoteEventBus)
+        _marketExplorerModel = StateObject(wrappedValue: MarketExplorerViewModel(quoteEventBus: quoteEventBus))
+        _marketChartModel = StateObject(wrappedValue: MarketChartViewModel(quoteEventBus: quoteEventBus))
+    }
 
     /// Apply sidebar selection after AppKit exits the NSTableView delegate callback.
     private func scheduleSelectionChange(_ newSelection: AppSection?) {

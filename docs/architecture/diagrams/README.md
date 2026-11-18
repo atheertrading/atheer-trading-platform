@@ -50,3 +50,5 @@ python3 scripts/extract-mermaid-sources.py \
 ### Library archive availability re-check — 2026-11-18
 
 The exact historical archive path referenced above (`Project documents and questions and answers.zip`) was not present in the accessible Library root during this session. The available `Atheer Q&A Repository.zip` contains 517 Markdown documents and 12 fenced Mermaid blocks; `Codex.zip` contains 58 Markdown documents and five standalone `.mmd` sources. All 17 accessible Mermaid sources were inspected. The previously recorded 564-document / 52-block inventory remains historical evidence for a different archive and is not re-claimed as revalidated or fully extracted in this session.
+
+| `16-live-candle-aggregation.mmd` | Every validated DEMO stream quote reaches the app-scoped analytical event bus before UI throttling; fixed-interval intraday OHLC aggregation remains separate from historical bars and execution authority |

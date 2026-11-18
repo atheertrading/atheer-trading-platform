@@ -900,3 +900,19 @@ A subsequent direct GitHub Actions recheck supersedes the earlier preliminary cr
 - PR #44: Apple Silicon passed; Intel remained in progress.
 
 See the CI status correction table in IMPLEMENTATION_STATUS.md for the exact SHAs. Cancelled checks are not passes. The PR #38 Intel failure needs log-level diagnosis. PR #25 requires a successful exact-head macOS run. No owner-Mac runtime or real provider qualification is implied.
+
+
+## 2026-11-18 — Session 035: ATP-MKT-006 Live DEMO Candle Aggregation
+
+- Revalidated the governing Library screen/workstation execution directive and repository AGENTS.md / AI_AGENT_WORKING_GUIDE.md.
+- Read canonical Mermaid diagrams 03 (market-data pipeline), 04 (order-intent/risk lifecycle), 05 (OMS/execution/reconciliation), 07 (environment isolation), 14 (live Market Watch) and 15 (historical chart workspace). These are architecture references, not proof of implemented execution components.
+- Rechecked exact GitHub CI for PRs #24–#44. PR #44 HEAD 77ebac707f9f3776261bcf8c195ee4f10fbbad5e passed Intel Debug/XCTest/Release/CodeQL, Apple Silicon Debug/XCTest/Release, Backend, Hygiene, Mermaid and Local Sync Safety. Apple Silicon CodeQL is intentionally skipped in workflow configuration.
+- PR #25 architecture jobs were cancelled on the previous run; a new CI attempt was queued. PR #26's recorded base snapshot differs from PR #25's reviewed head and remains a stack reconciliation item.
+- Created child branch feat/live-candle-aggregation from exact PR #44 head 77ebac707f9f3776261bcf8c195ee4f10fbbad5e.
+- Implemented an app-scoped quote event bus so analytical consumers receive every validated SSE quote before the Market Watch 100 ms UI coalescing.
+- Implemented LiveCandleAggregator and MarketChartCandle provenance projection. Fresh Capital.com DEMO Bid/Ask ticks update independent OHLC; duplicate/out-of-order/stale/future/invalid quotes are ignored; gaps are never filled.
+- Intraday MINUTE, MINUTE_5, MINUTE_15, MINUTE_30 and HOUR aggregation only. HOUR_4/DAY/WEEK remain deferred until session-calendar alignment is verified.
+- Added deterministic tests for extrema/close, new bar append/no gap filling, stale/future/out-of-order rejection, higher-timeframe deferral and event-bus delivery.
+- Added ATP-MKT-006 architecture note, Mermaid diagram 16, EDL-016, task/status/continuity records.
+- Implementation is committed below PR #44 and is not yet hosted-qualified. Owner-Mac runtime, visual/accessibility QA and authenticated provider acceptance remain outstanding.
+- No market-data persistence, volume aggregation, indicators, drawings, strategy execution, orders, broker dealing, risk-policy change or LIVE capability was added. `CAP_ALLOW_TRADING=false` remains unchanged.
