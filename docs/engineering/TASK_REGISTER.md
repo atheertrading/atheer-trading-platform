@@ -380,3 +380,20 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
 - No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
 - Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
+
+## M03 — Multi-Agent Engineering Operations
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| M03-001 | P1 | Publish the multi-agent engineering operating model and role/permission boundaries | DOCUMENTED ON REVIEW BRANCH — MERGE/OWNER REVIEW PENDING | ATP-MA-ENG-001; focused documentation PR; repository documentation checks |
+| M03-002 | P1 | Verify and provision dedicated Backend and UI/UX agent identities, runtimes, tools and least-privilege GitHub access | PENDING | Actual runtime/tool availability recorded; access tested; no shared credentials; owner/platform authorization where required |
+| M03-003 | P1 | Define and version the first Backend–Frontend integration contract for a read-only pilot vertical slice | PENDING | Contract ID/version, schemas, error/state semantics, ownership and contract tests |
+| M03-004 | P1 | Decompose pilot into independent backend, UI/UX and QA tasks with explicit path ownership | PENDING | Linked issues, dependencies, exact base SHA, branch/PR plan and acceptance criteria |
+| M03-005 | P1 | Execute and qualify the parallel Market Explorer pilot | BLOCKED ON M03-002 / M03-003 / CURRENT PR ANCESTRY REVALIDATION | Separate agent work branches/PRs, contract conformance, exact-head CI, integration and owner acceptance |
+| M03-006 | P2 | Evaluate multi-agent workflow outcomes and decide whether to scale | PENDING | Measured lead time, dependency wait, contract drift, rework, defects, evidence quality and owner decision |
+
+- Operating specification: [ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md](ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md).
+- Adoption and pilot tracker: [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60); governing-document review: [Draft PR #61](https://github.com/atheertrading/atheer-trading-platform/pull/61).
+- M03 is a cross-cutting engineering operating workstream; it does not replace M01 architecture tasks, M02 product tasks or Issue #59's controlled DEMO qualification.
+- Agent roles are logical until actual model/runtime, tool, identity and permission availability is verified. Separate ChatGPT conversations do not imply shared memory or autonomous coordination.
+- The first pilot is read-only Market Explorer work. No dealing, broker permission, risk-limit, production or LIVE authorization is included.

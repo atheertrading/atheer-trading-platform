@@ -24,3 +24,16 @@ Never invent market data, fills, positions, balances, or broker responses. Never
 
 ## Completion report
 Report changed files, architecture/source references, exact build and test commands/results, failures, unverified areas, security/trading impact, continuity updates, and commit/PR links. Never claim tests or production readiness without evidence.
+
+## Multi-agent task execution
+
+Before delegating work to another specialized agent:
+1. Read [ATP-MA-ENG-001](../engineering/ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md).
+2. Confirm the agent's actual runtime, tools, repository access and least-privilege permission profile; do not infer capability from the model name or a separate chat.
+3. Create a bounded GitHub issue with acceptance criteria, dependencies, exact owned paths and forbidden paths.
+4. Publish the shared interface contract and version before parallel backend/UI implementation.
+5. Give each task its own branch and PR. Never let multiple agents push to one branch or write directly to `main`.
+6. Require a durable handoff with exact commit SHA, changed files, commands, test evidence, limitations and security/trading impact.
+7. Run contract and cross-layer integration checks on the exact integrated head before acceptance.
+
+The orchestrator coordinates; it does not waive architecture, security, owner-approval or trading-safety requirements. Agents do not automatically share chat history, memory, tools or local workspaces.
