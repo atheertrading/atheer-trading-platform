@@ -549,3 +549,19 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Upstream PR #53 has an Intel Swift compile failure; PR #56's correction branch requires fresh macOS qualification. PR #57 bounded-shutdown work remains a separate sibling requiring review.
 - No merge to main, local Mac synchronization, broker DEMO authentication, or dealing action was performed.
 - Session report: `SESSION_2026-11-18_061_CI_EXECUTION_BOUNDS_AND_STACK_PROPAGATION.md`.
+
+
+## ATP-ENG-063 — Exact-head qualification, stack integration and trading-core readiness
+
+- **Status:** IN PROGRESS — P0 integration/qualification gate.
+- **Tracking issue:** https://github.com/atheertrading/atheer-trading-platform/issues/77
+- **Roadmap:** `docs/roadmap/ATHEER_TRADING_PRO_PRODUCT_AND_ENGINEERING_ROADMAP.md`
+- Reconcile PR #51 with current `main` (20 ahead / 4 behind), then propagate history-preserving merges through #52/#53/#56/#55/#64/#66/#67/#68/#70.
+- Qualify the #53/#56 managed-backend supervisor correction on exact Intel and Apple Silicon heads.
+- Resolve PR #66 lifecycle review: serialized broker transitions, in-flight UDS request drain/abort, non-overlapping timeout behavior and consistent global/per-step shutdown budgets.
+- Integrate PR #69/#73 with the broker/chart stack; resolve shared Swift app/test files and Mermaid identifier collisions.
+- Complete exact-head backend, Intel, Apple Silicon, repository hygiene, CodeQL, Local Sync Safety and Mermaid validation.
+- Complete BIDCMS/instrument contract discovery, provider capability verification and freshness-policy reconciliation.
+- Deliver the first governed Capital.com DEMO order lifecycle through OrderIntent → RiskEngine → OMS → Execution Gateway → broker confirmation → reconciliation.
+- **Exit:** no branch drift; all required checks pass on exact heads; owner-Mac/Keychain/DEMO runtime evidence archived; DEMO order lifecycle and reconciliation tests pass; no LIVE activation.
+- **Safety:** `CAP_ALLOW_TRADING=false`; no credentials in chat/commits/logs; LIVE remains a separate owner gate.

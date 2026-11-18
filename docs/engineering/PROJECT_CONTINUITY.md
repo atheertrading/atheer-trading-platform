@@ -829,3 +829,35 @@ These are branch ancestry merges only. The PRs remain draft; hosted exact-head C
 - Refreshed exact-head CI remains pending. PR #53 has a recorded Intel macOS compile failure; PR #56 is the stacked correction branch and its current macOS qualification is pending. PR #57 remains a separate sibling, not integrated into the broker-to-chart stack.
 - PR #55/#64/#66/#67/#68/#70 remain draft; no PR was merged into main. No local Mac pull/build or broker DEMO session is claimed. `CAP_ALLOW_TRADING=false` remains unchanged.
 - Full evidence: `SESSION_2026-11-18_061_CI_EXECUTION_BOUNDS_AND_STACK_PROPAGATION.md`.
+
+
+## 2026-11-18 — Session 063: Engineering audit and ATP-ENG-063
+
+### Current verified baseline
+- Repository: `atheertrading/atheer-trading-platform`; observed `main` head `31e3e5547c9204645427ec56426e741d4bcfa955`.
+- PR #51 head `1e312352696bcc5e18ba00a15dc426d37aa26c5a`: 20 ahead / 4 behind current `main`; the four commits on main are engineering review and continuity/status/task documentation.
+- PR #52 head `426b3a9c2541d719c2aaa2f02003709ece2e1f22`; #53 `37a085c5a1c5cf22368518dd1550dbbd2facbd53`; #56 `493e91b010c5637f37a3bc270c99995da3f6d67d`; #55 `d7957bc52163ef30413d8df0b2271ef2dda216e1`; #64 `a3380652952c530d667ee3337523f275dc532915`; #66 `519cb86ba667cc9fdf34c08480f50fab65b80bf9`; #67 `2506aebedc9fce416e929ffc0faf7e4963f4f3fd`; #68 `b4ca620d23e65b4720d19782d4f3ffaa10787b09`; #70 `7d3aaea2b5405d6bba3f5d9ced8811c50d62b469`.
+- Immediate child-to-parent ancestry from #52 through #70 is 0 commits behind; this does not remove the root #51 drift from current main.
+- Separate IPDS branch: #69 `fa195a6e0617091322b7934564db0e681cd9d58d`, 6 ahead / 0 behind main; #73 `6591283c8d9568e17c5e9bb328f43dfcd2ccf7b1`, 10 ahead / 0 behind #69. #70 is 422 ahead / 10 behind #69.
+- PR #52/#53 are now Draft; PR #57 is closed as superseded by #66. PR branches were not deleted or rewritten.
+- Tracking issue: ATP-ENG-063 #77. PR #66 lifecycle review submitted; integration comments added to #67/#69/#70 and qualification comments to #52/#53.
+
+### CI and qualification
+- PR #52: backend, hygiene and Intel success; Apple Silicon cancelled.
+- PR #53: Intel compile failure (MainActor initializer isolation and immutable Process assignment); #56 has source corrections but no full exact-head qualification.
+- PR #55/#64/#66/#67/#68/#70: refreshed exact-head runs do not establish full qualification; cancelled backend jobs and queued macOS jobs remain incomplete evidence.
+- PR #69: Intel/backend/hygiene/CodeQL/Mermaid success; Apple Silicon cancelled.
+- PR #73: backend/hygiene success; Intel/Apple Silicon queued.
+- No PR in the #51–#70 stack has merged to main.
+
+### Architecture and integration findings
+- Library inventory: 517 Q&A Markdown records and 47 formal architecture/engineering records (564 combined in the consolidated archive).
+- Two historical Mermaid exports contain the same 52 `.mmd` files byte-for-byte. The archive exists at Library root, outside `AtheerTradingPro`; prior folder-scoped absence statements are corrected.
+- The separate PR #69/#73 UI stack is not integrated with #68/#70. Shared Swift app/test files and Mermaid identifiers 10/11 require deliberate reconciliation.
+- PR #66 UDS credential IPC replaces credential-bearing HTTP, but shutdown currently has a 20s hard deadline against 22s aggregate step budgets; Promise.race timeouts do not cancel work; in-flight IPC handlers are not drained; connect/disconnect transitions are not serialized. Tracked in issue #77 and reviewed on PR #66.
+- Current broker/chart source remains read-only Capital.com DEMO market data and historical charting. No RiskEngine, OMS, Execution Gateway, dealing routes, position reconciliation or complete trading lifecycle exists in the reviewed PR set.
+- The 5s stale quote behavior in #67 is not an approved RiskEngine limit; reconcile against the recorded 5s normal / >10s entry-block / >15s stale policy before automated risk use.
+- The Library's consolidated architecture sequence M0–M11 is now captured in `docs/roadmap/ATHEER_TRADING_PRO_PRODUCT_AND_ENGINEERING_ROADMAP.md`.
+
+### Next action
+Continue ATP-ENG-063 in issue #77: reconcile main into the root stack and propagate; qualify #53/#56; correct #66 session/shutdown lifecycle; integrate #69/#73 with #70 and renumber diagrams; complete exact-head CI; then progress through BIDCMS and the governed DEMO order lifecycle. No LIVE dealing or production release is authorized.

@@ -579,3 +579,47 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Propagation heads: PR #64 `a3380652952c530d667ee3337523f275dc532915`; #66 `519cb86ba667cc9fdf34c08480f50fab65b80bf9`; #67 `2506aebedc9fce416e929ffc0faf7e4963f4f3fd`; #68 `b4ca620d23e65b4720d19782d4f3ffaa10787b09`; #70 `40cc706bee904c3b74eb904d271ea9672554a4dd`.
 - **CI QUALIFICATION PENDING:** refreshed backend tests and macOS matrix checks have not yet completed on all exact heads. The earlier prolonged backend test step's root cause is not established.
 - **NOT VERIFIED:** owner-Mac build/runtime, visual/accessibility QA, Keychain restart, Capital.com DEMO authentication, or trading lifecycle.
+
+
+## 2026-11-18 — ATP-ENG-063 engineering audit snapshot
+
+### Repository and PR status
+- Observed `main` head: `31e3e5547c9204645427ec56426e741d4bcfa955`.
+- PR #51 is 20 ahead / 4 behind `main`; #52→#53→#56→#55→#64→#66→#67→#68→#70 are aligned at immediate parent boundaries.
+- PR #52 and #53 are Open/Draft; #57 is Closed as superseded by #66, with its branch/history preserved.
+- PR #69 is 6 ahead / 0 behind `main`; PR #73 is 10 ahead / 0 behind #69. PR #70 is 422 ahead / 10 behind #69.
+- No PR in the #51–#70 broker/chart stack has merged to `main`.
+
+### Capability status
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Managed backend + dynamic local port | IMPLEMENTED ON OPEN PR BRANCH; QUALIFICATION PENDING | #51–#56 |
+| Private credential IPC | IMPLEMENTED ON OPEN PR BRANCH; LIFECYCLE REVIEW OPEN | #66 UDS; shutdown/drain/concurrency findings tracked in #77 |
+| Capital.com DEMO REST/session | PARTIAL; QUALIFICATION PENDING | Backend-owned session, market search and history; no authenticated owner runtime |
+| Live market-data stream | PARTIAL; QUALIFICATION PENDING | #64/#67; subscription and freshness governance still require full validation |
+| Historical data normalization | IMPLEMENTED ON OPEN PR BRANCH; QUALIFICATION PENDING | #68 |
+| Historical chart workspace | IMPLEMENTED ON OPEN PR BRANCH; QUALIFICATION PENDING | #70; no live candle aggregation/indicators/drawings/replay |
+| Instrument registry/BIDCMS | NOT IMPLEMENTED | Broker search only; no canonical multi-asset capability catalog |
+| Durable trading persistence/audit | NOT IMPLEMENTED | No qualified canonical order store/outbox |
+| RiskEngine | NOT IMPLEMENTED | Required architecture exists; no executable implementation |
+| OMS | NOT IMPLEMENTED | No canonical order lifecycle implementation |
+| Execution Gateway/dealing adapter | NOT IMPLEMENTED | No order/position dealing routes |
+| Position/portfolio management | NOT IMPLEMENTED | No broker-reconciled position service |
+| Strategy/backtest/simulation | NOT IMPLEMENTED | Future milestone |
+| Atheer Mind OS / Agent OS | NOT IMPLEMENTED | Architecture direction only |
+| 12-screen IPDS | PROPOSED / PARTIAL | #69 foundation, #73 blueprint; not integrated or fully qualified |
+| Multi-user/web/institutional | FUTURE | Strategic architecture horizon, not current implementation |
+
+### CI qualification
+- #52 recorded backend, repository hygiene and Intel macOS success; Apple Silicon cancelled.
+- #53 recorded Intel macOS compile failure; #56 source corrections remain without full exact-head matrix qualification.
+- #55/#64/#66/#67/#68/#70 refreshed runs do not establish full qualification: backend jobs were cancelled in inspected runs and macOS jobs were queued.
+- #69 Intel/backend/repository hygiene/CodeQL/Mermaid passed on its recorded run; Apple Silicon cancelled.
+- #73 backend/repository hygiene passed; Intel and Apple Silicon remained queued.
+- A successful Mermaid or repository-hygiene check does not qualify backend, macOS, broker or trading behavior.
+
+### Safety
+- `CAP_ALLOW_TRADING=false` remains unchanged.
+- No broker credentials, provider session or orders were used.
+- No local Mac/Xcode build, Keychain restart, visual QA or DEMO order lifecycle is claimed.
+- LIVE and production release remain separately gated.
