@@ -26,6 +26,15 @@ The service binds only to `127.0.0.1`. The default development port is 4100; `PO
 
 A successful liveness response is not evidence that the trading platform is ready. Readiness is fail-closed and must not be changed to ready until the required dependencies are implemented and independently verified.
 
+## Versioned API contract
+
+The implemented local HTTP interface is described by the OpenAPI 3.1 document at
+[`openapi.yaml`](./openapi.yaml). It covers only the verified health, broker-session
+status, market search/history, and authenticated SSE routes. It does not define a
+credential-submission HTTP route, dealing API, orders, positions, or LIVE operations.
+The contract marks the per-process Bearer capability and native request-context
+requirements for every broker-sensitive operation.
+
 ## Managed broker-session IPC
 
 The backend is the single owner of Capital.com DEMO credentials, REST session tokens, keepalive, and streaming connection information.
