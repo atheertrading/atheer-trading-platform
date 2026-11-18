@@ -27,17 +27,21 @@ final class BackendRuntimeViewModel: ObservableObject {
     @Published private(set) var marketSearchClient: MarketSearchClient?
 
     let healthModel: BackendHealthViewModel
+    let brokerManagementModel: BrokerManagementViewModel
     private let supervisor: BackendProcessManaging
 
     init(
         supervisor: BackendProcessManaging = BackendProcessSupervisor(),
-        healthModel: BackendHealthViewModel = BackendHealthViewModel()
+        healthModel: BackendHealthViewModel = BackendHealthViewModel(),
+        brokerManagementModel: BrokerManagementViewModel = BrokerManagementViewModel()
     ) {
         self.supervisor = supervisor
         self.healthModel = healthModel
+        self.brokerManagementModel = brokerManagementModel
         self.supervisor.onUnexpectedTermination = { [weak self] message in
             self?.marketSearchClient = nil
             self?.healthModel.setUnavailable(message)
+            self?.brokerManagementModel.backendUnavailable(message)
             self?.state = .failed(message)
         }
     }
@@ -50,12 +54,16 @@ final class BackendRuntimeViewModel: ObservableObject {
             healthModel.configure(
                 client: URLSessionBackendHealthClient(baseURL: connection.baseURL)
             )
+            brokerManagementModel.configure(
+                authentication: BackendBrokerAuthenticationService(connection: connection)
+            )
             marketSearchClient = URLSessionMarketSearchClient(connection: connection)
             await healthModel.refresh()
             state = .ready
         } catch {
             marketSearchClient = nil
             healthModel.setUnavailable(error.localizedDescription)
+            brokerManagementModel.backendUnavailable(error.localizedDescription)
             state = .failed(error.localizedDescription)
         }
     }
@@ -64,6 +72,7 @@ final class BackendRuntimeViewModel: ObservableObject {
         supervisor.stop()
         marketSearchClient = nil
         healthModel.setUnavailable("The managed backend process has stopped.")
+        brokerManagementModel.backendUnavailable("The managed backend process has stopped.")
         state = .stopped
     }
 }
