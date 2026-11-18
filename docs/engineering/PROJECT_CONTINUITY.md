@@ -659,3 +659,10 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No broker credential, account, order, position, dealing, RiskEngine, OMS dispatcher, Execution Gateway, SIMULATION, BACKTEST or LIVE capability was added. `CAP_ALLOW_TRADING=false` remains unchanged.
 - No local owner-Mac pull, build, runtime, Keychain or authenticated DEMO acceptance is claimed.
 
+### Batch 065 — OpenAPI source integrity correction (2026-11-18)
+
+- Final audit discovered repeated root `components:` sections caused by successive OpenAPI file updates. Normalized `services/api/openapi.yaml` to a single root document with exactly one `openapi`, `info`, `servers`, `tags`, `paths` and `components` key.
+- Verified one occurrence of each of the seven implemented route paths, eight unique schemas, two reusable responses, and all 33 internal component references resolve. Corrected EPIC pattern is `^[A-Za-z0-9_.-]{1,64}$`.
+- Strengthened `openapi-contract.test.mjs` to fail on duplicate root sections and corrected newline splitting in the test. This is deterministic source-level structure checking, not external parser qualification.
+- Exact-head status before this addendum: Backend Toolchain and Repository Hygiene passed; Local Sync Safety passed; Intel and Apple Silicon jobs queued; CodeQL workflow in progress. The new addendum advances the branch again, so the final PR head needs its own exact checks.
+
