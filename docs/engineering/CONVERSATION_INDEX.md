@@ -111,3 +111,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-19-003 | 2026-11-19 | Team A source-verified UI baseline audit | Audited current main and UI feature ancestry, actual four-destination navigation, implemented design/workspace/client foundations, test inventory and incomplete product screens; identified overlapping Command Center / app-composition files in the separate PR #70 → #83 chart/market stack and recorded the required preservation-first integration gate. | ATP-UI-BASELINE-001; UI_FRONTEND_BASELINE_AUDIT_2026-11-19; PR #69/#70/#73/#80/#83/#85/#89/#90/#91; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER |
+
+
+| ATP-2026-11-19-004 | 2026-11-19 | Workspace deletion lifecycle and profile-reference repair | Added the missing workspace-delete operation with per-profile last-workspace protection, active selection recovery, atomic snapshot validation, persisted confirmation UI and isolated XCTest coverage. Exact-head CI and owner-Mac interaction checks pending. | ATP-UI-WORKSPACE-DELETE-001; WorkspaceEngine.swift; WorkspacePanelManagementView.swift; WorkspaceLifecycleTests.swift; SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE; TASK_REGISTER; IMPLEMENTATION_STATUS |

@@ -491,3 +491,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - The current UI feature chain has four actual app destinations; the 12 PR #90 SVG compositions are design-review artifacts, not 12 completed SwiftUI screens.
 - The Command Center backend-status slice is implemented on PR #91; exact-head CI and owner-Mac qualification remain pending.
 - PR #70 / #83 form a separate chart/market-data chain and overlap the same three app-shell files as PR #91. Integration must be source-reviewed and history-preserving.
+
+
+## ATP-UI-WORKSPACE-DELETE-001 — Workspace deletion lifecycle
+
+**Status:** Implemented on child branch; exact-head qualification pending.
+
+- `WorkspaceEngine.deleteWorkspace(_:)` validates profile references before state mutation, repairs active selections, persists the updated snapshot and rejects deletion if any referencing profile would become empty.
+- `WorkspacePanelManagementView` exposes a destructive confirmation and disables the action when the invariant fails.
+- Four isolated XCTest methods cover normal delete/persist, last-workspace rejection, shared-profile repair and atomic rejection.
+- Branch `feat/ui-workspace-lifecycle-delete` is stacked on PR #91. Owner-Mac UI interaction and multi-profile restoration remain pending.
