@@ -1,0 +1,27 @@
+flowchart LR
+  Shell["ContentView — app-scoped composition"]
+  Model["MarketExplorerViewModel"]
+  Store["MarketWatchlistStore — versioned UserDefaults"]
+  Backend["Backend DEMO REST status + instrument search"]
+  Stream["Backend SSE — timestamped Capital.com DEMO quotes"]
+  Explorer["Market Explorer screen"]
+  Command["Command Center"]
+  Panel["Market Watch panel"]
+  Workspace["WorkspaceEngine — panel visibility/layout"]
+  Broker["Broker account/session state — separate"]
+  Trading["Trading gate — disabled"]
+
+  Shell --> Model
+  Shell --> Store
+  Shell --> Explorer
+  Shell --> Command
+  Explorer --> Model
+  Explorer --> Store
+  Command --> Panel
+  Panel --> Model
+  Panel --> Store
+  Model --> Backend
+  Model --> Stream
+  Workspace -. "presentation only; does not own stream lifecycle" .-> Panel
+  Broker -. "independent state" .-> Command
+  Trading -. "no dealing capability exposed" .-> Panel
