@@ -196,7 +196,7 @@ struct BrokerManagementView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Connection and permissions are separate", systemImage: "lock.shield")
                 .font(.system(size: 12, weight: .semibold))
-            Text("This DEMO-only connection sends credentials to the managed backend over authenticated loopback IPC and creates a Capital.com DEMO session. The screen displays sanitized backend session state; it does not currently retrieve or display broker account details. ATHEER does not submit orders, modify positions, enable trading, or connect to a LIVE endpoint from this screen. Market-data streaming is not established by REST authentication.")
+            Text("Capital.com API keys carry provider-level trading privileges; read-only API keys are not available. Enable 2FA before generating a key and use a DEMO key. ATHEER stores credentials in macOS Keychain and sends them to the managed backend over authenticated loopback IPC. The backend currently exposes session and read-only market-data operations only: no order, position, or dealing routes are implemented, LIVE is disabled, and trading remains disabled. This screen displays sanitized session state, not broker account details. REST authentication does not itself establish a WebSocket market-data subscription.")
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
