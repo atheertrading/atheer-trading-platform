@@ -213,3 +213,13 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Consequences:** The Command Center's hard-coded market-data unavailable tile is replaced by actual backend/stream state. The Market Watch panel is now an integrated read-only workflow, not a placeholder. Chart, order entry, positions, account, risk, and analytics remain separate implementation increments.
 - **Evidence:** PR #43, `ATP_MARKET_WATCH_WORKSPACE_INTEGRATION.md`, `SCREEN_IMPLEMENTATION_REGISTER.md`, Mermaid diagram 14, and Swift tests.
 - **Safety:** No broker dealing or order workflow is exposed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## EDL-015 — Historical chart presentation consumes normalized Bid/Ask candle contracts
+
+- Date: 2026-11-18
+- Status: Accepted bounded engineering decision under delegated authority; exact-head CI and owner-Mac visual qualification pending.
+- Decision: The native charting surface consumes the existing backend-normalized historical candle contract through an injected MarketHistoryClient. Bid and Ask OHLC remain independent series; the user selects which side is rendered. The application must not synthesize mid-price candles or reinterpret lastTradedVolume as exchange volume.
+- State ownership: One app-scoped MarketChartViewModel is shared by the Charts & Analysis destination and the Command Center chart panel. The chart selection is constrained to the persistent Market Watch list.
+- Validation: Provider, DEMO environment, instrument, resolution, timestamp ordering, finite positive prices, OHLC consistency, Bid/Ask non-crossing, duplicate metadata and provider-volume lineage are validated before rendering.
+- Boundary: This increment is historical and read-only. Live candle aggregation, indicators, drawings, strategy synchronization, order entry and broker dealing are not included. All future financial actions remain governed by RiskEngine → OMS → Execution Gateway. CAP_ALLOW_TRADING=false remains unchanged.

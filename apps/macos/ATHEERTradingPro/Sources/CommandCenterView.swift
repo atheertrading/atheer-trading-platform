@@ -6,6 +6,7 @@ struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     @ObservedObject var marketExplorerModel: MarketExplorerViewModel
     @ObservedObject var marketWatchlistStore: MarketWatchlistStore
+    @ObservedObject var marketChartModel: MarketChartViewModel
     let onOpenMarkets: () -> Void
     let onOpenAPIConnection: () -> Void
 
@@ -198,50 +199,27 @@ struct CommandCenterView: View {
     private var chartPanel: some View {
         CommandCenterPanel(
             title: "Chart Workspace",
-            subtitle: "Price action · Technical analysis",
+            subtitle: "Historical price action · Provider-normalized OHLC",
             symbol: "chart.xyaxis.line",
-            status: "NO MARKET SERIES",
-            statusColor: ATHEERDesignTokens.ColorRole.attention,
-            minHeight: 438
+            status: marketChartModel.state.statusTitle,
+            statusColor: chartStatusColor,
+            minHeight: 500
         ) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Label("Instrument", systemImage: "waveform.path")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("Awaiting market-data source")
-                        .font(ATHEERDesignTokens.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.bottom, 14)
+            MarketChartSurfaceView(
+                model: marketChartModel,
+                watchlistStore: marketWatchlistStore,
+                onOpenMarkets: onOpenMarkets,
+                compact: true
+            )
+        }
+    }
 
-                Rectangle()
-                    .fill(ATHEERDesignTokens.ColorRole.separator)
-                    .frame(height: 1)
-
-                VStack(spacing: 12) {
-                    Image(systemName: "chart.xyaxis.line")
-                        .font(.system(size: 34, weight: .light))
-                        .foregroundColor(ATHEERDesignTokens.ColorRole.accent.opacity(0.75))
-
-                    Text("Chart data is not available")
-                        .font(.system(size: 15, weight: .semibold))
-
-                    Text("Connect a market-data provider to load instruments, timestamped candles, indicators and drawing tools. No sample prices are displayed.")
-                        .font(ATHEERDesignTokens.Typography.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 430)
-
-                    Text("NO SERIES · NO SYNTHETIC DATA")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .tracking(0.8)
-                        .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
-                        .padding(.top, 4)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(24)
-            }
+    private var chartStatusColor: Color {
+        switch marketChartModel.state {
+        case .loaded: return ATHEERDesignTokens.ColorRole.success
+        case .loading: return ATHEERDesignTokens.ColorRole.teal
+        case .unavailable, .failed: return ATHEERDesignTokens.ColorRole.attention
+        case .idle, .empty: return .secondary
         }
     }
 

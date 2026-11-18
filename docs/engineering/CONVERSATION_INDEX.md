@@ -117,3 +117,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-033 | 2026-11-18 | ATP-MARKET-001 Command Center live Market Watch | Inspected ATP-PROMPT-SCREEN-EXEC-001 and Master Visual Design Directive; integrated app-scoped market data and persistent watchlist into Command Center, shared model across Markets/Workspace, added provider-backed quote panel and tests; exact-head CI pending. | PR branch `feat/command-center-live-market-watch`; ATP_MARKET_WATCH_WORKSPACE_INTEGRATION; Screen Implementation Register; Mermaid 14; EDL-014; TASK_REGISTER; IMPLEMENTATION_STATUS |
+
+
+| ATP-2026-11-18-034 | 2026-11-18 | ATP-CHART-001 historical Chart Workspace | Implemented the provider-backed historical chart vertical slice on a branch stacked on PR #43: strict historical payload/OHLC validation, shared app-scoped chart state, native Bid/Ask candlestick rendering, timeframe/watchlist selection, Command Center integration, Charts & Analysis navigation, deterministic tests, architecture note and Mermaid diagram 15. Exact-head hosted CI and owner-Mac runtime/visual qualification remain pending. | PR #44; ATP_HISTORICAL_CHART_WORKSPACE; Mermaid 15; EDL-015; TASK_REGISTER; IMPLEMENTATION_STATUS; SCREEN_IMPLEMENTATION_REGISTER; PROJECT_CONTINUITY |

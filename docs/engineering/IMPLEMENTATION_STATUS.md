@@ -574,3 +574,28 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - PR #43 exact-head CI is pending; no build or XCTest pass is claimed until the current head completes both Intel x86_64 and Apple Silicon arm64 jobs.
 - Owner-side Mac runtime, Keychain, VoiceOver, resize, and multi-display visual acceptance remain unverified.
 - `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## ATP-CHART-001 — Historical Chart Workspace (PR #44)
+
+**Screen ID:** SCR-CHART-001  
+**Branch:** feat/historical-chart-workspace  
+**Parent:** PR #43 exact head 0234c60e6d5241ef36632c78e53beeba71150917
+
+| Capability | Status | Evidence / limitation |
+|---|---|---|
+| Historical market-data client | IMPLEMENTED; CI PENDING | Typed MarketHistoryClient consumes the existing backend /market-data/history contract |
+| Payload and OHLC validation | IMPLEMENTED; CI PENDING | Provider/environment/instrument/timeframe checks, finite positive values, OHLC integrity, Bid/Ask non-crossing, timestamp ordering |
+| Native candlestick rendering | IMPLEMENTED; CI PENDING | Swift Charts renders provider Bid or Ask OHLC independently; no synthetic mid series |
+| Shared Command Center chart | IMPLEMENTED; CI PENDING | App-scoped MarketChartViewModel injected into Command Center and Charts & Analysis |
+| Watchlist and timeframe controls | IMPLEMENTED; CI PENDING | Instrument selection restricted to persistent watchlist; provider-supported resolutions |
+| Live candle aggregation | NOT IMPLEMENTED | Requires a separate normalized candle aggregation contract and ordering/finality policy |
+| Indicators and drawing tools | NOT IMPLEMENTED | Separate deterministic analytical and presentation increments |
+| Execution and risk actions | NOT IMPLEMENTED | No chart-to-order side effects; centralized risk/OMS/gateway remain mandatory |
+
+### Verification boundary
+
+- Deterministic tests are added for provider provenance, Bid/Ask integrity, invalid OHLC, watchlist selection, series clearing, and shared screen construction.
+- Hosted Intel x86_64 and Apple Silicon arm64 CI must pass on the exact PR #44 head.
+- No local Mac build, runtime, visual/accessibility QA, or authenticated Capital.com DEMO history request is claimed until separately evidenced.
+- CAP_ALLOW_TRADING=false remains unchanged.

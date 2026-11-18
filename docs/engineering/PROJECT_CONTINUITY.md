@@ -811,3 +811,15 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - `32f1260`: Bid and Ask freshness coloring now consistently reflects stale vs fresh provider quote state.
 - `42ee04d`: verified final row removal/unsubscribe behavior and moved reorder actions to the row context menu.
 - These changes advance the current code head to `42ee04d878f0554f17bef54a5abfd688ffe9a016`. Previous CI results on `15474ec...` do not qualify this final code head; exact-head CI must be refreshed.
+
+
+## 2026-11-18 — Session 034: ATP-CHART-001 Historical Chart Workspace
+
+- Verified active repository atheertrading/atheer-trading-platform, default branch main, and the current open stacked PR dependency chain through PR #43.
+- PR #43 exact parent head at branch creation: 0234c60e6d5241ef36632c78e53beeba71150917. PR #43 remains OPEN / DRAFT; Apple Silicon, backend, repository hygiene and Mermaid checks passed on its exact head; Intel x86_64 was in progress.
+- Created branch feat/historical-chart-workspace directly from the exact PR #43 head.
+- Implemented the native historical chart vertical slice: typed history client, strict provider/OHLC decoder, app-scoped chart view model, Swift Charts candlestick view, shared Command Center chart panel, and Charts & Analysis navigation.
+- Added deterministic chart decoder/model/view tests, architecture note, Mermaid diagram 15, and updated task/status/screen/decision/continuity records.
+- Historical Bid and Ask OHLC are kept separate; provider and receipt timestamps remain distinct; no synthetic mid candles or volume interpretation are introduced.
+- Charting remains read-only. No order entry, broker dealing, strategy execution, or risk-policy mutation is included. CAP_ALLOW_TRADING=false remains unchanged.
+- Exact PR #44 CI is pending. Owner-local Xcode build/runtime, visual/accessibility QA, and real authenticated Capital.com DEMO history request are not claimed.

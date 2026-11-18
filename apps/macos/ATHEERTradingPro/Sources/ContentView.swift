@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var backendHealthModel = BackendHealthViewModel()
     @StateObject private var marketExplorerModel = MarketExplorerViewModel()
     @StateObject private var marketWatchlistStore = MarketWatchlistStore()
+    @StateObject private var marketChartModel = MarketChartViewModel()
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
 
@@ -44,6 +45,10 @@ struct ContentView: View {
                         Label(AppSection.markets.title, systemImage: AppSection.markets.systemImage)
                             .tag(AppSection.markets)
                     }
+                    Section("ANALYSIS") {
+                        Label(AppSection.charts.title, systemImage: AppSection.charts.systemImage)
+                            .tag(AppSection.charts)
+                    }
                     Section("SYSTEM") {
                         Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
                             .tag(AppSection.apiConnection)
@@ -65,6 +70,7 @@ struct ContentView: View {
                         backendHealthModel: backendHealthModel,
                         marketExplorerModel: marketExplorerModel,
                         marketWatchlistStore: marketWatchlistStore,
+                        marketChartModel: marketChartModel,
                         onOpenMarkets: { selection = .markets },
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
@@ -73,6 +79,12 @@ struct ContentView: View {
                         model: marketExplorerModel,
                         watchlistStore: marketWatchlistStore,
                         onOpenAPIConnection: { selection = .apiConnection }
+                    )
+                case .charts:
+                    ChartWorkspaceView(
+                        model: marketChartModel,
+                        watchlistStore: marketWatchlistStore,
+                        onOpenMarkets: { selection = .markets }
                     )
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
