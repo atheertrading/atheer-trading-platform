@@ -57,7 +57,9 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
             credentials: nil
         )
         let response = try await send(request)
-        guard response.ok else {
+        guard response.ok,
+              let status = response.status,
+              status.state == "disconnected" || status.state == "not_configured" else {
             throw BrokerCredentialIPCError.requestRejected(response.errorCode ?? "broker_session_disconnect_failed")
         }
     }
