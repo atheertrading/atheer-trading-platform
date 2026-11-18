@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 API_DIR="$ROOT/services/api"
 BUILD_DIR="$ROOT/.build"
+CAPABILITY_DIR=""
 CAPABILITY_FILE=""
 
 [[ -x "$API_DIR/node_modules/.bin/tsc" ]] || {
@@ -12,14 +13,15 @@ CAPABILITY_FILE=""
 }
 
 mkdir -p "$BUILD_DIR"
-chmod 700 "$BUILD_DIR"
 umask 077
-CAPABILITY_FILE="$(mktemp "$BUILD_DIR/backend-ipc-capability.XXXXXX")"
+CAPABILITY_DIR="$(mktemp -d "$BUILD_DIR/backend-dev.XXXXXX")"
+chmod 700 "$CAPABILITY_DIR"
+CAPABILITY_FILE="$CAPABILITY_DIR/ipc-capability"
 node --input-type=module -e 'import { randomBytes } from "node:crypto"; process.stdout.write(randomBytes(32).toString("base64url"))' > "$CAPABILITY_FILE"
 chmod 600 "$CAPABILITY_FILE"
 
 cleanup() {
-  rm -f "$CAPABILITY_FILE"
+  rm -rf "$CAPABILITY_DIR"
 }
 trap cleanup EXIT INT TERM
 
