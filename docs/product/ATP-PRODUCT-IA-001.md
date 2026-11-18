@@ -27,7 +27,7 @@ Only implemented destinations are exposed in navigation. A module is not added t
 | Module | Purpose and primary workflow | Principal data dependencies | Required safety and state semantics | Current implementation |
 |---|---|---|---|---|
 | Dashboard | Summarize operational readiness and the trader's current market/account/risk context; route to actionable modules | Market freshness, broker/account state, positions, risk, strategies, activity, service health | Distinguish unavailable, stale, disconnected, not-ready, and disabled states; never synthesize financial values | Not implemented as a separate module |
-| Markets | Discover instruments, manage watchlists, inspect quotes and market sessions | Instrument registry/specifications, broker catalogue, normalized quotes, timestamps, freshness and stream health | Show source and timestamp; stale or missing data must not appear current | Market Watch panel exists as an unavailable state only |
+| Markets | Discover instruments, manage watchlists, inspect quotes and market sessions | Instrument registry/specifications, broker catalogue, normalized quotes, timestamps, freshness and stream health | Show source and timestamp; stale or missing data must not appear current | Market Explorer / Instrument Search is implemented on feat/macos-market-explorer using read-only Capital.com DEMO REST search; streaming quotes, watchlists and charting remain unavailable |
 | Charts | Inspect price history and live series with technical analysis and drawing tools | Validated historical/live market series, instrument metadata, session/timezone context, indicator calculations | No invented candles or prices; show gaps, stale streams and unavailable history explicitly | Chart Workspace panel exists as an unavailable state only |
 | Trading | Prepare discretionary order intents and review validation/risk outcomes | Instrument/account identity, quote snapshot, order-intent contract, risk authorization, OMS state | No direct broker dealing; all future intents must use RiskEngine → OMS → Execution Gateway | Not implemented; no order controls |
 | Positions | Monitor broker-confirmed open positions, exposure and lifecycle | Broker-confirmed positions, executions/fills, account and instrument metadata, reconciliation | Broker is authoritative; distinguish requested, acknowledged, filled and reconciled states | Account & Risk panel reports account unavailable |
@@ -99,3 +99,12 @@ Open items:
 3. Reconcile panel docking/resizing/persistence semantics.
 4. Finalize IPDS v1.0 token/component/accessibility contracts.
 5. Define per-module service contracts and detailed interaction states before implementing their navigation destinations.
+
+
+## 4. Market Explorer implementation update — 2026-11-17
+
+Screen ID ATP-SCR-MKT-001 is implemented on the stacked feature branch feat/macos-market-explorer. It adds a Markets navigation destination, backend DEMO REST session status, read-only instrument catalogue search, provider/environment validation, and explicit unavailable/empty/error states.
+
+This screen does not establish streaming, live quotes, watchlists, charting, trading, or order execution. The app's native Keychain broker session in PR #26 is not automatically shared with the backend environment-configured session in PR #25. See ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md for the screen contract and remaining acceptance gates.
+
+The feature branch is stacked on PR #26 and is not yet integrated into the default branch. Its implementation status must not be treated as accepted until exact-head CI and owner-Mac verification are complete.

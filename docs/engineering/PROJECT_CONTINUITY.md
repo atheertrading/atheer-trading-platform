@@ -556,3 +556,71 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` additionally defers the always-visible ContentView navigation List selection update, covering both the navigation sidebar and panel-manager List mutation paths. The NSTableView warning's exact runtime origin remains unconfirmed until owner-Mac rerun.
+
+## ATP-2026-11-17-021 — Master Screen Execution Prompt and Market Explorer
+
+- Published the reusable English prompt at docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md (ATP-PROMPT-SCREEN-EXEC-001).
+- The owner-provided Library URL for “Screen Implementation, Application Development & Professional Trading Workstation” is recorded in the prompt. The exact Library item was not resolved through the accessible Library index/search during this session; its content is not claimed as inspected.
+- Created feat/macos-market-explorer from exact PR #26 head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f. PR #24, #25, and #26 were not modified.
+- Implemented ATP-SCR-MKT-001: native Markets navigation and Market Explorer / Instrument Search; typed read-only backend market-data status/search client; DEMO/provider validation; session-gated search; explicit streaming-not-connected and trading-disabled state; and deterministic XCTest source cases.
+- Added docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md and updated ATP-PRODUCT-IA-001, TASK_REGISTER, IMPLEMENTATION_STATUS, and MASTER_DOCUMENT_REGISTRY.
+- Critical integration gap: PR #26 native Keychain credentials/session are not automatically shared with PR #25 backend environment credentials/session. Market Explorer reports the backend status independently and does not claim native credentials enable backend search.
+- No quote/candle/account/order/position/P&L data is fabricated. Untimestamped bid/offer fields are not displayed. No streaming, charts, trading, or dealing capability is added.
+- Source and tests are committed, but exact-head CI and owner-Mac build/runtime/visual/accessibility verification are pending. Real Capital.com DEMO authentication/search was not attempted.
+- ChatGPT Memory cannot be synchronously written by the assistant. The durable English prompt is committed in GitHub and remains active in the current conversation context.
+- Session report: docs/engineering/SESSION_2026-11-17_021_MARKET_EXPLORER_IMPLEMENTATION.md.
+- PR #31 is OPEN / DRAFT, based on PR #26 exact head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f; feature head at PR creation was 94766cfe98ff3238e3c42d0560335d45395df163.
+- Initial exact-head CI #44159176929: Repository Hygiene and Backend Toolchain passed; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44159176655 passed. These results apply only to that recorded SHA.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+- Created `fix/market-explorer-search-lifecycle` from PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; parent PR #31 and its branch were not modified.
+- Hardened the existing Market Explorer search lifecycle: monotonically increasing request generations suppress stale/out-of-order search results; query edits invalidate prior searches and clear obsolete results; status refresh generations suppress stale status responses; non-connected status invalidates in-flight search.
+- Aligned search-button eligibility with the 1–100 character request contract and added an accessible query-length counter.
+- Added deterministic XCTest source coverage for overlong query rejection and out-of-order response suppression.
+- Session report: `SESSION_2026-11-17_022_MARKET_EXPLORER_SEARCH_LIFECYCLE.md`.
+- Implementation is committed on the new focused branch. CI, local Xcode, owner-Mac runtime, visual, keyboard/focus, and VoiceOver verification are pending; no test pass is claimed.
+- Market Explorer remains read-only DEMO instrument metadata search. No live quotes, streaming, candles, charts, order/dealing operations, account values, positions, or fills were added. Native Keychain and backend DEMO session remain separate.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No RiskEngine/OMS/Execution Gateway, broker permission, credential, LIVE, or production behavior changed.
+
+
+- Follow-up PR #33: [Market Explorer search lifecycle hardening](https://github.com/atheertrading/atheer-trading-platform/pull/33), OPEN / DRAFT; branch `fix/market-explorer-search-lifecycle`; exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`; 9 ahead / 0 behind.
+- PR #33 CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS pass is claimed.
+
+
+## 2026-11-18 — ATP-UI-ARCH-001A Market Explorer boundary separation
+
+- Reviewed PR #33 current head `32a8cb90112011dcc07c149410cea432656a0a92` and found provider Decodable models exposed directly to the ViewModel/UI, the ViewModel constructing its own concrete HTTP client, and infrastructure/VM code combined in one source file.
+- Refactored the feature on `fix/market-explorer-search-lifecycle`: provider DTOs are private to the adapter; semantic models live in `MarketSearchModels.swift`; `MarketExplorerViewModel.swift` is separate; the ViewModel requires an injected `MarketSearchClient`; ContentView selects the production adapter.
+- Updated the view and tests to use semantic models; added unknown backend-state rejection coverage. Existing stale-search generation, 100-character limit, DEMO validation and disconnected-session gating remain.
+- Code/test commits: `448fc017`, `a4ea2355`, `e3cf9c04`, `65b53535`, `4b19bc34`, `82d67fde`.
+- The current PR #33 head includes PR #26 current head `69b15098e879be362926df1630c58cb3f1cd62fd` as an ancestor (comparison: 41 ahead / 0 behind), despite stale PR description metadata.
+- Exact-head CI for the refactored head is pending. No owner-Mac runtime/visual acceptance is claimed.
+
+
+### ATP-UI-ARCH-001A — shared transport and HTTP-contract test extension
+
+- Extracted `URLSessionRequestExecutor` from the broker-management file into shared `Sources/Services/URLSessionRequestExecutor.swift`; both CapitalComAuthenticationService and Market Search now use the same immutable-session executor.
+- Market Search uses an ephemeral session with cookie persistence and URL caching disabled.
+- Added deterministic URLProtocol contract tests for GET /market-data/status, GET /market-data/markets, encoded searchTerm, Cache-Control no-store, 503 backend-not-connected, 500 unexpected status, and transport failure → backendUnavailable.
+- Added commits `5c1ae728`, `a0f28db8`, `834afa04`, `a310237f`, `ea1b16f8`, `0201e059`.
+- Exact-head CI pending.
+
+
+## 2026-11-18 — PR #24 / #25 / #26 integration
+
+- PR #24 merged to `main` at `bd83fd3c8df481104c347f05d9d4f38537d8b011`.
+- PR #25 merged to `main` at `6b570b8c5a3367784cde7fa2643593c5b5a1eda2`.
+- PR #26 merged to `main` at `6b4668b9355178d5e13219f14cfe8cc847770915` using a normal history-preserving merge.
+- PR #26 exact-head CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain and Repository Hygiene. Dedicated CodeQL run `44231098441` and Local Sync Safety run `44231098576` passed.
+- This supersedes older continuity statements that PR #24/#25/#26 remained OPEN / DRAFT.
+- The merged broker-management foundation remains DEMO-only and read-only. Owner-Mac Keychain restart/runtime qualification and real DEMO authentication remain pending; no LIVE or dealing capability was enabled.
+- PR #33 has been retargeted to `main` after the PR #26 merge. Current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; its exact-head CI is running.
+
+
+### ATP-SEC-001A cross-PR integration
+
+- Native Market Search in PR #33 sends `X-ATHEER-LOCAL-CLIENT: macOS`.
+- Dependent PR #37 enforces the marker and rejects browser Origin / cross-site Fetch Metadata.
+- Integrate PR #33 before PR #37. The marker is not a secret and does not authenticate arbitrary local processes.

@@ -125,3 +125,11 @@ These repository-authored artifacts are not represented as original source docum
 |---|---|---|
 | ATP-API-002 | Local API Health Contract | Accepted bounded local-development health contract; does not settle general business API transport, authentication, or persistence architecture |
 | ATP-OPS-001 | Non-Destructive Local Synchronization | Implemented and tested in isolated Git repositories; actual Mac execution remains pending |
+
+## 7. Screen implementation and workstation execution references
+
+| Document ID | Repository document | Status and scope |
+|---|---|---|
+| ATP-PROMPT-SCREEN-EXEC-001 | docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md | Reusable English ChatGPT execution prompt for native screen implementation, application development, and professional trading workstation engineering; published on feat/macos-market-explorer |
+| ATP-SCR-INVENTORY-001 | docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md | Incremental screen/workflow inventory; ATP-SCR-MKT-001 registered as implemented on a feature branch, verification pending |
+| ATP-SCR-MKT-001 | Market Explorer / Instrument Search | Native Markets screen; DEMO REST catalogue search only; PR review and exact-head/local qualification pending |

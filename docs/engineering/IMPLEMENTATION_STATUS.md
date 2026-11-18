@@ -341,3 +341,88 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` defers the always-visible navigation sidebar List selection state update as an additional AppKit reentrancy safeguard. This is source-level mitigation; owner runtime confirmation remains pending.
+
+## ATP-SCR-MKT-001 — Market Explorer / Instrument Search — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FEATURE BRANCH  
+**Verification status:** PENDING  
+**Branch:** feat/macos-market-explorer  
+**Dependency chain:** PR #24 → PR #25 → PR #26 → Market Explorer feature branch
+
+- Added a Markets navigation destination and native Market Explorer screen.
+- Added typed backend market-data status and instrument-search contracts with provider/environment validation.
+- Search is gated on backend Capital.com DEMO REST session state being connected.
+- The screen explicitly distinguishes REST session, market streaming (not connected), and trading (disabled).
+- Only instrument metadata is rendered. Untimestamped bid/offer fields are omitted.
+- Five deterministic XCTest cases cover status and market payload decoding, LIVE/invalid payload rejection, disconnected-session gating, and connected search results.
+- Native Keychain broker credentials from PR #26 and backend environment credentials/session from PR #25 remain separate. No secure credential/session bridge is implemented.
+- Exact-head hosted CI, owner-Mac build/XCTest, app runtime, visual QA, accessibility, and real DEMO provider verification remain pending.
+- No streaming, charts, watchlists, orders, dealing, risk mutation, LIVE capability, or production readiness is claimed.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING  
+**Branch:** `fix/market-explorer-search-lifecycle`  
+**Base:** PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`
+
+- Search and backend-status requests use generation tracking to ignore stale completions.
+- Editing the search query invalidates the previous request and clears obsolete result state; unavailable status is retained.
+- Search eligibility and request validation both enforce 1–100 characters; the existing search UI shows an accessible length counter.
+- Added XCTest source coverage for overlong query rejection and out-of-order response handling.
+- CI and owner-Mac verification remain pending. No compilation/test success is claimed.
+- No new screen, streaming, chart, dealing, LIVE, or risk-control functionality was added.
+
+
+- PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
+- Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS build or XCTest result is yet available.
+
+
+## ATP-UI-ARCH-001A — Market Explorer boundary separation — 2026-11-18
+
+- Replaced provider-facing `MarketSearchInstrument` and Decodable status models in the presentation path with provider-independent `MarketInstrumentSummary` and `MarketDataBackendStatus`.
+- Provider response DTOs are now private to `MarketSearchClient.swift`; the adapter maps DTOs into semantic models.
+- Moved `MarketExplorerViewModel` into its own source file and removed its default concrete HTTP-client construction.
+- `ContentView` now selects `URLSessionMarketSearchClient` at the composition root and injects the protocol into Market Explorer.
+- Added an unknown backend-state rejection test and migrated search lifecycle tests to semantic models.
+- Code commits: `448fc017d8729fe047a6437f0f9c77bb81b53063`, `a4ea2355a7865eec3284605e0a1a4097ef954ded`, `e3cf9c04bb27bd7c3311ce04825a99688514afd5`, `65b53535304117aff11f71aa7f83bd89c5636c43`, `4b19bc34fbb7599f42673303a08b4a7ab53e6001`, `82d67fde50d56bad020e51d455b653e6901c6237`.
+- Exact-head hosted CI is pending. No local Mac/Xcode run is claimed for the refactor.
+
+
+### ATP-UI-ARCH-001A transport and HTTP-contract completion
+
+- Extracted the immutable-session `URLSessionRequestExecutor` into shared infrastructure and changed Capital.com authentication and Market Explorer to use it, explicitly passing `delegate: nil` to avoid Swift 5.8 actor-boundary Sendable diagnostics.
+- Market Explorer now defaults to an ephemeral URLSession with cookie storage and URL cache disabled.
+- Added URLProtocol-backed HTTP contract tests for GET status endpoint, GET markets endpoint, encoded searchTerm, no-store headers, DEMO status mapping, 503/500 mapping, and transport-failure mapping.
+- Exact-head hosted CI remains pending.
+
+
+## Integration checkpoint — 2026-11-18
+
+### Merged foundations
+
+- PR #24 Workspace / Command Center: merged as `bd83fd3c8df481104c347f05d9d4f38537d8b011`.
+- PR #25 Capital.com DEMO market-data foundation: merged as `6b570b8c5a3367784cde7fa2643593c5b5a1eda2`.
+- PR #26 secure Capital.com DEMO broker management: merged as `6b4668b9355178d5e13219f14cfe8cc847770915`.
+- PR #26 exact-head hosted CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain and Repository Hygiene. Dedicated CodeQL and Local Sync Safety also passed.
+
+### Remaining broker acceptance
+
+- Broker management is integrated in `main`, but `ATP-BROKER-001` is not production/DEMO-runtime complete.
+- Owner-Mac Keychain restart/persistence and UI runtime acceptance on the merged head remain pending.
+- Real Capital.com DEMO credentials have not been entered or authenticated in this session.
+- LIVE authentication, dealing, and order execution remain disabled.
+
+### Market Explorer
+
+- PR #33 retargeted to `main` after PR #26 merge.
+- Current exact head: `8885fd6f43098421973d098b2cd3d94a8e7545e3`.
+- Architecture boundary refactor, shared URLSession executor and HTTP-contract tests are implemented; exact-head CI is running.
+
+
+### ATP-SEC-001A — Native Market Search client marker
+
+- PR #33 now sends `X-ATHEER-LOCAL-CLIENT: macOS` on both backend status and market search GET requests.
+- Server-side rejection of missing markers, browser Origin and cross-site Fetch Metadata is implemented in dependent PR #37.
+- The client/server contract is not considered complete until both PRs are integrated and exact-head CI passes.

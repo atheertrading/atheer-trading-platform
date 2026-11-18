@@ -260,3 +260,78 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 
 
 - Follow-up `f22cac58682910256049541c252b6e54bf17c682` also defers ContentView sidebar selection changes outside the NSTableView delegate callback. The reentrancy warning is not marked resolved until owner-Mac runtime confirms it no longer occurs.
+
+## ATP-MKT-001 — Market Explorer / Instrument Search — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Implement native Market Explorer with provider-backed DEMO instrument search | P1 | IMPLEMENTED ON FEATURE BRANCH — VERIFICATION PENDING | PR #24 Workspace/Command Center; PR #25 Capital.com DEMO market search; PR #26 broker management | Review focused PR; exact-head hygiene/backend/macOS Debug/XCTest/Release/CodeQL checks; owner-Mac build/runtime/visual/accessibility QA |
+
+- Branch: feat/macos-market-explorer, stacked on PR #26 head 9f46a5ce9fc313e73dbff9e78680804c4dd1692f.
+- PR #31: https://github.com/atheertrading/atheer-trading-platform/pull/31 (OPEN / DRAFT; not merged).
+- Initial exact-head CI #44159176929 on 94766cfe98ff3238e3c42d0560335d45395df163: Repository Hygiene and Backend Toolchain passed; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44159176655 passed. Re-run and re-record checks after any new commit.
+- Screen ID: ATP-SCR-MKT-001.
+- Prompt: docs/development/ATHEER_CHATGPT_SCREEN_IMPLEMENTATION_EXECUTION_PROMPT.md.
+- Screen contract: docs/product/ATHEER_SCREEN_AND_WORKFLOW_INVENTORY.md.
+- Search is read-only and requires backend status connected in DEMO. No streaming, quote, chart, order, or trading capability is claimed.
+- Native app Keychain credentials are not automatically transferred to the backend session; secure handoff remains a separate task.
+- No build or XCTest execution is claimed until exact-head CI or owner-Mac evidence is available.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+| Work item | Priority | Status | Dependencies | Acceptance gate |
+|---|---|---|---|---|
+| Prevent stale/out-of-order Market Explorer search responses; align query validation and add deterministic race tests | P1 | IMPLEMENTED ON FOCUSED BRANCH — VERIFICATION PENDING | PR #31 Market Explorer | Exact-head hygiene/backend/macOS Debug/XCTest/Release/CodeQL; owner-Mac runtime, keyboard/focus, visual and VoiceOver QA |
+
+- Branch: `fix/market-explorer-search-lifecycle`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
+- Session report: `SESSION_2026-11-17_022_MARKET_EXPLORER_SEARCH_LIFECYCLE.md`.
+- Added generation guards for search and status requests; query edits invalidate prior responses; search eligibility enforces 1–100 characters; accessible query-length counter added.
+- Added XCTest cases for 101-character query rejection and out-of-order completion.
+- No CI, local build, or runtime result is claimed yet. Follow with HTTP contract tests after this increment is qualified.
+
+
+- Follow-up PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), PR-creation head `a0d6164dbed794cb2d83f211146412bab7a0787f`; latest recorded branch head `2750d272e21c2cb39024f55d016dd178c2bad914`; stacked on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
+- CI run #44170771670 on `2750d272`: Backend Toolchain passed; Repository Hygiene failed on this line due an unmatched Markdown code span; Intel and Apple Silicon macOS jobs were queued. Local Sync Safety #44170771652 passed. The documentation lint defect is corrected in the next commit; macOS verification remains pending.
+- Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. macOS verification remains pending.
+
+## ATP-MKT-002 MainActor build remediation — 2026-11-17
+
+The exact-head Intel macOS CI job for PR #33 failed during Debug compilation on actor-isolated URLSessionMarketSearchClient default arguments in MarketExplorerView and MarketExplorerViewModel. Both now accept optional injected dependencies and construct the default client inside the MainActor-isolated view-model initializer. Requalification on the corrected head is pending; no macOS pass is claimed.
+
+
+## ATP-UI-ARCH-001A — Market Explorer presentation boundary separation
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-UI-ARCH-001A | P1 | Keep provider DTOs in infrastructure, expose semantic market models, separate ViewModel, inject client at composition root | IMPLEMENTED; exact-head CI pending | PR #33; private provider DTOs, semantic model mapping, separate injected ViewModel, shared Sendable URLSession executor, ephemeral no-cookie/no-cache session, URLProtocol endpoint/query/status/transport regression coverage |
+
+Acceptance:
+- SwiftUI and ViewModel consume only provider-independent semantic models.
+- Provider JSON DTOs remain private to the infrastructure adapter.
+- ViewModel requires an injected `MarketSearchClient`; it cannot construct a production URLSession client.
+- The app composition root selects and injects the production adapter.
+- Existing query length, DEMO-only provider validation, disconnected-state gating, and stale-search suppression remain covered by XCTest.
+
+
+## 2026-11-18 integration checkpoint — PR #24 / #25 / #26
+
+| Pull request | Result | Merge commit |
+|---|---|---|
+| #24 — Workspace / Command Center foundation | MERGED 2026-11-18 | `bd83fd3c8df481104c347f05d9d4f38537d8b011` |
+| #25 — Capital.com DEMO market-data foundation | MERGED 2026-11-18 | `6b570b8c5a3367784cde7fa2643593c5b5a1eda2` |
+| #26 — Secure Capital.com DEMO broker management | MERGED 2026-11-18 | `6b4668b9355178d5e13219f14cfe8cc847770915` |
+
+- These merge results supersede older task-register statements that PR #24/#25/#26 remained OPEN / DRAFT.
+- PR #26 exact-head hosted CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain, and Repository Hygiene. Dedicated CodeQL `44231098441` and Local Sync Safety `44231098576` passed.
+- `ATP-BROKER-001` remains IN PROGRESS: owner-Mac Keychain restart/runtime QA on the merged head and real Capital.com DEMO authentication are still outstanding. LIVE/dealing remains disabled.
+- PR #33 is retargeted to `main` after PR #26 merge; current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; exact-head CI is running. Do not merge until Intel/Apple Silicon, backend and hygiene checks pass.
+
+
+## ATP-SEC-001A — Native local API request marker (cross-PR)
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-SEC-001A | P1 | Require native client marker and reject browser-origin access to local market-data routes | IN PROGRESS | PR #33 native Market Search sends `X-ATHEER-LOCAL-CLIENT: macOS`; PR #37 implements server-side Origin/Sec-Fetch-Site enforcement and regression tests. Both PRs must be integrated together. |
+
+The marker is not a secret and does not authenticate arbitrary local processes. It mitigates browser CSRF/cross-origin access only; production still requires a per-launch capability token or authenticated local IPC.

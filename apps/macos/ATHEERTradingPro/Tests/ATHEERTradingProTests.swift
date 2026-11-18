@@ -9,7 +9,7 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
     func testNavigationExposesOnlyImplementedDestinations() {
-        XCTAssertEqual(AppSection.allCases, [.workspace, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
@@ -469,6 +469,292 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(model.lastSuccessfulConnection, account.authenticatedAt)
     }
 
+    func testMarketSearchStatusDecoderAcceptsOnlyCapitalComDemo() throws {
+        let valid = Data("""
+        {"provider":"capital.com","environment":"DEMO","state":"connected"}
+        """.utf8)
+        let status = try MarketSearchPayloadDecoder().decodeStatus(valid)
+        XCTAssertEqual(status.provider, "capital.com")
+        XCTAssertEqual(status.environment, "DEMO")
+        XCTAssertEqual(status.state, .connected)
+
+        let live = Data("""
+        {"provider":"capital.com","environment":"LIVE","state":"connected"}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(live))
+    }
+
+
+    func testMarketSearchStatusDecoderRejectsUnknownBackendState() {
+        let payload = Data("""
+        {"provider":"capital.com","environment":"DEMO","state":"future_state"}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(payload))
+    }
+
+    func testMarketSearchDecoderPreservesProviderInstrumentMetadata() throws {
+        let payload = Data("""
+        {
+          "provider":"capital.com",
+          "environment":"DEMO",
+          "markets":[
+            {
+              "epic":"GOLD",
+              "instrumentName":"Gold",
+              "marketStatus":"TRADEABLE",
+              "currency":"USD"
+            }
+          ]
+        }
+        """.utf8)
+
+        let instruments = try MarketSearchPayloadDecoder().decodeMarkets(payload)
+        XCTAssertEqual(instruments.count, 1)
+        XCTAssertEqual(instruments[0].epic, "GOLD")
+        XCTAssertEqual(instruments[0].name, "Gold")
+        XCTAssertEqual(instruments[0].marketStatus, "TRADEABLE")
+        XCTAssertEqual(instruments[0].currency, "USD")
+    }
+
+    func testMarketSearchDecoderRejectsNonDemoAndInvalidInstrumentIdentity() {
+        let livePayload = Data("""
+        {"provider":"capital.com","environment":"LIVE","markets":[]}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeMarkets(livePayload))
+
+        let invalidInstrument = Data("""
+        {"provider":"capital.com","environment":"DEMO","markets":[{"epic":" "}]}
+        """.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeMarkets(invalidInstrument))
+    }
+
+
+    @MainActor
+    func testMarketSearchHTTPClientUsesStatusEndpointAndMapsDemoStatus() async throws {
+        let recorder = MarketSearchRequestRecorder()
+        let session = marketSearchStubSession()
+        MarketSearchURLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data(#"{"provider":"capital.com","environment":"DEMO","state":"connected"}"#.utf8))
+        }
+        MarketSearchURLProtocolStub.requestObserver = { recorder.append($0) }
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+
+        let client = URLSessionMarketSearchClient(session: session)
+        let status = try await client.fetchBackendStatus()
+
+        XCTAssertEqual(status.provider, "capital.com")
+        XCTAssertEqual(status.environment, "DEMO")
+        XCTAssertEqual(status.state, .connected)
+        let request = try XCTUnwrap(recorder.requests.first)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url?.path.hasSuffix("/market-data/status") == true)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
+    }
+
+    @MainActor
+    func testMarketSearchHTTPClientEncodesQueryAndMapsProviderInstrument() async throws {
+        let recorder = MarketSearchRequestRecorder()
+        let session = marketSearchStubSession()
+        MarketSearchURLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            let payload = Data("""
+            {
+              "provider":"capital.com",
+              "environment":"DEMO",
+              "markets":[
+                {"epic":"GOLD","instrumentName":"Gold","marketStatus":"TRADEABLE","currency":"USD"}
+              ]
+            }
+            """.utf8)
+            return (response, payload)
+        }
+        MarketSearchURLProtocolStub.requestObserver = { recorder.append($0) }
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+
+        let client = URLSessionMarketSearchClient(session: session)
+        let instruments = try await client.searchMarkets("Gold & Silver")
+
+        XCTAssertEqual(instruments.count, 1)
+        XCTAssertEqual(instruments[0].epic, "GOLD")
+        XCTAssertEqual(instruments[0].name, "Gold")
+        let request = try XCTUnwrap(recorder.requests.first)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url?.path.hasSuffix("/market-data/markets") == true)
+        let components = try XCTUnwrap(URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false))
+        XCTAssertEqual(components.queryItems?.first(where: { $0.name == "searchTerm" })?.value, "Gold & Silver")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-ATHEER-LOCAL-CLIENT"), "macOS")
+    }
+
+    @MainActor
+    func testMarketSearchHTTPClientMapsUnavailableAndUnexpectedHTTPStatuses() async {
+        let session = marketSearchStubSession()
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+        let client = URLSessionMarketSearchClient(session: session)
+
+        MarketSearchURLProtocolStub.handler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!, Data())
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("HTTP 503 must map to backendNotConnected.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .backendNotConnected)
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
+
+        MarketSearchURLProtocolStub.handler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!, Data())
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("HTTP 500 must preserve the unexpected status code.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .unexpectedHTTPStatus(500))
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
+
+        MarketSearchURLProtocolStub.handler = { _ in
+            throw URLError(.notConnectedToInternet)
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("Transport failures must map to backendUnavailable.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .backendUnavailable)
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
+    }
+
+    @MainActor
+    func testMarketExplorerDisablesSearchForQueriesLongerThanOneHundredCharacters() async {
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+            results: []
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = String(repeating: "A", count: 101)
+
+        XCTAssertFalse(model.canSearch)
+        await model.search()
+        XCTAssertEqual(client.searchCallCount, 0)
+        if case .failed = model.state {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("An overlong query must be rejected before a request is sent.")
+        }
+    }
+
+    @MainActor
+    func testMarketExplorerIgnoresStaleSearchResultsAfterQueryChanges() async {
+        let gold = MarketInstrumentSummary(
+            epic: "GOLD",
+            name: "Gold",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let silver = MarketInstrumentSummary(
+            epic: "SILVER",
+            name: "Silver",
+            marketStatus: "TRADEABLE",
+            currency: "USD"
+        )
+        let client = DeferredMarketSearchClient()
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+
+        model.searchTerm = "Gold"
+        let olderSearch = Task { await model.search() }
+        await Task.yield()
+        XCTAssertEqual(client.pendingSearchCount, 1)
+
+        model.searchTerm = "Silver"
+        let newerSearch = Task { await model.search() }
+        await Task.yield()
+        XCTAssertEqual(client.pendingSearchCount, 2)
+
+        client.completeSearch(at: 1, with: [silver])
+        await newerSearch.value
+        XCTAssertEqual(model.results, [silver])
+        XCTAssertEqual(model.state, .results)
+
+        client.completeSearch(at: 0, with: [gold])
+        await olderSearch.value
+        XCTAssertEqual(model.results, [silver], "A stale response must not replace the latest query results.")
+        XCTAssertEqual(model.state, .results)
+    }
+
+    @MainActor
+    func testMarketExplorerDoesNotSearchWhenBackendSessionIsDisconnected() async {
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .disconnected),
+            results: []
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = "Gold"
+        await model.search()
+
+        XCTAssertEqual(client.searchCallCount, 0)
+        if case .unavailable = model.state {
+            XCTAssertTrue(true)
+        } else {
+            XCTFail("A disconnected backend market-data session must block search.")
+        }
+    }
+
+    @MainActor
+    func testMarketExplorerPublishesProviderBackedDemoSearchResults() async {
+        let instruments = [
+            MarketInstrumentSummary(
+                epic: "GOLD",
+                name: "Gold",
+                marketStatus: "TRADEABLE",
+                currency: "USD"
+            )
+        ]
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected),
+            results: instruments
+        )
+        let model = MarketExplorerViewModel(client: client)
+        await model.refreshBackendStatus()
+        model.searchTerm = "Gold"
+        await model.search()
+
+        XCTAssertEqual(client.searchCallCount, 1)
+        XCTAssertEqual(model.results, instruments)
+        XCTAssertEqual(model.state, .results)
+    }
+
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {
@@ -482,6 +768,101 @@ private struct StubBackendHealthClient: BackendHealthClient {
 
 private enum StubBackendHealthError: Error {
     case unavailable
+}
+
+
+@MainActor
+private final class StubMarketSearchClient: MarketSearchClient {
+    private let status: MarketDataBackendStatus
+    private let instruments: [MarketInstrumentSummary]
+    private(set) var searchCallCount = 0
+
+    init(status: MarketDataBackendStatus, results: [MarketInstrumentSummary]) {
+        self.status = status
+        self.instruments = results
+    }
+
+    func fetchBackendStatus() async throws -> MarketDataBackendStatus {
+        status
+    }
+
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
+        searchCallCount += 1
+        return instruments
+    }
+}
+
+@MainActor
+private final class DeferredMarketSearchClient: MarketSearchClient {
+    private var continuations: [CheckedContinuation<[MarketInstrumentSummary], Error>] = []
+    private(set) var pendingSearchCount = 0
+
+    func fetchBackendStatus() async throws -> MarketDataBackendStatus {
+        MarketDataBackendStatus(provider: "capital.com", environment: "DEMO", state: .connected)
+    }
+
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<[MarketInstrumentSummary], Error>) in
+            continuations.append(continuation)
+            pendingSearchCount += 1
+        }
+    }
+
+    func completeSearch(at index: Int, with results: [MarketInstrumentSummary]) {
+        continuations[index].resume(returning: results)
+    }
+}
+
+
+private func marketSearchStubSession() -> URLSession {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [MarketSearchURLProtocolStub.self]
+    configuration.httpCookieStorage = nil
+    configuration.urlCache = nil
+    return URLSession(configuration: configuration)
+}
+
+private final class MarketSearchRequestRecorder {
+    private let lock = NSLock()
+    private var storage: [URLRequest] = []
+
+    var requests: [URLRequest] {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    func append(_ request: URLRequest) {
+        lock.lock()
+        defer { lock.unlock() }
+        storage.append(request)
+    }
+}
+
+private final class MarketSearchURLProtocolStub: URLProtocol {
+    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    static var requestObserver: ((URLRequest) -> Void)?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        do {
+            guard let handler = Self.handler else {
+                throw URLError(.badServerResponse)
+            }
+            Self.requestObserver?(request)
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }
 
 private final class InMemoryWorkspacePersistence: WorkspacePersistence {
