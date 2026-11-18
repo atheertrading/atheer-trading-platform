@@ -35,7 +35,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M01-002 | P1 | Define canonical trading-domain model and lifecycle contracts | PENDING |
 | M01-003 | P1 | Define market-data contracts, timestamps, freshness, and recovery | PENDING |
 | M01-004 | P1 | Define centralized RiskEngine and authorization contracts | PENDING |
-| M01-005 | P1 | Define OMS, Execution Gateway, idempotency, outbox, and reconciliation | IN PROGRESS — ATP-OMS-001 | OEL-12 and risk-gated durable OMS order persistence implemented in PR #42; outbox consumer, Gateway, broker events, fills, and reconciliation remain pending |
+| M01-005 | P1 | Define OMS, Execution Gateway, idempotency, outbox, and reconciliation | IN PROGRESS — ATP-OMS-001; OEL-12 and risk-gated durable OMS order persistence implemented in PR #42; outbox consumer, Gateway, broker events, fills, and reconciliation remain pending |
 | M01-006 | P1 | Define AI orchestration, agent permissions, and tool contracts | PENDING |
 
 ## M02 — Product foundations
