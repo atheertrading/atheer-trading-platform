@@ -31,13 +31,13 @@ final class BackendRuntimeViewModel: ObservableObject {
     private let supervisor: BackendProcessManaging
 
     init(
-        supervisor: BackendProcessManaging = BackendProcessSupervisor(),
+        supervisor: BackendProcessManaging? = nil,
         healthModel: BackendHealthViewModel = BackendHealthViewModel(),
-        brokerManagementModel: BrokerManagementViewModel = BrokerManagementViewModel()
+        brokerManagementModel: BrokerManagementViewModel? = nil
     ) {
-        self.supervisor = supervisor
+        self.supervisor = supervisor ?? BackendProcessSupervisor()
         self.healthModel = healthModel
-        self.brokerManagementModel = brokerManagementModel
+        self.brokerManagementModel = brokerManagementModel ?? BrokerManagementViewModel()
         self.supervisor.onUnexpectedTermination = { [weak self] message in
             self?.marketSearchClient = nil
             self?.healthModel.setUnavailable(message)
