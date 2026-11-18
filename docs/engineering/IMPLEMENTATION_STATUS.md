@@ -644,3 +644,44 @@ No local Node 24 or owner-Mac verification is claimed. No broker dealing, RiskEn
 - Hosted Intel x86_64 and Apple Silicon arm64 CI must pass on the exact PR #44 head.
 - No local Mac build, runtime, visual/accessibility QA, or authenticated Capital.com DEMO history request is claimed until separately evidenced.
 - CAP_ALLOW_TRADING=false remains unchanged.
+
+
+## Cross-PR engineering audit — 2026-11-18 (GitHub verification)
+
+This audit supersedes conflicting or over-broad CI statements in earlier conversational summaries. Status is commit-specific; a green backend/hygiene job does not qualify the macOS application or the owner-side broker runtime.
+
+### Mainline and integration state
+- Verified main HEAD: `4875fc30e68b3611c036f4e9b1c9bbe9f0fb59c6` (merge of PR #22).
+- The established merged baseline includes PRs #1–#11, #17–#19, and #22 (including dependency maintenance PRs #3–#5).
+- PRs #24–#44 in the current feature chain remain open/unmerged at this review snapshot. Do not describe their work as part of main.
+
+### Exact-head CI observations
+- PR #24, HEAD `e34c7155c45e9108e5f95156fb8f2e1363d63e60`: Backend, Repository Hygiene, and Apple Silicon checks passed; Intel x86_64 was still running/pending at inspection. Therefore cross-architecture qualification was not yet complete.
+- PR #25, HEAD `3112637a014e1573078056dee5fefc61b495ff4f`: Backend tests (23/23) and Repository Hygiene passed; Intel and Apple Silicon jobs in the recorded attempt were cancelled. Rerun required.
+- PR #26, HEAD `9f46a5ce9fc313e73dbff9e78680804c4dd1692f`: Intel Debug/XCTest/Release/Swift CodeQL passed; Apple Silicon was still queued in the inspected run. Earlier recorded base SHA `bdcdab3592347473ff9ec0ca0a9d4f99d6eccc5b` did not match PR #25's reviewed HEAD `3112637a014e1573078056dee5fefc61b495ff4f`; reconcile dependency/base before integration and rerun exact-head checks.
+- PR #33: Backend and Local Sync Safety passed in the recorded run; macOS Intel and Apple Silicon were queued. Do not claim full macOS qualification from Backend success.
+- PR #37: Backend and API tests (31/31), Mermaid, and Local Sync Safety passed in the recorded run; macOS Intel and Apple Silicon were queued. No cross-architecture macOS qualification or authenticated provider runtime is established by that run.
+- PR #38 remediation HEAD `f07548eb0233e5113de794f69a8840b3bdd6841f`: Backend and Repository Hygiene passed; Intel and Apple Silicon jobs were cancelled. Qualification remains incomplete.
+- PR #39 remediation HEAD `59ddc5eaf5881930e37ba8ee10074faf1b5d3337`: Backend and Repository Hygiene passed; Intel and Apple Silicon jobs were cancelled; the aggregate CI run concluded failure. Qualification remains incomplete.
+- PR #40, HEAD `8d4afc4e59b2787a9252269cbcf11fa379bc65b6`: Intel and Apple Silicon, Backend, Repository Hygiene, Mermaid, and Local Sync Safety passed.
+- PR #41, HEAD `c9eb73d28c24398dfcb435525118f971aae221e8`: exact-head CI passed on Intel and Apple Silicon plus Backend, Repository Hygiene, Mermaid, and Local Sync Safety; PostgreSQL integration suite 49/49.
+- PR #42, HEAD `ff7af23585b8d7272d826fd29b03111ed57492bf`: exact-head CI passed on Intel and Apple Silicon plus Backend, Repository Hygiene, Mermaid, and Local Sync Safety; Backend suite 52/52.
+- PR #43, HEAD `0ba7b82fe0b303d87bdb740c9049c36ef81ba4ff`: Apple Silicon, Backend, Repository Hygiene, Mermaid, and Local Sync Safety passed; Intel x86_64 was still in progress at inspection.
+- PR #44, HEAD `6a9e10f20d81ac0850e97b594a361450b53281c9`: Backend, Repository Hygiene, Mermaid, and Local Sync Safety passed; Intel x86_64 and Apple Silicon arm64 were still in progress at inspection. Prior parent-branch results do not qualify this new HEAD.
+
+### Implementation boundaries
+- PR #41 persists domain outbox records; it does not implement an outbox consumer or broker-command dispatcher.
+- PR #42 persists risk-authorized OMS orders and atomic lifecycle/audit/outbox records; it does not implement OMS workers, fills, positions, broker status ingestion, reconciliation, Execution Gateway, or broker submission.
+- PR #43 watchlist persistence is local UserDefaults, not PostgreSQL or cross-device synchronization.
+- PR #44 provides read-only historical Bid/Ask candlesticks through the existing history endpoint. Live candle aggregation, indicators, drawing tools, and chart-driven execution are not implemented.
+- No owner-Mac visual/accessibility/runtime acceptance or authenticated Capital.com DEMO evidence is claimed unless separately recorded.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No LIVE or broker dealing capability is approved by this audit.
+
+### Ordered follow-up
+1. Rerun and complete PR #25, #38, and #39 exact-head macOS checks; resolve PR #26 base mismatch and complete its Apple Silicon check.
+2. Complete Intel qualification for PR #24 and PR #43; complete both architectures for PR #44.
+3. Recheck current PR heads and dependency bases immediately before any merge; merge only in dependency order.
+4. Perform owner-Mac and sanitized Capital.com DEMO runtime qualification after hosted CI is green.
+5. Keep local PostgreSQL 18.7 migrations blocked pending controlled backup/restore and explicit migration qualification.
+6. Reconcile authoritative OMS/Execution specifications before implementing durable command outbox processing or any dispatcher.
+7. Verify branch protection/rulesets and repository license; current integration evidence is insufficient to claim these controls are configured.
