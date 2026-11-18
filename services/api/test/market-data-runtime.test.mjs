@@ -133,7 +133,7 @@ test("temporary keepalive failures degrade the session and a successful ping res
   const client = createMockClient();
   client.ping = async (session) => {
     client.calls.push(["ping", session]);
-    throw new CapitalDemoApiError("provider unavailable", 503);
+    throw new CapitalDemoApiError("provider unavailable HTTP 503", 503);
   };
   const runtime = new CapitalDemoRuntime(client, {
     apiKey: "demo-key",
