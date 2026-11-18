@@ -20,6 +20,7 @@ export class BrokerSessionManager {
   // intact across broker-session replacement and runtime recreation.
   private readonly sharedClient: CapitalDemoClient;
   private readonly runtimeFactory: RuntimeFactory;
+  private transitionQueue: Promise<void> = Promise.resolve();
 
   constructor(
     runtimeFactory?: RuntimeFactory,
@@ -40,7 +41,15 @@ export class BrokerSessionManager {
     };
   }
 
-  async connect(
+  connect(
+    credentials?: CapitalDemoCredentials,
+    beforeSessionReplacement?: () => Promise<void>,
+  ): Promise<BrokerSessionStatus> {
+    return this.serializeTransition(() =>
+      this.connectInternal(credentials, beforeSessionReplacement));
+  }
+
+  private async connectInternal(
     credentials?: CapitalDemoCredentials,
     beforeSessionReplacement?: () => Promise<void>,
   ): Promise<BrokerSessionStatus> {
@@ -74,7 +83,7 @@ export class BrokerSessionManager {
       this.lastSessionCreationAttemptAtMs = now;
       if (this.runtime) {
         await beforeSessionReplacement?.();
-        await this.disconnect();
+        await this.disconnectInternal();
       }
       this.runtime = this.runtimeFactory({
         apiKey: credentials.apiKey,
@@ -93,7 +102,11 @@ export class BrokerSessionManager {
     }
   }
 
-  async disconnect(): Promise<BrokerSessionStatus> {
+  disconnect(): Promise<BrokerSessionStatus> {
+    return this.serializeTransition(() => this.disconnectInternal());
+  }
+
+  private async disconnectInternal(): Promise<BrokerSessionStatus> {
     const runtime = this.runtime;
     if (!runtime) return this.status();
 
@@ -103,8 +116,18 @@ export class BrokerSessionManager {
     } finally {
       // Drop the credential-bearing runtime even when provider logout fails.
       // The caller still receives the logout failure and must not report success.
-      this.runtime = null;
+      if (this.runtime === runtime) this.runtime = null;
     }
+  }
+
+  /**
+   * Serialize every session mutation through one promise chain. The internal
+   * transition methods call one another directly to avoid re-entering the queue.
+   */
+  private serializeTransition<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.transitionQueue.then(operation, operation);
+    this.transitionQueue = result.then(() => undefined, () => undefined);
+    return result;
   }
 
   async getMarkets(searchTerm: string) {
