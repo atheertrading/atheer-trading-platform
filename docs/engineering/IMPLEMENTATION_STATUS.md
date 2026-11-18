@@ -447,3 +447,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
 - These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.
+
+
+## 2026-11-18 — Native supervisor shutdown outcomes
+
+- Child exit code 0 is accepted; non-zero exit and signal termination are reported as errors after capability and process state are cleared.
+- Added XCTest coverage for graceful shutdown, SIGKILL escalation, non-zero exit, and idempotent cleanup.
+- `CAP_ALLOW_TRADING=false` is set by the supervisor.
+- Child stderr remains discarded; operation-specific diagnostics are not yet surfaced. Exact-head CI and owner-Mac verification remain pending.
