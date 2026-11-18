@@ -72,7 +72,10 @@ function brokerSessionResponseStatus(
     status.lastError?.includes("HTTP 403") ||
     status.lastError?.includes("rejected or expired")
   ) return 401;
-  if (status.lastError?.includes("HTTP 429")) return 429;
+  if (
+    status.lastError?.includes("HTTP 429") ||
+    status.lastError?.includes("rate-limited")
+  ) return 429;
   return 503;
 }
 
