@@ -470,3 +470,12 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - PR stack remains open/draft: #51 capability IPC → #54 managed backend process → #56 Swift actor-isolation correction → #55 backend broker-session integration. Integrate from #55 upward into #56, then #54, then #51; requalify #51 before main.
 - Market Explorer shows REST/streaming status but no live quote subscription yet. Authenticated native SSE subscription, quote normalization/freshness and UI states remain the next market-data implementation slice.
 - Owner-Mac build/launch, Keychain restart, visual/accessibility QA, and real Capital.com DEMO authentication remain unverified. LIVE/dealing/trading remain disabled.
+
+
+## 2026-11-18 — Batch 051 implementation status
+
+- **Backend shutdown:** bounded stream disconnect, broker logout and HTTP server close; 20-second hard child deadline; redacted operation diagnostics; non-zero exit status on incomplete cleanup. Added deterministic timeout/failure/success tests. Exact-head CI is pending.
+- **Native supervisor:** PR #57 branch has the PR #56 class-bound protocol and mutable supervisor compile corrections. Local Sync Safety passed; exact-head CI is pending; ancestry remains diverged.
+- **Mermaid architecture:** read all five ATP-MER-001 sources from Library Codex.zip. They are proposed target architecture; syntax validation and deployed implementation are not claimed.
+- **Credential handoff confidentiality:** unresolved. Authenticated loopback HTTP does not encrypt API-key/login/password payloads. Keep broker stack blocked until a private local IPC transport or an explicitly accepted threat boundary is in place.
+- **Broker DEMO / LIVE:** no real DEMO authentication was performed. LIVE/dealing/trading remain disabled; `CAP_ALLOW_TRADING=false`.
