@@ -13,7 +13,6 @@ import {
   unitCode,
   utcTimestamp,
   type DataProvenance,
-  type Money as NeverMoney,
   type RiskAssessmentId,
   type TradingEnvironment,
   type UtcTimestamp,
@@ -246,7 +245,10 @@ function validatePolicy(policy: RiskPolicy, intent: OrderIntentEnvelope): void {
   }
   decimalValue(policy.maximumSpread.value);
   unitCode(policy.maximumSpread.unit);
-  if (policy.maximumSpread.currency !== undefined) currencyCode(policy.maximumSpread.currency);
+  if (policy.maximumSpread.currency === undefined) {
+    throw new DomainValidationError("missing_maximum_spread_currency", "Maximum spread must declare its price currency.");
+  }
+  currencyCode(policy.maximumSpread.currency);
   if (compareDecimal(policy.maximumSpread.value, decimalValue("0")) <= 0) {
     throw new DomainValidationError("invalid_maximum_spread", "Maximum spread must be positive.");
   }
@@ -334,6 +336,23 @@ function validateContext(context: PreTradeRiskContext, intent: OrderIntentEnvelo
   if (context.portfolioRisk.asOf > context.portfolioRisk.provenance.receivedAt) {
     throw new DomainValidationError("risk_portfolio_timestamp_mismatch", "Portfolio snapshot receipt time cannot precede its valuation time.");
   }
+
+  decimalValue(context.marketQuote.bid.value);
+  decimalValue(context.marketQuote.ask.value);
+  unitCode(context.marketQuote.bid.unit);
+  unitCode(context.marketQuote.ask.unit);
+  if (context.marketQuote.bid.currency !== undefined) currencyCode(context.marketQuote.bid.currency);
+  if (context.marketQuote.ask.currency !== undefined) currencyCode(context.marketQuote.ask.currency);
+
+  for (const value of [
+    context.portfolioRisk.projectedPerTradeRisk,
+    context.portfolioRisk.projectedAccountGrossExposure,
+    context.portfolioRisk.projectedInstrumentGrossExposure,
+    context.portfolioRisk.projectedDailyLoss,
+    context.portfolioRisk.projectedDrawdown,
+  ]) validateMoney(value, "projected_portfolio_risk");
+  positiveInteger(context.portfolioRisk.projectedOpenPositions, "projectedOpenPositions");
+  positiveInteger(context.portfolioRisk.projectedOpenInstrumentPositions, "projectedOpenInstrumentPositions");
 }
 
 function moneyCurrencyMatches(value: Money, currency: string): boolean {
@@ -660,5 +679,5 @@ export class RiskEngine {
 /** Production-safe gate until a separately qualified DEMO authorization is configured. */
 export class DisabledRiskTradingControls implements RiskTradingControls {
   isTradingEnabled(_environment: TradingEnvironment): boolean { return false; }
-  isEmergencyHalted(_environment: TradingEnvironment): boolean { return true; }
+  isEmergencyHalted(_environment: TradingEnvironment): boolean { return false; }
 }
