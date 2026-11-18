@@ -119,27 +119,38 @@ struct ServerSentEventParser {
                     $0.isFinite && ($0 >= 0 || freshness.state == .invalid)
                 } ?? (freshness.state == .invalid)
                 let ageMatchesState: Bool
+                let reasonMatchesState: Bool
                 switch freshness.state {
                 case .fresh:
                     ageMatchesState = freshness.ageMs.map {
                         $0 >= 0 && $0 <= Double(freshness.normalAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "within_normal_range"
                 case .aging:
                     ageMatchesState = freshness.ageMs.map {
                         $0 > Double(freshness.normalAgeMs) &&
                         $0 <= Double(freshness.automatedEntryBlockAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "quote_aging"
                 case .entryBlocked:
                     ageMatchesState = freshness.ageMs.map {
                         $0 > Double(freshness.automatedEntryBlockAgeMs) &&
                         $0 <= Double(freshness.staleAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "automated_entries_blocked"
                 case .stale:
                     ageMatchesState = freshness.ageMs.map {
                         $0 > Double(freshness.staleAgeMs)
                     } ?? false
+                    reasonMatchesState = freshness.reason == "quote_stale"
                 case .invalid:
                     ageMatchesState = true
+                    reasonMatchesState = [
+                        "provider_timestamp_in_future",
+                        "invalid_clock",
+                        "invalid_policy",
+                        "invalid_quote"
+                    ].contains(freshness.reason)
                 }
                 guard quote.provider == "capital.com",
                       quote.environment == "DEMO",
@@ -158,6 +169,7 @@ struct ServerSentEventParser {
                       freshness.automatedEntryBlockAgeMs == 10_000,
                       freshness.staleAgeMs == 15_000,
                       ageMatchesState,
+                      reasonMatchesState,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
                       ((freshness.state == .fresh || freshness.state == .aging) == freshness.newAutomatedEntriesAllowed) else {

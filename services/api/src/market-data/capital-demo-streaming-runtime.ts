@@ -12,10 +12,14 @@ const SOCKET_CLOSE_TIMEOUT_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
-const QUOTE_FRESHNESS_POLICY = {
+const QUOTE_FRESHNESS_THRESHOLDS = {
   normalAgeMs: 5_000,
   automatedEntryBlockAgeMs: 10_000,
   staleAgeMs: 15_000,
+} as const;
+
+const QUOTE_FRESHNESS_POLICY = {
+  ...QUOTE_FRESHNESS_THRESHOLDS,
   maximumFutureSkewMs: 250,
 } as const;
 
@@ -128,14 +132,12 @@ export class CapitalDemoStreamingRuntime {
       // A cached quote may be replayed long after its original receipt. Recompute
       // freshness from the provider timestamp at replay time; never replay the
       // original "fresh" authorization decision as if it were current.
-      const freshness = evaluateQuoteFreshness(quote, nowMs, {
-        ...QUOTE_FRESHNESS_POLICY,
-      });
+      const freshness = evaluateQuoteFreshness(quote, nowMs, QUOTE_FRESHNESS_POLICY);
       return [{
         ...quote,
         freshness: {
           ...freshness,
-          ...QUOTE_FRESHNESS_POLICY,
+          ...QUOTE_FRESHNESS_THRESHOLDS,
         },
       }];
     });
@@ -449,10 +451,8 @@ export class CapitalDemoStreamingRuntime {
       ...normalized,
       receivedAtMonotonicMs: this.monotonicNow(),
       freshness: {
-        ...evaluateQuoteFreshness(normalized, receivedAtMs, {
-          ...QUOTE_FRESHNESS_POLICY,
-        }),
-        ...QUOTE_FRESHNESS_POLICY,
+        ...evaluateQuoteFreshness(normalized, receivedAtMs, QUOTE_FRESHNESS_POLICY),
+        ...QUOTE_FRESHNESS_THRESHOLDS,
       },
     };
     this.latestQuotes.set(quote.instrumentId, quote);

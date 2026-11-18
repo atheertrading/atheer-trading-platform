@@ -119,6 +119,16 @@ final class MarketDataStreamClientTests: XCTestCase {
         XCTAssertFalse(blocked.freshness.newAutomatedEntriesAllowed)
     }
 
+    func testParserRejectsFreshnessReasonThatDoesNotMatchState() throws {
+        var parser = ServerSentEventParser()
+        let payload = """
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":123.0,"freshness":{"state":"aging","ageMs":6000,"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":15000,"newAutomatedEntriesAllowed":true,"reason":"within_normal_range"}}
+        """
+        _ = try parser.consume("event: quote")
+        _ = try parser.consume("data: \(payload)")
+        XCTAssertThrowsError(try parser.consume(""))
+    }
+
     func testParserRejectsOversizedEventPayload() throws {
         var parser = ServerSentEventParser()
         _ = try parser.consume("event: status")

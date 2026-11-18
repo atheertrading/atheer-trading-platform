@@ -53,8 +53,6 @@ test("quote freshness enforces the approved normal, entry-block and stale bounda
   const normal = evaluateQuoteFreshness(quote, 1_800_000_005_000, policy);
   assert.equal(normal.state, "fresh");
   assert.equal(normal.newAutomatedEntriesAllowed, true);
-  const atFiveSeconds = evaluateQuoteFreshness(quote, 1_800_000_005_000, policy);
-  assert.equal(atFiveSeconds.state, "fresh");
   const aging = evaluateQuoteFreshness(quote, 1_800_000_005_001, policy);
   assert.equal(aging.state, "aging");
   assert.equal(aging.newAutomatedEntriesAllowed, true);
