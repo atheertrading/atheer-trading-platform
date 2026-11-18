@@ -7,6 +7,8 @@ flowchart LR
     Validate[Integrity and Sequence Validation]
     Persist[(Historical and Event Store)]
     Stream[Realtime Distribution]
+    Cache[Latest Validated Quote Cache]
+    Replay[Re-evaluate Freshness from Original Provider Timestamp at Replay Time]
     Freshness[Freshness and Session Monitor]
     Consumers[Charts, Strategies, Quant and Risk Context]
     Recovery[Gap Detection and Recovery]
@@ -20,6 +22,9 @@ flowchart LR
     Validate --> Stream
     Stream --> Freshness
     Freshness --> Consumers
+    Stream --> Cache
+    Cache --> Replay
+    Replay --> Consumers
     Validate --> Recovery
     Recovery --> Broker
     Recovery --> Persist
