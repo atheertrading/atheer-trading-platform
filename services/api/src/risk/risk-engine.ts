@@ -260,11 +260,19 @@ function validatePolicy(policy: RiskPolicy): void {
 
   nonNegativeInteger(policy.maximumOpenPositions, "maximumOpenPositions");
   nonNegativeInteger(policy.maximumOpenPositionsPerInstrument, "maximumOpenPositionsPerInstrument");
-  validateMoney(policy.maximumPerTradeRisk, "maximumPerTradeRisk");
-  validateMoney(policy.maximumAccountGrossExposure, "maximumAccountGrossExposure");
-  validateMoney(policy.maximumInstrumentGrossExposure, "maximumInstrumentGrossExposure");
-  validateMoney(policy.maximumDailyLoss, "maximumDailyLoss");
-  validateMoney(policy.maximumDrawdown, "maximumDrawdown");
+  const accountCurrencyLimits = [
+    policy.maximumPerTradeRisk,
+    policy.maximumAccountGrossExposure,
+    policy.maximumInstrumentGrossExposure,
+    policy.maximumDailyLoss,
+    policy.maximumDrawdown,
+  ];
+  for (const value of accountCurrencyLimits) {
+    validateMoney(value, "risk_policy_limit");
+    if (value.currency !== policy.accountCurrency) {
+      throw new DomainValidationError("risk_policy_currency_mismatch", "Risk limits must use the configured account currency.");
+    }
+  }
 
   const freshness = policy.freshness;
   positiveInteger(freshness.normalQuoteAgeMs, "normalQuoteAgeMs");
