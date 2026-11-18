@@ -279,6 +279,9 @@ function validatePolicy(policy: RiskPolicy): void {
   ) {
     throw new DomainValidationError("invalid_quote_freshness_policy", "Quote-age thresholds must be ordered normal ≤ automated-entry-block ≤ stale.");
   }
+  if (typeof policy.requireBrokerPriceIncrement !== "boolean" || typeof policy.requireStopLoss !== "boolean") {
+    throw new DomainValidationError("invalid_risk_policy_flags", "Risk policy requirement flags must be boolean values.");
+  }
   if (policy.requireStopLoss) nonEmptyString(policy.stopLossParameterCode ?? "", "stop_loss_parameter_code");
 }
 
@@ -369,10 +372,6 @@ function moneyCurrencyMatches(value: Money, currency: string): boolean {
 
 function moneyAbove(value: Money, limit: Money): boolean {
   return compareDecimal(decimalValue(value.amount), decimalValue(limit.amount)) > 0;
-}
-
-function moneyBelowZero(value: Money): boolean {
-  return compareDecimal(decimalValue(value.amount), decimalValue("0")) < 0;
 }
 
 function isAutomatedOrigin(origin: IntentOriginKind): boolean {
@@ -486,7 +485,11 @@ export class RiskEngine {
       }
     }
 
-    for (const field of policy.requiredAccountFields) {
+    const requiredAccountFields = new Set<AccountBalanceField>(policy.requiredAccountFields);
+    if (policy.minimumAvailableFunds !== undefined) requiredAccountFields.add("availableFunds");
+    if (policy.minimumAvailableMargin !== undefined) requiredAccountFields.add("availableMargin");
+    if (policy.maximumUsedMargin !== undefined) requiredAccountFields.add("usedMargin");
+    for (const field of requiredAccountFields) {
       if (context.accountSnapshot[field] === undefined) {
         held.push("ACCOUNT_FIELD_UNAVAILABLE:" + field);
       }
@@ -647,23 +650,20 @@ export class RiskEngine {
       rejected.push("MAXIMUM_OPEN_POSITION_COUNT_EXCEEDED");
     }
 
-    const projectedMoney: readonly [Money, Money, Money, Money, Money][] = [[
+    const projectedMoney: readonly Money[] = [
       portfolio.projectedPerTradeRisk,
       portfolio.projectedAccountGrossExposure,
       portfolio.projectedInstrumentGrossExposure,
       portfolio.projectedDailyLoss,
       portfolio.projectedDrawdown,
-    ]];
-    for (const values of projectedMoney) {
-      if (values.some((value) => !moneyCurrencyMatches(value, policy.accountCurrency))) {
-        held.push("PORTFOLIO_RISK_CURRENCY_MISMATCH");
-      } else if (values.some(moneyBelowZero)) {
-        held.push("PORTFOLIO_RISK_METRIC_INVALID");
-      }
+    ];
+    if (projectedMoney.some((value) => !moneyCurrencyMatches(value, policy.accountCurrency))) {
+      held.push("PORTFOLIO_RISK_CURRENCY_MISMATCH");
     }
     if (
       policy.minimumAvailableFunds !== undefined &&
       context.accountSnapshot.availableFunds !== undefined &&
+      context.accountSnapshot.availableFunds.currency === policy.accountCurrency &&
       compareDecimal(decimalValue(context.accountSnapshot.availableFunds.amount), decimalValue(policy.minimumAvailableFunds.amount)) < 0
     ) {
       rejected.push("MINIMUM_AVAILABLE_FUNDS_NOT_MET");
@@ -671,6 +671,7 @@ export class RiskEngine {
     if (
       policy.minimumAvailableMargin !== undefined &&
       context.accountSnapshot.availableMargin !== undefined &&
+      context.accountSnapshot.availableMargin.currency === policy.accountCurrency &&
       compareDecimal(decimalValue(context.accountSnapshot.availableMargin.amount), decimalValue(policy.minimumAvailableMargin.amount)) < 0
     ) {
       rejected.push("MINIMUM_AVAILABLE_MARGIN_NOT_MET");
@@ -678,6 +679,7 @@ export class RiskEngine {
     if (
       policy.maximumUsedMargin !== undefined &&
       context.accountSnapshot.usedMargin !== undefined &&
+      context.accountSnapshot.usedMargin.currency === policy.accountCurrency &&
       compareDecimal(decimalValue(context.accountSnapshot.usedMargin.amount), decimalValue(policy.maximumUsedMargin.amount)) > 0
     ) {
       rejected.push("MAXIMUM_USED_MARGIN_EXCEEDED");
@@ -699,7 +701,6 @@ export class RiskEngine {
       rejected.push("MAXIMUM_DRAWDOWN_EXCEEDED");
     }
 
-    let controlsAvailable = true;
     try {
       if (this.controls.isEmergencyHalted(intent.environment)) {
         rejected.push("EMERGENCY_TRADING_HALT_ACTIVE");
@@ -708,10 +709,8 @@ export class RiskEngine {
         held.push("TRADING_DISABLED");
       }
     } catch {
-      controlsAvailable = false;
       held.push("TRADING_CONTROLS_UNAVAILABLE");
     }
-    if (!controlsAvailable) advisory.length = 0;
 
     const reasonCodes = [...new Set([...rejected, ...held, ...advisory])];
     const outcome: RiskDecisionOutcome = rejected.length > 0 ? "REJECTED" : held.length > 0 ? "HELD" : "AUTHORIZED";
