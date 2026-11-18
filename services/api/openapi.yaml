@@ -167,7 +167,7 @@ paths:
             type: string
             minLength: 1
             maxLength: 64
-            pattern: '^[A-Za-z0-9_.-]{1,64}}
+            pattern: '^[A-Za-z0-9_.-]{1,64}$'
           in: query
           required: false
           description: Provider-supported price-history resolution.
