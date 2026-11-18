@@ -23,6 +23,19 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertTrue(AppSection.allCases.allSatisfy { !$0.systemImage.isEmpty })
     }
 
+    func testIPDSViewportMetricsMatchMeasuredShellAndExportSpecification() {
+        XCTAssertEqual(IPDSViewportMetrics.minimumWindowSize, CGSize(width: 900, height: 600))
+        XCTAssertEqual(IPDSViewportMetrics.minimumDetailSize, CGSize(width: 620, height: 520))
+        XCTAssertEqual(IPDSViewportMetrics.brokerManagementSheetSize, CGSize(width: 760, height: 560))
+        XCTAssertEqual(IPDSViewportMetrics.sidebarMinimumWidth, 190)
+        XCTAssertEqual(IPDSViewportMetrics.sidebarIdealWidth, 224)
+        XCTAssertEqual(IPDSViewportMetrics.sidebarMaximumWidth, 280)
+        XCTAssertEqual(IPDSViewportMetrics.commandBarHeight, 64)
+        XCTAssertEqual(IPDSViewportMetrics.wideDesignCanvasSize, CGSize(width: 1440, height: 900))
+        XCTAssertEqual(IPDSViewportMetrics.exportScale, 2)
+        XCTAssertEqual(IPDSViewportMetrics.wideExportCanvasSize, CGSize(width: 2880, height: 1800))
+    }
+
     @MainActor
     func testWorkspaceEngineRestoresDefaultPanelsWithoutChangingWorkspaceLayout() {
         let persistence = InMemoryWorkspacePersistence()

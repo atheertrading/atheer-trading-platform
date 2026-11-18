@@ -34,7 +34,7 @@ struct ContentView: View {
                         SettingsHomeView(onOpenBrokers: { showingBrokers = true })
                             .sheet(isPresented: $showingBrokers) {
                                 BrokerManagementView(model: brokerManagementModel)
-                                    .frame(minWidth: 760, minHeight: 560)
+                                    .frame(minWidth: IPDSViewportMetrics.brokerManagementSheetSize.width, minHeight: IPDSViewportMetrics.brokerManagementSheetSize.height)
                             }
                     }
                 }
@@ -47,12 +47,12 @@ struct ContentView: View {
                 // workspace panel. Panel customization must never hide this state.
                 OperationalStatusStrip(model: backendHealthModel)
             }
-            .frame(minWidth: 620, minHeight: 520)
+            .frame(minWidth: IPDSViewportMetrics.minimumDetailSize.width, minHeight: IPDSViewportMetrics.minimumDetailSize.height)
             .background(ATHEERDesignTokens.ColorRole.canvas)
             .navigationTitle(selection.title)
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 900, minHeight: 600)
+        .frame(minWidth: IPDSViewportMetrics.minimumWindowSize.width, minHeight: IPDSViewportMetrics.minimumWindowSize.height)
         .sheet(isPresented: $isInstrumentQuickSearchPresented) {
             InstrumentQuickSearchView(client: URLSessionMarketSearchClient()) { instrument in
                 pendingMarketSearchTerm = InstrumentQuickSearchRouting.marketSearchTerm(for: instrument)
@@ -94,9 +94,9 @@ struct ContentView: View {
 
             sidebarFooter
         }
-        .frame(minWidth: 190, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(minWidth: IPDSViewportMetrics.sidebarMinimumWidth, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(ATHEERDesignTokens.ColorRole.deepTeal)
-        .navigationSplitViewColumnWidth(min: 190, ideal: 224, max: 280)
+        .navigationSplitViewColumnWidth(min: IPDSViewportMetrics.sidebarMinimumWidth, ideal: IPDSViewportMetrics.sidebarIdealWidth, max: IPDSViewportMetrics.sidebarMaximumWidth)
         .accessibilityIdentifier("navigation.sidebar")
     }
 
@@ -251,7 +251,7 @@ struct ContentView: View {
             }
         }
         .padding(.horizontal, 18)
-        .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64)
+        .frame(maxWidth: .infinity, minHeight: IPDSViewportMetrics.commandBarHeight, maxHeight: IPDSViewportMetrics.commandBarHeight)
         .background(ATHEERDesignTokens.ColorRole.panel)
         .overlay(alignment: .bottom) {
             Rectangle()
