@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Security
 
@@ -56,6 +57,7 @@ final class BackendIPCCapability {
 struct BackendIPCConnection {
     let baseURL: URL
     let capability: BackendIPCCapability
+    let credentialSocketURL: URL
 }
 
 struct BackendRuntimeArtifacts {
@@ -102,7 +104,7 @@ struct BundledBackendRuntimeResolver: BackendRuntimeResolving {
 protocol BackendProcessManaging: AnyObject {
     var onUnexpectedTermination: ((String) -> Void)? { get set }
     func start() async throws -> BackendIPCConnection
-    func stop()
+    func stop() async throws
 }
 
 enum BackendProcessSupervisorError: Error, LocalizedError {
@@ -115,7 +117,14 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
     case startupTimedOut
     case readinessOutputClosed
     case processExited(Int32)
+    case childExitedWithFailure(Int32)
+    case childExitedUncleanly(Int32)
     case authenticationProbeFailed(Int)
+    case startupInProgress
+    case terminationTimedOut
+    case invalidCredentialSocketPath
+    case credentialSocketUnavailable
+    case credentialSocketPermissionsInvalid
     
     var errorDescription: String? {
         switch self {
@@ -137,8 +146,22 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
             return "The managed backend closed its startup channel before becoming ready."
         case .processExited(let status):
             return "The managed backend exited during startup (status \(status))."
+        case .childExitedWithFailure(let status):
+            return "The managed backend exited with a shutdown failure (status \(status))."
+        case .childExitedUncleanly(let signal):
+            return "The managed backend required signal termination (signal \(signal)); graceful cleanup was not confirmed."
         case .authenticationProbeFailed(let status):
             return "The managed backend failed its authenticated startup probe (HTTP \(status))."
+        case .startupInProgress:
+            return "The managed backend is already starting."
+        case .terminationTimedOut:
+            return "The managed backend did not exit after graceful and forced shutdown deadlines."
+        case .invalidCredentialSocketPath:
+            return "A private broker credential socket path could not be created within the macOS Unix-domain socket limit."
+        case .credentialSocketUnavailable:
+            return "The private broker credential socket was not ready when the backend reported startup completion."
+        case .credentialSocketPermissionsInvalid:
+            return "The private broker credential socket does not have owner-only permissions."
         }
     }
 }
@@ -152,29 +175,49 @@ final class BackendProcessSupervisor: BackendProcessManaging {
     private var outputHandle: FileHandle?
     private var capability: BackendIPCCapability?
     private var connection: BackendIPCConnection?
+    private var credentialSocketDirectory: BackendCredentialSocketDirectory?
     private var readyPort: Int?
     private var outputBuffer = Data()
     private var readyContinuation: CheckedContinuation<Int, Error>?
     private var startupTimeoutTask: Task<Void, Never>?
+    private var stopTask: Task<Void, Error>?
+    private var stoppingProcessIdentifier: ObjectIdentifier?
+    private var terminationWaiters: [ObjectIdentifier: CheckedContinuation<Bool, Never>] = [:]
+    private var terminationTimeoutTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+    private let gracefulShutdownTimeoutNanoseconds: UInt64
+    private let forcedShutdownTimeoutNanoseconds: UInt64
 
     var onUnexpectedTermination: ((String) -> Void)?
+    var isManagedProcessRunning: Bool { process?.isRunning ?? false }
 
     init(
         resolver: BackendRuntimeResolving? = nil,
-        startupTimeoutNanoseconds: UInt64 = 15_000_000_000
+        startupTimeoutNanoseconds: UInt64 = 15_000_000_000,
+        gracefulShutdownTimeoutNanoseconds: UInt64 = 25_000_000_000,
+        forcedShutdownTimeoutNanoseconds: UInt64 = 2_000_000_000
     ) {
         self.resolver = resolver ?? BundledBackendRuntimeResolver()
         self.startupTimeoutNanoseconds = startupTimeoutNanoseconds
+        self.gracefulShutdownTimeoutNanoseconds = gracefulShutdownTimeoutNanoseconds
+        self.forcedShutdownTimeoutNanoseconds = forcedShutdownTimeoutNanoseconds
     }
 
     func start() async throws -> BackendIPCConnection {
+        if let stopTask {
+            try await stopTask.value
+        }
         if let connection, process?.isRunning == true {
             return connection
+        }
+        if process?.isRunning == true {
+            throw BackendProcessSupervisorError.startupInProgress
         }
         if let process, !process.isRunning {
             capability?.clear()
             capability = nil
             connection = nil
+            credentialSocketDirectory?.remove()
+            credentialSocketDirectory = nil
             self.process = nil
         }
         guard #available(macOS 13.5, *) else {
@@ -184,6 +227,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         do {
             let artifacts = try resolver.resolve()
             let newCapability = try BackendIPCCapability()
+            let socketDirectory = try BackendCredentialSocketDirectory.create()
+            credentialSocketDirectory = socketDirectory
             let inputPipe = Pipe()
             let outputPipe = Pipe()
             let child = Process()
@@ -196,6 +241,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
                 "PORT": "0",
                 "NODE_ENV": "production",
                 "CAP_ALLOW_TRADING": "false",
+                "ATHEER_CREDENTIAL_SOCKET_PATH": socketDirectory.socketURL.path,
                 "PATH": "/usr/bin:/bin"
             ]
             child.standardInput = inputPipe
@@ -237,7 +283,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             let baseURL = URL(string: "http://127.0.0.1:\(port)")!
             let newConnection = BackendIPCConnection(
                 baseURL: baseURL,
-                capability: newCapability
+                capability: newCapability,
+                credentialSocketURL: socketDirectory.socketURL
             )
             try await verifyConnection(newConnection)
             guard process?.isRunning == true,
@@ -247,12 +294,33 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             connection = newConnection
             return newConnection
         } catch {
-            stop()
+            let startupError = error
+            try await stop()
+            throw startupError
+        }
+    }
+
+    func stop() async throws {
+        if let stopTask {
+            try await stopTask.value
+            return
+        }
+
+        let task = Task { @MainActor in
+            try await self.performStop()
+        }
+        stopTask = task
+
+        do {
+            try await task.value
+            stopTask = nil
+        } catch {
+            stopTask = nil
             throw error
         }
     }
 
-    func stop() {
+    private func performStop() async throws {
         startupTimeoutTask?.cancel()
         startupTimeoutTask = nil
         if readyContinuation != nil {
@@ -262,18 +330,106 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         outputHandle?.readabilityHandler = nil
         outputHandle = nil
 
-        if let process, process.isRunning {
-            process.terminationHandler = nil
-            process.terminate()
+        guard let child = process else {
+            clearSupervisorState()
+            return
         }
-        process = nil
 
+        let identifier = ObjectIdentifier(child)
+        stoppingProcessIdentifier = identifier
+
+        if child.isRunning {
+            let exitedGracefully = await signalAndWait(
+                child,
+                signal: SIGTERM,
+                timeoutNanoseconds: gracefulShutdownTimeoutNanoseconds
+            )
+            if !exitedGracefully {
+                let exitedAfterForce = await signalAndWait(
+                    child,
+                    signal: SIGKILL,
+                    timeoutNanoseconds: forcedShutdownTimeoutNanoseconds
+                )
+                guard exitedAfterForce else {
+                    throw BackendProcessSupervisorError.terminationTimedOut
+                }
+            }
+        }
+
+        guard !child.isRunning else {
+            throw BackendProcessSupervisorError.terminationTimedOut
+        }
+
+        let terminationReason = child.terminationReason
+        let terminationStatus = child.terminationStatus
+
+        if self.process === child {
+            self.process = nil
+        }
+        clearSupervisorState()
+
+        switch terminationReason {
+        case .exit where terminationStatus != 0:
+            throw BackendProcessSupervisorError.childExitedWithFailure(terminationStatus)
+        case .uncaughtSignal:
+            throw BackendProcessSupervisorError.childExitedUncleanly(terminationStatus)
+        default:
+            break
+        }
+    }
+
+    private func signalAndWait(
+        _ child: Process,
+        signal: Int32,
+        timeoutNanoseconds: UInt64
+    ) async -> Bool {
+        if !child.isRunning { return true }
+        let identifier = ObjectIdentifier(child)
+
+        return await withCheckedContinuation { continuation in
+            terminationWaiters[identifier] = continuation
+            terminationTimeoutTasks[identifier] = Task { @MainActor [weak self] in
+                do {
+                    try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                } catch {
+                    return
+                }
+                guard let self,
+                      let waiter = self.terminationWaiters.removeValue(forKey: identifier) else {
+                    return
+                }
+                self.terminationTimeoutTasks.removeValue(forKey: identifier)
+                waiter.resume(returning: false)
+            }
+
+            if signal == SIGTERM {
+                child.terminate()
+            } else {
+                _ = kill(child.processIdentifier, signal)
+            }
+
+            if !child.isRunning {
+                completeTerminationWait(identifier, terminated: true)
+            }
+        }
+    }
+
+    private func completeTerminationWait(_ identifier: ObjectIdentifier, terminated: Bool) {
+        terminationTimeoutTasks.removeValue(forKey: identifier)?.cancel()
+        guard let waiter = terminationWaiters.removeValue(forKey: identifier) else { return }
+        waiter.resume(returning: terminated)
+    }
+
+    private func clearSupervisorState() {
         capability?.clear()
         capability = nil
         connection = nil
+        credentialSocketDirectory?.remove()
+        credentialSocketDirectory = nil
         readyPort = nil
         outputBuffer.resetBytes(in: 0..<outputBuffer.count)
         outputBuffer.removeAll(keepingCapacity: false)
+        stoppingProcessIdentifier = nil
     }
 
     static func parseReadyPort(_ line: String) -> Int? {
@@ -371,23 +527,37 @@ final class BackendProcessSupervisor: BackendProcessManaging {
                 (response as? HTTPURLResponse)?.statusCode ?? -1
             )
         }
+
+        guard FileManager.default.fileExists(atPath: connection.credentialSocketURL.path) else {
+            throw BackendProcessSupervisorError.credentialSocketUnavailable
+        }
+        let socketAttributes = try FileManager.default.attributesOfItem(
+            atPath: connection.credentialSocketURL.path
+        )
+        let socketPermissions = (socketAttributes[.posixPermissions] as? NSNumber)?.intValue ?? -1
+        guard socketPermissions & 0o777 == 0o600 else {
+            throw BackendProcessSupervisorError.credentialSocketPermissionsInvalid
+        }
     }
 
     private func handleTermination(processIdentifier: ObjectIdentifier, status: Int32) {
         guard let process,
-              ObjectIdentifier(process) == processIdentifier else { return }
+              ObjectIdentifier(process) == processIdentifier else {
+            completeTerminationWait(processIdentifier, terminated: true)
+            return
+        }
         let wasReady = connection != nil
+        let wasExpectedStop = stoppingProcessIdentifier == processIdentifier
+        completeTerminationWait(processIdentifier, terminated: true)
         if readyContinuation != nil {
             finishStartup(.failure(BackendProcessSupervisorError.processExited(status)))
         }
         outputHandle?.readabilityHandler = nil
         outputHandle = nil
         self.process = nil
-        capability?.clear()
-        capability = nil
-        connection = nil
+        clearSupervisorState()
 
-        if wasReady {
+        if wasReady && !wasExpectedStop {
             onUnexpectedTermination?("The managed backend exited unexpectedly (status \(status)).")
         }
     }
