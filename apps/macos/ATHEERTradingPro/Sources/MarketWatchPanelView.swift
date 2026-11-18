@@ -236,6 +236,7 @@ struct MarketWatchPanelView: View {
         let quote = model.streamingQuotes[epic]
         let instrument = model.results.first(where: { $0.epic == epic })
         let isSubscribed = model.isSubscribed(to: epic)
+        let watchlistIndex = watchlistStore.epics.firstIndex(of: epic) ?? 0
 
         return HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 2) {
@@ -296,6 +297,16 @@ struct MarketWatchPanelView: View {
             .buttonStyle(.borderless)
             .help("Remove \(epic) from watchlist")
             .accessibilityLabel("Remove \(epic) from watchlist")
+            .contextMenu {
+                Button("Move up") {
+                    _ = watchlistStore.move(epic, to: max(0, watchlistIndex - 1))
+                }
+                .disabled(watchlistIndex == 0)
+                Button("Move down") {
+                    _ = watchlistStore.move(epic, to: min(watchlistStore.epics.count - 1, watchlistIndex + 1))
+                }
+                .disabled(watchlistIndex >= watchlistStore.epics.count - 1)
+            }
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 8)
