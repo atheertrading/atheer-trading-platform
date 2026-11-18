@@ -8,7 +8,7 @@ struct BackendCredentialSocketDirectory {
 
     static func create(fileManager: FileManager = .default) throws -> BackendCredentialSocketDirectory {
         let directoryURL = fileManager.temporaryDirectory
-            .appendingPathComponent("atheer-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("atheer-\(UUID().uuidString.prefix(12))", isDirectory: true)
         let socketURL = directoryURL.appendingPathComponent("broker.sock", isDirectory: false)
 
         guard socketURL.path.utf8.count <= maximumUnixSocketPathBytes else {
