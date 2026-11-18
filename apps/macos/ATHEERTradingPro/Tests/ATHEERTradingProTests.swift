@@ -10,6 +10,7 @@ final class ATHEERTradingProTests: XCTestCase {
 
     func testNavigationExposesOnlyImplementedDestinations() {
         XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
+        XCTAssertEqual(AppSection.workspace.title, "Command Center")
         XCTAssertEqual(AppSection.settings.title, "Settings")
     }
 
