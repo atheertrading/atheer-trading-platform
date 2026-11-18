@@ -41,6 +41,12 @@ export type FetchLike = (
   init?: RequestInit,
 ) => Promise<Response>;
 
+export interface CapitalDemoClientOptions {
+  readonly requestIntervalMs?: number;
+  readonly monotonicNow?: () => number;
+  readonly sleep?: (milliseconds: number) => Promise<void>;
+}
+
 export class CapitalDemoApiError extends Error {
   constructor(
     message: string,
@@ -58,14 +64,27 @@ export class CapitalDemoApiError extends Error {
  * or LIVE endpoint methods. Credentials and session tokens remain server-side.
  */
 export class CapitalDemoClient {
+  private requestQueue: Promise<void> = Promise.resolve();
+  private lastRequestStartedAtMs = 0;
+  private hasStartedRequest = false;
+  private readonly requestIntervalMs: number;
+  private readonly monotonicNow: () => number;
+  private readonly sleep: (milliseconds: number) => Promise<void>;
+
   constructor(
     private readonly fetcher: FetchLike = fetch,
     private readonly now: () => number = Date.now,
-  ) {}
+    options: CapitalDemoClientOptions = {},
+  ) {
+    this.requestIntervalMs = options.requestIntervalMs ?? 100;
+    this.monotonicNow = options.monotonicNow ?? (() => performance.now());
+    this.sleep = options.sleep ?? ((milliseconds) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  }
 
   async startSession(credentials: CapitalDemoCredentials): Promise<CapitalDemoSession> {
     this.validateCredentials(credentials);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}/session`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}/session`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -179,7 +198,7 @@ export class CapitalDemoClient {
 
   async endSession(session: CapitalDemoSession): Promise<void> {
     this.validateSession(session);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}/session`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}/session`, {
       method: "DELETE",
       headers: this.sessionHeaders(session),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -187,12 +206,36 @@ export class CapitalDemoClient {
     await this.assertSuccessful(response, "session termination");
   }
 
+  private async fetchWithRateLimit(
+    input: string | URL,
+    init?: RequestInit,
+  ): Promise<Response> {
+    const previous = this.requestQueue;
+    let release!: () => void;
+    this.requestQueue = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+
+    try {
+      if (this.hasStartedRequest) {
+        const elapsed = this.monotonicNow() - this.lastRequestStartedAtMs;
+        const wait = Math.max(0, this.requestIntervalMs - elapsed);
+        if (wait > 0) await this.sleep(wait);
+      }
+      this.lastRequestStartedAtMs = this.monotonicNow();
+      this.hasStartedRequest = true;
+    } finally {
+      release();
+    }
+
+    return this.fetcher(input, init);
+  }
+
   private async authorizedGet(
     session: CapitalDemoSession,
     path: string,
   ): Promise<Response> {
     this.validateSession(session);
-    const response = await this.fetcher(`${CAPITAL_DEMO_BASE_URL}${path}`, {
+    const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}${path}`, {
       method: "GET",
       headers: this.sessionHeaders(session),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
