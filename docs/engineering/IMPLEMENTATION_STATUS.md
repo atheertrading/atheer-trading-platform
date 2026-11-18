@@ -496,3 +496,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Preserved existing Market Explorer design tokens, adaptive status layout and accessibility.
 - Backend status events now reflect provider-confirmed subscriptions and reconnect/degraded states; error details are redacted.
 - Display-only DEMO market data; no dealing. Exact-head CI and owner-Mac DEMO validation remain pending.
+
+
+## 2026-11-18 — Pull-request consolidation
+
+- Superseded/duplicate PRs #49, #50, #54 and #58 closed unmerged; unique code/tests/docs preserved.
+- Clean live quote replacement is draft PR #64, 11 commits ahead / 0 behind its parent at integration.
+- PR #55, #57 and #64 are open draft PRs with CI queued; no merge claimed.
+- P0 broker credential confidentiality remains unresolved.
