@@ -403,3 +403,15 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Repository Hygiene, Mermaid and Local Sync Safety passed on the recorded exact head.
 - Intel and Apple Silicon jobs are queued. PR #81 remains draft and stacked on PR #76.
 - Owner-local PostgreSQL 18.7 migration/restore and owner-Mac qualification are not established by hosted CI.
+
+
+## ATP-TRADING-001 — Persisted pre-trade authorization coordinator (2026-11-18)
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-TRADING-001 | P0 | Common typed-intent → centralized RiskEngine port → immutable decision validation → durable risk journal boundary for HUMAN/STRATEGY/ALGORITHM/AI_AGENT sources | IMPLEMENTED ON STACKED BRANCH — EXACT-HEAD CI PENDING | Branch `feat/pretrade-authorization-coordinator`; parent PR #82; Session 067; tests `pre-trade-authorization.test.mjs`; Mermaid diagram 14 |
+
+- The coordinator persists AUTHORIZED, REJECTED, and HELD assessments before returning a completed decision. Assessment intent/environment mismatch is rejected.
+- This work does not expose an API route, create an OMS order, send a broker command, or change LIVE capability.
+- Next gate: exact-head hosted backend/PostgreSQL test suite, Repository Hygiene and Mermaid validation; then concrete RiskEngine/PostgreSQL composition and authenticated, idempotent intake.
+- The branch is stacked on PR #82; qualify the parent chain before integration into `main`.
