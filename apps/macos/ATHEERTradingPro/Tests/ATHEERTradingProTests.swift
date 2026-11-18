@@ -895,6 +895,15 @@ private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
 
     @MainActor
     func disconnect() async {}
+    @MainActor
+    func testAppearancePreferenceResolvesDarkFirstAndRejectsUnknownValues() {
+        XCTAssertEqual(ATHEERAppearance.resolve("dark"), .dark)
+        XCTAssertEqual(ATHEERAppearance.resolve("light"), .light)
+        XCTAssertEqual(ATHEERAppearance.resolve("unsupported"), .dark)
+        XCTAssertEqual(ATHEERAppearance.dark.colorScheme, .dark)
+        XCTAssertEqual(ATHEERAppearance.light.colorScheme, .light)
+    }
+
 }
 
 private final class InMemoryKeychainAccess: KeychainAccessing {
@@ -911,13 +920,6 @@ private final class InMemoryKeychainAccess: KeychainAccessing {
 
     func delete(service: String, account: String) throws {
         values.removeValue(forKey: "\(service):\(account)")
-    }
-    func testAppearancePreferenceResolvesDarkFirstAndRejectsUnknownValues() {
-        XCTAssertEqual(ATHEERAppearance.resolve("dark"), .dark)
-        XCTAssertEqual(ATHEERAppearance.resolve("light"), .light)
-        XCTAssertEqual(ATHEERAppearance.resolve("unsupported"), .dark)
-        XCTAssertEqual(ATHEERAppearance.dark.colorScheme, .dark)
-        XCTAssertEqual(ATHEERAppearance.light.colorScheme, .light)
     }
 
 }
