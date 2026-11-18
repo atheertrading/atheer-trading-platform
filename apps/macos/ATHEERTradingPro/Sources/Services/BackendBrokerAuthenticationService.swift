@@ -17,21 +17,23 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
     }
 
     private let connection: BackendIPCConnection
-    private let session: URLSession
+    private let requestExecutor: URLSessionRequestExecutor
     private var maskedAccountIdentifier: String?
     private var authenticatedAt: Date?
 
     init(connection: BackendIPCConnection, session: URLSession? = nil) {
         self.connection = connection
+        let resolvedSession: URLSession
         if let session {
-            self.session = session
+            resolvedSession = session
         } else {
             let configuration = URLSessionConfiguration.ephemeral
             configuration.urlCache = nil
             configuration.httpCookieStorage = nil
             configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-            self.session = URLSession(configuration: configuration)
+            resolvedSession = URLSession(configuration: configuration)
         }
+        self.requestExecutor = URLSessionRequestExecutor(session: resolvedSession)
     }
 
     func authenticate(
@@ -59,7 +61,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         }
 
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await requestExecutor.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 throw BrokerAuthenticationError.invalidResponse
             }
@@ -99,7 +101,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
     func validateSession() async throws -> BrokerAccountSnapshot {
         let request = try makeRequest(path: "/broker-session/status", method: "GET")
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await requestExecutor.data(for: request)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                 throw BrokerAuthenticationError.unavailable
             }
@@ -145,7 +147,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
 
     func disconnect() async throws {
         let request = try makeRequest(path: "/broker-session/disconnect", method: "POST")
-        let (_, response) = try await session.data(for: request)
+        let (_, response) = try await requestExecutor.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw BrokerAuthenticationError.unavailable
         }
