@@ -131,6 +131,56 @@ final class BackendProcessSupervisorTests: XCTestCase {
     }
 
     @MainActor
+    func testNonZeroBackendExitIsReportedAfterShutdownAndClearsState() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ATHEER-BackendSupervisor-Exit-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let scriptURL = directory.appendingPathComponent("fail-on-term.sh")
+        try Data("trap 'exit 7' TERM\nwhile true; do /bin/sleep 1; done\n".utf8).write(to: scriptURL)
+
+        let artifacts = BackendRuntimeArtifacts(
+            nodeExecutableURL: URL(fileURLWithPath: "/bin/sh"),
+            entrypointURL: scriptURL
+        )
+        let supervisor = BackendProcessSupervisor(
+            resolver: ProcessSupervisorTestResolver(artifacts: artifacts),
+            startupTimeoutNanoseconds: 60_000_000_000,
+            gracefulShutdownTimeoutNanoseconds: 2_000_000_000,
+            forcedShutdownTimeoutNanoseconds: 1_000_000_000
+        )
+
+        let startTask = Task { try await supervisor.start() }
+        let startupDeadline = Date().addingTimeInterval(3)
+        while !supervisor.isManagedProcessRunning && Date() < startupDeadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTAssertTrue(supervisor.isManagedProcessRunning)
+
+        do {
+            try await supervisor.stop()
+            XCTFail("A non-zero backend shutdown status must be surfaced.")
+        } catch let error as BackendProcessSupervisorError {
+            guard case .childExitedWithFailure(let status) = error else {
+                XCTFail("Unexpected shutdown error: \(error.localizedDescription)")
+                return
+            }
+            XCTAssertEqual(status, 7)
+        }
+
+        do {
+            _ = try await startTask.value
+            XCTFail("Startup must fail when shutdown is requested before readiness.")
+        } catch {
+            XCTAssertFalse(supervisor.isManagedProcessRunning)
+        }
+
+        try await supervisor.stop()
+        XCTAssertFalse(supervisor.isManagedProcessRunning)
+    }
+
+    @MainActor
     func testReadinessMarkerAcceptsOnlyCanonicalBoundPorts() {
         XCTAssertEqual(
             BackendProcessSupervisor.parseReadyPort("ATHEER_BACKEND_READY 41023"),
