@@ -518,3 +518,10 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Merge commit: `b38902d0342962b3d12f327ff3a90881ed063fd0`.
 - PR #70 comparison is now 52 ahead / 0 behind; exact-head CI and code review remain pending.
 - No force-push, history rewrite, or direct merge to `main` was performed.
+
+## ATP-ENG-061 — Broker-to-chart stacked PR ancestry consolidation
+
+- Reconciled PR #64, #66, #67, #68 and #70 top-down with two-parent Git merge commits.
+- All five branches now compare 0 commits behind their current parent; GitHub reports mergeable true at the latest inspection.
+- Final merge commits and exact heads are recorded in Project Continuity and Session 059.
+- This is not a merge to `main`; exact-head CI and owner-Mac/DEMO qualification remain mandatory.
