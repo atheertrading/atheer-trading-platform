@@ -4,6 +4,17 @@ import type { IncomingMessage } from "node:http";
 const CAPABILITY_BYTES = 32;
 const MAX_BOOTSTRAP_BYTES = 128;
 
+function decodeBase64Url(value: string): Uint8Array {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/") + "=";
+  const binary = atob(base64);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+function encodeBase64Url(value: Uint8Array): string {
+  const binary = Array.from(value, (byte) => String.fromCharCode(byte)).join("");
+  return btoa(binary).replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+}
+
 /**
  * Reads one base64url-encoded 256-bit capability from the process' private
  * stdin pipe. The parent must close the pipe after writing the newline.
@@ -11,20 +22,19 @@ const MAX_BOOTSTRAP_BYTES = 128;
  */
 export async function readIPCStartupCapability(
   input: AsyncIterable<Uint8Array>,
-): Promise<Buffer> {
-  const chunks: Buffer[] = [];
+): Promise<Uint8Array> {
+  const chunks: Uint8Array[] = [];
   let totalBytes = 0;
   let complete = false;
 
   for await (const chunk of input) {
-    const bytes = Buffer.from(chunk);
-    const newlineIndex = bytes.indexOf(0x0a);
-    const payload = newlineIndex >= 0 ? bytes.subarray(0, newlineIndex) : bytes;
+    const newlineIndex = chunk.indexOf(0x0a);
+    const payload = newlineIndex >= 0 ? chunk.subarray(0, newlineIndex) : chunk;
     totalBytes += payload.length;
     if (totalBytes > MAX_BOOTSTRAP_BYTES) {
       throw new Error("IPC startup capability bootstrap exceeded its size limit.");
     }
-    chunks.push(payload);
+    chunks.push(payload.slice());
     if (newlineIndex >= 0) {
       complete = true;
       break;
@@ -35,12 +45,20 @@ export async function readIPCStartupCapability(
     throw new Error("IPC startup capability bootstrap ended before its delimiter.");
   }
 
-  const encoded = Buffer.concat(chunks).toString("ascii").trim();
+  const combined = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+  const encoded = new TextDecoder("ascii").decode(combined).trim();
+  combined.fill(0);
+
   if (!/^[A-Za-z0-9_-]{43}$/.test(encoded)) {
     throw new Error("IPC startup capability must be a 256-bit base64url value.");
   }
-  const capability = Buffer.from(encoded, "base64url");
-  if (capability.length !== CAPABILITY_BYTES || capability.toString("base64url") !== encoded) {
+  const capability = decodeBase64Url(encoded);
+  if (capability.length !== CAPABILITY_BYTES || encodeBase64Url(capability) !== encoded) {
     capability.fill(0);
     throw new Error("IPC startup capability has an invalid encoding.");
   }
@@ -59,12 +77,17 @@ export function hasValidIPCCapability(
   const supplied = authorization.slice("Bearer ".length);
   if (!/^[A-Za-z0-9_-]{43}$/.test(supplied)) return false;
 
-  const candidate = Buffer.from(supplied, "base64url");
+  let candidate: Uint8Array;
+  try {
+    candidate = decodeBase64Url(supplied);
+  } catch {
+    return false;
+  }
   if (candidate.length !== CAPABILITY_BYTES) {
     candidate.fill(0);
     return false;
   }
-  const expected = Buffer.from(expectedCapability);
+  const expected = expectedCapability.slice();
   const valid = timingSafeEqual(candidate, expected);
   candidate.fill(0);
   expected.fill(0);
