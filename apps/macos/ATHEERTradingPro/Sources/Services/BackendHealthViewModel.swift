@@ -4,10 +4,22 @@ final class BackendHealthViewModel: ObservableObject {
     @Published private(set) var state: BackendHealthViewState = .idle
     @Published private(set) var isRefreshing = false
 
-    private let client: BackendHealthClient
+    private var client: BackendHealthClient
 
     init(client: BackendHealthClient = URLSessionBackendHealthClient()) {
         self.client = client
+    }
+
+    @MainActor
+    func configure(client: BackendHealthClient) {
+        self.client = client
+        state = .idle
+    }
+
+    @MainActor
+    func setUnavailable(_ message: String) {
+        state = .disconnected(message)
+        isRefreshing = false
     }
 
     @MainActor
