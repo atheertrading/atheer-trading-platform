@@ -835,6 +835,7 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertTrue(model.selectedEpics.isEmpty)
         XCTAssertTrue(model.streamingQuotes.isEmpty)
         XCTAssertEqual(model.streamingState, .disconnected)
+        XCTAssertFalse(model.isStreamingRequested, "An empty subscription set must not retain a requested stream.")
         model.stopStream()
     }
 
