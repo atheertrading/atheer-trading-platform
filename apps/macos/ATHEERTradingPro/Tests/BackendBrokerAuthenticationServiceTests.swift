@@ -38,7 +38,7 @@ private final class BrokerAuthenticationURLProtocol: URLProtocol {
         defer { stream.close() }
         var body = Data()
         var buffer = [UInt8](repeating: 0, count: 4_096)
-        while true {
+        for _ in 0..<3 {
             let count = stream.read(&buffer, maxLength: buffer.count)
             if count < 0 { return nil }
             if count == 0 { break }
