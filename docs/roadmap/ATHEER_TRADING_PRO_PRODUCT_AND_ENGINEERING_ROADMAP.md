@@ -173,20 +173,16 @@ Broker subscription caps must be handled by a scheduler with priority, capacity 
 
 ## 9. Workstation and IPDS roadmap
 
-Issue #72 defines a 12-screen information architecture and the delivery order:
+Issue #72 governs the 12-screen inventory. Its delivery groups are:
 
 1. Application Shell and Navigation.
 2. Command Center.
 3. Markets.
 4. Charts and Analysis.
-5. Trading, Risk and Positions — only after domain/governance gates, DEMO qualification only.
-6. Intelligence and Research.
-7. Strategy Center.
-8. Automated Trading.
-9. Performance and Analytics.
-10. Atheer Mind OS.
-11. System and Administration.
-12. Remaining operational/detail views defined by the approved screen inventory.
+5. Trading + Risk + Positions — only after domain/governance gates, DEMO qualification only.
+6. Remaining areas: Intelligence and Research, Strategy Center, Automated Trading, Performance and Analytics, Atheer Mind OS, and System and Administration.
+
+The screen blueprint remains the canonical source for the exact 12-screen inventory; this roadmap preserves the issue's delivery grouping rather than duplicating an incomplete screen list.
 
 Cross-cutting requirements: dark-first, adaptive density, Light/Dark semantic tokens, Arabic RTL, keyboard/accessibility, operational states, responsive panels, visual QA and no fabricated financial values.
 
