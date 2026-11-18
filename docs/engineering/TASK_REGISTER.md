@@ -361,3 +361,22 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
 - CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
 - Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
+
+
+## ATP-ENG-REVIEW-2026-11-18 — Architecture decisions and controlled DEMO delivery
+
+| Work item | Priority | Status | Estimate | Acceptance gate |
+|---|---:|---|---:|---|
+| Preservation-first PR ancestry/check audit | P0 | OPEN — TRACKED BY #59 | 2–4 PD | Exact current heads, checks, merge bases and dependency graph recorded; no force-push |
+| Authenticated IPC + managed backend lifecycle | P0 | OPEN — TRACKED BY #59 | 5–9 PD | Per-launch capability, loopback-only API, authorization and lifecycle tests |
+| Unified backend broker session + Keychain provisioning | P0 | BLOCKING — TRACKED BY #59 | 6–10 PD | One session authority; DEMO auth, restart, renewal, reconnect and secret-redaction tests |
+| Market data quality + subscription orchestration | P1 | OPEN/PARTIAL — TRACKED BY #59 | 6–12 PD | Official provider limits verified; stale/gap/reconnect/priority behavior qualified |
+| Canonical multi-asset domain + PostgreSQL/audit | P0 | OPEN — TRACKED BY #59 | 8–14 PD | Provider-neutral entities, migrations, audit and idempotent event handling |
+| Central RiskEngine + OMS + outbox/idempotency | P0 | OPEN — TRACKED BY #59 | 12–20 PD | Every order intent governed; duplicate/timeout/rejection/partial-fill paths tested |
+| DEMO execution + reconciliation + failure tests | P0 | OPEN — TRACKED BY #59 | 8–14 PD | Broker-confirmed order/fill/position reconciliation and recovery evidence |
+
+- Authoritative decisions, assumptions, safety constraints, estimates and controlled DEMO Definition of Ready: [ATP-ENGINEERING-REVIEW-2026-11-18.md](ATP-ENGINEERING-REVIEW-2026-11-18.md).
+- Execution tracker: https://github.com/atheertrading/atheer-trading-platform/issues/59.
+- Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
+- No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
+- Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
