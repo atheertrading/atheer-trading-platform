@@ -1,34 +1,45 @@
 # ATHEER Trading Pro — Design Asset Manifest
 
-Status: reference source assets identified; repository binary ingestion and screen-specific high-fidelity production are pending. The four source concepts listed below are retained as reference material, not approved screen specifications.
+Status: source reference archive identified in Library; four raster concepts inspected; binary repository ingestion and screen-specific high-fidelity production remain pending. The source archive is `ATHEER Trading Pro Showcase.zip` (Library path: `/AtheerTradingPro/ATHEER Trading Pro Showcase.zip`). The archive is retained in the Library; this does not imply its binary contents are committed to Git.
 
 ## Asset conventions
 
 - Root: `docs/design/assets/`
 - Screen folder: `assets/SCR-<NN>-<screen-slug>/`
 - Stable export name: `SCR-<NN>-<screen-slug>-<appearance>-<locale>-<density>-v<MAJOR>.<ext>`
-- Example: `SCR-01-command-center-dark-en-balanced-v1.png`
+- Example: `SCR-00-application-shell-dark-ar-balanced-v1.png`
 - Preserve editable source files alongside exports when available.
 - Never replace an approved version in place; increment the version and retain history.
 - Reference concepts must remain in a separate `reference/` namespace; do not silently promote them to approved screen assets.
 
-## Identified source reference concepts
+## Original source archive and reference concepts
 
-These four original raster concepts were recovered from the 2026-11-18 conversation attachments and inspected. Their binary files have not yet been committed to this repository.
+Source: Library file **ATHEER Trading Pro Showcase.zip**, uploaded 2026-11-18. The archive contains four original PNG images (plus macOS `__MACOSX` metadata files). Original raster dimensions were inspected after extraction.
 
-| Reference ID | Original filename | Dimensions | Intended classification | Status |
+| Reference ID | Archive filename | Dimensions | Classification | Status |
 |---|---|---:|---|---|
-| REF-01 | `a_wide_clean_composite_ui_mockup_a_dark_profess.png` | 1672 × 941 | Composite multi-screen dark UI reference | Identified; repository ingestion pending |
-| REF-02 | `a_high_detail_polished_dark_themed_ui_concept_pos.png` | 1536 × 1024 | High-detail dark workstation concept | Identified; repository ingestion pending |
-| REF-03 | `a_polished_dark_themed_promotional_design_board.png` | 1536 × 1024 | Promotional multi-screen design board | Identified; repository ingestion pending |
-| REF-04 | `a_polished_dark_ui_ux_showcase_poster_for_a_tradin.png` | 1536 × 1024 | UI/UX showcase poster with screen compositions | Identified; repository ingestion pending |
+| REF-01 | `ATHEER Trading Pro Dashboard-1.png` | 1672 × 941 px | Composite dark dashboard/UI reference | Library source; Git binary ingestion pending |
+| REF-02 | `ATHEER Trading Pro Dashboard Mockup-2.png` | 1536 × 1024 px | High-detail dark workstation concept | Library source; Git binary ingestion pending |
+| REF-03 | `ATHEER Trading Pro Concept Board-3.png` | 1536 × 1024 px | Multi-screen promotional concept board | Library source; Git binary ingestion pending |
+| REF-04 | `ATHEER Trading Pro Showcase-4.png` | 1536 × 1024 px | UI/UX showcase composition | Library source; Git binary ingestion pending |
 
-Reference handling rules:
-- Preserve original bytes and filenames when ingesting; record a SHA-256 checksum and source provenance.
-- Do not crop, retouch, recolor, or overwrite source references. Any derivative must have its own filename and traceable parent reference.
-- These are composite concept references, not 12 individual screen mockups, not verified product screenshots, and not implementation evidence.
+Reference handling:
+- Preserve original bytes and filenames when ingesting; record SHA-256 checksums and source provenance.
+- Do not crop, retouch, recolor, or overwrite source references. Derivatives require separate filenames and traceable parent references.
+- These are composite concept references, not twelve independent screen mockups, verified application screenshots, or implementation evidence.
 - Treat visible prices, balances, account data, broker states, performance values, and charts as illustrative unless independently verified.
-- Keep these references separate from approved deliverables and label them `Reference / Not Approved`.
+- Label references `Reference / Not Approved`; do not infer product behavior or measurements from their pixels.
+
+## Viewport standard
+
+See [ATHEER macOS Viewport Specification v1](../ATHEER_MACOS_VIEWPORT_SPEC_V1.md).
+
+| Purpose | Logical content viewport | 2× export canvas | Qualification |
+|---|---:|---:|---|
+| Minimum layout baseline | 900 × 600 pt | 1800 × 1200 px | Current SwiftUI source declaration; runtime QA pending |
+| Wide desktop reference | 1440 × 900 pt | 2880 × 1800 px | Design target, not a supported minimum claim |
+
+SwiftUI dimensions are logical points. PNG export dimensions are pixels. Do not conflate the two or claim runtime qualification until visual QA evidence is attached.
 
 ## Required metadata per asset
 
@@ -36,7 +47,7 @@ Reference handling rules:
 |---|---|
 | Screen ID / name | Match the screen contract in the blueprint |
 | Design version | Explicit version |
-| Viewport | Exact logical width × height and scale where relevant |
+| Viewport | Exact logical width × height and export scale |
 | Appearance | Dark or Light |
 | Locale / direction | English LTR or Arabic RTL |
 | Density | Compact, Balanced, or Spacious |
@@ -75,8 +86,8 @@ For each screen, determine applicability and provide:
 - English LTR + Arabic RTL.
 - Compact + Balanced + Spacious where the layout changes materially.
 - Normal, loading, empty, stale/disconnected, error/rejected, and pending/unknown states where applicable.
-- A verified minimum supported logical window size and an agreed wide desktop viewport. Do not label provisional design canvases as supported application minimums.
-- Record macOS points (logical dimensions) separately from exported raster pixel dimensions and display scale.
+- Minimum and wide viewports from the viewport specification; add intermediate breakpoints when behavior materially changes.
+- Record macOS logical points separately from exported raster pixels and scale.
 
 ## Screen delivery gates
 
