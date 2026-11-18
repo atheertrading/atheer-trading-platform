@@ -448,3 +448,24 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - `UNKNOWN` and `RECONCILIATION_REQUIRED` are unresolved exception states. Never blindly retransmit uncertain submissions.
 - Manual, strategy, algorithmic, and AI intents remain on the same centralized RiskEngine → OMS path.
 - LIVE, broker permissions, and production financial actions remain protected.
+
+
+## ATP-MARKET-001 — Command Center live Market Watch integration (PR #43)
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-MARKET-001A | P0 | Implement versioned persistent watchlist with EPIC validation, deduplication, ordering, 40-item cap, and non-destructive recovery | IMPLEMENTED; CI PENDING | `MarketWatchlistStore.swift`; unit tests for round-trip, invalid/duplicate values, cap, ordering, recovery and persistence failure |
+| ATP-MARKET-001B | P0 | Share one app-scoped market-data model between Market Explorer and Command Center | IMPLEMENTED; CI PENDING | `ContentView`, `WorkspaceHomeView`, `CommandCenterView`, `MarketExplorerView`; dependency injection and shared model tests |
+| ATP-MARKET-001C | P0 | Replace Command Center Market Watch placeholder with real DEMO quote panel | IMPLEMENTED; CI PENDING | `MarketWatchPanelView`; provider Bid/Ask, spread, quote age, freshness, explicit stream controls |
+| ATP-MARKET-001D | P0 | Keep market-data runtime independent from screen/panel visibility | IMPLEMENTED; CI PENDING | Stream model app-scoped; removed screen-disappearance pause; explicit Start/Stop and removal behavior |
+| ATP-MARKET-001E | P1 | Implement native chart/candle engine with authenticated historical and live series | PENDING | Requires verified candle contract, timestamp normalization, aggregation, rendering and deterministic chart tests |
+| ATP-MARKET-001F | P1 | Implement account/positions/risk panels from broker-authoritative snapshots | PENDING | Requires authenticated account API, canonical account/position persistence, RiskEngine integration |
+| ATP-MARKET-001G | P1 | Implement governed order entry and OMS workflow | BLOCKED BY EXECUTION SAFETY GATES | Must use shared RiskEngine → OMS → Execution Gateway path; no UI direct broker calls |
+
+### ATP-MARKET-001 guardrails
+
+- Search and quotes are Capital.com DEMO read-only data.
+- Market-data connection does not imply broker account authentication.
+- No fake price, balance, position, P&L, market depth or fill is displayed.
+- Removing a watchlist instrument removes its subscription; hiding a panel does not stop the app-scoped market-data runtime.
+- No order creation or broker dealing action is exposed. `CAP_ALLOW_TRADING=false` remains unchanged.
