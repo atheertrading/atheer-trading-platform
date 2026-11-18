@@ -248,7 +248,7 @@ paths:
                 quote:
                   value: |-
                     event: quote
-                    data: {"provider":"capital.com","environment":"DEMO","instrumentId":"EURUSD","bid":1.08,"ask":1.0802,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000100}
+                    data: {"provider":"capital.com","environment":"DEMO","instrumentId":"EURUSD","bid":1.08,"ask":1.0802,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000100,"receivedAtMonotonicMs":250.5,"freshness":{"state":"fresh","ageMs":100,"automatedDecisionsAllowed":true,"reason":"within_policy","maximumAgeMs":5000}}
                 error:
                   value: |-
                     event: error
@@ -374,13 +374,25 @@ components:
           type: integer
           minimum: 0
     MarketDataStatus:
-      allOf:
-        - $ref: '#/components/schemas/BrokerSessionStatus'
-        - type: object
-          required: [streaming]
-          properties:
-            streaming:
-              $ref: '#/components/schemas/MarketDataStreamStatus'
+      type: object
+      additionalProperties: false
+      required: [provider, environment, state, streaming]
+      properties:
+        provider:
+          const: capital.com
+        environment:
+          const: DEMO
+        state:
+          type: string
+          enum: [not_configured, disconnected, connecting, connected, degraded, error]
+        connectedAtMs:
+          type: integer
+          minimum: 1
+        lastError:
+          type: string
+          description: Sanitized broker-session diagnostic.
+        streaming:
+          $ref: '#/components/schemas/MarketDataStreamStatus'
     CapitalMarket:
       type: object
       additionalProperties: false
