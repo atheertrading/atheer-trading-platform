@@ -460,3 +460,12 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Updated canonical `docs/architecture/diagrams/03-market-data-pipeline.mmd` to distinguish live quote distribution from cached replay and require freshness recomputation from the original provider timestamp.
 - Existing stream policy values (5,000 ms max age / 250 ms future skew) were reused, not changed. Reconcile these display/data-quality values with the historical baseline (5-second normal, >10-second entry block, >15-second stale) before RiskEngine integration.
 - No RiskEngine wiring or risk-policy change is part of PR #67.
+
+
+## ATP-MKT-007 — Reconcile approved quote freshness bands (2026-11-18)
+
+- **IMPLEMENTED ON PR #67:** <=5s normal; >5s to 10s aging; >10s to 15s block new automated entries; >15s stale. Exactly 10s remains eligible; exactly 15s is entry-blocked.
+- Replaced the generic `automatedDecisionsAllowed` with `newAutomatedEntriesAllowed`; position management remains a separate RiskEngine decision.
+- Backend initial/replayed quote classification, SSE DTO validation, SwiftUI freshness labels and deterministic boundary tests updated together.
+- Exact-head CI, Swift/XCTest, and owner-Mac DEMO runtime qualification pending.
+- Report: `SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION.md`.

@@ -739,3 +739,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Reviewed repository architecture diagrams 01–11. Updated canonical diagram 03 to show a distinct cached-quote replay path that re-evaluates freshness from the original provider timestamp.
 - The 5,000 ms max-age and 250 ms future-skew policy values in the streaming implementation are inherited values, not newly approved trading-risk limits. The historical baseline also records 5-second normal quote age, >10-second automated-entry blocking and >15-second stale classification; reconcile these semantics against the authoritative specification before RiskEngine wiring.
 - PR #67 remains a data-quality correction only; no risk policy or execution authority is changed.
+
+
+## 2026-11-18 — Session 063: quote freshness policy reconciliation
+
+- Reconciled the Library-approved policy: <=5s normal; >10s block new automated entries; >15s stale. Exact 10s remains eligible; exact 15s is entry-blocked but not yet stale.
+- Replaced single 5s stale cutoff and ambiguous `automatedDecisionsAllowed` with `fresh/aging/entry_blocked/stale/invalid` states and the entry-specific `newAutomatedEntriesAllowed` flag.
+- Backend receipt and cached replay now share the same threshold contract; original provider/receipt timestamps remain immutable. Swift SSE validation and local monotonic age display use the same threshold bands.
+- Position management is not globally disabled by the entry gate; separate RiskEngine protective decisions remain required and are not implemented by this increment.
+- Exact-head CI and owner-Mac qualification are pending. `CAP_ALLOW_TRADING=false` remains unchanged.
+- Report: `SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION.md`.

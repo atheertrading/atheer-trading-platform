@@ -12,7 +12,12 @@ const SOCKET_CLOSE_TIMEOUT_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
-const QUOTE_FRESHNESS_POLICY = { normalAgeMs: 5_000, automatedEntryBlockAgeMs: 10_000, staleAgeMs: 15_000, maximumFutureSkewMs: 250 } as const;
+const QUOTE_FRESHNESS_POLICY = {
+  normalAgeMs: 5_000,
+  automatedEntryBlockAgeMs: 10_000,
+  staleAgeMs: 15_000,
+  maximumFutureSkewMs: 250,
+} as const;
 
 export type MarketDataStreamState = "disconnected" | "connecting" | "connected" | "degraded";
 

@@ -96,6 +96,29 @@ final class MarketDataStreamClientTests: XCTestCase {
         XCTAssertTrue(quote.freshness.newAutomatedEntriesAllowed)
     }
 
+    func testParserDecodesAgingAndEntryBlockedQuoteStates() throws {
+        func decode(_ state: String, age: Int, allowed: Bool, reason: String) throws -> MarketDataStreamQuote {
+            var parser = ServerSentEventParser()
+            let payload = """
+            {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":123.0,"freshness":{"state":"\\(state)","ageMs":\\(age),"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":15000,"newAutomatedEntriesAllowed":\\(allowed),"reason":"\\(reason)"}}
+            """
+            _ = try parser.consume("event: quote")
+            _ = try parser.consume("data: \\(payload)")
+            guard case .quote(let quote) = try parser.consume("") else {
+                throw MarketDataStreamError.invalidResponse
+            }
+            return quote
+        }
+
+        let aging = try decode("aging", age: 6_000, allowed: true, reason: "quote_aging")
+        XCTAssertEqual(aging.freshness.state, .aging)
+        XCTAssertTrue(aging.freshness.newAutomatedEntriesAllowed)
+
+        let blocked = try decode("entry_blocked", age: 11_000, allowed: false, reason: "automated_entries_blocked")
+        XCTAssertEqual(blocked.freshness.state, .entryBlocked)
+        XCTAssertFalse(blocked.freshness.newAutomatedEntriesAllowed)
+    }
+
     func testParserRejectsOversizedEventPayload() throws {
         var parser = ServerSentEventParser()
         _ = try parser.consume("event: status")

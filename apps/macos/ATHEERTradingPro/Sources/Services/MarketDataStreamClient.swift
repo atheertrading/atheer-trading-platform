@@ -125,11 +125,19 @@ struct ServerSentEventParser {
                         $0 >= 0 && $0 <= Double(freshness.normalAgeMs)
                     } ?? false
                 case .aging:
-                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.normalAgeMs) && $0 <= Double(freshness.automatedEntryBlockAgeMs) } ?? false
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.normalAgeMs) &&
+                        $0 <= Double(freshness.automatedEntryBlockAgeMs)
+                    } ?? false
                 case .entryBlocked:
-                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.automatedEntryBlockAgeMs) && $0 <= Double(freshness.staleAgeMs) } ?? false
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.automatedEntryBlockAgeMs) &&
+                        $0 <= Double(freshness.staleAgeMs)
+                    } ?? false
                 case .stale:
-                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.staleAgeMs) } ?? false
+                    ageMatchesState = freshness.ageMs.map {
+                        $0 > Double(freshness.staleAgeMs)
+                    } ?? false
                 case .invalid:
                     ageMatchesState = true
                 }

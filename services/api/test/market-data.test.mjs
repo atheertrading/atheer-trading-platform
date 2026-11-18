@@ -45,7 +45,7 @@ test("rejects malformed or crossed provider quotes", () => {
   }, 1_800_000_000_010), /provider timestamp/);
 });
 
-test("stale and future-dated quotes block automated decisions", () => {
+test("quote freshness enforces the approved normal, entry-block and stale boundaries", () => {
   const quote = normalizeCapitalQuote({
     epic: "AAPL", bid: 199, ofr: 200, timestamp: 1_800_000_000_000,
   }, 1_800_000_000_010);
@@ -53,12 +53,20 @@ test("stale and future-dated quotes block automated decisions", () => {
   const normal = evaluateQuoteFreshness(quote, 1_800_000_005_000, policy);
   assert.equal(normal.state, "fresh");
   assert.equal(normal.newAutomatedEntriesAllowed, true);
+  const atFiveSeconds = evaluateQuoteFreshness(quote, 1_800_000_005_000, policy);
+  assert.equal(atFiveSeconds.state, "fresh");
   const aging = evaluateQuoteFreshness(quote, 1_800_000_005_001, policy);
   assert.equal(aging.state, "aging");
   assert.equal(aging.newAutomatedEntriesAllowed, true);
+  const atTenSeconds = evaluateQuoteFreshness(quote, 1_800_000_010_000, policy);
+  assert.equal(atTenSeconds.state, "aging");
+  assert.equal(atTenSeconds.newAutomatedEntriesAllowed, true);
   const blocked = evaluateQuoteFreshness(quote, 1_800_000_010_001, policy);
   assert.equal(blocked.state, "entry_blocked");
   assert.equal(blocked.newAutomatedEntriesAllowed, false);
+  const atFifteenSeconds = evaluateQuoteFreshness(quote, 1_800_000_015_000, policy);
+  assert.equal(atFifteenSeconds.state, "entry_blocked");
+  assert.equal(atFifteenSeconds.newAutomatedEntriesAllowed, false);
   const stale = evaluateQuoteFreshness(quote, 1_800_000_015_001, policy);
   assert.equal(stale.state, "stale");
   assert.equal(stale.newAutomatedEntriesAllowed, false);

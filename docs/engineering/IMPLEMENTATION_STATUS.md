@@ -535,3 +535,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Canonical Mermaid diagram 03 now represents cached quote replay as a separate path with freshness recomputed from the original provider timestamp.
 - Library review evidence: five proposed curated Mermaid diagrams and 12 Q&A Mermaid blocks were inspected; the separate 52-block historical export is unavailable in the current Library listing and is not claimed as reviewed.
 - Freshness threshold reconciliation remains pending before any RiskEngine authorization integration.
+
+
+## 2026-11-18 — Quote freshness policy reconciled to approved thresholds
+
+- **IMPLEMENTED ON PR #67:** normal through 5s; aging above 5s through 10s; block new automated entries above 10s through 15s; stale above 15s.
+- Exact boundary semantics are tested: 10s is not blocked; 15s is not yet stale.
+- Backend and native client share explicit state bands and an entry-specific `newAutomatedEntriesAllowed` field. Position management remains a separate RiskEngine concern.
+- **PENDING:** exact-head hosted backend/Swift CI, owner-Mac build/runtime, authenticated Capital.com DEMO verification. No trading qualification is claimed.
