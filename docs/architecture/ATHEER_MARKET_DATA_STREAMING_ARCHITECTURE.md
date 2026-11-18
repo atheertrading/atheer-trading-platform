@@ -124,3 +124,18 @@ The approved architecture requires a centralized backend Credential Management S
 The current Swift Keychain/direct-auth path in PR #26 and environment-credential/direct-auth path in PR #37 are separate temporary implementations. They create independent sessions and can report inconsistent connection state. They are not an accepted final integration.
 
 PR #37 remains a draft until the backend CMS is connected to the secure credential vault, the macOS Broker Management UI delegates to the backend session manager, and the local IPC/request boundary is authenticated. Environment variables are test/development fixtures only, not the production credential authority.
+
+
+## Q10 Connection Management & Orchestration compliance
+
+Current PR #37 streaming foundation implements one shared WebSocket runtime, a hard 40-instrument cap, subscription de-duplication, five-minute WebSocket ping, reconnect backoff, latest-quote cache, and invalid/duplicate/out-of-order counters.
+
+The following Q10 requirements remain incomplete and are tracked under ATP-BRK-003 / ATP-MKT-007:
+
+- Enforce Capital.com's documented one-session-creation-request-per-second-per-API-key limit across sequential retries, not only coalesce concurrent connect calls.
+- Schedule and monitor REST session keepalive using the backend session manager; `CapitalDemoRuntime.ping()` currently exists but is not scheduled.
+- Allocate the 40 subscription slots by operational priority (open positions, active strategies, manual trading/watchlists, analytics and reserve), rather than only unioning active consumer requests.
+- Expose connection/session/subscription utilization and failure/reconnect metrics to operational diagnostics.
+- Coordinate account switching with WebSocket teardown and subscription restoration.
+
+Do not invent undocumented global REST/WebSocket connection limits. Confirm those with Capital.com before production deployment.
