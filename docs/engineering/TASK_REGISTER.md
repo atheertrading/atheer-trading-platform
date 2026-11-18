@@ -361,3 +361,12 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Tested head: `04e70808d5cb403b6a7b8e05ceb41dc335e3d4cf`.
 - CI `44235123474`, CodeQL `44235124217`, Local Sync Safety `44235123457`: all successful.
 - Owner-Mac visual/runtime and authenticated DEMO acceptance remain pending.
+
+
+## ATP-BRK-002 — Native supervisor shutdown qualification update (2026-11-18)
+
+- PR #57 now distinguishes exit code 0, non-zero backend exit, and signal/forced termination. Non-zero or unclean termination is surfaced to the view model after process and capability state are cleared.
+- Tests cover graceful SIGTERM, forced SIGKILL, non-zero exit status, startup cancellation and idempotent stop.
+- `CAP_ALLOW_TRADING=false` is explicitly set in the child environment.
+- Operation-specific stderr diagnostics are still discarded by the native supervisor; only the overall failure status is surfaced. Filtered diagnostic capture remains open.
+- Latest code head `4a55032511125d98a9cb4861c8ab4173bea42a3e`; exact-head CI is pending.

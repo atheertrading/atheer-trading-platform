@@ -60,10 +60,18 @@ final class BackendRuntimeViewModel: ObservableObject {
         }
     }
 
-    func stop() {
-        supervisor.stop()
+    func stop() async throws {
         marketSearchClient = nil
-        healthModel.setUnavailable("The managed backend process has stopped.")
-        state = .stopped
+        healthModel.setUnavailable("Stopping the managed backend process.")
+        do {
+            try await supervisor.stop()
+            healthModel.setUnavailable("The managed backend process has stopped.")
+            state = .stopped
+        } catch {
+            let message = "The managed backend could not be confirmed stopped: \(error.localizedDescription)"
+            healthModel.setUnavailable(message)
+            state = .failed(message)
+            throw error
+        }
     }
 }
