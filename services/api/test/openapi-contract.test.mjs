@@ -66,7 +66,7 @@ test("historical query parameters are separately declared and bounded", () => {
   const names = [...history.matchAll(/^        - name: ([A-Za-z][A-Za-z0-9]*)$/gm)]
     .map((match) => match[1]);
   assert.deepEqual(names, ["epic", "resolution", "max"]);
-  assert.match(history, /pattern: '\^\[A-Za-z0-9_\\.\\-\]\{1,64\}\$'/);
+  assert.ok(history.includes("pattern: '^[A-Za-z0-9_.-]{1,64}$'"));
   assert.match(history, /maximum: 1000/);
   assert.match(history, /minimum: 1/);
   assert.match(history, /enum: \[MINUTE, MINUTE_5, MINUTE_15, MINUTE_30, HOUR, HOUR_4, DAY, WEEK\]/);
