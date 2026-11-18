@@ -859,7 +859,8 @@ private func makeMarketSearchClient(session: URLSession) -> URLSessionMarketSear
     let capability = try! BackendIPCCapability(testBytes: Data(repeating: 7, count: 32))
     let connection = BackendIPCConnection(
         baseURL: URL(string: URLSessionBackendHealthClient.baseURLString)!,
-        capability: capability
+        capability: capability,
+        credentialSocketURL: URL(fileURLWithPath: "/tmp/atheer-market-search-test.sock")
     )
     return URLSessionMarketSearchClient(connection: connection, session: session)
 }
