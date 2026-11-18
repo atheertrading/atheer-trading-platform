@@ -475,3 +475,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Repository Hygiene, Mermaid and Local Sync Safety passed. Intel/Apple Silicon remain queued. No full PR qualification or merge is claimed.
 - Owner-local PostgreSQL 18.7 backup/restore and owner-Mac runtime qualification remain pending.
 - Transactional outbox contains domain events only; no execution publisher, OMS worker, Execution Gateway or broker dealing was introduced.
+
+## 2026-11-18 — ATP-RISK-001A: Central Pre-Trade RiskEngine Foundation
+
+- Implemented on stacked backend branch `feat/central-risk-engine-foundation` (base PR #81 / canonical domain PR #76): policy-driven pre-trade evaluation using canonical order intent and risk-assessment contracts.
+- Implemented explicit versioned policy/context ports, provider provenance/environment correlation, exact quote snapshot binding, account and portfolio freshness, exact decimal spread checks, quantity/price precision and increments, broker min/max size, stop-loss protection, position/exposure/loss/drawdown and optional account funds/margin policy checks, strategy/AI permission profiles and trading-control gates.
+- Assessment outcomes: AUTHORIZED, REJECTED, HELD. Missing/invalid/unavailable evidence or controls fail closed. No universal risk values or default 0.25% rule added.
+- Tests and architecture/Mermaid docs added. This is a source implementation, not yet exact-head verified.
+- No policy persistence/runtime provider, portfolio valuation implementation, risk HTTP endpoint, OMS wiring, execution gateway or broker dealing operation is included. Default `DisabledRiskTradingControls` remains false; `CAP_ALLOW_TRADING=false` unchanged.
+- Exact-head Node 24 build/tests and hosted hygiene/security/Mermaid/sync checks pending. Owner-Mac and authenticated DEMO qualification are separate gates.
+
