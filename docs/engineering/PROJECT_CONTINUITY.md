@@ -721,3 +721,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #66 remains OPEN / DRAFT, stacked on PR #64. Preserve its dependency chain; do not merge while checks are pending.
 - Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no credentials or orders were used.
+
+
+## 2026-11-18 — Cached quote freshness replay correction
+
+- Corrected a data-integrity issue in the existing DEMO stream: cached quote replay previously reused its original freshness assessment, which could incorrectly present an old quote as fresh after reconnect.
+- `latest(epics)` now recalculates freshness from the provider timestamp at replay time and preserves original provider/receipt provenance. A stale replay is marked stale and `automatedDecisionsAllowed=false`.
+- Added a deterministic 6-second stale-cache regression test.
+- PR #67 branch `fix/market-data-cached-quote-freshness-2026-11-18`, based on PR #66 head `9c0dd2e87cadabfbe33c4f27046b4991129c19a8`. Code commits `d8ecbf3f2431b057e7104720b6f030401f905628` and `12e32c175c8f05ecb9708879345f31ed31d380ff`.
+- Hosted tests/CI pending; no provider/runtime or automated-trading qualification is claimed.
+- Session report: `SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY.md`. `CAP_ALLOW_TRADING=false` remains unchanged.
