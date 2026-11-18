@@ -518,7 +518,7 @@ test("broker credentials and disconnect are not accepted by the HTTP API", async
   assert.equal(serverRuntime.status().state, "not_configured");
 });
 
-test("broker session routes reject wrong methods and market data rejects invalid resolutions", async () => {
+test("HTTP broker credential routes remain absent and market data rejects invalid resolutions", async () => {
   const credentialRoute = await fetch(baseUrl + "/broker-session/connect", { headers: authorization });
   assert.equal(credentialRoute.status, 404);
   const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
