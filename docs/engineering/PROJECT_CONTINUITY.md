@@ -760,3 +760,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Persistent Market Watch, live candle aggregation, indicators, drawings, replay and UI date-range selection remain pending.
 - PR #66 CI uncovered a missing credentialSocketURL in the MarketSearch test fixture. Corrected on updated PR #66 head and propagated to PR #67/#68/#69 branches; new exact-head CI pending. Previous run remains failed and Apple Silicon qualification must be rerun.
 - Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`. `CAP_ALLOW_TRADING=false` unchanged.
+
+
+## 2026-11-18 — Chart workspace review remediation
+
+- Source review identified missing explicit initializers for injected immutable chart dependencies in `WorkspaceHomeView` and `CommandCenterView`; both were corrected on PR #70.
+- Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
+- PR #70 exact head: `484907de2f308231dac89d5e151beee6e95c250a`; exact-head CI is pending.
+- PR #71 remains open and currently reports non-mergeable after the chart branch advanced; preserve it until its ancestry purpose and current compare state are reconciled.
+- Owner Mac is not accessible through this session; no local pull/build/runtime verification is claimed.
