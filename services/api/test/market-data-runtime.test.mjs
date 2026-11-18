@@ -261,7 +261,7 @@ test("broker session manager enforces Capital.com one-session-per-second limit",
   now += 999;
   const limited = await manager.connect(credentials);
   assert.equal(limited.state, "error");
-  assert.match(limited.lastError, /Retry in 1 seconds/);
+  assert.match(limited.lastError, /Retry in 1 second/);
   assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
 
   now += 1;
