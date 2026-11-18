@@ -1,6 +1,6 @@
 # ATHEER Trading — Implementation Status
 
-**Snapshot date:** 2026-11-16  
+**Snapshot date:** 2026-11-17  
 **Evidence scope:** New public repository inspection and available historical project summaries.
 
 ## Status definitions
@@ -132,3 +132,81 @@ Phase 1 remains IN PROGRESS under the owner's explicit authorization to proceed 
 - Added API contract documentation, package setup documentation, Makefile command, and Node 24 CI typecheck/test steps.
 - Isolated verification in the available Linux container: TypeScript 5.8.3 build and strict typecheck passed; Node.js 22.16.0 tests passed 6/6 against compiled JavaScript. A prior GitHub run on the previous revision passed npm ci, strict typecheck, and all six tests on Node.js 24.22.2; repository hygiene and GitHub Actions CodeQL also passed. The macOS build job remained queued. This commit changes TypeScript execution to compile-first and requires a fresh hosted run.
 - No database, broker, market data, account, order, strategy, RiskEngine, OMS, or Execution Gateway functionality is implemented by this slice.
+
+
+## macOS backend health integration — ATP-2026-11-16-013
+
+**Status: IN PROGRESS — implementation and isolated-container smoke test completed; hosted macOS CI and local Mac qualification pending.**
+
+- Branch: feat/macos-backend-health-integration; PR #10.
+- Added a dependency-injected URLSession client, payload decoder, view model, and backend status panel to the native macOS workspace.
+- The app distinguishes API connectivity from platform readiness. HTTP 503 with a valid not_ready payload is displayed as API connected / platform not ready.
+- Persistence and broker are shown as not configured; trading is shown as disabled. No order controls or broker connection were added.
+- Four XCTest cases cover payload mapping, inconsistent HTTP status rejection, connected-but-not-ready state, and disconnected state.
+- Swift 6.2.1 Linux Foundation/URLSession typecheck and Swift-to-Node API smoke test passed. These are not Xcode/macOS acceptance results.
+- Current PR #10 hosted backend, repository hygiene, and CodeQL checks passed on its prior head; macOS build/test remained queued. The branch is being rebased onto current main, so fresh CI is required.
+- Local Mac build, XCTest, and launch remain separate acceptance requirements.
+
+## Safe local synchronization — ATP-2026-11-16-014
+
+**Status: IMPLEMENTED AND VERIFIED IN ISOLATED GIT TESTS; LOCAL MAC EXECUTION PENDING.**
+
+- PR #11 merged scripts/safe-sync.sh, bootstrap and doctor updates, deterministic DerivedData paths, app-run helper, Makefile workflows, local sync documentation, and a dedicated GitHub Actions safety workflow.
+- The safety workflow passed. It verifies staged/unstaged and untracked preservation, backup branch and external backup, retained stash, clean fast-forward, origin mismatch rejection, and divergent-main refusal.
+- No local user repository or workstation files were accessed or modified in this session.
+- Actual local repository inspection, safe synchronization, Xcode project generation, build, XCTest, and application launch remain pending.
+
+
+## Phase 0 engineering-state assessment — 2026-11-16
+
+**Repository snapshot:** `atheertrading/atheer-trading-platform`, default branch `main`, verified main SHA `0dc062bb620a4afa93c60e5f060ee405846e3cbc` before PR #10 integration. PR #10 branch `feat/macos-backend-health-integration` was seven commits ahead and zero behind that main SHA.
+
+**Implemented and merged:** governance baseline, XcodeGen macOS shell/configuration, Mermaid documentation baseline, backend health/readiness service, and safe local synchronization/bootstrap. Relevant merged PRs: #1, #2, #6, #7, #8, #9, #11; dependency PRs #3, #4, #5 also merged.
+
+**Pending integration:** PR #10 adds the native macOS health panel, URLSession client, payload validation, view model, and five XCTest cases. Its original head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` had successful hosted macOS Debug/Release build, XCTest, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Two subsequent documentation-only commits updated continuity and README status; fresh checks on the updated head are required before merge.
+
+**Not implemented in the repository:** PostgreSQL persistence, authentication/authorization, broker adapter or Capital.com connectivity, market-data ingestion/streaming, instruments domain, RiskEngine, OMS, Execution Gateway, order lifecycle, reconciliation, portfolio/positions, strategy engine, backtesting/simulation, Model Gateway, agent runtime, production IPDS, and operational production deployment.
+
+**Local qualification:** not performed in this assessment. Historical Xcode 14.3.1 / Swift 5.8.1 / macOS 13.7.8 and XcodeGen 2.36.1 are not freshly verified. The safe-sync workflow is not yet executed against the owner's local checkout. Do not mark M02-001, M02-005, or M02-006 complete on hosted evidence alone.
+
+
+### PR #10 updated-head verification — 2026-11-16
+
+The original implementation head `3b7bc500a7a2225b92409c5ab8da2fb3d6b56564` passed hosted macOS build/test/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and safe-sync checks. Fourteen documentation-only follow-up commits advanced the branch to `2a999fc8609ac833c94908ef219c347ec5137c95` (21 commits ahead of main, zero behind). At the latest check inspection, the dedicated safe-sync run had passed, CodeQL and Local Sync Safety were in progress, and the main CI workflow was pending. The updated head is not yet merge-qualified. Local Mac verification remains unperformed.
+
+
+### PR #10 review hardening — 2026-11-16
+
+The health client destination is fixed to loopback rather than accepting an arbitrary base URL. The readiness decoder rejects any `not_ready` response that reports trading enabled or a non-disabled trading status. An XCTest covers this contradictory-payload rejection. This code change is pending fresh hosted CI and local Mac verification.
+
+- PR #10 review hardening: loopback endpoint is fixed; not-ready/trading-enabled contradictions are rejected; five XCTest cases cover the health decoder and view-model behavior.
+
+
+## PR #10 current-head verification — 2026-11-17
+
+**Status: HOSTED CI VERIFIED; PR OPEN; LOCAL QUALIFICATION AND REVIEW POLICY OUTSTANDING.**
+
+- Exact inspected head: `bbe43218e4010442605befb9527907b0968dca4f`; base `main` at `0dc062bb620a4afa93c60e5f060ee405846e3cbc`; 26 ahead / 0 behind; 19 files changed.
+- CI #116 passed repository hygiene, backend toolchain/typecheck/tests, XcodeGen generation, scheme inspection, macOS Debug, XCTest, Release, and Swift CodeQL. Local Sync Safety #46 and GitHub Actions CodeQL #116 passed.
+- Fail-closed correction `ee92ac8c97e065db2cd774804c130499a1f49a4c` fixes the URLSession client to `127.0.0.1:4100` and rejects a `not_ready` payload that advertises trading enabled. Five health-focused XCTest cases are present.
+- PR #10 remains open and unmerged. GitHub reports mergeable. No review submissions or requested reviewers were present at inspection. Branch protection is unverified because the endpoint returned 403 to the connected integration; rulesets returned an empty list.
+- Actual owner-Mac build/test/launch and local app/backend health integration remain outstanding. M02-005 remains IN PROGRESS. Hosted CI is not physical workstation qualification.
+- Coordination request posted on PR #10 for the macOS verification worker and review/maintainer worker. No local worktree was accessed and no protected trading/security/production settings were changed.
+
+
+## 2026-11-17 — first native workspace/API connection implementation
+
+**Status: IMPLEMENTED IN SOURCE; HOSTED MACOS CI PENDING; OWNER RUNTIME QA PENDING.**
+
+- Branch: `feat/macos-workspace-api-connection`.
+- PR: [#17](https://github.com/atheertrading/atheer-trading-platform/pull/17), based on PR #10 head `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+- Exact PR head at this update: `45f38158b5c7e97ba1857804e585147ddf6c61cb`.
+- Added native `NavigationSplitView` with two real destinations only: Workspace and API Connection.
+- Added a dedicated read-only API Connection screen with initial check, manual refresh, separate process liveness/platform readiness, readiness HTTP status, dependency/trading fields, timestamps, and non-sensitive copy actions.
+- Improved health error classification. Transport failure of the liveness endpoint, invalid liveness response, unexpected liveness HTTP status, and readiness-only failures are distinct. A successful liveness result is retained when readiness cannot be queried.
+- Added selectable/copyable diagnostic values, contextual Copy, native text-editing commands, and focused XCTest cases.
+- Exact-head repository hygiene, backend toolchain/typecheck/tests, and Local Sync Safety #76 passed. CI #129 macOS generation/build/XCTest/Release/Swift CodeQL was still running at XcodeGen installation; no result is inferred.
+- Owner-provided curl evidence confirms the local API's expected HTTP 200 liveness and HTTP 503 not-ready behavior. The new app screen has not yet been visually verified on the owner's Mac.
+- Full workspace/panel composition, settings window, IPDS token conformance, and application-wide clipboard audit remain incomplete. Issues #14 and #16 remain open.
+- The repository contains no Capital.com adapter or credential-handoff API. No credential form or Keychain workflow is implemented; the current local health API is not a secure secret-transfer contract.
+- No broker credentials, trading operations, risk controls, LIVE capability, or production configuration were changed.

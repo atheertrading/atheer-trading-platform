@@ -68,3 +68,8 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-16-012 | 2026-11-16 | Backend health vertical slice | Merged PR #8 Xcode configuration; inspected the current app shell and prior local qualification report; implemented a loopback-only Node 24/TypeScript health/readiness service with fail-closed readiness and six tests. | API_HEALTH_CONTRACT; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; EDL-007 |
+
+| ATP-2026-11-16-013 | 2026-11-16 | macOS backend health integration | Added URLSession health client, explicit connected/not-ready UI states, view model, and four XCTest cases; Swift-to-Node smoke test passed in isolated Linux container. | API_HEALTH_CONTRACT; DEVELOPER_SETUP; EDL-008; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+| ATP-2026-11-16-014 | 2026-11-16 | Non-destructive local synchronization | Added safe main synchronization, external backup, retained stash, workstation doctor/bootstrap, Makefile workflows, and automated Git behavior tests; actual Mac execution pending. | LOCAL_SYNC_PROCEDURE; EDL-009; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+| ATP-2026-11-16-015 | 2026-11-16 | Phase 0 continuity and engineering-state assessment | Reconciled current main/PR state, reviewed PR #10 implementation and CI, corrected stale README and continuity status on PR branch, recorded local qualification and domain implementation gaps. | PROJECT_CONTINUITY; TASK_REGISTER; IMPLEMENTATION_STATUS; ENGINEERING_DECISION_LOG; README; SESSION_2026-11-16_015_PHASE_0_CONTINUITY_ASSESSMENT |

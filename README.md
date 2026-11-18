@@ -53,7 +53,7 @@ DEMO, SIMULATION, BACKTEST, and LIVE are distinct operating modes. Broker-derive
 
 ## Current status
 
-The governance baseline is merged. The platform foundation branch introduces a reproducible XcodeGen macOS app shell and CI/tooling configuration; it remains subject to CI and local Xcode verification. No production trading, Capital.com integration, or production IPDS is claimed by this README. See [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md) and [Task Register](docs/engineering/TASK_REGISTER.md).
+The governance baseline and platform foundation are merged. PR #9 adds a loopback-only Node.js/TypeScript health/readiness service; PR #11 adds tested non-destructive local synchronization and workstation bootstrap tooling. PR #10 adds the native macOS health integration. Its current head `bbe43218e4010442605befb9527907b0968dca4f` has passed hosted CI #116 (including macOS Debug, XCTest, Release, and Swift CodeQL), Local Sync Safety #46, and GitHub Actions CodeQL #116. The branch is 26 commits ahead of `main` and zero behind; GitHub reports it mergeable. Review policy/branch protection remains unverified, and local Mac/Xcode build, test, launch, and end-to-end app/backend qualification remain outstanding. Hosted CI does not establish local qualification. Local synchronization, arm64 qualification, production trading, Capital.com integration, persistence, RiskEngine, OMS, Execution Gateway, and production IPDS are not claimed. See [Implementation Status](docs/engineering/IMPLEMENTATION_STATUS.md), [Task Register](docs/engineering/TASK_REGISTER.md), and [Project Continuity](docs/engineering/PROJECT_CONTINUITY.md).
 
 ## Contributing
 

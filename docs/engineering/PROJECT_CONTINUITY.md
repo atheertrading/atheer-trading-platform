@@ -6,9 +6,9 @@
 | Repository | https://github.com/atheertrading/atheer-trading-platform |
 | Repository role | Canonical engineering and implementation repository; not the sole project knowledge authority |
 | Default branch | `main` |
-| Current work branch | `engineering/bootstrap-governance` |
+| Current work branch | `feat/macos-workspace-api-connection` (PR #17, stacked on PR #10) |
 | Record status | Initial baseline; further source reconciliation required |
-| Last reviewed | 2026-11-16 |
+| Last reviewed | 2026-11-17 |
 
 ## 1. Current verified state
 
@@ -260,5 +260,114 @@ Next: complete final diff/merge-readiness review, merge only if the latest head 
 - The historical local environment assessment records Xcode 14.3.1 / Swift 5.8.1, XcodeGen 2.36.1, Node.js 24.22.0, Debug and Release builds, XCTest 1/1, and application launch at the earlier local main commit 70794e7f20f129c17ba64bcf4b1eba0df32999df. These results do not qualify the later main commit.
 - A later local-worktree report identified uncommitted continuity/report changes. Current local status has not been inspected in this session; no local synchronization was attempted.
 - Backend branch feat/backend-health-vertical-slice adds a local-only health/readiness service. It is not a trading API and does not imply broker/database readiness.
-- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. GitHub CI and Node.js 24 local checks remain pending.
-- Outstanding: reconcile stale PR #3/#4/#5 against current main; finish formal source/ADR reconciliation; qualify current local Mac state without overwriting user changes; then define API, persistence, and domain contracts before implementing financial services.
+- Isolated container checks: TypeScript 5.8.3 strict typecheck passed; Node.js 22.16.0 tests passed 6/6. PR #9 backend CI on Node.js 24.22.2 passed; local Node.js 24 checks remain pending.
+- Subsequent progress: PR #3, #4, #5, and #11 are merged. PR #10 remains open for native macOS backend-health integration. PR #11 adds tested non-destructive local synchronization, but it has not been run against the owner's Mac. Formal source/ADR reconciliation and business API, persistence, and domain contracts remain prerequisites before implementing financial services.
+
+
+## Current integration status — 2026-11-16
+
+- Current main: 0dc062bb620a4afa93c60e5f060ee405846e3cbc.
+- Merged PRs: #3 (Node setup action), #4 (markdownlint action/config baseline), #5 (checkout action), #9 (local backend health service), and #11 (safe local synchronization/bootstrap).
+- PR #10 adds native macOS health integration. Its branch is being rebased onto current main; hosted macOS build/test and local Mac qualification remain pending.
+- The local synchronization procedure is implemented and its dedicated Ubuntu Git behavior workflow passed. It has not been executed against the owner's Mac.
+- The historical local report identified modified continuity/report files and an untracked session artifact. The current local worktree has not been inspected in this session; no local synchronization was attempted.
+- The safe-sync workflow preserves staged, unstaged, and non-ignored untracked work, retains an external backup, backup branch, and stash, and fast-forwards local main only. It does not rebase feature branches.
+- The local backend remains loopback-only at 127.0.0.1:4100. Platform readiness remains not ready; persistence and broker are not configured; trading remains disabled.
+- Next: complete PR #10 hosted macOS CI; then inspect and safely synchronize the actual Mac, run doctor/bootstrap, build and test the macOS app, and verify backend/app launch. Continue formal source and ADR reconciliation before defining persistence, market-data, RiskEngine, OMS, or execution contracts.
+
+
+## Phase 0 engineering-state reconciliation — 2026-11-16
+
+This addendum supersedes earlier current-branch and PR #10 status statements above where they conflict with the verified GitHub snapshot.
+
+- Canonical repository: atheertrading/atheer-trading-platform; default branch main.
+- Verified main commit at assessment: 0dc062bb620a4afa93c60e5f060ee405846e3cbc.
+- Merged PRs include #1, #2, #6, #7, #8, #9, and #11; Dependabot PRs #3, #4, and #5 are also merged.
+- PR #10 (feat/macos-backend-health-integration) is open, twenty-one commits ahead of main and zero commits behind after fourteen documentation-only follow-up commits. Current head: 2a999fc8609ac833c94908ef219c347ec5137c95. The original implementation head 3b7bc500a7a2225b92409c5ab8da2fb3d6b56564 passed hosted CI; checks for the current documentation-updated head are still running.
+- PR #10 hosted checks were inspected on its exact head: macOS build/tests/Release, Swift CodeQL, backend toolchain, repository hygiene, GitHub Actions CodeQL, and local-sync safety checks all completed successfully. No review submissions or review comments were present at inspection.
+- PR #10 implements the read-only native health panel and five XCTest cases. Its task remains IN PROGRESS until local Mac Xcode build, test, launch, and integration qualification are performed.
+- PR #9 implements only the local health/readiness service. Persistence, broker, market data, account services, RiskEngine, OMS, Execution Gateway, strategies, and trading execution remain unimplemented in this repository.
+- PR #11 safe-sync implementation and its isolated Git behavior tests are merged; no synchronization has been executed against the owner's physical Mac.
+- Historical local workstation values (Intel iMac, macOS 13.7.8, Xcode 14.3.1, Swift 5.8.1, XcodeGen 2.36.1) remain historical and have not been freshly verified.
+- Branch protection could not be read through the GitHub integration (HTTP 403). An earlier rulesets query returned no rulesets; current protection status remains unverified and must not be inferred from the 403.
+- Local repository path remains /Users/enghossamalfahad/Developer/AtheerTradingPlatform. No local filesystem or shell session is available in this assessment; local dirty-worktree state and the previously reported modified continuity files/untracked session report remain unverified and must be preserved.
+
+### Current next actions
+
+1. Complete final review and integrate PR #10 only while its head remains unchanged and all required checks remain green.
+2. Verify the resulting main commit and update repository status records.
+3. Execute the documented safe-sync workflow on the owner's Mac only when actual local access is available; inspect and preserve all local modifications first.
+4. Run local doctor, XcodeGen generation, Debug/Release builds, XCTest, application launch, and local backend/app health integration. Record exact toolchain versions and results.
+5. Continue Phase 1 repository security/local Git configuration findings without treating hosted CI success as closure.
+6. Reconcile the Library's formal specifications and historical ADRs before defining persistence, market-data, broker, RiskEngine, OMS, Execution Gateway, strategy, or AI implementation contracts.
+
+No broker credentials, database, financial state, risk limits, LIVE capability, signing identity, or production deployment was changed.
+
+
+### PR #10 documentation follow-up correction — 2026-11-16
+
+The PR #10 branch now contains six sequential documentation-only follow-up commits after the original implementation head. Current branch head is 27dba0ac60d1fbc053fbab4ac88789d4892d37d5, thirteen commits ahead of main and zero behind. On the current head, the dedicated safe-sync test has passed; GitHub Actions CodeQL and Local Sync Safety are still in progress, and the main CI workflow is pending. Do not merge until every required check on this exact head has completed successfully.
+
+
+### Latest Phase 0 documentation batch — 2026-11-16
+
+The PR #10 branch has advanced to `2a999fc8609ac833c94908ef219c347ec5137c95`, twenty-one commits ahead of `main` with no divergence. Fourteen commits after the original implementation head are documentation-only Phase 0 reconciliation updates covering README, project continuity, source provenance, specification conflicts, task register, implementation status, conversation index, and the Phase 0 session record. Re-run and inspect all checks on the exact current head before integration.
+
+
+### PR #10 fail-closed review correction — 2026-11-16
+
+The PR #10 health client now fixes its destination to `127.0.0.1:4100`, and its decoder rejects a `not_ready` payload that reports trading enabled or a non-disabled trading status. A fifth XCTest covers the contradictory-payload rejection. The code change is committed at `ee92ac8c97e065db2cd774804c130499a1f49a4c`; fresh hosted checks and local Mac qualification remain pending.
+
+
+### PR #10 current-head revalidation — 2026-11-17
+
+This addendum supersedes earlier PR #10 head, hosted-check, and merge-readiness snapshots in this file.
+
+- Repository: `atheertrading/atheer-trading-platform`; PR #10 remains OPEN and UNMERGED.
+- Verified head: `bbe43218e4010442605befb9527907b0968dca4f`; base `main` at `0dc062bb620a4afa93c60e5f060ee405846e3cbc`; 26 commits ahead / 0 behind; 19 changed files (747 additions / 9 deletions); GitHub reports mergeable.
+- Current-head hosted CI #116 passed: repository hygiene/Markdown lint; backend install, typecheck and tests; XcodeGen project generation and scheme inspection; macOS Debug build; XCTest; Release build; Swift CodeQL. Local Sync Safety #46 and GitHub Actions CodeQL #116 also passed.
+- The current diff includes fail-closed review correction commit `ee92ac8c97e065db2cd774804c130499a1f49a4c`: fixed loopback destination and rejection of `not_ready` payloads that advertise trading enabled; five health-focused XCTest cases are present.
+- No PR review submissions, inline review threads, conversation comments, or requested reviewers existed before the coordination comment was posted. A coordination comment now requests actual Mac qualification from the macOS implementation/verification worker and current-head review/protection confirmation from the maintainer/review worker.
+- Branch-protection read returned HTTP 403 (resource not accessible by integration); the rulesets endpoint returned an empty list. Required review/protection policy remains unverified; do not infer that no branch protection exists.
+- Physical owner-Mac Xcode build, XCTest, app launch, and local app-to-backend health verification remain outstanding. Historical workstation values are not freshly verified. No local filesystem or worktree was accessed.
+- PR description was updated with the current-head verification and outstanding acceptance. M02-005 remains IN PROGRESS. Do not claim local qualification or merge readiness until required review/protection policy and remaining acceptance evidence are confirmed.
+- Safety state unchanged: read-only health integration, loopback-only backend, persistence/broker not configured, trading disabled; no credentials, signing identities, risk limits, broker permissions, or production state changed.
+
+
+## 2026-11-17 — first native workspace and API connection implementation
+
+**Implementation branch:** `feat/macos-workspace-api-connection`  
+**PR:** [#17](https://github.com/atheertrading/atheer-trading-platform/pull/17), stacked on PR #10.  
+**PR #17 head at this update:** `45f38158b5c7e97ba1857804e585147ddf6c61cb`  
+**Base:** PR #10 head `06bd496d957b6cd2f999209cf5dc83cae54251cf`.
+
+### Source and specification inspection
+
+- Revalidated root `AGENTS.md`, PR #10, PR #12, PR #13, issues #14–#16, and the current branch inventory.
+- Inspected the PR #10 SwiftUI shell, health client/models/view model/status panel, XcodeGen project configuration, XCTest target, and ATP-API-002.
+- Inspected the owner-directed ATP-UX-001 directive on PR #13. It permits task-oriented workspaces but does not define the final screen inventory or approve arbitrary placeholder modules.
+- The full source text and approval metadata for ATP-ARCH-014, ATP-ARCH-037, ATP-ARCH-038, and the complete IPDS specification remain unreconciled in the available repository/Library search. No final workspace inventory, settings semantics, or IPDS token system is claimed.
+- No Capital.com adapter or broker-authentication/credential-handoff contract exists in the inspected repository tree. ATP-API-002 explicitly excludes broker authentication.
+
+### Implemented
+
+- Replaced the one-destination shell with native `NavigationSplitView` navigation.
+- Added only two functional destinations: Workspace and API Connection.
+- Reused the PR #10 loopback health client and shared view model.
+- Added separate liveness and readiness reporting, manual refresh, readiness diagnostics, timestamps, and differentiated transport/contract/server failures.
+- Preserved a successful liveness result when the separate readiness request fails.
+- Added selectable/copyable non-sensitive diagnostic rows, contextual Copy, and native `TextEditingCommands`.
+- Added XCTest coverage for navigation, health payloads, readiness failure preservation, and view-model error classification.
+
+### Verification state at this update
+
+- Exact-head hosted repository hygiene: PASS.
+- Exact-head backend toolchain/typecheck/tests: PASS.
+- Exact-head Local Sync Safety #76: PASS.
+- Exact-head macOS XcodeGen/build/XCTest/Release/Swift CodeQL workflow #129: IN PROGRESS at XcodeGen installation; no macOS build/test pass is claimed yet.
+- Owner-provided local API evidence: `/health/live` HTTP 200 and `/health/ready` HTTP 503 with `not_ready`, persistence/broker `not_configured`, and trading disabled. This validates the expected endpoint behavior, not the new screen's visual integration.
+- Owner-side visual/runtime verification of PR #17, clipboard behavior, keyboard focus, accessibility, and recovery remains pending.
+
+### Boundaries and next action
+
+PR #10 remains open and unchanged. PR #17 is not merged. The API process remains external to the app; the UI refreshes and reports health but does not launch or terminate the process. No broker credentials, Keychain records, Capital.com sessions, market data, orders, risk limits, or trading permissions were introduced. Continue with exact-head CI, then owner-Mac runtime verification.

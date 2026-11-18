@@ -91,3 +91,30 @@ Every material decision must state its source, date, scope, status, rationale, c
 - Rationale: Deliver a non-trading application/backend operational slice without fabricating data, exposing services to the network, or prematurely deciding the full API/event transport architecture.
 - Constraints: The slice does not settle REST versus WebSocket versus IPC for business APIs. It does not establish database, broker, authentication, production, or LIVE readiness.
 - Verification: Strict TypeScript build/check and six Node test cases passed in an isolated Linux container using Node 22.16.0. A prior GitHub run on the previous revision passed npm ci, typecheck, and tests on Node 24.22.2, repository hygiene, and GitHub Actions CodeQL; the macOS build remained queued. The compile-first refactor requires a fresh hosted run; local Mac verification remains pending.
+
+
+## EDL-008 — Native macOS consumption of local backend health
+
+- Date: 2026-11-16
+- Status: Accepted bounded integration decision under delegated engineering authority.
+- Decision: The macOS application reads the local backend's liveness and readiness endpoints through an injected URLSession client at 127.0.0.1:4100. A small view model owns refresh state; the workspace displays API connectivity, platform readiness, persistence, broker, and trading state.
+- HTTP 503 with a valid not_ready readiness payload is treated as a successful health-query exchange. The UI reports API connected and platform not ready separately.
+- The app performs one initial health check and offers manual refresh. It does not poll continuously or manage/launch the backend process.
+- No broker credentials, account data, market data, orders, or execution operations are introduced. Trading remains disabled.
+- This decision applies only to the local health contract. It does not settle general business API transport, authentication, authorization, or service discovery.
+- Verification: Swift 6.2.1 Linux Foundation/URLSession typecheck and Swift-to-Node local health smoke test passed. Xcode/macOS CI and local Mac qualification remain pending.
+
+## EDL-009 — Non-destructive local main synchronization
+
+- Date: 2026-11-16
+- Status: Accepted operational safety decision under delegated engineering authority.
+- Decision: Local main synchronization must validate the expected repository origin, preserve staged and unstaged patches and non-ignored untracked files in a private external backup, create a local pre-sync branch and retained stash, then fast-forward main only.
+- After updating main, restore the original branch and reapply the stash with index state. Retain the stash, backup branch, and external backup for inspection; never auto-drop preservation data.
+- Reject detached HEAD, unexpected origin, and divergent main history. Do not reset, clean, force-push, delete local branches, or automatically merge/rebase feature branches.
+- The default local path is $HOME/Developer/AtheerTradingPlatform. The bootstrap refuses to proceed from a restored non-main branch.
+- Verification: functional tests passed in temporary local Git repositories for dirty worktree, clean fast-forward, wrong origin, and divergent main. This does not qualify the owner's actual Mac.
+
+
+### EDL-008 implementation invariant clarification — 2026-11-16
+
+The native health client is constrained to the loopback endpoint `127.0.0.1:4100`. The client must reject contradictory readiness payloads that report platform `not_ready` while trading is enabled. This is a fail-closed client validation invariant; it does not grant or implement trading authority.

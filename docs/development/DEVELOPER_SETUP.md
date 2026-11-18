@@ -84,9 +84,29 @@ The XcodeGen specification is the canonical project configuration:
 
 The CI workflow generates the project, lists schemes, builds Debug, runs unit tests, and builds Release on an Intel macOS runner. This qualifies the x86_64 CI environment only; Apple Silicon/arm64 remains a separate qualification item. Run the same checks locally before declaring Phase 2 complete.
 
-## Backend
+## Backend local health service
 
-Node.js 24 is the selected backend runtime direction. Add TypeScript packages only when their service boundary and contracts are specified. Do not add dependencies without a concrete consumer and security review.
+Node.js 24 is the selected backend runtime. The initial local API service is implemented under services/api and uses a pinned TypeScript compiler with no runtime npm dependencies.
+
+From the repository root:
+
+```bash
+make backend-setup
+make backend-check
+make backend-start
+```
+
+The service binds only to 127.0.0.1:4100. Keep it running while using the macOS application health panel. The application reports API connectivity separately from platform readiness; readiness remains not ready and trading remains disabled while persistence and broker adapters are not configured.
+
+This health slice does not require PostgreSQL, broker credentials, market data, or trading permissions. Do not install or configure a database until persistence contracts, ownership, migrations, backup, and recovery requirements are reconciled. Do not expose the local API on a LAN or public interface.
+
+## Local synchronization and workstation bootstrap
+
+The designated local repository is $HOME/Developer/AtheerTradingPlatform. Use make doctor for a read-only workstation check and make sync for non-destructive local main synchronization. The safe-sync procedure backs up staged/unstaged changes and non-ignored untracked files, creates a backup branch and retained stash, fast-forwards main only, and restores the original branch. It does not rebase feature branches or discard the stash.
+
+Run make bootstrap only when the current branch is main. If the original branch is a feature branch, bootstrap updates main, restores that branch and its work, then stops rather than silently building from a stale feature branch. See LOCAL_SYNC_PROCEDURE.md for the complete sequence and recovery behavior.
+
+After reviewing local branch state, use make generate, make build, make test, and make app-run. make clean removes build artifacts only and does not delete source files or the generated Xcode project. Actual Mac build, test, and launch results must be recorded separately from hosted CI.
 
 ## Credentials
 

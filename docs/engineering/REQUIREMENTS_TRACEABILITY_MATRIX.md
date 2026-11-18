@@ -45,3 +45,8 @@ Do not populate a requirement as approved merely because it appears in a reconst
 - Conflicting source statements are linked to the Specification Conflict Register.
 - Historical or proposed material is not silently promoted to approved status.
 - Changes to accepted architecture update the applicable ADR and traceability links.
+
+
+## 2026-11-17 — TR-APP implementation increment
+
+The first bounded macOS implementation increment is present in PR #17 (`45f38158b5c7e97ba1857804e585147ddf6c61cb`): native navigation, Workspace and API Connection destinations, health/readiness presentation, and selectable/copyable non-sensitive diagnostics. This is implementation evidence, not completion of TR-APP. The full ATP-ARCH-014/037/038 and IPDS source/approval mapping, complete workspace inventory, panel layout/persistence, settings semantics, accessibility qualification, and application-wide clipboard audit remain pending.
