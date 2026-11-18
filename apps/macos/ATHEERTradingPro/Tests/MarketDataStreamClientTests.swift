@@ -50,7 +50,7 @@ final class MarketDataStreamClientTests: XCTestCase {
     func testParserDecodesFreshDEMOQuoteEvent() throws {
         var parser = ServerSentEventParser()
         let payload = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"maximumAgeMs":5000,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
         """
 
         XCTAssertNil(try parser.consume("event: quote"))
@@ -78,7 +78,7 @@ final class MarketDataStreamClientTests: XCTestCase {
 
         var freshnessParser = ServerSentEventParser()
         let inconsistentFreshness = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"stale","ageMs":9000.0,"automatedDecisionsAllowed":true,"reason":"quote_too_old"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"stale","ageMs":9000.0,"maximumAgeMs":5000,"automatedDecisionsAllowed":true,"reason":"quote_too_old"}}
         """
         XCTAssertNil(try? freshnessParser.consume("event: quote"))
         XCTAssertNil(try? freshnessParser.consume("data: \(inconsistentFreshness)"))
@@ -121,6 +121,7 @@ final class MarketDataStreamClientTests: XCTestCase {
             freshness: MarketDataQuoteFreshness(
                 state: .fresh,
                 ageMs: 100,
+                maximumAgeMs: 5_000,
                 automatedDecisionsAllowed: true,
                 reason: "within_policy"
             )
