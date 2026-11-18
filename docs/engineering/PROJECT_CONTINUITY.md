@@ -750,3 +750,10 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #37 and #38 are non-mergeable; #38 parent diverged 13 ahead / 36 behind. PRs #39–#47 inherit that stale branch and overlap newer authenticated Market Explorer code. Preserve their branches; port independent features incrementally rather than merging the stale stack wholesale.
 - Last documented Mac qualification is from 2026-11-17 on old commit `0e7f25e`; current Mac state is not accessible and no local pull/build is claimed.
 - Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`. `CAP_ALLOW_TRADING=false` unchanged.
+
+## 2026-11-18 — Historical candle timestamp integrity
+
+- Source review found that the historical normalizer accepted a syntactically valid provider candle timestamp later than local receipt time.
+- Added backend fail-closed validation and a deterministic regression test on PR #68.
+- Commits: `aa425f9af869987367e12c274292bf00733a1559`, `b9f1a719556bc291c4430e7e273f023aa5409eae`.
+- Exact-head hosted CI remains pending. No provider or trading execution was used; `CAP_ALLOW_TRADING=false` remains unchanged.
