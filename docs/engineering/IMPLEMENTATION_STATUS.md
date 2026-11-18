@@ -457,3 +457,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
 - This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
 - `CAP_ALLOW_TRADING=false`; no LIVE authorization.
+
+## 2026-11-18 — Multi-agent engineering operating model
+
+- Added [ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md](ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md) on branch `docs/multi-agent-engineering-operating-model-2026-11-18`, commit `aa0a55cf05b89c182e9d2c699ae55f02dc342e97`.
+- Updated AI navigation, AI Agent Working Guide, task register, continuity and conversation index on the same review branch.
+- Created adoption/pilot tracker [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60).
+- Status: documentation baseline drafted; PR review/merge and owner acceptance pending. Dedicated agent identities, model runtimes, tools, GitHub permissions, shared context mechanism and orchestration have not been provisioned or verified.
+- No backend, SwiftUI, application, API, CI or trading implementation changed. No build, test, runtime, broker or LIVE qualification is claimed.
