@@ -286,3 +286,14 @@ The implementation branch is stacked on PR #25 head to retain the existing app a
 ## ATP-MKT-003 MainActor build remediation — 2026-11-17
 
 The initial Intel macOS job for PR #34 reached Debug compilation and failed because Swift 5.8 evaluates actor-isolated service default arguments from a nonisolated caller context. The Market Explorer view and view-model now accept optional injected clients and instantiate the default URLSession client inside the MainActor-isolated view-model initializer. This is a source remediation only; exact-head hosted requalification remains pending. PR #34 remains open/draft and unmerged.
+
+
+## ATP-SEC-001A — Loopback market-data API browser-origin guard
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-SEC-001A | P1 | Restrict loopback market-data endpoints to the native macOS client and reject browser-origin/CSRF requests | IMPLEMENTED; exact-head CI pending | PR #37; loopback-only HOST; required X-ATHEER-LOCAL-CLIENT header; Origin/Sec-Fetch-Site rejection; URL/fetch regression tests |
+
+Security boundary:
+- The marker header is not a secret and does not authenticate arbitrary local processes.
+- Production packaging still requires a per-launch local API token or authenticated IPC.
