@@ -81,13 +81,15 @@ test("runtime marks failed provider authentication as error without leaking cred
   assert.equal(JSON.stringify(runtime.status()).includes("demo-password"), false);
 });
 
+const ipcCapability = Buffer.alloc(32, 7);
+const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
 const serverRuntime = new CapitalDemoRuntime(serverClient, {
   apiKey: "demo-key",
   identifier: "demo-user",
   password: "demo-password",
 });
-const server = createApiServer(serverRuntime);
+const server = createApiServer(serverRuntime, ipcCapability);
 let baseUrl;
 
 before(async () => {
@@ -106,8 +108,16 @@ after(async () => {
   });
 });
 
-test("market-data status is truthful and never returns provider session tokens", async () => {
+test("market-data routes reject requests without the private IPC capability", async () => {
   const response = await fetch(baseUrl + "/market-data/status");
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: "unauthorized" });
+  const invalid = await fetch(baseUrl + "/market-data/status", { headers: { authorization: "Bearer invalid" } });
+  assert.equal(invalid.status, 401);
+});
+
+test("market-data status is truthful and never returns provider session tokens", async () => {
+  const response = await fetch(baseUrl + "/market-data/status", { headers: authorization });
   const payload = await response.json();
   assert.equal(response.status, 200);
   assert.equal(payload.environment, "DEMO");
@@ -116,15 +126,15 @@ test("market-data status is truthful and never returns provider session tokens",
 });
 
 test("loopback market-data routes connect and return DEMO market results only", async () => {
-  const connect = await fetch(baseUrl + "/market-data/connect", { method: "POST" });
+  const connect = await fetch(baseUrl + "/market-data/connect", { method: "POST", headers: authorization });
   assert.equal(connect.status, 200);
-  const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple");
+  const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple", { headers: authorization });
   const payload = await markets.json();
   assert.equal(markets.status, 200);
   assert.equal(payload.environment, "DEMO");
   assert.equal(payload.markets[0].epic, "AAPL");
   assert.equal(JSON.stringify(payload).includes("secret-cst"), false);
-  const disconnect = await fetch(baseUrl + "/market-data/disconnect", { method: "POST" });
+  const disconnect = await fetch(baseUrl + "/market-data/disconnect", { method: "POST", headers: authorization });
   assert.equal(disconnect.status, 200);
   assert.equal((await disconnect.json()).state, "disconnected");
 });
@@ -133,6 +143,6 @@ test("market-data routes reject wrong methods and invalid resolutions", async ()
   const wrongMethod = await fetch(baseUrl + "/market-data/connect");
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get("allow"), "POST");
-  const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID");
+  const invalidResolution = await fetch(baseUrl + "/market-data/history?epic=AAPL&resolution=INVALID", { headers: authorization });
   assert.equal(invalidResolution.status, 400);
 });
