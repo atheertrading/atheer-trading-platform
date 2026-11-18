@@ -384,3 +384,18 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Remaining before batch completion: inspect exact-head CI, resolve all source/test findings, add failure/recovery and concurrency evidence, and update operational database setup/backup/restore guidance.
 
 - Operational safety refinement: API startup verifies the applied migration ledger/checksums and never auto-applies schema changes. Pending migrations are applied only through explicit `npm run migrate`; PostgreSQL setup and migration instructions are in `docs/operations/POSTGRESQL.md`.
+## ATP-PERSISTENCE-001 — PostgreSQL qualification and local migration blocker — 2026-11-18
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-PERSISTENCE-002 | P0 | Align migration runner with NOINHERIT migrator and canonical `atheer` schema | BLOCKED | Runner must SET ROLE `atheer_db_owner` transaction-locally; migration ledger, DDL and repository SQL must target `atheer`; no privilege weakening |
+| ATP-PERSISTENCE-003 | P0 | Add least-privilege PostgreSQL integration tests | PENDING | Exercise migration as `atheer_migrator` and repository access as `atheer_app`; prove app CREATE remains denied and DML works on owner-created objects |
+| ATP-PERSISTENCE-004 | P1 | Qualify owner-local PostgreSQL 18.7 after role/schema fix | BLOCKED | Controlled local migration verification only after ATP-PERSISTENCE-002/003 and exact-head CI; preserve current database and avoid production-like data mutation |
+| ATP-PERSISTENCE-005 | P1 | Verify default sequence privileges and document operational recovery | PENDING | Sequence probe; backup/restore, retention, PITR, TLS, role provisioning and restore-drill documentation |
+
+### Verified evidence and guardrails
+
+- PR #41 source head `012ea149749312b5146ee1b8dce900e0d7bba848`: CI run `44203457118` backend passed 49/49 with PostgreSQL 17.12; hygiene, Mermaid and Local Sync Safety passed. Intel Release/CodeQL remained pending; arm64 Debug/XCTest/Release passed while CodeQL was skipped.
+- Owner local foundation: Postgres.app PostgreSQL 18.7 on macOS 13.7.8 Intel, loopback-only at 127.0.0.1:5432; database `atheer_trading`, schema `atheer`, roles `atheer_db_owner`, `atheer_migrator`, `atheer_app`. Role separation and denial tests passed as recorded in Project Continuity.
+- No trading migrations have been applied locally. Do not run `npm run migrate` until ATP-PERSISTENCE-002 and ATP-PERSISTENCE-003 are resolved.
+- Do not grant CREATE to `atheer_app` or PUBLIC, do not change the owner's role model as a workaround, and do not change `CAP_ALLOW_TRADING=false`.
