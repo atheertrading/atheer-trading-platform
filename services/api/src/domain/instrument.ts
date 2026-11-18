@@ -12,6 +12,8 @@ import {
   type DecimalValue,
   type UtcTimestamp,
   DomainValidationError,
+  assertArray,
+  assertRecord,
   assetClassCode,
   currencyCode,
   createDataProvenance,
@@ -92,6 +94,7 @@ export interface InstrumentSpecification {
 }
 
 export function validateInstrumentIdentity(instrument: InstrumentIdentity): void {
+  assertRecord(instrument, "instrument_identity");
   nonEmptyString(instrument.canonicalCode, "canonical_instrument_code");
   nonEmptyString(instrument.displayName, "instrument_display_name");
   assetClassCode(instrument.assetClassCode);
@@ -100,11 +103,15 @@ export function validateInstrumentIdentity(instrument: InstrumentIdentity): void
 
 function validateQuantity(quantity: Quantity | undefined, field: string): void {
   if (quantity === undefined) return;
+  assertRecord(quantity, field);
   assertPositiveDecimal(quantity.value, field);
   nonEmptyString(quantity.unit, field + "_unit");
 }
 
 export function validateInstrumentSpecification(specification: InstrumentSpecification): void {
+  assertRecord(specification, "instrument_specification");
+  assertRecord(specification.brokerReference, "instrument_broker_reference");
+  assertArray(specification.constraints, "instrument_constraints");
   nonEmptyString(specification.id, "instrument_specification_id");
   nonEmptyString(specification.instrumentId, "instrument_id");
   tradingEnvironment(specification.brokerReference.environment);
@@ -141,6 +148,7 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
   validateQuantity(specification.contractSize, "contract_size");
 
   if (specification.priceIncrement !== undefined) {
+    assertRecord(specification.priceIncrement, "price_increment");
     assertPositiveDecimal(specification.priceIncrement.value, "price_increment");
     unitCode(specification.priceIncrement.unit);
     if (specification.priceIncrement.currency !== undefined) {
@@ -180,6 +188,7 @@ export function validateInstrumentSpecification(specification: InstrumentSpecifi
   }
 
   for (const constraint of specification.constraints) {
+    assertRecord(constraint, "broker_instrument_constraint");
     nonEmptyString(constraint.code, "broker_constraint_code");
     nonEmptyString(constraint.rawValue, "broker_constraint_raw_value");
     if (constraint.sourceField !== undefined) {
