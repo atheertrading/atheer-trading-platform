@@ -59,7 +59,7 @@ function parseRetryAfterMilliseconds(value: string | null, nowMs: number): numbe
   if (normalized.length === 0) return undefined;
 
   let delayMs: number;
-  if (/^\\d+(?:\\.\\d+)?$/.test(normalized)) {
+  if (/^\d+(?:\.\d+)?$/.test(normalized)) {
     delayMs = Number(normalized) * 1_000;
   } else {
     const retryAtMs = Date.parse(normalized);
