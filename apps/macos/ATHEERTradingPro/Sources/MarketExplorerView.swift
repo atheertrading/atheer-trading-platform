@@ -271,7 +271,7 @@ struct MarketExplorerView: View {
         .background(ATHEERDesignTokens.ColorRole.panelElevated)
     }
 
-    private func instrumentRow(_ instrument: MarketSearchInstrument) -> some View {
+    private func instrumentRow(_ instrument: MarketInstrumentSummary) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(instrument.name ?? instrument.epic)
