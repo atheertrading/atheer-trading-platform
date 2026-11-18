@@ -540,3 +540,17 @@ Use the commit-specific qualification record in `IMPLEMENTATION_STATUS.md` as th
 - **Governance:** branch protection/rulesets and license decision remain open verification/configuration tasks.
 
 Preserve `CAP_ALLOW_TRADING=false`. Merge only after current-head, parent/base, and required-check verification.
+
+
+### Latest CI recheck correction — 2026-11-18
+
+The current exact-head CI matrix is recorded in IMPLEMENTATION_STATUS.md under CI status correction. Key corrections:
+- PR #24 and #26 have now passed both Intel and Apple Silicon hosted jobs.
+- PR #33 and #37 have passed both architectures.
+- PR #38 has an Intel job failure and Apple Silicon cancellation; inspect failure logs before retry.
+- PR #39's two architecture jobs were cancelled; qualification remains incomplete.
+- PR #25's macOS CI attempts were cancelled; qualification remains incomplete.
+- PR #43 and #44 have Apple Silicon passed while Intel remains in progress at the latest inspected run.
+- PR #26's green CI does not remove its parent/base mismatch with PR #25.
+
+Do not treat cancelled jobs as passes. Do not treat hosted CI as owner-Mac or provider-runtime qualification. Preserve CAP_ALLOW_TRADING=false.
