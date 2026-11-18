@@ -460,3 +460,12 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Updated canonical `docs/architecture/diagrams/03-market-data-pipeline.mmd` to distinguish live quote distribution from cached replay and require freshness recomputation from the original provider timestamp.
 - Existing stream policy values (5,000 ms max age / 250 ms future skew) were reused, not changed. Reconcile these display/data-quality values with the historical baseline (5-second normal, >10-second entry block, >15-second stale) before RiskEngine integration.
 - No RiskEngine wiring or risk-policy change is part of PR #67.
+
+
+## ATP-MKT-005 — Authenticated historical market data port (2026-11-18)
+
+- Ported the existing historical DEMO contract into the current private-IPC / BrokerSessionManager stack; did not import the stale PR #38/#39 session implementation.
+- Added strict UTC range support, raw provider max validation, Bid/Ask OHLC normalization, timestamp/receipt lineage, duplicate conflict rejection, observed-gap reporting and raw-count pagination metadata.
+- The existing capability-protected route now returns 503 when the broker session is not connected; provider tokens remain server-side.
+- Added normalizer, client, authenticated API, disconnected-session and duplicate-pagination tests. Exact-head hosted CI pending.
+- PR #68 is stacked on PR #67. Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
