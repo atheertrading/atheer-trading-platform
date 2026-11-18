@@ -62,3 +62,13 @@ The PostgreSQL integration suite is enabled by `DATABASE_URL` and covers repeate
 ## 8. Startup and migration safety
 
 The API does not mutate the database schema during startup. When `DATABASE_URL` is present, it verifies the migration ledger/checksums and performs a connectivity check; missing or mismatched schema prevents startup readiness. Schema changes are applied only through the explicit `npm run migrate` command. Production migration execution requires a separately reviewed operational change. See `docs/operations/POSTGRESQL.md`.
+
+## 8. Least-privilege migration and schema contract — implemented on PR #41
+
+The canonical project schema is `atheer`. Migration execution acquires a transaction-scoped advisory lock and then executes `SET LOCAL ROLE atheer_db_owner` inside the same transaction before creating the migration ledger or applying DDL. This preserves the NOINHERIT property of `atheer_migrator`: the migrator can assume owner authority only for the bounded migration transaction and cannot create schema objects directly outside it.
+
+All migration ledger, DDL, foreign-key/index targets, and repository relations are explicitly schema-qualified with `atheer.`; the persistence adapter does not rely on ambient `search_path` for project tables.
+
+The application role `atheer_app` receives schema USAGE and owner-default table DML and sequence USAGE/SELECT privileges, but no schema CREATE. Integration tests verify owner table ownership, direct table CREATE denial for migrator/app, and repository operations under the app role. A dedicated sequence privilege regression test is added after the initial 49/49 hosted run and awaits exact-head CI.
+
+This is a bounded hosted integration qualification. It does not prove the owner's local PostgreSQL 18.7 migration has been run or operationally qualified. Do not execute local migrations until the final exact-head CI and controlled local qualification plan are complete.
