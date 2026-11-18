@@ -170,3 +170,24 @@ The following Q&A documents were inspected at the header and decision-section le
 - **Q29.7 — Institutional knowledge:** distinguish operational records, episodic memory, semantic knowledge, procedural knowledge, and governance knowledge; preserve provenance and validity.
 
 A proposed synthesis is recorded as EDP-006. It is not yet a final consolidated autonomy specification. In particular, the autonomy level, capability permissions, action authorization classification, and broker execution authority must remain separate concepts.
+
+
+## 2026-11-18 — Current Library location and archive revalidation
+
+The visible Library root was re-listed. The current folder is `/Aether Document Repository`; the older `/AtheerTradingPro/90_SOURCE_ARCHIVES` path did not resolve in this listing.
+
+| Source | Current path | Observed SHA-256 | Verified contents |
+|---|---|---|---|
+| Atheer Q&A Repository.zip | `/Aether Document Repository/Atheer Q&A Repository.zip` | `c6af385151a71fca3f2ef261115d6d2ecd22fa62b6787dd130e10c27050f9af2` | 1,151 entries; 1,034 Markdown/text files; 12 fenced Mermaid blocks in 10 documents |
+| Codex.zip | `/Aether Document Repository/Codex.zip` | `210f540a98fd8d52cfceb03438f4bebf8e8a6dd949442c2cd96cca2b7e5e1f8f` | 224 entries; 66 Markdown/text files; 5 standalone Mermaid `.mmd` files |
+| Archive.zip | `/Archive.zip` | Not retained | Four screenshot/AppleDouble entries only; no text/diagram content |
+
+The Q&A archive SHA-256 matches the prior register's `c6af3851...` digest. The Codex archive digest is newly recorded. Original Library archives were materialized read-only and not modified.
+
+### Mermaid review scope
+
+- Enumerated and inspected all 12 fenced Mermaid blocks in the Q&A archive, including manual intervention, manual override conflict prevention, strategy suspension, emergency recovery, emergency procedure lifecycle, AI context assembly, AI evidence classification, and unified intelligence orchestration.
+- Enumerated and inspected all 5 standalone Codex diagrams: `market-data-pipeline.mmd`, `ai-order-boundary.mmd`, `system-context.mmd`, `target-trading-boundaries.mmd`, and `backtest-pipeline.mmd`.
+- Inspected repository diagrams 03, 04, 05, 07, 14, 15, and 16 from `feat/live-candle-aggregation`.
+
+This revalidation is a targeted Mermaid/source-location review. It does not claim exhaustive approval reconciliation of the 1,034 text files or all Q&A documents. Preserve the older path as historical provenance; do not continue treating it as the current accessible Library location.
