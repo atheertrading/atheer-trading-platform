@@ -1,0 +1,37 @@
+flowchart TD
+    Intent[Immutable Order Intent Envelope]
+    Engine[Central Pre-Trade RiskEngine]
+    Policy[Versioned Risk Policy Provider]
+    Context[Pre-Trade Context Provider]
+    Account[Broker Account Identity and Balance Snapshot]
+    Instrument[Canonical Instrument and Broker Specification]
+    Quote[Timestamped Provider Bid and Ask Quote]
+    Portfolio[Intent-Bound Portfolio Risk Projection]
+    Controls[Trading Enabled and Emergency Halt Controls]
+    Validate[Identity, Environment, Provenance, Freshness and Exact-Decimal Checks]
+    Outcome{Risk Decision}
+    Authorized[AUTHORIZED Risk Assessment]
+    Rejected[REJECTED Risk Assessment]
+    Held[HELD Risk Assessment]
+    Journal[(Future Assessment / Audit Persistence)]
+    OMS[OMS Requires Exact Persisted Intent and AUTHORIZED Assessment]
+
+    Intent --> Engine
+    Policy --> Engine
+    Context --> Engine
+    Account --> Context
+    Instrument --> Context
+    Quote --> Context
+    Portfolio --> Context
+    Engine --> Validate
+    Validate --> Controls
+    Controls --> Outcome
+    Outcome -->|All gates pass| Authorized
+    Outcome -->|Policy or safety constraint breached| Rejected
+    Outcome -->|Missing, stale, invalid or unavailable evidence| Held
+    Authorized -. future persistence integration .-> Journal
+    Journal -. exact authorization required .-> OMS
+
+    style Authorized fill:#e7f5ec,stroke:#287a48,color:#163d27
+    style Rejected fill:#fdecec,stroke:#b42318,color:#65120e
+    style Held fill:#fff4df,stroke:#a66a00,color:#5c3a00
