@@ -1,6 +1,7 @@
 import Charts
 import SwiftUI
 
+@MainActor
 struct ChartWorkspaceView: View {
     let client: MarketHistoryClient
     let initialInstrumentId: String?
@@ -38,6 +39,7 @@ struct ChartWorkspaceView: View {
     }
 }
 
+@MainActor
 struct MarketChartSurfaceView: View {
     @StateObject private var model: MarketChartViewModel
     let initialInstrumentId: String?
