@@ -14,7 +14,7 @@ Authority order:
 4. This blueprint for proposed visual composition and interaction contracts.
 5. Generated concept artwork as inspiration only; it is not a source of truth for prices, account state, controls, or execution behavior.
 
-The four generated concept compositions from the design session are represented by a companion visual reference board. Their fabricated quotes, account values, win rates, risk limits, AI probabilities, and broker status are illustrative placeholders and must never be copied into production UI or tests.
+The four generated raster concept compositions from the design session informed the design direction in the conversation, but are not included as durable image files in this PR. The repository currently includes an authored structural SVG wireframe. Their fabricated quotes, account values, win rates, risk limits, AI probabilities, and broker status are illustrative placeholders and must never be copied into production UI or tests.
 
 ## 2. Design principles
 
@@ -124,7 +124,7 @@ This is target IA, not a claim that all 12 areas are implemented.
 
 ## 7. Visual reference status
 
-The companion concept board is a low-fidelity-to-mid-fidelity visual direction reference, not a pixel-perfect specification. It combines multiple screen concepts and intentionally uses placeholder data. Before implementation, each screen requires its own approved high-fidelity frame at defined window sizes, plus compact/wide layouts, light appearance, and RTL review.
+The generated concept artwork discussed in the design session is a low-fidelity-to-mid-fidelity visual direction reference, not a pixel-perfect specification. It combines multiple screen concepts and intentionally uses placeholder data. The committed SVG is a structural shell wireframe, not a screenshot of the running app. Before implementation, each screen requires its own approved high-fidelity frame at defined window sizes, plus compact/wide layouts, light appearance, and RTL review.
 
 Do not derive spacing, font sizes, colors, or component dimensions from generated artwork. Extract them into measured IPDS tokens and validate against actual macOS rendering.
 
