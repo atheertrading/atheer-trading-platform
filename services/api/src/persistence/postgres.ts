@@ -98,11 +98,12 @@ export async function loadSqlMigrations(directory = resolve(dirname(fileURLToPat
 export async function applySqlMigrations(pool: SqlPool, migrations: readonly SqlMigration[]): Promise<void> {
   await inTransaction(pool, async (client) => {
     await client.query("SELECT pg_advisory_xact_lock($1::bigint)", ["73194712026001"]);
+    await client.query("SET LOCAL ROLE atheer_db_owner");
     await client.query(
-      "CREATE TABLE IF NOT EXISTS atheer_schema_migrations (version text PRIMARY KEY, checksum char(64) NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())",
+      "CREATE TABLE IF NOT EXISTS atheer.atheer_schema_migrations (version text PRIMARY KEY, checksum char(64) NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())",
     );
     const applied = await client.query<{ version: string; checksum: string }>(
-      "SELECT version, checksum FROM atheer_schema_migrations ORDER BY version",
+      "SELECT version, checksum FROM atheer.atheer_schema_migrations ORDER BY version",
     );
     const appliedByVersion = new Map(applied.rows.map((row) => [row.version, row.checksum]));
     if (migrations.some((migration) => !/^\d{3,}$/.test(migration.version))) {
@@ -132,7 +133,7 @@ export async function applySqlMigrations(pool: SqlPool, migrations: readonly Sql
       }
       await client.query(migration.sql);
       await client.query(
-        "INSERT INTO atheer_schema_migrations (version, checksum) VALUES ($1, $2)",
+        "INSERT INTO atheer.atheer_schema_migrations (version, checksum) VALUES ($1, $2)",
         [migration.version, checksum],
       );
       appliedByVersion.set(migration.version, checksum);
@@ -150,7 +151,7 @@ export async function verifySqlMigrations(pool: SqlPool, directory?: string): Pr
   let applied: SqlResult<{ version: string; checksum: string }>;
   try {
     applied = await pool.query<{ version: string; checksum: string }>(
-      "SELECT version, checksum FROM atheer_schema_migrations ORDER BY version",
+      "SELECT version, checksum FROM atheer.atheer_schema_migrations ORDER BY version",
     );
   } catch {
     throw new PersistenceConflictError("PostgreSQL schema migration ledger is unavailable; apply migrations explicitly before starting the API.");
@@ -197,12 +198,12 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const payloadHash = sha256(payload);
     await inTransaction(this.pool, async (client) => {
       const insertedInstrument = await client.query(
-        "INSERT INTO instruments (environment, instrument_id, canonical_code, display_name, asset_class_code) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,instrument_id) DO NOTHING RETURNING instrument_id",
+        "INSERT INTO atheer.instruments (environment, instrument_id, canonical_code, display_name, asset_class_code) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,instrument_id) DO NOTHING RETURNING instrument_id",
         [this.environment, instrument.id, instrument.canonicalCode, instrument.displayName, instrument.assetClassCode],
       );
       if (insertedInstrument.rowCount === 0) {
         const existingInstrument = await client.query<{ canonical_code: string; display_name: string; asset_class_code: string }>(
-          "SELECT canonical_code,display_name,asset_class_code FROM instruments WHERE environment=$1 AND instrument_id=$2 FOR UPDATE",
+          "SELECT canonical_code,display_name,asset_class_code FROM atheer.instruments WHERE environment=$1 AND instrument_id=$2 FOR UPDATE",
           [this.environment, instrument.id],
         );
         const row = existingInstrument.rows[0];
@@ -211,12 +212,12 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
         }
       }
       const inserted = await client.query(
-        "INSERT INTO instrument_specifications (environment,specification_id,instrument_id,broker_id,broker_instrument_id,specification_version,retrieved_at,payload_hash,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb) ON CONFLICT (environment,specification_id) DO NOTHING RETURNING specification_id",
+        "INSERT INTO atheer.instrument_specifications (environment,specification_id,instrument_id,broker_id,broker_instrument_id,specification_version,retrieved_at,payload_hash,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb) ON CONFLICT (environment,specification_id) DO NOTHING RETURNING specification_id",
         [this.environment, specification.id, instrument.id, specification.brokerReference.brokerId, specification.brokerReference.brokerInstrumentId, specification.version, isoTimestamp(specification.retrievedAt), payloadHash, canonicalJson(specification.provenance), payload],
       );
       if (inserted.rowCount === 0) {
         const existing = await client.query<{ payload_hash: string }>(
-          "SELECT payload_hash FROM instrument_specifications WHERE environment=$1 AND specification_id=$2 FOR UPDATE",
+          "SELECT payload_hash FROM atheer.instrument_specifications WHERE environment=$1 AND specification_id=$2 FOR UPDATE",
           [this.environment, specification.id],
         );
         if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Instrument specification identity was reused with different content.");
@@ -228,11 +229,11 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     validateBrokerAccountIdentity(account);
     this.assertEnvironment(account.environment);
     await this.pool.query(
-      "INSERT INTO broker_accounts (environment,account_id,broker_id,broker_account_reference,account_currency) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,account_id) DO NOTHING",
+      "INSERT INTO atheer.broker_accounts (environment,account_id,broker_id,broker_account_reference,account_currency) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (environment,account_id) DO NOTHING",
       [this.environment, account.id, account.brokerId, account.brokerAccountReference, account.accountCurrency ?? null],
     );
     const existing = await this.pool.query<{ broker_id: string; broker_account_reference: string; account_currency: string | null }>(
-      "SELECT broker_id,broker_account_reference,account_currency FROM broker_accounts WHERE environment=$1 AND account_id=$2",
+      "SELECT broker_id,broker_account_reference,account_currency FROM atheer.broker_accounts WHERE environment=$1 AND account_id=$2",
       [this.environment, account.id],
     );
     const row = existing.rows[0];
@@ -248,11 +249,11 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const payloadHash = sha256(payload);
     const snapshotId = payloadHash;
     await this.pool.query(
-      "INSERT INTO account_balance_snapshots (environment,snapshot_id,account_id,as_of,payload_hash,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb) ON CONFLICT (environment,account_id,as_of) DO NOTHING",
+      "INSERT INTO atheer.account_balance_snapshots (environment,snapshot_id,account_id,as_of,payload_hash,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb) ON CONFLICT (environment,account_id,as_of) DO NOTHING",
       [this.environment, snapshotId, account.id, isoTimestamp(snapshot.asOf), payloadHash, canonicalJson(snapshot.provenance), payload],
     );
     const existing = await this.pool.query<{ payload_hash: string }>(
-      "SELECT payload_hash FROM account_balance_snapshots WHERE environment=$1 AND account_id=$2 AND as_of=$3",
+      "SELECT payload_hash FROM atheer.account_balance_snapshots WHERE environment=$1 AND account_id=$2 AND as_of=$3",
       [this.environment, account.id, isoTimestamp(snapshot.asOf)],
     );
     if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("A different account snapshot already exists for this broker timestamp.");
@@ -270,13 +271,13 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const assessmentHash = sha256(assessmentPayload);
     return inTransaction(this.pool, async (client) => {
       const insertedIntent = await client.query(
-        "INSERT INTO order_intents (environment,intent_id,command_id,correlation_id,idempotency_key,account_id,instrument_id,specification_id,created_at,intent_version,schema_version,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) ON CONFLICT (environment,account_id,idempotency_key) DO NOTHING RETURNING intent_id",
+        "INSERT INTO atheer.order_intents (environment,intent_id,command_id,correlation_id,idempotency_key,account_id,instrument_id,specification_id,created_at,intent_version,schema_version,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) ON CONFLICT (environment,account_id,idempotency_key) DO NOTHING RETURNING intent_id",
         [this.environment,intent.id,intent.commandId,intent.correlationId,intent.idempotencyKey,intent.accountId,intent.instrumentId,intent.instrumentSpecificationId,isoTimestamp(intent.createdAt),intent.intentVersion,intent.schemaVersion,intentHash,intentPayload],
       );
       const intentInserted = insertedIntent.rowCount === 1;
       if (!intentInserted) {
         const existing = await client.query<{ intent_id: string; payload_hash: string }>(
-          "SELECT intent_id,payload_hash FROM order_intents WHERE environment=$1 AND account_id=$2 AND idempotency_key=$3 FOR UPDATE",
+          "SELECT intent_id,payload_hash FROM atheer.order_intents WHERE environment=$1 AND account_id=$2 AND idempotency_key=$3 FOR UPDATE",
           [this.environment,intent.accountId,intent.idempotencyKey],
         );
         if (existing.rows[0]?.intent_id !== intent.id || existing.rows[0]?.payload_hash !== intentHash) {
@@ -284,27 +285,27 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
         }
       }
       const insertedAssessment = await client.query(
-        "INSERT INTO risk_assessments (environment,risk_assessment_id,intent_id,policy_version,outcome,evaluated_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb) ON CONFLICT (environment,risk_assessment_id) DO NOTHING RETURNING risk_assessment_id",
+        "INSERT INTO atheer.risk_assessments (environment,risk_assessment_id,intent_id,policy_version,outcome,evaluated_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb) ON CONFLICT (environment,risk_assessment_id) DO NOTHING RETURNING risk_assessment_id",
         [this.environment,assessment.id,assessment.intentId,assessment.policyVersion,assessment.outcome,isoTimestamp(assessment.evaluatedAt),assessmentHash,assessmentPayload],
       );
       const riskAssessmentInserted = insertedAssessment.rowCount === 1;
       if (!riskAssessmentInserted) {
         const existing = await client.query<{ payload_hash: string }>(
-          "SELECT payload_hash FROM risk_assessments WHERE environment=$1 AND risk_assessment_id=$2 FOR UPDATE",
+          "SELECT payload_hash FROM atheer.risk_assessments WHERE environment=$1 AND risk_assessment_id=$2 FOR UPDATE",
           [this.environment,assessment.id],
         );
         if (existing.rows[0]?.payload_hash !== assessmentHash) throw new PersistenceConflictError("Risk assessment identity was reused with different content.");
       }
       await client.query(
-        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'ORDER_INTENT',$3,'order.intent.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        "INSERT INTO atheer.domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'ORDER_INTENT',$3,'order.intent.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
         [this.environment,"intent:" + intent.id,intent.id,intent.correlationId,"intent:" + intent.id,canonicalJson({ intentId: intent.id, payloadHash: intentHash })],
       );
       await client.query(
-        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RISK_ASSESSMENT',$3,'risk.assessment.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        "INSERT INTO atheer.domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RISK_ASSESSMENT',$3,'risk.assessment.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
         [this.environment,"risk:" + assessment.id,assessment.id,intent.correlationId,"risk:" + assessment.id,canonicalJson({ intentId: intent.id, riskAssessmentId: assessment.id, outcome: assessment.outcome, policyVersion: assessment.policyVersion })],
       );
       await client.query(
-        "INSERT INTO audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,'ORDER_INTENT',$4,'trading.intent-and-risk.persisted',$5,$6,$7::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
+        "INSERT INTO atheer.audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,'ORDER_INTENT',$4,'trading.intent-and-risk.persisted',$5,$6,$7::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
         [this.environment,"risk-assessment:" + assessment.id,intent.correlationId,intent.id,isoTimestamp(assessment.evaluatedAt),assessmentHash,canonicalJson({ intentId: intent.id, riskAssessmentId: assessment.id, outcome: assessment.outcome, policyVersion: assessment.policyVersion })],
       );
       return { intentInserted, riskAssessmentInserted, replayed: !intentInserted && !riskAssessmentInserted };
@@ -317,16 +318,16 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const payloadHash = sha256(payload);
     await inTransaction(this.pool, async (client) => {
       await client.query(
-        "INSERT INTO reconciliation_events (environment,reconciliation_event_id,aggregate_type,aggregate_id,outcome_code,occurred_at,payload_hash,discrepancy_codes,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb) ON CONFLICT (environment,reconciliation_event_id) DO NOTHING",
+        "INSERT INTO atheer.reconciliation_events (environment,reconciliation_event_id,aggregate_type,aggregate_id,outcome_code,occurred_at,payload_hash,discrepancy_codes,provenance,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb) ON CONFLICT (environment,reconciliation_event_id) DO NOTHING",
         [this.environment,event.id,event.aggregateType,event.aggregateId,event.outcomeCode,isoTimestamp(event.occurredAt),payloadHash,canonicalJson(event.discrepancyCodes),canonicalJson(event.provenance),payload],
       );
       const existing = await client.query<{ payload_hash: string }>(
-        "SELECT payload_hash FROM reconciliation_events WHERE environment=$1 AND reconciliation_event_id=$2",
+        "SELECT payload_hash FROM atheer.reconciliation_events WHERE environment=$1 AND reconciliation_event_id=$2",
         [this.environment,event.id],
       );
       if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Reconciliation event identity was reused with different content.");
       await client.query(
-        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RECONCILIATION',$3,'reconciliation.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        "INSERT INTO atheer.domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'RECONCILIATION',$3,'reconciliation.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
         [this.environment,"reconciliation:" + event.id,event.aggregateId,event.id,"reconciliation:" + event.id,payload],
       );
     });
@@ -339,16 +340,16 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
     const payloadHash = sha256(payload);
     await inTransaction(this.pool, async (client) => {
       await client.query(
-        "INSERT INTO audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
+        "INSERT INTO atheer.audit_events (environment,audit_event_id,correlation_id,subject_type,subject_id,event_type,occurred_at,payload_hash,payload) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb) ON CONFLICT (environment,audit_event_id) DO NOTHING",
         [this.environment,event.id,event.correlationId,event.subjectType,event.subjectId,event.actionCode,isoTimestamp(event.occurredAt),payloadHash,payload],
       );
       const existing = await client.query<{ payload_hash: string }>(
-        "SELECT payload_hash FROM audit_events WHERE environment=$1 AND audit_event_id=$2",
+        "SELECT payload_hash FROM atheer.audit_events WHERE environment=$1 AND audit_event_id=$2",
         [this.environment,event.id],
       );
       if (existing.rows[0]?.payload_hash !== payloadHash) throw new PersistenceConflictError("Audit event identity was reused with different content.");
       await client.query(
-        "INSERT INTO domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'AUDIT',$3,'audit.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
+        "INSERT INTO atheer.domain_outbox (environment,outbox_id,aggregate_type,aggregate_id,event_type,correlation_id,idempotency_key,payload) VALUES ($1,$2,'AUDIT',$3,'audit.event.persisted',$4,$5,$6::jsonb) ON CONFLICT (environment,event_type,idempotency_key) DO NOTHING",
         [this.environment,"audit:" + event.id,event.subjectId,event.correlationId,"audit:" + event.id,payload],
       );
     });
