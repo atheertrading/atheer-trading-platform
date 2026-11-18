@@ -97,3 +97,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-041 | 2026-11-18 | ATP-BRK-002 centralized broker credential/session authority | Reconciled Library Q5/Q6 with PR #26 Keychain/direct Swift authentication and PR #37 environment-driven backend authentication; mandated one backend CMS/session manager, secure local provisioning, and a merge gate for PR #37. | PR #26; PR #37; EDL-022; ATP-BRK-002; SECURITY.md; SESSION_2026-11-18_040_BROKER_SESSION_AUTHORITY_RECONCILIATION |
+
+
+| ATP-2026-11-18-042 | 2026-11-18 | Q10 centralized connection and subscription orchestration review | Compared PR #37 stream implementation with Library Q10; documented implemented shared WebSocket/40-cap/ping/reconnect controls and pending REST keepalive, sequential auth rate limit, priority allocation and account-switch restoration. | PR #37; ATP-BRK-003; ATP-MKT-007; EDL-023; ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE |
