@@ -252,16 +252,12 @@ struct MarketWatchPanelView: View {
 
             Text(quote.map { $0.bid.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundColor(quote == nil ? .secondary : quote?.freshness.state == "fresh"
-                    ? ATHEERDesignTokens.ColorRole.success
-                    : ATHEERDesignTokens.ColorRole.attention)
+                .foregroundColor(quoteColor(quote))
                 .frame(width: 68, alignment: .trailing)
 
             Text(quote.map { $0.ask.formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundColor(quote == nil ? .secondary : quote?.freshness.state == "fresh"
-                    ? ATHEERDesignTokens.ColorRole.success
-                    : ATHEERDesignTokens.ColorRole.attention)
+                .foregroundColor(quoteColor(quote))
                 .frame(width: 68, alignment: .trailing)
 
             Text(quote.map { ($0.ask - $0.bid).formatted(.number.precision(.fractionLength(0...5))) } ?? "—")
@@ -282,7 +278,7 @@ struct MarketWatchPanelView: View {
                     if !model.isStreamingRequested { model.startStreaming() }
                 }
             } label: {
-                Text(isSubscribed ? (quote?.freshness.state.uppercased() ?? "WAIT") : "ADD")
+                Text(isSubscribed ? (quote.map(quoteFreshnessLabel) ?? "WAIT") : "ADD")
                     .font(.system(size: 8, weight: .bold, design: .monospaced))
             }
             .buttonStyle(.borderless)
@@ -317,6 +313,24 @@ struct MarketWatchPanelView: View {
             .disabled(watchlistIndex >= watchlistStore.epics.count - 1)
         }
         .accessibilityElement(children: .contain)
+    }
+
+    private func isQuoteFresh(_ quote: MarketDataStreamQuote) -> Bool {
+        quote.freshness.state == "fresh" && quote.currentAgeMilliseconds <= 5_000
+    }
+
+    private func quoteFreshnessLabel(_ quote: MarketDataStreamQuote) -> String {
+        guard quote.freshness.state == "fresh" else {
+            return quote.freshness.state.uppercased()
+        }
+        return isQuoteFresh(quote) ? "FRESH" : "STALE"
+    }
+
+    private func quoteColor(_ quote: MarketDataStreamQuote?) -> Color {
+        guard let quote else { return .secondary }
+        return isQuoteFresh(quote)
+            ? ATHEERDesignTokens.ColorRole.success
+            : ATHEERDesignTokens.ColorRole.attention
     }
 
     private var streamingTint: Color {
