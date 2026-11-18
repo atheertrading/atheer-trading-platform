@@ -6,6 +6,7 @@ import SwiftUI
 struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     let marketHistoryClient: MarketHistoryClient?
+    let marketDataStreamModel: MarketDataStreamViewModel?
     let selectedChartInstrumentId: String?
     let onOpenAPIConnection: () -> Void
     let onOpenMarkets: () -> Void
@@ -13,12 +14,14 @@ struct CommandCenterView: View {
     init(
         backendHealthModel: BackendHealthViewModel,
         marketHistoryClient: MarketHistoryClient? = nil,
+        marketDataStreamModel: MarketDataStreamViewModel? = nil,
         selectedChartInstrumentId: String? = nil,
         onOpenAPIConnection: @escaping () -> Void,
         onOpenMarkets: @escaping () -> Void = {}
     ) {
         _backendHealthModel = ObservedObject(wrappedValue: backendHealthModel)
         self.marketHistoryClient = marketHistoryClient
+        self.marketDataStreamModel = marketDataStreamModel
         self.selectedChartInstrumentId = selectedChartInstrumentId
         self.onOpenAPIConnection = onOpenAPIConnection
         self.onOpenMarkets = onOpenMarkets
@@ -143,38 +146,93 @@ struct CommandCenterView: View {
             alignment: .leading,
             spacing: 10
         ) {
-            CommandCenterStatusItem(
-                title: "MARKET DATA",
-                value: "UNAVAILABLE",
-                detail: "Provider not configured",
-                symbol: "waveform.path",
-                tint: ATHEERDesignTokens.ColorRole.attention
-            )
+            if let marketDataStreamModel {
+                CommandCenterMarketDataStatusItem(model: marketDataStreamModel)
+            } else {
+                CommandCenterStatusItem(
+                    title: "MARKET DATA",
+                    value: "UNAVAILABLE",
+                    detail: "Managed backend market stream is not available",
+                    symbol: "waveform.path",
+                    tint: ATHEERDesignTokens.ColorRole.attention
+                )
+            }
 
             CommandCenterStatusItem(
                 title: "BROKER",
-                value: "DISCONNECTED",
-                detail: "No broker adapter",
+                value: brokerStatus.value,
+                detail: brokerStatus.detail,
                 symbol: "building.columns",
-                tint: .secondary
+                tint: brokerStatus.tint
             )
 
             CommandCenterStatusItem(
                 title: "ACCOUNT",
-                value: "NO SNAPSHOT",
-                detail: "Account state unavailable",
+                value: "NOT AVAILABLE",
+                detail: "Authenticated account read model is not integrated",
                 symbol: "person.crop.rectangle",
                 tint: .secondary
             )
 
             CommandCenterStatusItem(
-                title: "EXECUTION",
-                value: "DISABLED",
-                detail: "Trading gate is closed",
-                symbol: "lock",
-                tint: ATHEERDesignTokens.ColorRole.attention
+                title: "TRADING GATE",
+                value: tradingGateStatus.value,
+                detail: tradingGateStatus.detail,
+                symbol: tradingGateStatus.symbol,
+                tint: tradingGateStatus.tint
             )
         }
+    }
+
+    private var brokerStatus: (value: String, detail: String, tint: Color) {
+        guard case .connected(let snapshot) = backendHealthModel.state,
+              snapshot.readinessFailure == nil,
+              let status = snapshot.brokerStatus else {
+            return (
+                "NOT VERIFIED",
+                "Backend readiness has not confirmed broker state",
+                .secondary
+            )
+        }
+
+        let value = status
+            .replacingOccurrences(of: "_", with: " ")
+            .uppercased()
+        let isConnected = status.lowercased() == "connected"
+        return (
+            value,
+            "Backend-reported broker dependency state",
+            isConnected ? ATHEERDesignTokens.ColorRole.success : ATHEERDesignTokens.ColorRole.attention
+        )
+    }
+
+    private var tradingGateStatus: (value: String, detail: String, symbol: String, tint: Color) {
+        guard case .connected(let snapshot) = backendHealthModel.state,
+              snapshot.readinessFailure == nil,
+              let enabled = snapshot.tradingEnabled else {
+            return (
+                "NOT VERIFIED",
+                "No verified backend trading-permission snapshot",
+                "questionmark.circle",
+                .secondary
+            )
+        }
+
+        if enabled {
+            return (
+                "ENABLED",
+                "Backend-reported permission; no dealing controls are exposed here",
+                "exclamationmark.triangle",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        }
+
+        return (
+            "DISABLED",
+            "Backend confirms the trading gate is disabled",
+            "lock",
+            .secondary
+        )
     }
 
     private var primaryWorkspace: some View {
@@ -266,42 +324,33 @@ struct CommandCenterView: View {
         }
     }
 
+    @ViewBuilder
     private var marketWatchPanel: some View {
-        CommandCenterPanel(
-            title: "Market Watch",
-            subtitle: "Instrument discovery · Quotes",
-            symbol: "list.bullet.rectangle",
-            status: "NO FEED",
-            statusColor: ATHEERDesignTokens.ColorRole.attention,
-            minHeight: 244
-        ) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("INSTRUMENT")
-                    Spacer()
-                    Text("LAST")
-                    Text("CHANGE")
-                }
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .tracking(0.5)
-                .foregroundColor(.secondary)
-
-                Rectangle()
-                    .fill(ATHEERDesignTokens.ColorRole.separator)
-                    .frame(height: 1)
-
-                VStack(spacing: 8) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: 22))
-                        .foregroundColor(.secondary)
-                    Text("No instruments")
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("A connected provider is required before quotes can be shown.")
+        if let marketDataStreamModel {
+            LiveMarketWatchPanel(
+                model: marketDataStreamModel,
+                onOpenMarkets: onOpenMarkets
+            )
+        } else {
+            CommandCenterPanel(
+                title: "Market Watch",
+                subtitle: "Instrument discovery · DEMO quotes",
+                symbol: "list.bullet.rectangle",
+                status: "BACKEND OFFLINE",
+                statusColor: ATHEERDesignTokens.ColorRole.attention,
+                minHeight: 244
+            ) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("Authenticated market stream unavailable", systemImage: "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Start the supervised backend to restore the shared DEMO quote monitor. No synthetic or cached price is presented as current.")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Connections", action: onOpenAPIConnection)
+                        .buttonStyle(.borderless)
                 }
-                .frame(maxWidth: .infinity, minHeight: 112)
+                .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
             }
         }
     }
@@ -447,6 +496,60 @@ private struct CommandCenterPanel<Content: View>: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .contain)
+    }
+}
+
+@MainActor
+private struct CommandCenterMarketDataStatusItem: View {
+    @ObservedObject var model: MarketDataStreamViewModel
+
+    private var presentation: (value: String, detail: String, tint: Color) {
+        switch model.connectionState {
+        case .connected:
+            if model.quotes.isEmpty {
+                return (
+                    "CONNECTED · WAITING",
+                    "Stream connected; awaiting the first provider quote",
+                    ATHEERDesignTokens.ColorRole.attention
+                )
+            }
+            return (
+                "STREAMING",
+                "\(model.quotes.count) provider quote(s) · \(model.selectedCount) selected",
+                ATHEERDesignTokens.ColorRole.success
+            )
+        case .connecting:
+            return (
+                "CONNECTING",
+                "\(model.selectedCount) selected instrument(s)",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .degraded:
+            return (
+                "DEGRADED",
+                model.lastError ?? "Market-data stream recovery is in progress",
+                ATHEERDesignTokens.ColorRole.attention
+            )
+        case .disconnected:
+            return (
+                model.selectedEpics.isEmpty ? "NO WATCHLIST" : "STOPPED",
+                model.selectedEpics.isEmpty
+                    ? "Open Markets to select DEMO instruments"
+                    : "Last quote snapshots retain their age and freshness state",
+                .secondary
+            )
+        }
+    }
+
+    var body: some View {
+        let status = presentation
+        CommandCenterStatusItem(
+            title: "MARKET DATA",
+            value: status.value,
+            detail: status.detail,
+            symbol: "waveform.path",
+            tint: status.tint
+        )
     }
 }
 

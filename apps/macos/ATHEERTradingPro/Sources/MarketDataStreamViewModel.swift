@@ -32,6 +32,33 @@ struct MarketDataStreamQuoteSnapshot: Identifiable {
     }
 }
 
+protocol MarketWatchlistPersistence {
+    func loadSelectedEpics() -> [String]
+    func saveSelectedEpics(_ epics: [String])
+}
+
+/// Stores the user's selected Capital.com DEMO watchlist, never quote or account data.
+struct UserDefaultsMarketWatchlistPersistence: MarketWatchlistPersistence {
+    private let defaults: UserDefaults
+    private let key: String
+
+    init(
+        defaults: UserDefaults = .standard,
+        key: String = "com.atheertrading.market-watchlist.capital-demo.v1"
+    ) {
+        self.defaults = defaults
+        self.key = key
+    }
+
+    func loadSelectedEpics() -> [String] {
+        defaults.stringArray(forKey: key) ?? []
+    }
+
+    func saveSelectedEpics(_ epics: [String]) {
+        defaults.set(epics, forKey: key)
+    }
+}
+
 @MainActor
 final class MarketDataStreamViewModel: ObservableObject {
     @Published private(set) var status: MarketDataStreamStatus?
@@ -43,13 +70,19 @@ final class MarketDataStreamViewModel: ObservableObject {
     @Published private(set) var ageRevision = 0
 
     private let client: MarketDataStreamClient
-    private let maximumInstrumentCount = 40
+    private let persistence: MarketWatchlistPersistence
+    private static let maximumInstrumentCount = 40
     private var streamTask: Task<Void, Never>?
     private var ageTask: Task<Void, Never>?
     private var generation = 0
 
-    init(client: MarketDataStreamClient) {
+    init(
+        client: MarketDataStreamClient,
+        persistence: MarketWatchlistPersistence = UserDefaultsMarketWatchlistPersistence()
+    ) {
         self.client = client
+        self.persistence = persistence
+        selectedEpics = Set(Self.normalizedEpics(persistence.loadSelectedEpics()).prefix(Self.maximumInstrumentCount))
     }
 
     var selectedCount: Int { selectedEpics.count }
@@ -63,24 +96,25 @@ final class MarketDataStreamViewModel: ObservableObject {
     }
 
     func canSelect(_ epic: String) -> Bool {
-        isSelected(epic) || selectedEpics.count < maximumInstrumentCount
+        isSelected(epic) || selectedEpics.count < Self.maximumInstrumentCount
     }
 
     func toggleSelection(_ epic: String) {
-        let normalized = epic.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !normalized.isEmpty else { return }
+        guard let normalized = Self.normalizedEpic(epic) else { return }
 
         let shouldRestart = isMonitoring
         if selectedEpics.contains(normalized) {
             selectedEpics.remove(normalized)
             quotes.removeValue(forKey: normalized)
         } else {
-            guard selectedEpics.count < maximumInstrumentCount else {
-                lastError = "A maximum of 40 instruments can be monitored at once."
+            guard selectedEpics.count < Self.maximumInstrumentCount else {
+                lastError = "A maximum of \(Self.maximumInstrumentCount) instruments can be monitored at once."
                 return
             }
             selectedEpics.insert(normalized)
         }
+
+        persistSelection()
 
         if shouldRestart {
             stopMonitoring()
@@ -132,6 +166,26 @@ final class MarketDataStreamViewModel: ObservableObject {
     func clearSelection() {
         stopMonitoring(clearQuotes: true)
         selectedEpics.removeAll()
+        persistSelection()
+    }
+
+    private func persistSelection() {
+        persistence.saveSelectedEpics(selectedEpics.sorted())
+    }
+
+    private static func normalizedEpics(_ epics: [String]) -> [String] {
+        Array(Set(epics.compactMap(normalizedEpic))).sorted()
+    }
+
+    private static func normalizedEpic(_ epic: String) -> String? {
+        let normalized = epic.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalized.range(
+            of: "^[A-Za-z0-9_.-]{1,64}$",
+            options: .regularExpression
+        ) != nil else {
+            return nil
+        }
+        return normalized
     }
 
     private func consumeStream(epics: [String], generation requestGeneration: Int) async {

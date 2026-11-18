@@ -3,18 +3,18 @@ import SwiftUI
 @MainActor
 struct MarketExplorerView: View {
     @StateObject private var model: MarketExplorerViewModel
-    @StateObject private var streamModel: MarketDataStreamViewModel
+    @ObservedObject private var streamModel: MarketDataStreamViewModel
     let onOpenAPIConnection: () -> Void
     let onOpenChart: (String) -> Void
 
     init(
         client: MarketSearchClient,
-        streamClient: MarketDataStreamClient,
+        streamModel: MarketDataStreamViewModel,
         onOpenAPIConnection: @escaping () -> Void,
         onOpenChart: @escaping (String) -> Void = { _ in }
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
-        _streamModel = StateObject(wrappedValue: MarketDataStreamViewModel(client: streamClient))
+        _streamModel = ObservedObject(wrappedValue: streamModel)
         self.onOpenAPIConnection = onOpenAPIConnection
         self.onOpenChart = onOpenChart
     }
@@ -47,9 +47,6 @@ struct MarketExplorerView: View {
             if newState != .connected {
                 streamModel.stopMonitoring()
             }
-        }
-        .onDisappear {
-            streamModel.stopMonitoring(clearQuotes: true)
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
     }

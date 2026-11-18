@@ -284,4 +284,98 @@ final class MarketDataStreamClientTests: XCTestCase {
         XCTAssertEqual(model.selectedCount, 39)
         XCTAssertTrue(model.canSelect("EPIC_40"))
     }
+
+    @MainActor
+    func testWatchlistRestoreDeduplicatesAndCapsPersistedInstrumentIdentities() {
+        let epics = (0..<45).map { "EPIC_\($0)" } + ["EPIC_0", "invalid epic", "AAPL\nInjected"]
+        let persistence = InMemoryMarketWatchlistPersistence(selectedEpics: epics)
+        let model = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        XCTAssertEqual(model.selectedCount, 40)
+        XCTAssertEqual(model.selectedEpics.count, 40)
+        XCTAssertFalse(model.selectedEpics.contains("invalid epic"))
+        XCTAssertFalse(model.selectedEpics.contains("AAPL\nInjected"))
+    }
+
+
+    @MainActor
+    func testWatchlistSelectionsPersistAcrossRuntimeModelRecreation() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        let firstModel = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        firstModel.toggleSelection(" AAPL ")
+        firstModel.toggleSelection("EURUSD")
+
+        XCTAssertEqual(persistence.selectedEpics, ["AAPL", "EURUSD"])
+        XCTAssertEqual(firstModel.selectedCount, 2)
+
+        let restoredModel = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        XCTAssertEqual(restoredModel.selectedEpics, Set(["AAPL", "EURUSD"]))
+        XCTAssertTrue(restoredModel.quotes.isEmpty)
+        XCTAssertFalse(restoredModel.isMonitoring)
+    }
+
+    @MainActor
+    func testWatchlistPersistenceRejectsInvalidInstrumentIdentity() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        let model = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        model.toggleSelection("AAPL\nInjected")
+        model.toggleSelection("")
+
+        XCTAssertTrue(model.selectedEpics.isEmpty)
+        XCTAssertTrue(persistence.selectedEpics.isEmpty)
+    }
+
+    @MainActor
+    func testClearingWatchlistPersistsEmptySelection() {
+        let persistence = InMemoryMarketWatchlistPersistence()
+        let model = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        model.toggleSelection("WTI")
+        model.clearSelection()
+
+        XCTAssertTrue(model.selectedEpics.isEmpty)
+        XCTAssertTrue(persistence.selectedEpics.isEmpty)
+        XCTAssertTrue(
+            MarketDataStreamViewModel(
+                client: MockMarketDataStreamClient(),
+                persistence: persistence
+            ).selectedEpics.isEmpty
+        )
+    }
+
+}
+
+
+private final class InMemoryMarketWatchlistPersistence: MarketWatchlistPersistence {
+    private(set) var selectedEpics: [String]
+
+    init(selectedEpics: [String] = []) {
+        self.selectedEpics = selectedEpics
+    }
+
+    func loadSelectedEpics() -> [String] {
+        selectedEpics
+    }
+
+    func saveSelectedEpics(_ epics: [String]) {
+        selectedEpics = epics
+    }
 }

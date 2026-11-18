@@ -26,21 +26,32 @@ final class BackendRuntimeViewModel: ObservableObject {
     @Published private(set) var state: BackendRuntimeViewState = .stopped
     @Published private(set) var marketSearchClient: MarketSearchClient?
     @Published private(set) var marketDataStreamClient: MarketDataStreamClient?
+    @Published private(set) var marketDataStreamModel: MarketDataStreamViewModel?
     @Published private(set) var marketHistoryClient: MarketHistoryClient?
 
     let healthModel: BackendHealthViewModel
     let brokerManagementModel: BrokerManagementViewModel
+    private let marketWatchlistPersistence: MarketWatchlistPersistence
+    private let healthClientFactory: @MainActor (BackendIPCConnection) -> BackendHealthClient
     private var supervisor: BackendProcessManaging
 
     init(
         supervisor: BackendProcessManaging? = nil,
         healthModel: BackendHealthViewModel = BackendHealthViewModel(),
-        brokerManagementModel: BrokerManagementViewModel? = nil
+        brokerManagementModel: BrokerManagementViewModel? = nil,
+        marketWatchlistPersistence: MarketWatchlistPersistence = UserDefaultsMarketWatchlistPersistence(),
+        healthClientFactory: (@MainActor (BackendIPCConnection) -> BackendHealthClient)? = nil
     ) {
         self.supervisor = supervisor ?? BackendProcessSupervisor()
         self.healthModel = healthModel
         self.brokerManagementModel = brokerManagementModel ?? BrokerManagementViewModel()
+        self.marketWatchlistPersistence = marketWatchlistPersistence
+        self.healthClientFactory = healthClientFactory ?? {
+            URLSessionBackendHealthClient(baseURL: $0.baseURL)
+        }
         self.supervisor.onUnexpectedTermination = { [weak self] message in
+            self?.marketDataStreamModel?.stopMonitoring(clearQuotes: true)
+            self?.marketDataStreamModel = nil
             self?.marketSearchClient = nil
             self?.marketDataStreamClient = nil
             self?.marketHistoryClient = nil
@@ -51,23 +62,28 @@ final class BackendRuntimeViewModel: ObservableObject {
     }
 
     func start() async {
-        guard state != .starting else { return }
+        guard state != .starting, state != .ready else { return }
         state = .starting
         do {
             let connection = try await supervisor.start()
-            healthModel.configure(
-                client: URLSessionBackendHealthClient(baseURL: connection.baseURL)
-            )
+            healthModel.configure(client: healthClientFactory(connection))
             brokerManagementModel.configure(
                 authentication: BackendBrokerAuthenticationService(connection: connection)
             )
             marketSearchClient = URLSessionMarketSearchClient(connection: connection)
-            marketDataStreamClient = URLSessionMarketDataStreamClient(connection: connection)
+            let streamClient = URLSessionMarketDataStreamClient(connection: connection)
+            marketDataStreamClient = streamClient
+            marketDataStreamModel = MarketDataStreamViewModel(
+                client: streamClient,
+                persistence: marketWatchlistPersistence
+            )
             marketHistoryClient = URLSessionMarketHistoryClient(connection: connection)
             await healthModel.refresh()
             state = .ready
         } catch {
             try? await supervisor.stop()
+            marketDataStreamModel?.stopMonitoring(clearQuotes: true)
+            marketDataStreamModel = nil
             marketSearchClient = nil
             marketDataStreamClient = nil
             marketHistoryClient = nil
@@ -78,6 +94,8 @@ final class BackendRuntimeViewModel: ObservableObject {
     }
 
     func stop() async throws {
+        marketDataStreamModel?.stopMonitoring(clearQuotes: true)
+        marketDataStreamModel = nil
         marketSearchClient = nil
         marketDataStreamClient = nil
         marketHistoryClient = nil
