@@ -135,7 +135,7 @@ for (const outcome of ["REJECTED", "HELD"]) {
   });
 }
 
-test("manual, strategy, and AI intents use the same risk and journal boundary", async () => {
+test("manual, strategy, algorithmic, and AI intents use the same risk and journal boundary", async () => {
   const observedOrigins = [];
   const service = new PreTradeAuthorizationService(
     {
@@ -151,7 +151,7 @@ test("manual, strategy, and AI intents use the same risk and journal boundary", 
     },
   );
 
-  for (const kind of ["HUMAN", "STRATEGY", "AI_AGENT"]) {
+  for (const kind of ["HUMAN", "STRATEGY", "ALGORITHM", "AI_AGENT"]) {
     await service.evaluateAndPersist(makeIntent({
       id: "intent-" + kind.toLowerCase(),
       origin: { kind, sourceId: "source-" + kind.toLowerCase() },
