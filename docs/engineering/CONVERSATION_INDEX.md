@@ -94,3 +94,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-040 | 2026-11-18 | Catalogue metadata and live quote authority | Removed unvalidated provider bid/offer from market catalogue responses; validated streaming events remain the only live quote source; added regression test and EDL-021. | PR #37; ATP-MKT-006I; EDL-021; ATHEER_MARKET_DATA_STREAMING_ARCHITECTURE |
+
+
+| ATP-2026-11-18-041 | 2026-11-18 | ATP-BRK-002 centralized broker credential/session authority | Reconciled Library Q5/Q6 with PR #26 Keychain/direct Swift authentication and PR #37 environment-driven backend authentication; mandated one backend CMS/session manager, secure local provisioning, and a merge gate for PR #37. | PR #26; PR #37; EDL-022; ATP-BRK-002; SECURITY.md; SESSION_2026-11-18_040_BROKER_SESSION_AUTHORITY_RECONCILIATION |
