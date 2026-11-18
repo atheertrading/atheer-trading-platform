@@ -55,7 +55,7 @@ struct MarketExplorerView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("MARKET EXPLORER")
                 .font(.system(size: 25, weight: .bold, design: .rounded))
-                .foregroundColor(ATHEERDesignTokens.ColorRole.primaryText)
+                .foregroundColor(.primary)
             Text("Search broker instruments, select markets, and monitor verified DEMO quotes.")
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)
@@ -89,7 +89,7 @@ struct MarketExplorerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .stroke(ATHEERDesignTokens.ColorRole.border, lineWidth: 1)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
         }
     }
 
@@ -119,13 +119,13 @@ struct MarketExplorerView: View {
                     Task { await model.search() }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(model.isSearching || !model.canSearch)
+                .disabled(model.state == .searching || !model.canSearch)
             }
 
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .font(.system(size: 12))
-                    .foregroundColor(ATHEERDesignTokens.ColorRole.warning)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
             }
         }
         .padding(16)
@@ -133,7 +133,7 @@ struct MarketExplorerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .stroke(ATHEERDesignTokens.ColorRole.border, lineWidth: 1)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
         }
     }
 
@@ -150,7 +150,7 @@ struct MarketExplorerView: View {
                     .foregroundColor(.secondary)
             }
 
-            if model.isSearching {
+            if model.state == .searching {
                 ProgressView("Searching Capital.com DEMO…")
                     .controlSize(.small)
                     .padding(.vertical, 12)
@@ -168,7 +168,7 @@ struct MarketExplorerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .stroke(ATHEERDesignTokens.ColorRole.border, lineWidth: 1)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
         }
     }
 
@@ -176,7 +176,7 @@ struct MarketExplorerView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("No instruments loaded")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(ATHEERDesignTokens.ColorRole.primaryText)
+                .foregroundColor(.primary)
             Text("Search the connected DEMO catalogue. No synthetic instruments or prices are generated.")
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
@@ -203,7 +203,7 @@ struct MarketExplorerView: View {
         HStack(spacing: 12) {
             Text(instrument.name ?? instrument.epic)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(ATHEERDesignTokens.ColorRole.primaryText)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .lineLimit(1)
             Text(instrument.epic)
@@ -237,7 +237,7 @@ struct MarketExplorerView: View {
         .padding(.vertical, 9)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(ATHEERDesignTokens.ColorRole.border)
+                .fill(ATHEERDesignTokens.ColorRole.separator)
                 .frame(height: 1)
         }
     }
@@ -295,7 +295,7 @@ struct MarketExplorerView: View {
             if let error = streamModel.lastError {
                 Label(error, systemImage: "exclamationmark.triangle")
                     .font(.system(size: 11))
-                    .foregroundColor(ATHEERDesignTokens.ColorRole.warning)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
             }
 
             if streamModel.quotes.isEmpty {
@@ -322,7 +322,7 @@ struct MarketExplorerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .stroke(ATHEERDesignTokens.ColorRole.border, lineWidth: 1)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
         }
     }
 
@@ -348,7 +348,7 @@ struct MarketExplorerView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.results.first(where: { $0.epic == quote.instrumentId })?.name ?? quote.instrumentId)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(ATHEERDesignTokens.ColorRole.primaryText)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
                 Text(quote.instrumentId)
                     .font(.system(size: 9, design: .monospaced))
@@ -372,7 +372,7 @@ struct MarketExplorerView: View {
         .padding(.vertical, 8)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(ATHEERDesignTokens.ColorRole.border)
+                .fill(ATHEERDesignTokens.ColorRole.separator)
                 .frame(height: 1)
         }
     }
@@ -416,7 +416,7 @@ struct MarketExplorerView: View {
                 .foregroundColor(.secondary)
             Text(value)
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                .foregroundColor(ATHEERDesignTokens.ColorRole.primaryText)
+                .foregroundColor(.primary)
         }
     }
 
@@ -440,7 +440,7 @@ struct MarketExplorerView: View {
         case .fresh:
             return ATHEERDesignTokens.ColorRole.success
         case .stale:
-            return ATHEERDesignTokens.ColorRole.warning
+            return ATHEERDesignTokens.ColorRole.attention
         case .invalid:
             return ATHEERDesignTokens.ColorRole.danger
         }
