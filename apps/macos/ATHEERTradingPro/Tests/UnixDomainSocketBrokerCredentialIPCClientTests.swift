@@ -165,7 +165,7 @@ final class UnixDomainSocketBrokerCredentialIPCClientTests: XCTestCase {
     func testRequestRejectedErrorDescriptionIncludesErrorCode() {
         XCTAssertEqual(
             BrokerCredentialIPCError.requestRejected("unauthorized").errorDescription,
-            "The broker credential request was rejected (unauthorized)."
+            "The private broker credential request was rejected (unauthorized)."
         )
     }
 }
