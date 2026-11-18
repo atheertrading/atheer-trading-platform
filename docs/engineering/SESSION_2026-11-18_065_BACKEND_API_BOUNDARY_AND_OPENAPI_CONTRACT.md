@@ -72,3 +72,19 @@ The authenticated broker/session and charting stack also remains open. Current p
 3. Reconcile PR #81 and #82 against the integrated canonical parent and rerun exact-head qualification.
 4. Resolve authenticated broker-session ancestry and private credential IPC before any authenticated DEMO acceptance.
 5. Keep LIVE disabled and retain the centralized risk/execution authority requirements.
+
+## Contract source integrity correction — 2026-11-18
+
+A final source audit found that successive OpenAPI updates had left repeated root `components:` sections in the YAML. Although route names and individual component references were present, duplicate root keys made the specification structurally invalid. The file was normalized to one canonical `components:` section and one each of the OpenAPI root sections.
+
+Verified directly from the current GitHub file:
+- Exactly one each of `openapi`, `info`, `servers`, `tags`, `paths`, and `components`.
+- Exactly seven route path entries, matching the implemented API.
+- Eight unique schemas and two reusable responses.
+- All 33 component references resolve to a declared schema or response.
+- EPIC schema pattern is complete: `^[A-Za-z0-9_.-]{1,64}$`.
+
+Added regression coverage to `openapi-contract.test.mjs` to reject duplicate root sections. This is source-level structural verification, not a claim that an external OpenAPI parser or generated client validation has been run.
+
+The correction and continuity update advance the PR head beyond the previously recorded `d5853c3...` checkpoint. Latest known head before this addendum: `e9b4fa759d1bb9b630b88df4a5a771520741291a`. On that head, Backend Toolchain and Repository Hygiene passed, Local Sync Safety passed, Intel/Apple Silicon jobs were queued, and the Actions CodeQL workflow was in progress. Revalidate the final updated head before merge.
+
