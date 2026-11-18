@@ -563,3 +563,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - This is not an acceptable final integration because Market Data, Broker Management and future services could hold separate sessions and disagree on connection/expiry state.
 - Decision EDL-022: one backend CMS/session manager; secure native credential provisioning via authenticated local IPC or per-launch capability token; environment variables test-only; app UI delegates to backend.
 - PR #37 remains draft and must not merge as completed integration until ATP-BRK-002 is implemented and DEMO-qualified.
+
+
+## 2026-11-18 — Q10 connection management qualification
+
+- PR #37 provides one shared WebSocket runtime with a 40-instrument cap, deduplication, five-minute ping, bounded reconnect/backoff and quote-quality counters.
+- Q10 gaps remain: sequential session-creation rate limiting (1 request/second/API key), scheduled REST keepalive, priority allocation for open positions/strategies/watchlists, account-switch restoration and utilization metrics.
+- `CapitalDemoRuntime.connect()` coalesces concurrent connection requests but does not yet enforce the documented sequential request rate. `ping()` exists but is not scheduled.
+- Track as ATP-BRK-003 / ATP-MKT-007 and implement through the single CMS/session authority in ATP-BRK-002.
