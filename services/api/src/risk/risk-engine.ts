@@ -253,8 +253,8 @@ function validatePolicy(policy: RiskPolicy, intent: OrderIntentEnvelope): void {
     throw new DomainValidationError("invalid_maximum_spread", "Maximum spread must be positive.");
   }
 
-  positiveInteger(policy.maximumOpenPositions, "maximumOpenPositions");
-  positiveInteger(policy.maximumOpenPositionsPerInstrument, "maximumOpenPositionsPerInstrument");
+  nonNegativeInteger(policy.maximumOpenPositions, "maximumOpenPositions");
+  nonNegativeInteger(policy.maximumOpenPositionsPerInstrument, "maximumOpenPositionsPerInstrument");
   validateMoney(policy.maximumPerTradeRisk, "maximumPerTradeRisk");
   validateMoney(policy.maximumAccountGrossExposure, "maximumAccountGrossExposure");
   validateMoney(policy.maximumInstrumentGrossExposure, "maximumInstrumentGrossExposure");
@@ -351,8 +351,8 @@ function validateContext(context: PreTradeRiskContext, intent: OrderIntentEnvelo
     context.portfolioRisk.projectedDailyLoss,
     context.portfolioRisk.projectedDrawdown,
   ]) validateMoney(value, "projected_portfolio_risk");
-  positiveInteger(context.portfolioRisk.projectedOpenPositions, "projectedOpenPositions");
-  positiveInteger(context.portfolioRisk.projectedOpenInstrumentPositions, "projectedOpenInstrumentPositions");
+  nonNegativeInteger(context.portfolioRisk.projectedOpenPositions, "projectedOpenPositions");
+  nonNegativeInteger(context.portfolioRisk.projectedOpenInstrumentPositions, "projectedOpenInstrumentPositions");
 }
 
 function moneyCurrencyMatches(value: Money, currency: string): boolean {
@@ -450,14 +450,25 @@ export class RiskEngine {
       held.push("ACCOUNT_CURRENCY_UNAVAILABLE_OR_MISMATCHED");
     }
 
-    const requiredAccountValues = policy.requiredAccountFields.map((field) => context!.accountSnapshot[field]);
-    for (let index = 0; index < policy.requiredAccountFields.length; index += 1) {
-      const field = policy.requiredAccountFields[index];
-      const value = requiredAccountValues[index];
-      if (value === undefined) {
-        held.push("ACCOUNT_FIELD_UNAVAILABLE:" + field);
-      } else if (value.currency !== policy.accountCurrency) {
+    const snapshotFields: readonly AccountBalanceField[] = [
+      "balance", "equity", "availableFunds", "usedMargin", "availableMargin", "realizedPnl", "unrealizedPnl",
+    ];
+    for (const field of snapshotFields) {
+      const value = context.accountSnapshot[field];
+      if (value === undefined) continue;
+      if (value.currency !== policy.accountCurrency) {
         held.push("ACCOUNT_FIELD_CURRENCY_MISMATCH:" + field);
+      } else if (
+        ["balance", "equity", "availableFunds", "usedMargin", "availableMargin"].includes(field) &&
+        moneyBelowZero(value)
+      ) {
+        rejected.push("ACCOUNT_FINANCIAL_VALUE_NEGATIVE:" + field);
+      }
+    }
+
+    for (const field of policy.requiredAccountFields) {
+      if (context.accountSnapshot[field] === undefined) {
+        held.push("ACCOUNT_FIELD_UNAVAILABLE:" + field);
       }
     }
 
