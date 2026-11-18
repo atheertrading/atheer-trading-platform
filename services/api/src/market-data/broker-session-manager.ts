@@ -47,7 +47,7 @@ export class BrokerSessionManager {
         return {
           ...this.status(),
           state: "error",
-          lastError: `Capital.com DEMO session creation is rate-limited. Retry in ${Math.ceil(remainingMs / 1_000)} seconds.`,
+          lastError: `Capital.com DEMO session creation is rate-limited. Retry in ${Math.ceil(remainingMs / 1_000)} second${Math.ceil(remainingMs / 1_000) === 1 ? "" : "s"}.`,
         };
       }
       this.lastSessionCreationAttemptAtMs = now;
