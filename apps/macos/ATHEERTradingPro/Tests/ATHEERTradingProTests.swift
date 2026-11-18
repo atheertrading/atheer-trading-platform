@@ -528,6 +528,117 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeMarkets(invalidInstrument))
     }
 
+
+    @MainActor
+    func testMarketSearchHTTPClientUsesStatusEndpointAndMapsDemoStatus() async throws {
+        let recorder = MarketSearchRequestRecorder()
+        let session = marketSearchStubSession()
+        MarketSearchURLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data(#"{"provider":"capital.com","environment":"DEMO","state":"connected"}"#.utf8))
+        }
+        MarketSearchURLProtocolStub.requestObserver = { recorder.append($0) }
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+
+        let client = URLSessionMarketSearchClient(session: session)
+        let status = try await client.fetchBackendStatus()
+
+        XCTAssertEqual(status.provider, "capital.com")
+        XCTAssertEqual(status.environment, "DEMO")
+        XCTAssertEqual(status.state, .connected)
+        let request = try XCTUnwrap(recorder.requests.first)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url?.path.hasSuffix("/market-data/status") == true)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+    }
+
+    @MainActor
+    func testMarketSearchHTTPClientEncodesQueryAndMapsProviderInstrument() async throws {
+        let recorder = MarketSearchRequestRecorder()
+        let session = marketSearchStubSession()
+        MarketSearchURLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            let payload = Data("""
+            {
+              "provider":"capital.com",
+              "environment":"DEMO",
+              "markets":[
+                {"epic":"GOLD","instrumentName":"Gold","marketStatus":"TRADEABLE","currency":"USD"}
+              ]
+            }
+            """.utf8)
+            return (response, payload)
+        }
+        MarketSearchURLProtocolStub.requestObserver = { recorder.append($0) }
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+
+        let client = URLSessionMarketSearchClient(session: session)
+        let instruments = try await client.searchMarkets("Gold & Silver")
+
+        XCTAssertEqual(instruments.count, 1)
+        XCTAssertEqual(instruments[0].epic, "GOLD")
+        XCTAssertEqual(instruments[0].name, "Gold")
+        let request = try XCTUnwrap(recorder.requests.first)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url?.path.hasSuffix("/market-data/markets") == true)
+        let components = try XCTUnwrap(URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false))
+        XCTAssertEqual(components.queryItems?.first(where: { $0.name == "searchTerm" })?.value, "Gold & Silver")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "no-store")
+    }
+
+    @MainActor
+    func testMarketSearchHTTPClientMapsUnavailableAndUnexpectedHTTPStatuses() async {
+        let session = marketSearchStubSession()
+        defer {
+            MarketSearchURLProtocolStub.handler = nil
+            MarketSearchURLProtocolStub.requestObserver = nil
+            session.invalidateAndCancel()
+        }
+        let client = URLSessionMarketSearchClient(session: session)
+
+        MarketSearchURLProtocolStub.handler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!, Data())
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("HTTP 503 must map to backendNotConnected.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .backendNotConnected)
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
+
+        MarketSearchURLProtocolStub.handler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!, Data())
+        }
+        do {
+            _ = try await client.searchMarkets("Gold")
+            XCTFail("HTTP 500 must preserve the unexpected status code.")
+        } catch let error as MarketSearchError {
+            XCTAssertEqual(error, .unexpectedHTTPStatus(500))
+        } catch {
+            XCTFail("Expected a typed market-search error.")
+        }
+    }
+
     @MainActor
     func testMarketExplorerDisablesSearchForQueriesLongerThanOneHundredCharacters() async {
         let client = StubMarketSearchClient(
@@ -687,6 +798,57 @@ private final class DeferredMarketSearchClient: MarketSearchClient {
     func completeSearch(at index: Int, with results: [MarketInstrumentSummary]) {
         continuations[index].resume(returning: results)
     }
+}
+
+
+private func marketSearchStubSession() -> URLSession {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [MarketSearchURLProtocolStub.self]
+    configuration.httpCookieStorage = nil
+    configuration.urlCache = nil
+    return URLSession(configuration: configuration)
+}
+
+private final class MarketSearchRequestRecorder {
+    private let lock = NSLock()
+    private var storage: [URLRequest] = []
+
+    var requests: [URLRequest] {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    func append(_ request: URLRequest) {
+        lock.lock()
+        defer { lock.unlock() }
+        storage.append(request)
+    }
+}
+
+private final class MarketSearchURLProtocolStub: URLProtocol {
+    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    static var requestObserver: ((URLRequest) -> Void)?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        do {
+            guard let handler = Self.handler else {
+                throw URLError(.badServerResponse)
+            }
+            Self.requestObserver?(request)
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }
 
 private final class InMemoryWorkspacePersistence: WorkspacePersistence {
