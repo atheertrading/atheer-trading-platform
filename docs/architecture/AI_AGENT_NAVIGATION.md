@@ -39,3 +39,9 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 
 ## Agent outputs
 Agents must state what was inspected, what changed, which source requirements were used, what commands were run, what passed or failed, and what remains unknown. Do not invent transcript recovery, repository state, test results, or external API behavior.
+
+## Multi-agent engineering
+
+- [ATP Multi-Agent Engineering Operating Model](../engineering/ATP-MULTI-AGENT-ENGINEERING-OPERATING-MODEL.md) defines role ownership, contract-first parallelism, durable handoffs, Git branch/PR isolation, least privilege, integration gates and trading safety constraints.
+- [Issue #60](https://github.com/atheertrading/atheer-trading-platform/issues/60) tracks adoption, agent/tool provisioning and the first read-only pilot.
+- Before delegating parallel tasks, inspect the operating model and confirm actual agent/runtime/tool permissions. Do not assume separate chats share memory or repository state.
