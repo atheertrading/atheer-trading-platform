@@ -635,3 +635,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - ATP-BRK-002 / EDL-022 remains a mandatory integration gate: PR #26 direct Swift Keychain authentication and PR #37 environment-driven backend authentication are duplicate session authorities. One backend CMS/session manager must own credentials and session tokens; native app provisioning must use authenticated private IPC/per-launch capability; environment credentials remain test-only.
 - ATP-BRK-003 / ATP-MKT-007 / EDL-023 tracks sequential authentication throttling, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection metrics. Existing shared WebSocket/40-subscription/ping/reconnect code remains unmerged in PR #37.
 - PR #44/#45/#47 have green exact-head CI but remain draft, stacked on feature branches. Preserve the stack and resolve ancestry before mainline integration.
+
+
+## 2026-11-18 — Engineering continuation and PR #48 integration
+
+- PR #48 merged to `main` at `3bb2f0b68c11eff019bbd88ce09cf3b7155b9ea4`; exact tested head `a5c38c0640c37c24f4120ab88818bb544cc831c2`. CI `44238944009`, CodeQL `44238943944`, and Local Sync Safety `44238943955` all passed.
+- Re-read root `AGENTS.md`, `docs/development/AI_AGENT_WORKING_GUIDE.md`, continuity, task, implementation and decision records before continuing.
+- Inspected the Library `Atheer Q&A Repository.zip`, including Broker Integration Q5/Q6/Q10 and Mermaid workflows for manual intervention, strategy authority/overrides, strategy suspension, and emergency recovery. Q26.14 strategy-stop policy is marked proposed/pending owner approval in the source; it is not promoted to an accepted decision.
+- PR #49 head updated to `a16a0a065997ab912d46ba544cf8d4e0ada00ff0` with scheduled keepalive rejection containment and a regression test. Local Sync Safety run `44266234099` passed. Exact-head CI run `44266234067` is queued/in progress; backend type-check passed, backend tests and macOS matrix have not yet completed.
+- PR #49 remains stacked on PR #37 head `e8c2a8c321d6cd8f54ff4c17e499474e6b700414`. Its branch compares to current `main` as 106 ahead / 34 behind. Do not retarget, rebase, force-update, or merge it as an independent mainline change. PR #37 remains blocked by ATP-BRK-002 / EDL-022 duplicate broker-session authorities.
+- ATP-BRK-003 is partially implemented in PR #49: one-second sequential session-creation throttling per runtime and five-minute REST keepalive. Cross-runtime/API-key throttling under the CMS, priority subscription allocation, account-switch restoration and utilization metrics remain open.
+- Hosted CI is not owner-Mac qualification. This session did not access the local Mac shell, inspect the current local worktree, run local Xcode, enter broker credentials, or establish a real Capital.com DEMO session.
+- Next implementation gate: complete ATP-BRK-002 secure backend CMS/session ownership and authenticated app-to-backend IPC on a branch based on current `main`; then prepare a preservation-first reconstruction/integration of the diverged PR #37 stack.
