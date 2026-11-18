@@ -10,7 +10,7 @@ const MAX_REQUEST_BYTES = 8 * 1_024;
 const MAX_RESPONSE_BYTES = 8 * 1_024;
 const SOCKET_PATH_MAX_BYTES = 103;
 const SOCKET_MODE = 0o600;
-const REQUEST_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 type CredentialPayload = {
   apiKey: string;
