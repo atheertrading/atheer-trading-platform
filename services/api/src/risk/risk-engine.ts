@@ -548,6 +548,9 @@ export class RiskEngine {
 
     const specification = context.instrumentSpecification;
     const requestedQuantity = intent.payload.quantity;
+    if (intent.payload.direction !== "BUY" && intent.payload.direction !== "SELL") {
+      rejected.push("ORDER_DIRECTION_REQUIRED");
+    }
     if (specification.minimumDealSize === undefined) {
       held.push("BROKER_MINIMUM_DEAL_SIZE_UNAVAILABLE");
     }
