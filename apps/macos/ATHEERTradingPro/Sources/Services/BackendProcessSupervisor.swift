@@ -204,8 +204,9 @@ final class BackendProcessSupervisor: BackendProcessManaging {
 
             child.terminationHandler = { [weak self] terminatedProcess in
                 let status = terminatedProcess.terminationStatus
+                let processIdentifier = ObjectIdentifier(terminatedProcess)
                 Task { @MainActor [weak self] in
-                    self?.handleTermination(of: terminatedProcess, status: status)
+                    self?.handleTermination(processIdentifier: processIdentifier, status: status)
                 }
             }
 
@@ -372,8 +373,9 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         }
     }
 
-    private func handleTermination(of terminatedProcess: Process, status: Int32) {
-        guard process === terminatedProcess else { return }
+    private func handleTermination(processIdentifier: ObjectIdentifier, status: Int32) {
+        guard let process,
+              ObjectIdentifier(process) == processIdentifier else { return }
         let wasReady = connection != nil
         if readyContinuation != nil {
             finishStartup(.failure(BackendProcessSupervisorError.processExited(status)))
