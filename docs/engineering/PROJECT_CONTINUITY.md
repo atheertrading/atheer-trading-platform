@@ -682,3 +682,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Swift tests cover capability formatting/clearing and readiness parsing; API integration test exercises real process bootstrap and auth. PR #52 CI initially found missing TypeScript declarations for `process.stdout` and `process.exitCode`; fixed in PR #52 commit `426b3a9`, rerun pending.
 - **Not complete:** Keychain-to-backend credential handoff, backend-owned Broker Session Manager, one broker-session authority, real DEMO session, and owner-Mac Xcode/runtime qualification. Backend currently starts without credentials and reports `not_configured`; trading remains disabled.
 - Keep PRs #51–#53 stacked and unmerged until the full CI chain is green and the native runtime is qualified.
+
+
+## 2026-11-18 — Library Mermaid workflow consolidation
+
+- Inspected the 12 fenced Mermaid source blocks available in `Atheer Q&A Repository.zip`.
+- Consolidated the governing manual-intervention, manual-override, strategy-stop, emergency-recovery, procedure-qualification, AI-evidence, and unified-intelligence flows into `docs/architecture/ATHEER_GOVERNING_TRADING_FLOWS.md`.
+- These are normalized engineering transcriptions, not byte-for-byte reproductions and not evidence that the corresponding platform modules are implemented.
+- The diagrams now provide explicit control points for Risk Engine authorization, OMS/Execution Gateway routing, broker reconciliation, protective-order preservation, emergency restrictions, and evidence provenance.
