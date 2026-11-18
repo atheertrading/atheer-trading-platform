@@ -305,3 +305,20 @@ Security boundary:
 |---|---:|---|---|---|
 | ATP-MKT-006I | P1 | Strip unvalidated provider bid/offer values from instrument catalogue responses; use validated streaming events as the only live quote source | IMPLEMENTED; exact-head CI pending | PR #37; CapitalDemoClient maps allow-listed metadata fields; regression test proves bid/offer are not exposed |
 
+
+
+## ATP-BRK-002 — Centralized backend credential and broker-session authority
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-BRK-002 | P0 | Unify Keychain credential provisioning, backend CMS, Capital.com session creation/token lifecycle, and all broker consumers behind one backend session authority | BLOCKED; mandatory before PR #37 merge | Library Broker Integration Q5/Q6; PR #26 Swift direct-auth path; PR #37 environment-credential backend path |
+
+Required implementation:
+- Backend-owned CMS with encrypted credential storage and provider/account/environment isolation.
+- Secure provisioning from the native credential UI through authenticated local IPC or a per-launch capability token.
+- One backend Broker Session Manager owns `CST` and `X-SECURITY-TOKEN` in memory, expiry, renewal, disconnect and reconnect.
+- macOS Broker Management becomes a client of the backend service; remove duplicate direct Capital.com authentication from the UI process after parity tests.
+- `CapitalDemoRuntime` must use the CMS/session manager; environment credentials are development/test fixtures only.
+- Market Data, streaming, Account Data and future OMS must share the same managed session.
+- Add tests for credential isolation, session lifecycle, no-secret logging, IPC authorization and reconnect.
+- Demo qualification precedes any Live authorization. LIVE remains disabled.
