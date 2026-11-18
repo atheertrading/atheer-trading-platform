@@ -223,6 +223,7 @@ struct MarketHistoryPayloadDecoder {
                   candle.timestampMs > 0,
                   candle.receivedAtMs > 0,
                   candle.receivedAtMs <= batch.receivedAtMs,
+                  candle.timestampMs <= candle.receivedAtMs,
                   previousTimestamp.map({ candle.timestampMs > $0 }) ?? true,
                   isValid(candle.bid),
                   isValid(candle.ask),
