@@ -4,7 +4,7 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { CapitalDemoCredentials } from "./market-data/capital-demo-runtime.ts";
+import type { CapitalDemoCredentials } from "./market-data/capital-demo-client.ts";
 import type { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import type {
   CapitalDemoStreamingRuntime,
