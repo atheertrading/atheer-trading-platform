@@ -635,3 +635,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - ATP-BRK-002 / EDL-022 remains a mandatory integration gate: PR #26 direct Swift Keychain authentication and PR #37 environment-driven backend authentication are duplicate session authorities. One backend CMS/session manager must own credentials and session tokens; native app provisioning must use authenticated private IPC/per-launch capability; environment credentials remain test-only.
 - ATP-BRK-003 / ATP-MKT-007 / EDL-023 tracks sequential authentication throttling, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection metrics. Existing shared WebSocket/40-subscription/ping/reconnect code remains unmerged in PR #37.
 - PR #44/#45/#47 have green exact-head CI but remain draft, stacked on feature branches. Preserve the stack and resolve ancestry before mainline integration.
+
+
+## 2026-11-18 — ATP-ENG-REVIEW-2026-11-18 governance record
+
+- Published the architecture review, binding decisions EDL-024 through EDL-032, delivery sequence, safety invariants, controlled DEMO acceptance criteria and person-day estimates in [ATP-ENGINEERING-REVIEW-2026-11-18.md](ATP-ENGINEERING-REVIEW-2026-11-18.md).
+- Record commit: `2e7596fc86395f760ae207208c6e08210aa974d2`.
+- Created issue #59 as the execution/qualification tracker: https://github.com/atheertrading/atheer-trading-platform/issues/59.
+- Estimates are planning ranges, not delivery commitments: controlled DEMO core 47–83 person-days from the reviewed baseline, excluding advanced strategy/AI and broad charting polish; apply 25–40% integration/qualification contingency.
+- This is a governance/planning record only. No source implementation, PR merge, broker permission, production deployment, risk-limit change or LIVE dealing was performed by this documentation update.
+- Preserve the existing PR #37 ancestry; re-fetch current exact heads/checks before integration. Keep `CAP_ALLOW_TRADING=false`.
