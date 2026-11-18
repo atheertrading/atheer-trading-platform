@@ -57,6 +57,15 @@ struct MarketSearchPayloadDecoder {
 
         let streaming: MarketDataStreamingStatus?
         if let dtoStreaming = dto.streaming {
+            guard
+                (0...40).contains(dtoStreaming.activeInstrumentCount),
+                dtoStreaming.invalidQuoteCount >= 0,
+                dtoStreaming.outOfOrderQuoteCount >= 0,
+                dtoStreaming.duplicateQuoteCount >= 0,
+                dtoStreaming.lastMessageAtMs.map({ $0.isFinite && $0 >= 0 }) ?? true
+            else {
+                throw MarketSearchError.invalidResponse
+            }
             streaming = MarketDataStreamingStatus(
                 state: try mapStreamingConnectionState(dtoStreaming.state),
                 activeInstrumentCount: dtoStreaming.activeInstrumentCount,
