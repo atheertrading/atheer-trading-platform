@@ -215,6 +215,19 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
       order_version: 1,
     }]);
     await assert.rejects(
+      appPool.query("UPDATE atheer.orders SET state='FILLED' WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+    await assert.rejects(
+      appPool.query("DELETE FROM atheer.orders WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+    await assert.rejects(
+      appPool.query("UPDATE atheer.order_lifecycle_events SET to_state='FILLED' WHERE environment='DEMO' AND order_id=$1", [orderInput.orderId]),
+      (error) => error && error.code === "42501",
+    );
+
+    await assert.rejects(
       repository.persistAuthorizedOrder({ ...orderInput, orderId: orderId(prefix + "-conflicting-order") }),
       (error) => error instanceof PersistenceConflictError && error.message.includes("different order identity"),
     );
