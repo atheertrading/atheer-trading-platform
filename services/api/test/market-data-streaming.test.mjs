@@ -165,6 +165,48 @@ test("stream automatically reconnects and restores active subscriptions after in
   await runtime.disconnect();
 });
 
+
+test("market-data API rejects browser-origin and unidentified local requests", async () => {
+  const server = createApiServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const endpoint = "http://127.0.0.1:" + address.port + "/market-data/status";
+
+  const unidentified = await fetch(endpoint);
+  assert.equal(unidentified.status, 403);
+  assert.deepEqual(await unidentified.json(), { error: "untrusted_local_client" });
+
+  const crossOrigin = await fetch(endpoint, {
+    headers: {
+      "X-ATHEER-LOCAL-CLIENT": "macOS",
+      Origin: "https://attacker.example",
+    },
+  });
+  assert.equal(crossOrigin.status, 403);
+
+  const crossSite = await fetch(endpoint, {
+    headers: {
+      "X-ATHEER-LOCAL-CLIENT": "macOS",
+      "Sec-Fetch-Site": "cross-site",
+    },
+  });
+  assert.equal(crossSite.status, 403);
+
+  const trustedNativeClient = await fetch(endpoint, {
+    headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
+  });
+  assert.equal(trustedNativeClient.status, 200);
+  assert.equal((await trustedNativeClient.json()).state, "not_configured");
+
+  const serverClosed = new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  server.closeAllConnections();
+  await serverClosed;
+});
+
 test("local SSE endpoint streams normalized quote events and releases subscriptions on close", async () => {
   let released = false;
   let releaseSubscription;
@@ -210,6 +252,7 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
       port: address.port,
       path: "/market-data/stream?epics=AAPL",
       method: "GET",
+      headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
     }, (response) => {
       try {
         assert.equal(response.statusCode, 200);
@@ -264,7 +307,9 @@ test("local SSE endpoint rejects more than forty instrument epics", async () => 
   assert.ok(address && typeof address !== "string");
 
   const epics = Array.from({ length: 41 }, (_, index) => "EPIC" + index).join(",");
-  const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=" + epics);
+  const response = await fetch("http://127.0.0.1:" + address.port + "/market-data/stream?epics=" + epics, {
+    headers: { "X-ATHEER-LOCAL-CLIENT": "macOS" },
+  });
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "invalid_stream_instruments" });
 
