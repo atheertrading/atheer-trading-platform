@@ -20,7 +20,7 @@ server.listen(config.port, config.host, () => {
 
   // The native process supervisor consumes this non-secret readiness marker.
   // Port 0 requests an OS-assigned port and avoids fixed-port collisions.
-  process.stdout.write(`ATHEER_BACKEND_READY ${address.port}\\n`);
+  process.stdout.write(`ATHEER_BACKEND_READY ${address.port}\n`);
 });
 
 function shutdown(): void {
