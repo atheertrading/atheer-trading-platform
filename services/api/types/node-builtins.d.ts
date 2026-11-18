@@ -20,8 +20,13 @@ declare module "node:http" {
 }
 
 declare module "node:process" {
+  export interface WritableStream {
+    write(chunk: string | Uint8Array): boolean;
+  }
   export interface Process {
     stdin: AsyncIterable<Uint8Array>;
+    stdout: WritableStream;
+    exitCode: number | undefined;
     on(event: "SIGINT" | "SIGTERM", listener: () => void): this;
   }
   const process: Process;
