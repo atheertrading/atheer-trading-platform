@@ -7,6 +7,7 @@ import {
   type TradingEnvironment,
   type UtcTimestamp,
   DomainValidationError,
+  assertRecord,
   currencyCode,
   decimalValue,
   createDataProvenance,
@@ -43,6 +44,7 @@ export interface AccountBalanceSnapshot {
 }
 
 export function validateBrokerAccountIdentity(account: BrokerAccountIdentity): void {
+  assertRecord(account, "broker_account_identity");
   nonEmptyString(account.id, "broker_account_id");
   nonEmptyString(account.brokerId, "broker_id");
   nonEmptyString(account.brokerAccountReference, "broker_account_reference");
@@ -54,6 +56,7 @@ export function validateAccountBalanceSnapshot(
   account: BrokerAccountIdentity,
   snapshot: AccountBalanceSnapshot,
 ): void {
+  assertRecord(snapshot, "account_balance_snapshot");
   validateBrokerAccountIdentity(account);
   createDataProvenance(snapshot.provenance);
   tradingEnvironment(snapshot.environment);
@@ -85,6 +88,7 @@ export function validateAccountBalanceSnapshot(
   ];
   for (const value of monetaryValues) {
     if (value !== undefined) {
+      assertRecord(value, "account_money");
       decimalValue(value.amount);
       currencyCode(value.currency);
     }
