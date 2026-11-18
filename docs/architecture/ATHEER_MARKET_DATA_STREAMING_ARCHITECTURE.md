@@ -103,3 +103,10 @@ Hosted TypeScript/API tests and macOS qualification are pending. No live Capital
 - No order/dealing API methods are added.
 - No RiskEngine, OMS, Execution Gateway, broker permission, credential, or LIVE behavior is changed.
 - Manual and automated order governance is unaffected.
+
+
+## Local API browser-origin and CSRF boundary
+
+The backend binds only to loopback (`127.0.0.1`). All `/market-data/*` routes additionally require `X-ATHEER-LOCAL-CLIENT: macOS`, reject any `Origin` header, and reject `Sec-Fetch-Site` values other than absent or `none`. No CORS allowance is configured. The native macOS Market Search adapter sends the marker header; future stream/SSE clients must do so as well.
+
+This is a browser-origin/CSRF mitigation, not a secret token and not authentication against arbitrary local processes. A production or multi-user deployment must introduce a per-launch capability token or authenticated local IPC before exposing broker session or streaming controls.
