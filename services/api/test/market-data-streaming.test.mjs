@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { request as httpRequest } from "node:http";
-import { test } from "node:test";
+import { after, test } from "node:test";
 import { CapitalDemoStreamingRuntime } from "../dist/market-data/capital-demo-streaming-runtime.js";
 import { createApiServer } from "../dist/server.js";
 
@@ -64,8 +64,21 @@ const streamInfo = {
   securityToken: "private-security-token",
 };
 
+const trackedRuntimes = new Set();
+
+function trackRuntime(runtime) {
+  trackedRuntimes.add(runtime);
+  return runtime;
+}
+
+after(async () => {
+  await Promise.allSettled(
+    Array.from(trackedRuntimes, (runtime) => runtime.disconnect()),
+  );
+});
+
 function createStreamingRuntime(sockets, now = 1_800_000_000_000) {
-  return new CapitalDemoStreamingRuntime(
+  return trackRuntime(new CapitalDemoStreamingRuntime(
     async () => streamInfo,
     (url) => {
       const socket = new FakeWebSocket(url);
@@ -74,7 +87,7 @@ function createStreamingRuntime(sockets, now = 1_800_000_000_000) {
     },
     () => now,
     () => 125,
-  );
+  ));
 }
 
 test("DEMO stream connects to provider session endpoint and subscribes with server-held tokens", async () => {
@@ -113,7 +126,7 @@ test("DEMO stream connects to provider session endpoint and subscribes with serv
 });
 
 test("stream runtime rejects noncanonical provider WebSocket paths", async () => {
-  const runtime = new CapitalDemoStreamingRuntime(
+  const runtime = trackRuntime(new CapitalDemoStreamingRuntime(
     async () => ({
       ...streamInfo,
       streamEndpoint: "wss://api-streaming-capital.backend-capital.com/private",
@@ -121,7 +134,7 @@ test("stream runtime rejects noncanonical provider WebSocket paths", async () =>
     () => new FakeWebSocket("wss://api-streaming-capital.backend-capital.com/connect"),
     () => 1_800_000_000_000,
     () => 125,
-  );
+  ));
 
   await assert.rejects(
     runtime.subscribe(["AAPL"], () => {}),
