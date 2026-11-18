@@ -177,7 +177,7 @@ struct URLSessionMarketDataStreamClient: MarketDataStreamClient {
         let session = self.session
         let authorization = capability.authorizationHeaderValue
 
-        return AsyncThrowingStream { continuation in
+        return AsyncThrowingStream(bufferingPolicy: .bufferingNewest(256)) { continuation in
             guard !normalized.isEmpty,
                   normalized.count <= 40,
                   normalized.allSatisfy({ !$0.isEmpty }) else {
