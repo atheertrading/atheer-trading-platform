@@ -74,3 +74,16 @@ Implement a provider-independent, deterministic pre-trade risk assessment bounda
 5. Implement authoritative policy storage and portfolio valuation/read models as subsequent work packages before wiring RiskEngine into order-intake/OMS.
 6. Persist the exact risk assessment and order intent transactionally; preserve the OMS exact-assessment requirement.
 7. Only later implement the single Execution Gateway and controlled DEMO dealing; no LIVE activation.
+
+## Exact-head hosted CI checkpoint — `e19897895b179d47c4ffee7b5fe68857fc20080f`
+
+- GitHub CI run `44394828144`:
+  - Backend Toolchain: **passed** — Node.js 24 setup; TypeScript type-check and build; complete API suite.
+  - API tests: **59 passed, 0 failed** (workflow backend job `135121823729`).
+  - Repository Hygiene: **passed** (job `135121823904`).
+- Mermaid architecture diagram workflow `44394828042`: **passed**.
+- Local Sync Safety workflow `44394827971`: **passed**.
+- Intel x86_64 macOS build/XCTest/Swift CodeQL job `135121823003`: **queued** at last inspection.
+- Apple Silicon arm64 macOS build/XCTest/Swift CodeQL job `135121824981`: **queued** at last inspection.
+- The PR remains Draft. No full cross-architecture qualification or merge-readiness claim is made until both macOS jobs and the exact dependency chain are complete.
+
