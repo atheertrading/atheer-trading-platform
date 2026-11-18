@@ -131,7 +131,6 @@ function shutdown(): void {
     } else {
       console.info("ATHEER API stopped.");
     }
-  })()
   })().catch(() => {
     console.error("ATHEER API shutdown failed.");
     process.exitCode = 1;
