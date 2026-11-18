@@ -193,12 +193,19 @@ test("policy environment mismatch is held, not misclassified as malformed policy
   assert.deepEqual(result.reasonCodes, ["RISK_POLICY_ENVIRONMENT_MISMATCH"]);
 });
 
-test("unauthorized origin, permission profile and operation are rejected before risk-context loading", async () => {
-  const data = fixtures();
-  data.intent.origin = { kind: "AI_AGENT", sourceId: sourceId("agent"), permissionProfileReference: "unapproved" };
-  const result = await engine(data).evaluate(data.intent);
-  assert.equal(result.outcome, "REJECTED");
-  assert.ok(result.reasonCodes.includes("INTENT_ORIGIN_NOT_PERMITTED"));
+test("unauthorized origin and permission profile are rejected before loading risk context", async () => {
+  const disallowedOrigin = fixtures();
+  disallowedOrigin.intent.origin = { kind: "AI_AGENT", sourceId: sourceId("agent"), permissionProfileReference: "unapproved" };
+  const originResult = await engine(disallowedOrigin).evaluate(disallowedOrigin.intent);
+  assert.equal(originResult.outcome, "REJECTED");
+  assert.ok(originResult.reasonCodes.includes("INTENT_ORIGIN_NOT_PERMITTED"));
+
+  const disallowedProfile = fixtures();
+  disallowedProfile.policy.allowedIntentOrigins = ["HUMAN", "AI_AGENT"];
+  disallowedProfile.intent.origin = { kind: "AI_AGENT", sourceId: sourceId("agent"), permissionProfileReference: "unapproved" };
+  const profileResult = await engine(disallowedProfile).evaluate(disallowedProfile.intent);
+  assert.equal(profileResult.outcome, "REJECTED");
+  assert.ok(profileResult.reasonCodes.includes("PERMISSION_PROFILE_NOT_AUTHORIZED"));
 
   const operation = fixtures();
   operation.intent.payload.operationCode = "CLOSE_ALL";
