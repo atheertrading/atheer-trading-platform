@@ -96,7 +96,7 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
         return response
     }
 
-    private static func exchange(socketPath: String, payload: Data) throws -> BrokerCredentialIPCResponse {
+    private nonisolated static func exchange(socketPath: String, payload: Data) throws -> BrokerCredentialIPCResponse {
         guard socketPath.utf8.count <= BackendCredentialSocketDirectory.maximumUnixSocketPathBytes else {
             throw BrokerCredentialIPCError.invalidSocketPath
         }
@@ -174,7 +174,7 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
         }
     }
 
-    private static func writeAll(descriptor: Int32, data: Data) throws {
+    private nonisolated static func writeAll(descriptor: Int32, data: Data) throws {
         try data.withUnsafeBytes { buffer in
             guard let baseAddress = buffer.baseAddress else {
                 throw BrokerCredentialIPCError.invalidResponse
@@ -199,7 +199,7 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
         }
     }
 
-    private static func readLine(descriptor: Int32, maximumBytes: Int) throws -> Data {
+    private nonisolated static func readLine(descriptor: Int32, maximumBytes: Int) throws -> Data {
         var response = Data()
         var chunk = [UInt8](repeating: 0, count: 4_096)
 
