@@ -289,6 +289,7 @@ test("broker session manager preserves creation throttling across account replac
   assert.equal((await manager.connect(secondCredentials)).state, "connected");
   assert.equal(factoryCalls, 2);
   assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect", "connect"]);
+  await manager.disconnect();
 });
 
 test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
