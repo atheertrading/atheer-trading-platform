@@ -1,0 +1,10 @@
+flowchart TD
+    BRAND["Owner brand palette"]
+    PRIMITIVE["Primitive color, type, spacing, radius"]
+    SEMANTIC["Semantic roles per appearance and state"]
+    COMPONENT["Component contract and variants"]
+    SCREEN["Feature screen composition"]
+    QA["Contrast, accessibility, functional and visual QA"]
+
+    BRAND --> PRIMITIVE --> SEMANTIC --> COMPONENT --> SCREEN --> QA
+    QA -. "Evidence and revisions flow back" .-> SEMANTIC

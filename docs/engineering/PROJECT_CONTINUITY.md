@@ -645,3 +645,32 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Estimates are planning ranges, not delivery commitments: controlled DEMO core 47–83 person-days from the reviewed baseline, excluding advanced strategy/AI and broad charting polish; apply 25–40% integration/qualification contingency.
 - This is a governance/planning record only. No source implementation, PR merge, broker permission, production deployment, risk-limit change or LIVE dealing was performed by this documentation update.
 - Preserve the existing PR #37 ancestry; re-fetch current exact heads/checks before integration. Keep `CAP_ALLOW_TRADING=false`.
+
+## 2026-11-18 — ATP-IPDS-001 design-system and appearance foundation
+
+### Source reconciliation
+- Reviewed the owner Q&A archive (including Q38.1, Q39.1, Q39.2, Q39.3, Q39.4 and Q39.5), the original Master Visual Design / UI:UX Engineering Specification, Phase 00 v1.1 and its D-001/D-002/D-003 decision record.
+- Materialized and inspected the historical Mermaid source export (52 diagram blocks from 31 source documents). Relevant interaction and safety flows include ATP-ARCH-037 application settings precedence, ATP-ARCH-038 authenticated user-action/confirmation/risk lifecycle, ATP-ARCH-040 end-to-end qualification, Q11 manual intervention, Q13 persistent manual override protection, Q26.14 strategy stop without closing positions, and Q26.15 emergency recovery.
+- Reviewed current main-branch SwiftUI sources: ATHEERDesignTokens, ATHEERTradingProApp, ContentView, CommandCenterView, WorkspaceEngine, WorkspacePanel, WorkspacePanelManagementView, SettingsHomeView and the existing test target.
+- Recovered the owner-directed ATP-UX-001 UI/UX/SwiftUI directive from PR #13's feature branch. PR #13 remains open and unmerged; it is supplementary AI implementation guidance and does not replace formal Library design/architecture sources.
+
+### Design decisions and unresolved conflict
+- D-001 dark-first, D-002 adaptive information density, and D-003 English/Arabic full RTL are recorded as owner-approved.
+- Phase 00 final approval, Design Authority review and Engineering Authority review remain pending. Formal Phase 01 is not declared open by this increment.
+- Q39.1 identifies #40E0D0 as brand turquoise; Phase 00 v1.1 and current main source use #00CEC8. The existing source value is preserved; canonical brand-token resolution remains open.
+- The target product IA includes 12 task groups; only Workspace, Markets, API Connection and Settings are currently implemented in the main-branch app. Missing destinations are not represented as implemented.
+
+### Source increment
+- Branch: feat/ipds-theme-foundation, created from main commit 31e3e5547c9204645427ec56426e741d4bcfa955.
+- Added ATP-IPDS-001 design-system foundation and Mermaid diagrams 09–12 for the application shell, workspace/panel/window lifecycle, governed order-intent flow and token hierarchy.
+- Replaced the minimal static color roles with adaptive semantic dark/light surface, text, accent and status roles while retaining existing role names for current feature views.
+- Added ATHEERAppearance with dark-first fallback, persisted app-level appearance preference and an Appearance selector in Settings.
+- Added deterministic appearance-preference resolution tests.
+- This source increment does not implement the full design system, all navigation destinations, RTL localization, panel docking, native multi-window management, broker-session bridge, risk/OMS/Execution Gateway dispatch, or trading enablement.
+
+### Verification and safety
+- Source and test files are proposed on this feature branch only; exact-head hosted CI has not yet run at the time of this record.
+- No local Xcode build, XCTest execution, running-app screenshot, owner-Mac runtime, contrast measurement, VoiceOver, keyboard, RTL or multi-display qualification is claimed.
+- No credentials were read or changed; no broker authentication was attempted; no trading, risk-policy or LIVE configuration was changed. CAP_ALLOW_TRADING remains false.
+- Next gate: evaluate exact-head repository hygiene, Mermaid validation, Intel/Apple Silicon Debug/XCTest/Release and Swift CodeQL; then perform owner-Mac theme persistence and visual/accessibility qualification.
+

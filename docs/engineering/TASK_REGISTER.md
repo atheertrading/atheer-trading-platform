@@ -20,7 +20,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M00-009 | P1 | Create Requirements Traceability Matrix | IN PROGRESS | Template exists; formal requirement mapping and verification links remain outstanding |
 | M00-010 | P1 | Establish architecture baseline and bounded-context map | PENDING | Reviewed architecture document and diagrams |
 | M00-011 | P1 | Reconcile historical ADRs and OOP standard | IN PROGRESS | ADR inventory; no identifier collisions |
-| M00-012 | P1 | Define IPDS v1.0 specification and token governance | IN PROGRESS | Primitive, semantic, component, theme, accessibility contracts |
+| M00-012 | P1 | Define IPDS v1.0 specification and token governance | IN PROGRESS | ATP-IPDS-001 foundation is being implemented on feat/ipds-theme-foundation; formal source reconciliation, exact turquoise resolution, component inventory and approval remain open |
 | M00-013 | P1 | Establish documentation validation and CI baseline | PENDING | Reproducible workflow and passing checks |
 | M00-014 | P1 | Configure repository security automation and branch rules | PENDING | Rulesets endpoint returned an empty list; branch-protection read returned 403 to the integration; owner-side verification and configuration evidence required |
 | M00-015 | P2 | Plan source migration and historical Git preservation | PENDING | Owner-reviewed migration and provenance plan |
@@ -50,7 +50,7 @@ Statuses: `DONE` = verified complete; `IN PROGRESS` = active work; `PENDING` = n
 | M02-006 | P2 | Implement non-destructive local synchronization and workstation bootstrap | IN PROGRESS |
 | M02-007 | P2 | Implement first native multi-screen navigation and API Connection screen | IN PROGRESS — PR #17 `feat/macos-workspace-api-connection`; exact-head workflow #132 passed backend, hygiene, macOS Debug/XCTest/Release and Swift CodeQL jobs; general app launch/two-display use is owner-confirmed, while API Connection screen-specific behavior, recovery, copy/paste, keyboard and accessibility verification remain pending |
 | M02-008 | P2 | Establish native application-wide copy/paste foundation | IN PROGRESS — Issue #16 first increment in PR #17; workflow #132 passed on its exact head. General app launch/two-display use is owner-confirmed; application-wide clipboard audit and API Connection-specific copy/paste, keyboard and accessibility verification remain pending. |
-| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 provides the initial shared tokens and four panels. Follow-up PR #22 (`feat/workspace-adaptive-layout`; implementation commit `db073848e7a80bbd4db2868faa741725698cb86c`) adds adaptive grid widths. Exact-head CI on the final PR #22 revision and owner visual acceptance remain pending. Owner confirms application launch and two-display use; this does not establish visual/accessibility acceptance. Formal IPDS source/approval reconciliation remains pending. |
+| M02-009 | P2 | Implement shared IPDS token foundation and initial operational workspace panels | IN PROGRESS — PR #18 provides initial shared tokens and four panels; PR #22 adds adaptive grid widths. This increment adds adaptive dark/light semantic roles and persisted appearance selection on feat/ipds-theme-foundation. Exact-head CI, owner-Mac runtime/visual/accessibility acceptance, full component inventory and formal IPDS source/approval reconciliation remain pending. |
 
 ## Governance notes
 

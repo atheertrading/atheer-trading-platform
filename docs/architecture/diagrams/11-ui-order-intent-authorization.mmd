@@ -1,0 +1,26 @@
+flowchart TD
+    USER["Manual UI request"]
+    STRATEGY["Strategy request"]
+    AGENT["Permissioned AI agent request"]
+    INTENT["Immutable order intent"]
+    IDENTITY["Identity and capability validation"]
+    DOMAIN["Domain and broker-spec validation"]
+    RISK["Central RiskEngine"]
+    AUTH{"Authorized and unexpired?"}
+    OMS["OMS persistence and lifecycle"]
+    GATEWAY["Execution Gateway"]
+    BROKER["Capital.com broker"]
+    RECON["Broker observation and reconciliation"]
+    UI["Confirmed state, reason, provenance and audit"]
+    REJECT["Reject / restrict / request correction"]
+    UNKNOWN["Unknown outcome: reconcile before retry"]
+
+    USER --> INTENT
+    STRATEGY --> INTENT
+    AGENT --> INTENT
+    INTENT --> IDENTITY --> DOMAIN --> RISK --> AUTH
+    AUTH -->|No| REJECT
+    AUTH -->|Yes| OMS --> GATEWAY --> BROKER --> RECON --> UI
+    GATEWAY -. "Timeout or uncertain outcome" .-> UNKNOWN
+    UNKNOWN --> RECON
+    UI -. "UI never calls dealing API directly" .-> GATEWAY

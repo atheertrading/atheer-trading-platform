@@ -457,3 +457,15 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
 - This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
 - `CAP_ALLOW_TRADING=false`; no LIVE authorization.
+
+## ATP-IPDS-001 — Design-system and appearance foundation (2026-11-18)
+
+**Source status:** Implemented on feature branch; exact-head qualification pending.
+
+- The design baseline is recorded in docs/design/IPDS_V1_FOUNDATION.md. It traces Q38.1/Q39.x, Phase 00 v1.1, the recovered Mermaid source and current SwiftUI implementation.
+- Semantic color roles now map to dark and light appearances; the initial app preference defaults to Dark and is persisted through AppStorage. Settings exposes Dark/Light selection.
+- Existing color-role identifiers are retained for source compatibility. The final turquoise token is deliberately unresolved: the Q39.1 answer specifies #40E0D0, while Phase 00 v1.1 and the pre-existing main source use #00CEC8.
+- Added diagrams 09–12 for navigation shell, workspace/window independence, governed order-intent authorization and token hierarchy.
+- Not yet verified: exact-head CI, owner-Mac Xcode/runtime, screenshots, contrast, accessibility, localization/RTL, multi-display and complete component inventory.
+- This is not Phase 00 approval, full IPDS completion, broker certification, trading qualification or LIVE authorization.
+

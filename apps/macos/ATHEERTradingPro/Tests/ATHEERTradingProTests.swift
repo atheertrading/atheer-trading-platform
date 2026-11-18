@@ -755,6 +755,15 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(model.state, .results)
     }
 
+
+    @MainActor
+    func testAppearancePreferenceResolvesDarkFirstAndRejectsUnknownValues() {
+        XCTAssertEqual(ATHEERAppearance.resolve("dark"), .dark)
+        XCTAssertEqual(ATHEERAppearance.resolve("light"), .light)
+        XCTAssertEqual(ATHEERAppearance.resolve("unsupported"), .dark)
+        XCTAssertEqual(ATHEERAppearance.dark.colorScheme, .dark)
+        XCTAssertEqual(ATHEERAppearance.light.colorScheme, .light)
+    }
 }
 
 private struct StubBackendHealthClient: BackendHealthClient {
@@ -895,6 +904,7 @@ private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
 
     @MainActor
     func disconnect() async {}
+
 }
 
 private final class InMemoryKeychainAccess: KeychainAccessing {
@@ -912,4 +922,5 @@ private final class InMemoryKeychainAccess: KeychainAccessing {
     func delete(service: String, account: String) throws {
         values.removeValue(forKey: "\(service):\(account)")
     }
+
 }
