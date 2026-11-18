@@ -5,10 +5,24 @@ import SwiftUI
 @MainActor
 struct CommandCenterView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
-    let marketHistoryClient: MarketHistoryClient? = nil
-    let selectedChartInstrumentId: String? = nil
+    let marketHistoryClient: MarketHistoryClient?
+    let selectedChartInstrumentId: String?
     let onOpenAPIConnection: () -> Void
-    let onOpenMarkets: () -> Void = {}
+    let onOpenMarkets: () -> Void
+
+    init(
+        backendHealthModel: BackendHealthViewModel,
+        marketHistoryClient: MarketHistoryClient? = nil,
+        selectedChartInstrumentId: String? = nil,
+        onOpenAPIConnection: @escaping () -> Void,
+        onOpenMarkets: @escaping () -> Void = {}
+    ) {
+        _backendHealthModel = ObservedObject(wrappedValue: backendHealthModel)
+        self.marketHistoryClient = marketHistoryClient
+        self.selectedChartInstrumentId = selectedChartInstrumentId
+        self.onOpenAPIConnection = onOpenAPIConnection
+        self.onOpenMarkets = onOpenMarkets
+    }
 
     @StateObject private var workspaceEngine = WorkspaceEngine()
     @State private var isPanelManagementPresented = false
