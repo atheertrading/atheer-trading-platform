@@ -71,3 +71,13 @@ PR #68 is stacked on PR #67, which is stacked on PR #66. The older PR #38/#39–
 ## Safety
 
 No broker credentials, provider DEMO session, order placement, risk-policy change or LIVE execution was used. Historical data remains read-only and is not wired to RiskEngine or OMS. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## Follow-up data-integrity hardening — 2026-11-18
+
+A source review identified that historical normalization validated timestamp syntax and receipt lineage but did not reject a provider candle timestamp later than its local receipt time. Added a fail-closed check in `normalizeCandle` and a deterministic regression test. This prevents future-dated provider history from entering normalized history consumers.
+
+- Backend source: `services/api/src/market-data/historical-prices.ts`.
+- Backend test: `services/api/test/historical-prices.test.mjs`.
+- Commits: `aa425f9af869987367e12c274292bf00733a1559`, `b9f1a719556bc291c4430e7e273f023aa5409eae`.
+- Exact-head CI is required; no test pass is claimed here.
+- No provider session, broker credentials, orders, or LIVE capability used.
