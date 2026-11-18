@@ -1,92 +1,97 @@
-import Combine
 import Foundation
 
-enum MarketDataBackendConnectionState: String, Decodable, Equatable {
-    case notConfigured = "not_configured"
-    case disconnected
-    case connecting
-    case connected
-    case degraded
-    case stale
-    case error
+/// Application-facing market search port. It exposes stable semantic models,
+/// never provider response DTOs or transport-specific payloads.
+@MainActor
+protocol MarketSearchClient {
+    func fetchBackendStatus() async throws -> MarketDataBackendStatus
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary]
 }
 
-struct MarketDataBackendStatus: Decodable, Equatable {
+// MARK: - Provider DTOs (infrastructure boundary)
+
+private struct MarketDataBackendStatusDTO: Decodable {
     let provider: String
     let environment: String
-    let state: MarketDataBackendConnectionState
+    let state: String
 }
 
-struct MarketSearchInstrument: Decodable, Equatable, Identifiable {
+private struct MarketSearchInstrumentDTO: Decodable {
     let epic: String
     let instrumentName: String?
     let marketStatus: String?
     let currency: String?
-
-    var id: String { epic }
 }
 
-struct MarketSearchPayload: Decodable {
+private struct MarketSearchPayloadDTO: Decodable {
     let provider: String
     let environment: String
-    let markets: [MarketSearchInstrument]
+    let markets: [MarketSearchInstrumentDTO]
 }
 
-enum MarketSearchError: Error, LocalizedError, Equatable {
-    case invalidResponse
-    case unexpectedHTTPStatus(Int)
-    case backendUnavailable
-    case backendNotConnected
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidResponse:
-            return "The market-data API returned an invalid response."
-        case .unexpectedHTTPStatus(let code):
-            return "The market-data API returned HTTP \(code)."
-        case .backendUnavailable:
-            return "The backend market-data service is unavailable."
-        case .backendNotConnected:
-            return "The Capital.com DEMO market-data session is not connected."
-        }
-    }
-}
-
-@MainActor
-protocol MarketSearchClient {
-    func fetchBackendStatus() async throws -> MarketDataBackendStatus
-    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument]
-}
+// MARK: - Provider decoding and mapping
 
 struct MarketSearchPayloadDecoder {
     func decodeStatus(_ data: Data) throws -> MarketDataBackendStatus {
-        let status: MarketDataBackendStatus
+        let dto: MarketDataBackendStatusDTO
         do {
-            status = try JSONDecoder().decode(MarketDataBackendStatus.self, from: data)
+            dto = try JSONDecoder().decode(MarketDataBackendStatusDTO.self, from: data)
         } catch {
             throw MarketSearchError.invalidResponse
         }
-        guard status.provider == "capital.com", status.environment == "DEMO" else {
+
+        guard dto.provider == "capital.com", dto.environment == "DEMO" else {
             throw MarketSearchError.invalidResponse
         }
-        return status
+
+        return MarketDataBackendStatus(
+            provider: dto.provider,
+            environment: dto.environment,
+            state: try mapConnectionState(dto.state)
+        )
     }
 
-    func decodeMarkets(_ data: Data) throws -> [MarketSearchInstrument] {
-        let payload: MarketSearchPayload
+    func decodeMarkets(_ data: Data) throws -> [MarketInstrumentSummary] {
+        let dto: MarketSearchPayloadDTO
         do {
-            payload = try JSONDecoder().decode(MarketSearchPayload.self, from: data)
+            dto = try JSONDecoder().decode(MarketSearchPayloadDTO.self, from: data)
         } catch {
             throw MarketSearchError.invalidResponse
         }
-        guard payload.provider == "capital.com",
-              payload.environment == "DEMO",
-              payload.markets.allSatisfy({ !$0.epic.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else {
+
+        guard dto.provider == "capital.com",
+              dto.environment == "DEMO",
+              dto.markets.allSatisfy({
+                  !$0.epic.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+              }) else {
             throw MarketSearchError.invalidResponse
         }
-        return payload.markets
+
+        return dto.markets.map {
+            MarketInstrumentSummary(
+                epic: $0.epic,
+                name: $0.instrumentName,
+                marketStatus: $0.marketStatus,
+                currency: $0.currency
+            )
+        }
+    }
+
+    private func mapConnectionState(_ value: String) throws -> MarketDataBackendConnectionState {
+        switch value {
+        case "not_configured": return .notConfigured
+        case "disconnected": return .disconnected
+        case "connecting": return .connecting
+        case "connected": return .connected
+        case "degraded": return .degraded
+        case "stale": return .stale
+        case "error": return .error
+        default: throw MarketSearchError.invalidResponse
+        }
     }
 }
+
+// MARK: - Capital.com DEMO backend adapter
 
 struct URLSessionMarketSearchClient: MarketSearchClient {
     private let baseURL = URL(string: URLSessionBackendHealthClient.baseURLString)!
@@ -105,7 +110,7 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
         return try decoder.decodeStatus(data)
     }
 
-    func searchMarkets(_ searchTerm: String) async throws -> [MarketSearchInstrument] {
+    func searchMarkets(_ searchTerm: String) async throws -> [MarketInstrumentSummary] {
         let normalized = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty, normalized.count <= 100 else {
             throw MarketSearchError.invalidResponse
@@ -157,128 +162,6 @@ struct URLSessionMarketSearchClient: MarketSearchClient {
             throw error
         } catch {
             throw MarketSearchError.backendUnavailable
-        }
-    }
-}
-
-enum MarketExplorerViewState: Equatable {
-    case idle
-    case searching
-    case results
-    case empty
-    case unavailable(String)
-    case failed(String)
-}
-
-@MainActor
-final class MarketExplorerViewModel: ObservableObject {
-    @Published private(set) var backendStatus: MarketDataBackendStatus?
-    @Published private(set) var results: [MarketSearchInstrument] = []
-    @Published private(set) var state: MarketExplorerViewState = .idle
-    @Published var searchTerm = "" {
-        didSet {
-            guard oldValue != searchTerm else { return }
-            searchGeneration &+= 1
-            if case .unavailable = state {
-                return
-            }
-            results = []
-            state = .idle
-        }
-    }
-
-    private let client: MarketSearchClient
-    private var searchGeneration: UInt64 = 0
-    private var statusRefreshGeneration: UInt64 = 0
-
-    init(client: MarketSearchClient? = nil) {
-        self.client = client ?? URLSessionMarketSearchClient()
-    }
-
-    var canSearch: Bool {
-        let query = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
-        return backendStatus?.state == .connected &&
-            !query.isEmpty &&
-            query.count <= 100 &&
-            state != .searching
-    }
-
-    func refreshBackendStatus() async {
-        statusRefreshGeneration &+= 1
-        let requestGeneration = statusRefreshGeneration
-
-        do {
-            let status = try await client.fetchBackendStatus()
-            guard requestGeneration == statusRefreshGeneration else { return }
-
-            backendStatus = status
-            if status.state != .connected {
-                searchGeneration &+= 1
-                state = .unavailable(statusMessage(for: status.state))
-            } else if results.isEmpty && state != .searching {
-                state = .idle
-            }
-        } catch {
-            guard requestGeneration == statusRefreshGeneration else { return }
-            searchGeneration &+= 1
-            backendStatus = nil
-            state = .unavailable(error.localizedDescription)
-        }
-    }
-
-    func search() async {
-        let query = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty, query.count <= 100 else {
-            state = .failed("Enter an instrument name or search term (1–100 characters).")
-            return
-        }
-        guard backendStatus?.state == .connected else {
-            state = .unavailable("The backend Capital.com DEMO market-data session is not connected.")
-            return
-        }
-
-        searchGeneration &+= 1
-        let requestGeneration = searchGeneration
-        state = .searching
-
-        do {
-            let fetchedResults = try await client.searchMarkets(query)
-            guard requestGeneration == searchGeneration else { return }
-
-            results = fetchedResults
-            state = results.isEmpty ? .empty : .results
-        } catch {
-            guard requestGeneration == searchGeneration else { return }
-
-            let failureMessage = error.localizedDescription
-            await refreshBackendStatus()
-            guard requestGeneration == searchGeneration else { return }
-
-            if backendStatus?.state != .connected {
-                state = .unavailable("The backend market-data session is no longer connected. Recheck the DEMO service status.")
-            } else {
-                results = []
-                state = .failed(failureMessage)
-            }
-        }
-    }
-
-    private func statusMessage(for state: MarketDataBackendConnectionState) -> String {
-        switch state {
-        case .notConfigured:
-            return "The backend DEMO market-data credentials are not configured."
-        case .disconnected:
-            return "The backend Capital.com DEMO market-data session is disconnected."
-        case .connecting:
-            return "The backend Capital.com DEMO market-data session is connecting."
-        case .connected:
-            return "The backend Capital.com DEMO market-data session is connected."
-        case .degraded:
-            return "The backend market-data service is degraded."
-        case .stale:
-            return "The backend market-data service reports stale data."
-        case .error:
-            return "The backend market-data service reports an error."
         }
     }
 }
