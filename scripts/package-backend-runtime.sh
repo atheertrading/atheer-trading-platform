@@ -7,7 +7,8 @@ APP_DIR="$ROOT/apps/macos/ATHEERTradingPro"
 RESOURCE_DIR="$APP_DIR/Resources"
 NODE_VERSION="24.22.3"
 DIST_URL="https://nodejs.org/dist/v$NODE_VERSION"
-TMP_DIR="$(mktemp -d "\${TMPDIR:-/tmp}/atheer-node-runtime.XXXXXX")"
+CACHE_DIR="$ROOT/.build/cache/node-v$NODE_VERSION"
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/atheer-node-runtime.XXXXXX")"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 EXPECTED_NODE_X64="977614af0504c81045e7fd85596dbca0e5f951b96681516dadafedcca8c447f7"
@@ -19,16 +20,22 @@ if [[ "$actual_node_version" != "$NODE_VERSION" ]]; then
   exit 2
 fi
 
+mkdir -p "$CACHE_DIR" "$RESOURCE_DIR/Backend" "$RESOURCE_DIR/Runtime"
+
 download_and_verify() {
   local architecture="$1"
   local expected_sha="$2"
   local archive="node-v$NODE_VERSION-darwin-$architecture.tar.gz"
+  local extracted="node-v$NODE_VERSION-darwin-$architecture"
 
-  curl --fail --location --silent --show-error "$DIST_URL/$archive" --output "$TMP_DIR/$archive"
-  printf '%s  %s\n' "$expected_sha" "$archive" | (cd "$TMP_DIR" && shasum -a 256 -c -)
-  tar -xzf "$TMP_DIR/$archive" -C "$TMP_DIR"
-  cp "$TMP_DIR/node-v$NODE_VERSION-darwin-$architecture/bin/node" "$TMP_DIR/node-$architecture"
-  cp "$TMP_DIR/node-v$NODE_VERSION-darwin-$architecture/LICENSE" "$TMP_DIR/LICENSE-$architecture"
+  if [[ ! -f "$CACHE_DIR/$archive" ]]; then
+    curl --fail --location --silent --show-error "$DIST_URL/$archive" --output "$CACHE_DIR/$archive"
+  fi
+
+  printf '%s  %s\n' "$expected_sha" "$archive" | (cd "$CACHE_DIR" && shasum -a 256 -c -)
+  tar -xzf "$CACHE_DIR/$archive" -C "$TMP_DIR"
+  cp "$TMP_DIR/$extracted/bin/node" "$TMP_DIR/node-$architecture"
+  cp "$TMP_DIR/$extracted/LICENSE" "$TMP_DIR/LICENSE-$architecture"
 }
 
 download_and_verify "x64" "$EXPECTED_NODE_X64"
@@ -39,19 +46,12 @@ if ! cmp -s "$TMP_DIR/LICENSE-x64" "$TMP_DIR/LICENSE-arm64"; then
   exit 3
 fi
 
-rm -rf "$RESOURCE_DIR/Backend" "$RESOURCE_DIR/Runtime"
-mkdir -p "$RESOURCE_DIR/Backend" "$RESOURCE_DIR/Runtime"
-
-lipo -create "$TMP_DIR/node-x64" "$TMP_DIR/node-arm64" -output "$RESOURCE_DIR/Runtime/node"
-chmod 755 "$RESOURCE_DIR/Runtime/node"
-
-architectures="$(lipo -archs "$RESOURCE_DIR/Runtime/node")"
-if [[ " $architectures " != *" x86_64 "* || " $architectures " != *" arm64 "* ]]; then
+lipo -create "$TMP_DIR/node-x64" "$TMP_DIR/node-arm64" -output "$TMP_DIR/node-universal"
+architectures="$(lipo -archs "$TMP_DIR/node-universal")"
+if [[ " $architectures " != *" x86_64 "* ]] || [[ " $architectures " != *" arm64 "* ]]; then
   echo "Packaged Node runtime is not universal: $architectures" >&2
   exit 4
 fi
-
-cp "$TMP_DIR/LICENSE-x64" "$RESOURCE_DIR/Runtime/LICENSE"
 
 (
   cd "$API_DIR"
@@ -59,7 +59,11 @@ cp "$TMP_DIR/LICENSE-x64" "$RESOURCE_DIR/Runtime/LICENSE"
   npm run build
 )
 
+rm -rf "$RESOURCE_DIR/Backend/dist"
 cp -R "$API_DIR/dist" "$RESOURCE_DIR/Backend/dist"
+cp "$TMP_DIR/node-universal" "$RESOURCE_DIR/Runtime/node"
+cp "$TMP_DIR/LICENSE-x64" "$RESOURCE_DIR/Runtime/LICENSE"
+chmod 755 "$RESOURCE_DIR/Runtime/node"
 test -f "$RESOURCE_DIR/Backend/dist/main.js"
 
 echo "Packaged ATHEER backend with Node.js $NODE_VERSION ($architectures)."
