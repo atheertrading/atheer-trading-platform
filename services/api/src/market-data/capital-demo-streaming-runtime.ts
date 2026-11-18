@@ -15,9 +15,13 @@ const MAX_RECONNECT_DELAY_MS = 30_000;
 
 export type MarketDataStreamState = "disconnected" | "connecting" | "connected" | "degraded";
 
+export interface MarketDataStreamQuoteFreshness extends QuoteFreshnessResult {
+  readonly maximumAgeMs: number;
+}
+
 export interface MarketDataStreamQuote extends NormalizedQuote {
   readonly receivedAtMonotonicMs: number;
-  readonly freshness: QuoteFreshnessResult;
+  readonly freshness: MarketDataStreamQuoteFreshness;
 }
 
 export interface MarketDataStreamStatus {
@@ -420,10 +424,13 @@ export class CapitalDemoStreamingRuntime {
     const quote: MarketDataStreamQuote = {
       ...normalized,
       receivedAtMonotonicMs: this.monotonicNow(),
-      freshness: evaluateQuoteFreshness(normalized, receivedAtMs, {
+      freshness: {
+        ...evaluateQuoteFreshness(normalized, receivedAtMs, {
+          maximumAgeMs: 5_000,
+          maximumFutureSkewMs: 250,
+        }),
         maximumAgeMs: 5_000,
-        maximumFutureSkewMs: 250,
-      }),
+      },
     };
     this.latestQuotes.set(quote.instrumentId, quote);
     this.lastMessageAtMs = receivedAtMs;
