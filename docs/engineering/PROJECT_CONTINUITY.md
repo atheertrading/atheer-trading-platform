@@ -884,3 +884,19 @@ Important corrections preserved:
 The audit explicitly preserves the implementation boundaries between domain outbox persistence, OMS order persistence, command processing, Execution Gateway, and broker dealing. It also records that watchlist persistence is local, charting is historical/read-only, and no live aggregation/indicators/drawing/execution are included in PR #44.
 
 No PR was merged, no database migration was run, no permissions or risk limits were changed, and `CAP_ALLOW_TRADING=false` remains mandatory.
+
+
+## CI recheck correction — 2026-11-18
+
+A subsequent direct GitHub Actions recheck supersedes the earlier preliminary cross-PR CI snapshot. Exact-head hosted results:
+- PR #24: Intel + Apple Silicon + Backend + Hygiene passed.
+- PR #25: Backend/Hygiene passed; macOS CI attempts cancelled.
+- PR #26: Intel + Apple Silicon + Backend + Hygiene passed, but its recorded base does not match the reviewed PR #25 head.
+- PR #33 and #37: Intel + Apple Silicon + Backend + Hygiene passed.
+- PR #38: Intel failed; Apple Silicon cancelled; Backend/Hygiene passed.
+- PR #39: both macOS architecture jobs cancelled; Backend/Hygiene passed.
+- PR #40–#42: Intel + Apple Silicon + Backend + Hygiene passed; #41 PostgreSQL 49/49, #42 Backend 52/52.
+- PR #43: Apple Silicon passed; Intel remained in progress.
+- PR #44: Apple Silicon passed; Intel remained in progress.
+
+See the CI status correction table in IMPLEMENTATION_STATUS.md for the exact SHAs. Cancelled checks are not passes. The PR #38 Intel failure needs log-level diagnosis. PR #25 requires a successful exact-head macOS run. No owner-Mac runtime or real provider qualification is implied.
