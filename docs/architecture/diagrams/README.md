@@ -15,6 +15,7 @@ This directory contains version-controlled Mermaid source. Diagrams are engineer
 | `07-environment-isolation.mmd` | SIMULATION, BACKTEST, DEMO and LIVE separation |
 | `08-project-knowledge-topology.mmd` | GitHub, Library, conversations and local verification authority |
 | `10-historical-market-data-normalization.mmd` | Authenticated historical DEMO request, Bid/Ask OHLC normalization, UTC lineage, duplicates and observed gaps |
+| `11-authenticated-historical-chart-workspace.mmd` | Market Explorer selection through dynamic IPC capability to validated historical candlestick rendering |
 
 ## Original-source diagram recovery
 
