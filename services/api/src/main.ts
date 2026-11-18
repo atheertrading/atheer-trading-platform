@@ -4,6 +4,7 @@ import { BrokerSessionManager } from "./market-data/broker-session-manager.ts";
 import { CapitalDemoStreamingRuntime } from "./market-data/capital-demo-streaming-runtime.ts";
 import { createApiServer } from "./server.ts";
 import { readIPCStartupCapability } from "./security/ipc-capability.ts";
+import { runBoundedShutdownStep } from "./shutdown.ts";
 
 const config = loadRuntimeConfig(env);
 const brokerSessionManager = new BrokerSessionManager();
@@ -31,31 +32,59 @@ server.listen(config.port, config.host, () => {
   process.stdout.write(`ATHEER_BACKEND_READY ${address.port}\n`);
 });
 
+const SHUTDOWN_STEP_TIMEOUT_MS = 7_000;
+const SHUTDOWN_SERVER_TIMEOUT_MS = 4_000;
+const SHUTDOWN_HARD_DEADLINE_MS = 20_000;
+
 function shutdown(): void {
   if (shuttingDown) return;
   shuttingDown = true;
   ipcCapability.fill(0);
 
+  // Stop accepting IPC immediately. Active requests and SSE streams are closed
+  // before provider resources are released.
+  const serverClosed = new Promise<void>((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+  });
+  server.closeAllConnections();
+
+  const hardDeadline = setTimeout(() => {
+    console.error("ATHEER API shutdown exceeded its hard deadline; forcing termination.");
+    process.exit(1);
+  }, SHUTDOWN_HARD_DEADLINE_MS);
+
   void (async () => {
-    try {
-      await marketDataStreamRuntime.disconnect();
-    } catch {
-      // Shutdown must continue even if the provider stream is already degraded.
-    }
-    try {
-      await brokerSessionManager.disconnect();
-    } catch {
-      // Never retain the child process solely because remote logout failed.
-    }
-    server.close((error) => {
-      if (error) {
-        console.error("ATHEER API shutdown failed.", error.message);
-        return;
-      }
+    const streamStopped = await runBoundedShutdownStep(
+      "market_data_stream",
+      () => marketDataStreamRuntime.disconnect(),
+      SHUTDOWN_STEP_TIMEOUT_MS,
+      (message) => console.error(message),
+    );
+    const brokerLoggedOut = await runBoundedShutdownStep(
+      "broker_session",
+      () => brokerSessionManager.disconnect(),
+      SHUTDOWN_STEP_TIMEOUT_MS,
+      (message) => console.error(message),
+    );
+    const serverStopped = await runBoundedShutdownStep(
+      "http_server",
+      () => serverClosed,
+      SHUTDOWN_SERVER_TIMEOUT_MS,
+      (message) => console.error(message),
+    );
+
+    if (!streamStopped || !brokerLoggedOut || !serverStopped) {
+      process.exitCode = 1;
+    } else {
       console.info("ATHEER API stopped.");
-    });
+    }
+    clearTimeout(hardDeadline);
+  })().catch(() => {
+    console.error("ATHEER API shutdown failed.");
+    process.exitCode = 1;
     server.closeAllConnections();
-  })();
+    clearTimeout(hardDeadline);
+  });
 }
 
 process.on("SIGINT", shutdown);
