@@ -40,4 +40,37 @@ Backup scheduling, encryption/key custody, off-site retention, point-in-time rec
 ## Trading safety
 
 Persistence records are not broker confirmations. An intent or risk assessment is not an order submission. The outbox currently stores domain-record events only and has no publisher or broker dispatcher. `CAP_ALLOW_TRADING=false` remains mandatory; no LIVE dealing is enabled.
+## Owner-local development database — verified baseline (2026-11-18)
 
+The owner has provisioned a local Postgres.app PostgreSQL 18.7 instance on macOS 13.7.8 / Intel x86_64. It listens only on `127.0.0.1:5432`; its data directory is `~/Library/Application Support/Postgres/var-18`. The local database is `atheer_trading` and the canonical project schema is `atheer`.
+
+The local role model is deliberately least-privilege:
+
+- `atheer_db_owner`: NOLOGIN object owner.
+- `atheer_migrator`: LOGIN, NOINHERIT, with explicit permission to SET ROLE to `atheer_db_owner`.
+- `atheer_app`: LOGIN, schema USAGE and default DML/sequence privileges on owner-created objects; no CREATE privilege.
+- PUBLIC database CONNECT and schema CREATE are revoked; explicit database CONNECT is granted to the project roles.
+- Passwords are configured interactively and are not recorded here. Never put them in shell commands, source control, logs, or this document.
+- SSL is disabled only for this loopback-only development instance. Do not expose the service beyond localhost without TLS and a separate security review.
+
+The owner verified app connectivity and CREATE denial, migrator authentication and explicit role switching, owner ownership of a temporary probe table, app DML permissions, and rollback/removal of probe objects. Default sequence privileges are configured but still need an explicit test. No project trading migration has been applied locally.
+
+## Local migration compatibility gate — BLOCKED
+
+**Do not run `npm run migrate` against this local database with the current PR #41 implementation.**
+
+The current migration CLI connects as `atheer_migrator`, but the migration runner does not execute `SET ROLE atheer_db_owner`. Because the role is NOINHERIT, owner privileges are not inherited automatically. In addition, the migration ledger, migration DDL, and repository statements use unqualified relation names; they do not explicitly target the owner's canonical `atheer` schema. The runbook's generic `DATABASE_URL` instruction is therefore insufficient for this role/schema configuration.
+
+Required correction before local migration:
+
+1. Keep `atheer` as the canonical schema; do not weaken the local grants.
+2. Have the migration transaction explicitly assume `atheer_db_owner` (for example, transaction-local role switching) before creating or recording schema objects.
+3. Schema-qualify the migration ledger, every migration object, and repository SQL, or prove an equally strict and consistently applied schema configuration.
+4. Add PostgreSQL integration tests using least-privilege `atheer_migrator` and `atheer_app` roles. Verify app DML on owner-created tables and continued CREATE denial.
+5. Re-run CI on the corrected exact PR head, then prepare a separate controlled local migration qualification.
+
+The existing PostgreSQL 17 CI integration pass does not prove this owner's PostgreSQL 18.7 role/schema configuration. Do not create production tables, alter role grants as a workaround, or infer local compatibility from CI.
+
+## Hosted PR #41 verification checkpoint — 2026-11-18
+
+On source head `012ea149749312b5146ee1b8dce900e0d7bba848`, CI run `44203457118` reported Node 24.22.2 / npm 11.19.1, PostgreSQL 17.12, and 49/49 backend tests passing. Repository Hygiene, Mermaid validation, and Local Sync Safety passed. Intel Debug/XCTest passed with Release and CodeQL still pending; Apple Silicon Debug/XCTest/Release passed, with CodeQL skipped. PR #41 remained OPEN / DRAFT with no approval review at inspection. Refresh all results after subsequent commits.
