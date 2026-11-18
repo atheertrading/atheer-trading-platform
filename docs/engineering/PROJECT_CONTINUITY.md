@@ -645,3 +645,17 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Estimates are planning ranges, not delivery commitments: controlled DEMO core 47–83 person-days from the reviewed baseline, excluding advanced strategy/AI and broad charting polish; apply 25–40% integration/qualification contingency.
 - This is a governance/planning record only. No source implementation, PR merge, broker permission, production deployment, risk-limit change or LIVE dealing was performed by this documentation update.
 - Preserve the existing PR #37 ancestry; re-fetch current exact heads/checks before integration. Keep `CAP_ALLOW_TRADING=false`.
+
+## 2026-11-18 — ATP-TEAM-B-001 Batch 065: Backend API boundary and contract
+
+- Implemented in PR #84 on `fix/market-history-max-query-validation`: corrected the malformed market-history `max` validator; bounded `max` to safe integers 1–1000 (default 100); validate/trim market search terms (1–100 characters); validate/trim Capital.com EPICs against `^[A-Za-z0-9_.-]{1,64}$`; reject invalid inputs with HTTP 400 before provider invocation.
+- Added deterministic HTTP regression coverage for valid defaults/bounds, malformed and out-of-range values, search terms, EPICs, and provider-call suppression.
+- Published `services/api/openapi.yaml` (OpenAPI 3.1) for the seven routes actually implemented in the current local API; added static contract tests for route inventory, security caveat, value constraints and component-reference integrity; updated `services/api/README.md`.
+- The OpenAPI contract explicitly records that the mainline HTTP service is loopback-only and has not yet enforced per-request app capability. Do not expose it beyond `127.0.0.1`. PR #66 private credential IPC and the authenticated managed runtime remain unmerged dependencies.
+- Engineering report: `docs/engineering/SESSION_2026-11-18_065_BACKEND_API_BOUNDARY_AND_OPENAPI_CONTRACT.md`.
+- PR #84 remains OPEN / UNMERGED. Its previous exact-head `d5853c3ed8ba42cc49384a64832d270b262fb0b2` passed Backend Toolchain, Repository Hygiene, CodeQL and Local Sync Safety; Intel and Apple Silicon jobs were queued. The engineering-report and subsequent continuity commits advance the branch, so those earlier checks do not qualify the final updated head; rerun/review exact-head CI.
+- PR #76 macOS matrix was re-triggered after cancellation; current Intel/Apple jobs were queued on the latest inspection. PRs #81/#82 backend tests and hygiene passed, but their macOS jobs were still incomplete/cancelled; they remain dependent on #76 and must not merge early.
+- Branch ancestry audit found stale parent snapshots in the authenticated market-data/chart stack: #66 parent head is 2 commits ahead of its recorded base; #67 is 3 commits ahead; #68 is 7 commits ahead; #70 is 10 commits ahead. Preserve history and update/qualify each branch in dependency order; no force-push or history rewrite.
+- No broker credential, account, order, position, dealing, RiskEngine, OMS dispatcher, Execution Gateway, SIMULATION, BACKTEST or LIVE capability was added. `CAP_ALLOW_TRADING=false` remains unchanged.
+- No local owner-Mac pull, build, runtime, Keychain or authenticated DEMO acceptance is claimed.
+
