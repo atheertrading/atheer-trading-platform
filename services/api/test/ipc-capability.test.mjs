@@ -10,7 +10,7 @@ test("private stdin bootstrap accepts one canonical 256-bit base64url capability
   const expected = Buffer.alloc(32, 19);
   const encoded = expected.toString("base64url");
   const capability = await readIPCStartupCapability(chunks(encoded.slice(0, 17), encoded.slice(17) + "\n"));
-  assert.deepEqual(capability, expected);
+  assert.deepEqual(Array.from(capability), Array.from(expected));
   capability.fill(0);
   expected.fill(0);
 });
