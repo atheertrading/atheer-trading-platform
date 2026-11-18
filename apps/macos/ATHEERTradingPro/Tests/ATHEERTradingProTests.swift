@@ -485,6 +485,42 @@ final class ATHEERTradingProTests: XCTestCase {
     }
 
 
+    func testMarketSearchStatusDecoderPreservesBackendStreamingHealth() throws {
+        let payload = Data(#"""
+        {
+          "provider":"capital.com",
+          "environment":"DEMO",
+          "state":"connected",
+          "streaming":{
+            "state":"connected",
+            "activeInstrumentCount":2,
+            "lastMessageAtMs":1800000000000,
+            "invalidQuoteCount":1,
+            "outOfOrderQuoteCount":2,
+            "duplicateQuoteCount":3
+          }
+        }
+        """#.utf8)
+
+        let status = try MarketSearchPayloadDecoder().decodeStatus(payload)
+
+        XCTAssertEqual(status.state, .connected)
+        XCTAssertEqual(status.streaming?.state, .connected)
+        XCTAssertEqual(status.streaming?.activeInstrumentCount, 2)
+        XCTAssertEqual(status.streaming?.lastMessageAtMs, 1_800_000_000_000)
+        XCTAssertEqual(status.streaming?.invalidQuoteCount, 1)
+        XCTAssertEqual(status.streaming?.outOfOrderQuoteCount, 2)
+        XCTAssertEqual(status.streaming?.duplicateQuoteCount, 3)
+    }
+
+    func testMarketSearchStatusDecoderRejectsInvalidStreamingStateAndCounters() {
+        let invalidState = Data(#"{"provider":"capital.com","environment":"DEMO","state":"connected","streaming":{"state":"future_state","activeInstrumentCount":0,"invalidQuoteCount":0,"outOfOrderQuoteCount":0,"duplicateQuoteCount":0}}"#.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(invalidState))
+
+        let invalidCount = Data(#"{"provider":"capital.com","environment":"DEMO","state":"connected","streaming":{"state":"connected","activeInstrumentCount":41,"invalidQuoteCount":0,"outOfOrderQuoteCount":0,"duplicateQuoteCount":0}}"#.utf8)
+        XCTAssertThrowsError(try MarketSearchPayloadDecoder().decodeStatus(invalidCount))
+    }
+
     func testMarketSearchStatusDecoderRejectsUnknownBackendState() {
         let payload = Data("""
         {"provider":"capital.com","environment":"DEMO","state":"future_state"}
