@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
     @ObservedObject private var backendRuntimeModel: BackendRuntimeViewModel
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
