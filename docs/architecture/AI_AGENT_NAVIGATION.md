@@ -13,6 +13,8 @@ Read root AGENTS.md first. It is the mandatory policy entry point for humans and
 | Verified vs historical implementation | docs/engineering/IMPLEMENTATION_STATUS.md |
 | Source and document provenance | docs/engineering/MASTER_DOCUMENT_REGISTRY.md and SOURCE_RECONCILIATION_REGISTER.md |
 | System boundaries | docs/architecture/REPOSITORY_ARCHITECTURE.md |
+| UI architecture and backend decoupling | docs/architecture/ATP-UI-ARCH-001.md |
+| UI visual language and component standards | docs/architecture/ATP-UI-DS-001.md |
 | Target source layout | docs/architecture/REPOSITORY_LAYOUT.md |
 | macOS setup and build | docs/development/DEVELOPER_SETUP.md |
 | AI contributor workflow | docs/development/AI_AGENT_WORKING_GUIDE.md |
