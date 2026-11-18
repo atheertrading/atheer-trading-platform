@@ -388,7 +388,7 @@ export class PostgresTradingRepository implements TradingPersistenceRepository {
       const orderInserted = inserted.rowCount === 1;
       if (!orderInserted) {
         const existing = await client.query<{ order_id: string; payload_hash: string }>(
-          "SELECT order_id,payload_hash FROM atheer.orders WHERE environment=$1 AND intent_id=$2 FOR UPDATE",
+          "SELECT order_id,payload_hash FROM atheer.orders WHERE environment=$1 AND intent_id=$2",
           [this.environment, order.intentId],
         );
         if (existing.rows[0]?.order_id !== order.id || existing.rows[0]?.payload_hash !== orderHash) {
