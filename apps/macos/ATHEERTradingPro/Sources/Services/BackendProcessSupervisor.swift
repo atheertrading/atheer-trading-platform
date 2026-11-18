@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Security
 
@@ -102,7 +103,7 @@ struct BundledBackendRuntimeResolver: BackendRuntimeResolving {
 protocol BackendProcessManaging {
     var onUnexpectedTermination: ((String) -> Void)? { get set }
     func start() async throws -> BackendIPCConnection
-    func stop()
+    func stop() async throws
 }
 
 enum BackendProcessSupervisorError: Error, LocalizedError {
@@ -116,6 +117,8 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
     case readinessOutputClosed
     case processExited(Int32)
     case authenticationProbeFailed(Int)
+    case startupInProgress
+    case terminationTimedOut
     
     var errorDescription: String? {
         switch self {
@@ -139,6 +142,10 @@ enum BackendProcessSupervisorError: Error, LocalizedError {
             return "The managed backend exited during startup (status \(status))."
         case .authenticationProbeFailed(let status):
             return "The managed backend failed its authenticated startup probe (HTTP \(status))."
+        case .startupInProgress:
+            return "The managed backend is already starting."
+        case .terminationTimedOut:
+            return "The managed backend did not exit after graceful and forced shutdown deadlines."
         }
     }
 }
@@ -156,20 +163,37 @@ final class BackendProcessSupervisor: BackendProcessManaging {
     private var outputBuffer = Data()
     private var readyContinuation: CheckedContinuation<Int, Error>?
     private var startupTimeoutTask: Task<Void, Never>?
+    private var stopTask: Task<Void, Error>?
+    private var stoppingProcessIdentifier: ObjectIdentifier?
+    private var terminationWaiters: [ObjectIdentifier: CheckedContinuation<Bool, Never>] = [:]
+    private var terminationTimeoutTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+    private let gracefulShutdownTimeoutNanoseconds: UInt64
+    private let forcedShutdownTimeoutNanoseconds: UInt64
 
     var onUnexpectedTermination: ((String) -> Void)?
+    var isManagedProcessRunning: Bool { process?.isRunning ?? false }
 
     init(
         resolver: BackendRuntimeResolving? = nil,
-        startupTimeoutNanoseconds: UInt64 = 15_000_000_000
+        startupTimeoutNanoseconds: UInt64 = 15_000_000_000,
+        gracefulShutdownTimeoutNanoseconds: UInt64 = 2_000_000_000,
+        forcedShutdownTimeoutNanoseconds: UInt64 = 2_000_000_000
     ) {
         self.resolver = resolver ?? BundledBackendRuntimeResolver()
         self.startupTimeoutNanoseconds = startupTimeoutNanoseconds
+        self.gracefulShutdownTimeoutNanoseconds = gracefulShutdownTimeoutNanoseconds
+        self.forcedShutdownTimeoutNanoseconds = forcedShutdownTimeoutNanoseconds
     }
 
     func start() async throws -> BackendIPCConnection {
+        if let stopTask {
+            try await stopTask.value
+        }
         if let connection, process?.isRunning == true {
             return connection
+        }
+        if process?.isRunning == true {
+            throw BackendProcessSupervisorError.startupInProgress
         }
         if let process, !process.isRunning {
             capability?.clear()
@@ -247,12 +271,33 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             connection = newConnection
             return newConnection
         } catch {
-            stop()
+            let startupError = error
+            try await stop()
+            throw startupError
+        }
+    }
+
+    func stop() async throws {
+        if let stopTask {
+            try await stopTask.value
+            return
+        }
+
+        let task = Task { @MainActor in
+            try await self.performStop()
+        }
+        stopTask = task
+
+        do {
+            try await task.value
+            stopTask = nil
+        } catch {
+            stopTask = nil
             throw error
         }
     }
 
-    func stop() {
+    private func performStop() async throws {
         startupTimeoutTask?.cancel()
         startupTimeoutTask = nil
         if readyContinuation != nil {
@@ -262,18 +307,92 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         outputHandle?.readabilityHandler = nil
         outputHandle = nil
 
-        if let process, process.isRunning {
-            process.terminationHandler = nil
-            process.terminate()
+        guard let child = process else {
+            clearSupervisorState()
+            return
         }
-        process = nil
 
+        let identifier = ObjectIdentifier(child)
+        stoppingProcessIdentifier = identifier
+
+        if child.isRunning {
+            let exitedGracefully = await signalAndWait(
+                child,
+                signal: SIGTERM,
+                timeoutNanoseconds: gracefulShutdownTimeoutNanoseconds
+            )
+            if !exitedGracefully {
+                let exitedAfterForce = await signalAndWait(
+                    child,
+                    signal: SIGKILL,
+                    timeoutNanoseconds: forcedShutdownTimeoutNanoseconds
+                )
+                guard exitedAfterForce else {
+                    throw BackendProcessSupervisorError.terminationTimedOut
+                }
+            }
+        }
+
+        guard !child.isRunning else {
+            throw BackendProcessSupervisorError.terminationTimedOut
+        }
+
+        if self.process === child {
+            self.process = nil
+        }
+        clearSupervisorState()
+    }
+
+    private func signalAndWait(
+        _ child: Process,
+        signal: Int32,
+        timeoutNanoseconds: UInt64
+    ) async -> Bool {
+        if !child.isRunning { return true }
+        let identifier = ObjectIdentifier(child)
+
+        return await withCheckedContinuation { continuation in
+            terminationWaiters[identifier] = continuation
+            terminationTimeoutTasks[identifier] = Task { @MainActor [weak self] in
+                do {
+                    try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                } catch {
+                    return
+                }
+                guard let self,
+                      let waiter = self.terminationWaiters.removeValue(forKey: identifier) else {
+                    return
+                }
+                self.terminationTimeoutTasks.removeValue(forKey: identifier)
+                waiter.resume(returning: false)
+            }
+
+            if signal == SIGTERM {
+                child.terminate()
+            } else {
+                _ = kill(child.processIdentifier, signal)
+            }
+
+            if !child.isRunning {
+                completeTerminationWait(identifier, terminated: true)
+            }
+        }
+    }
+
+    private func completeTerminationWait(_ identifier: ObjectIdentifier, terminated: Bool) {
+        terminationTimeoutTasks.removeValue(forKey: identifier)?.cancel()
+        guard let waiter = terminationWaiters.removeValue(forKey: identifier) else { return }
+        waiter.resume(returning: terminated)
+    }
+
+    private func clearSupervisorState() {
         capability?.clear()
         capability = nil
         connection = nil
         readyPort = nil
         outputBuffer.resetBytes(in: 0..<outputBuffer.count)
         outputBuffer.removeAll(keepingCapacity: false)
+        stoppingProcessIdentifier = nil
     }
 
     static func parseReadyPort(_ line: String) -> Int? {
@@ -375,19 +494,22 @@ final class BackendProcessSupervisor: BackendProcessManaging {
 
     private func handleTermination(processIdentifier: ObjectIdentifier, status: Int32) {
         guard let process,
-              ObjectIdentifier(process) == processIdentifier else { return }
+              ObjectIdentifier(process) == processIdentifier else {
+            completeTerminationWait(processIdentifier, terminated: true)
+            return
+        }
         let wasReady = connection != nil
+        let wasExpectedStop = stoppingProcessIdentifier == processIdentifier
+        completeTerminationWait(processIdentifier, terminated: true)
         if readyContinuation != nil {
             finishStartup(.failure(BackendProcessSupervisorError.processExited(status)))
         }
         outputHandle?.readabilityHandler = nil
         outputHandle = nil
         self.process = nil
-        capability?.clear()
-        capability = nil
-        connection = nil
+        clearSupervisorState()
 
-        if wasReady {
+        if wasReady && !wasExpectedStop {
             onUnexpectedTermination?("The managed backend exited unexpectedly (status \(status)).")
         }
     }
