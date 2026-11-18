@@ -53,6 +53,11 @@ async function makeServer(manager, beforeSessionReplacement = async () => {}) {
   return { directory, socketPath, capability, server };
 }
 
+async function closeFixture(fixture) {
+  await closeFixture(fixture);
+  await rm(fixture.directory, { recursive: true, force: true });
+}
+
 test("private Unix-domain IPC authenticates DEMO credentials and never returns them", async () => {
   let capturedCredentials;
   let replacementCallbackCount = 0;
@@ -93,7 +98,7 @@ test("private Unix-domain IPC authenticates DEMO credentials and never returns t
     assert.equal(serialized.includes("synthetic-demo-password"), false);
     assert.equal(serialized.includes("synthetic.identity"), false);
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
 
@@ -124,7 +129,7 @@ test("private Unix-domain IPC rejects an invalid capability before broker access
     assert.equal(response.errorCode, "unauthorized");
     assert.equal(connectCount, 0);
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
 
@@ -156,7 +161,7 @@ test("private IPC rejects environment overrides and unexpected credential fields
     assert.equal(response.errorCode, "invalid_request");
     assert.equal(connectCount, 0);
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
 
@@ -182,7 +187,7 @@ test("private Unix-domain IPC disconnects streaming before releasing the broker 
     assert.deepEqual(response.status, disconnectedStatus);
     assert.deepEqual(order, ["stream", "broker"]);
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
 
@@ -241,7 +246,7 @@ test("private IPC still releases the broker session when stream shutdown fails",
     assert.deepEqual(response.status, disconnectedStatus);
     assert.equal(brokerDisconnectCount, 1);
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
 
@@ -270,6 +275,6 @@ test("private Unix-domain IPC bounds request size and applies private filesystem
     assert.equal(response.ok, false);
     assert.equal(response.errorCode, "request_too_large");
   } finally {
-    await fixture.server.close();
+    await closeFixture(fixture);
   }
 });
