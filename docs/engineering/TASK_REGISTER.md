@@ -469,3 +469,9 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - The existing capability-protected route now returns 503 when the broker session is not connected; provider tokens remain server-side.
 - Added normalizer, client, authenticated API, disconnected-session and duplicate-pagination tests. Exact-head hosted CI pending.
 - PR #68 is stacked on PR #67. Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
+
+## ATP-MKT-005 follow-up — reject future-dated history
+
+- Backend historical normalization now rejects any candle timestamp later than its receipt timestamp; a deterministic regression test covers the failure.
+- Commits: `aa425f9`, `b9f1a71`. Exact-head CI pending.
+- Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
