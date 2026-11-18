@@ -239,7 +239,7 @@ test("scheduled keepalive contains transient failures and recovers without an un
 
 test("runtime marks failed provider authentication as error without leaking credentials", async () => {
   const client = createMockClient();
-  client.startSession = async () => { throw new Error("Capital.com DEMO session creation failed with HTTP 401."); };
+  client.startSession = async () => { throw new CapitalDemoApiError("provider authentication rejected", 401); };
   const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
@@ -359,7 +359,7 @@ test("broker session manager preserves the shared REST request budget across run
   assert.deepEqual(waits, [100, 100, 100, 100, 100]);
 });
 
-test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
+test("broker session manager reuses a connected session for unchanged credentials", async () => {
   let now = 1_800_000_000_000;
   const client = createMockClient();
   const manager = createTrackedManager(
@@ -379,14 +379,14 @@ test("broker session manager enforces Capital.com one-session-per-second limit",
 
   assert.equal((await manager.connect(credentials)).state, "connected");
   now += 999;
-  const limited = await manager.connect(credentials);
-  assert.equal(limited.state, "error");
-  assert.match(limited.lastError, /Retry in 1 second/);
+  assert.equal((await manager.connect(credentials)).state, "connected");
   assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
 
+  // Expiring the session-creation throttle does not require another
+  // authentication while the existing broker session remains connected.
   now += 1;
   assert.equal((await manager.connect(credentials)).state, "connected");
-  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 2);
+  assert.equal(client.calls.filter((call) => call[0] === "connect").length, 1);
   await manager.disconnect();
 });
 
