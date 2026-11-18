@@ -668,3 +668,15 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - The Library Q&A navigation and IPDS sources and Codex ATP-MER-001 Mermaid catalogue were inspected. The five Mermaid diagrams remain proposed target architecture, not verified deployed topology.
 - Market Explorer still reports backend streaming health but does not yet subscribe to/render live quotes. The next market-data vertical slice is authenticated native SSE subscriptions with timestamp/provenance/freshness validation and cancellation.
 - No owner-Mac build/visual QA, Keychain restart qualification, or real Capital.com DEMO authentication was performed. LIVE and trading remain disabled.
+
+
+## 2026-11-18 — Batch 051: bounded backend shutdown and architecture review
+
+- PR #55 adds a bounded shutdown runner and tests; `main.ts` now closes IPC ingress/connections, bounds stream disconnect, broker logout and HTTP server close, emits redacted diagnostics, sets a non-zero exit status on incomplete cleanup, and enforces a 20-second child-process deadline.
+- Code head before the report commit: `fe8a92dad23289901e11c81bbcaf8fdd901b3e09`. Exact-head CI run `44286676363` was queued/in progress at last inspection; backend type-check passed, API tests were running, and Intel/Apple Silicon jobs were queued. No final pass is claimed.
+- Materialized Library `Codex.zip` and read ATP-MER-001's five Mermaid sources: system context, target trading boundaries, market-data pipeline, AI order boundary, and backtest pipeline. They remain proposed/target diagrams; syntax validation is pending and they do not establish deployed topology.
+- The target order boundary remains typed intent → backend validation → centralized RiskEngine → OMS → Execution Gateway → broker confirmation → reconciliation. AI has proposal authority only. No dealing path was added.
+- **Security blocker:** PR #55 still sends Keychain credentials in authenticated plain HTTP over loopback. The 256-bit capability authenticates but does not encrypt. Do not mark the handoff fully confidential or merge until private local IPC or an explicitly accepted same-host threat boundary closes this finding.
+- PR #57's bounded-shutdown branch now includes the PR #56 Swift class-bound protocol and mutable supervisor corrections in commit `b1dcda177cf0ff2330a85a09f8f41040392e625c`. Local Sync Safety `44286395589` passed; exact-head CI `44286395905` was queued. The branch remains diverged from PR #56 and must be integrated without rewriting history.
+- No owner-Mac build, worktree sync, Keychain restart test, visual QA, or real Capital.com DEMO authentication was performed. `CAP_ALLOW_TRADING=false`; LIVE/dealing remain disabled.
+- Full evidence: `SESSION_2026-11-18_051_BOUNDED_SHUTDOWN_AND_ARCHITECTURE_REVIEW.md`.
