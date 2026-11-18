@@ -492,3 +492,9 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Native historical payload decoding now rejects candle timestamps later than receipt timestamps; added XCTest regression coverage.
 - Commits: `68b70ed`, `b130e43`. Exact-head macOS CI pending.
 - Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
+
+## ATP-CHART-002 — inherited broker IPC test qualification
+
+- Updated inherited URLProtocol test fixture for streamed HTTP request bodies and bounded reads.
+- Corrected stale expected error-description text for the private Unix-domain broker credential IPC client.
+- Exact-head macOS CI must rerun before chart workspace integration is accepted.
