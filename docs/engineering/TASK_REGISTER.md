@@ -418,3 +418,10 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Backend status is published after subscription and every 15-second keepalive; provider-confirmed active count and redacted errors are used.
 - Clean integration branch is 11 ahead / 0 behind current PR #55 head. Exact-head CI and owner-Mac DEMO qualification are pending.
 - Credential payload confidentiality remains P0; SSE bearer auth is for local market-data access, not credential transport.
+
+
+## PR stack consolidation — 2026-11-18
+
+- Closed unmerged PRs #49, #50, #54 and #58 as superseded/duplicate after preserving their unique implementation and documentation.
+- PR #64 is the clean live quote integration branch; exact-head CI pending.
+- PR #55 and #57 exact-head CI pending. Do not merge broker authentication/streaming until private credential IPC replaces the local HTTP credential body.
