@@ -154,3 +154,11 @@ The native health client is constrained to the loopback endpoint `127.0.0.1:4100
 - **Boundary:** The outbox allow-list contains domain-record events only. No execution-dispatch event, broker dealing method, or publisher is introduced. A later OMS/Execution Gateway package must independently enforce current RiskEngine authorization before dispatch.
 - **Environment:** Repository instances are pinned to a single trading environment and reject mismatched records. Separate database credentials/instances and database-role isolation remain deployment configuration work.
 - **Evidence:** PR #41, `ATP_PERSISTENCE_ARCHITECTURE.md`, Mermaid diagram 12. No production database migration or broker execution is claimed.
+
+### EDL-012 — implementation and qualification update — 2026-11-18
+
+- The original PR #41 local role/schema mismatch finding was corrected on code-bearing head `94cc13d13f56fd1f2efa450747e72dc841f65017`: migration transactions now use `SET LOCAL ROLE atheer_db_owner`; migration ledger, DDL, and repository SQL explicitly target schema `atheer`.
+- Hosted least-privilege integration tests use a NOINHERIT migrator with explicit owner membership and an app role without CREATE. They verify owner table ownership and direct table CREATE denial.
+- Exact-head run `44207522335`: Backend type-check and PostgreSQL 17.12 integration tests 49/49 passed; Repository Hygiene, Mermaid, Local Sync Safety, and Apple Silicon Debug/XCTest/Release passed. Intel Debug/XCTest passed, with Release in progress and CodeQL pending at inspection. arm64 CodeQL was skipped by workflow configuration.
+- A direct sequence privilege regression test was subsequently added in commit `78a774289de6ccea0fe49c89c7877f65c8246828`; it tests app `nextval` and app/migrator CREATE denial. It requires a fresh exact-head CI run.
+- Owner-local PostgreSQL 18.7 remains untouched. No local migration or production qualification is claimed.
