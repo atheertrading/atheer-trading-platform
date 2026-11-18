@@ -96,6 +96,21 @@ final class MarketDataStreamClientTests: XCTestCase {
         XCTAssertTrue(quote.freshness.automatedDecisionsAllowed)
     }
 
+    func testParserRejectsOversizedEventPayload() throws {
+        var parser = ServerSentEventParser()
+        _ = try parser.consume("event: status")
+        let oversized = "data: " + String(repeating: "x", count: 65_536)
+        XCTAssertThrowsError(try parser.consume(oversized))
+    }
+
+    func testParserRejectsUnboundedFreshnessThreshold() throws {
+        var parser = ServerSentEventParser()
+        _ = try parser.consume("event: quote")
+        let payload = #"{"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":1,"ask":2,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":1,"freshness":{"state":"fresh","ageMs":0,"maximumAgeMs":60001,"reason":"within_threshold","automatedDecisionsAllowed":true}}"#
+        _ = try parser.consume("data: \(payload)")
+        XCTAssertThrowsError(try parser.consume(""))
+    }
+
     func testParserRejectsCrossedQuoteAndInconsistentFreshnessPolicy() {
         var crossedParser = ServerSentEventParser()
         let crossedQuote = """
