@@ -11,6 +11,21 @@ const credentials = {
   CAPITAL_COM_DEMO_PASSWORD: "demo-password",
 };
 
+const trackedRuntimes = new Set();
+const trackedManagers = new Set();
+
+function createTrackedRuntime(...args) {
+  const runtime = new CapitalDemoRuntime(...args);
+  trackedRuntimes.add(runtime);
+  return runtime;
+}
+
+function createTrackedManager(...args) {
+  const manager = new BrokerSessionManager(...args);
+  trackedManagers.add(manager);
+  return manager;
+}
+
 function createMockClient() {
   const calls = [];
   return {
@@ -52,7 +67,7 @@ test("runtime reports unconfigured without complete DEMO credentials", async () 
 
 test("runtime connects, reads market data, and disconnects without exposing session tokens", async () => {
   const client = createMockClient();
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -74,7 +89,7 @@ test("session creation is throttled to one attempt per second across reconnects"
   let now = 1_800_000_000_000;
   const waits = [];
   const client = createMockClient();
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -113,7 +128,7 @@ test("REST keepalive is scheduled, renews session activity, and stops on disconn
       cancelled = true;
     },
   };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -136,7 +151,7 @@ test("temporary keepalive failures degrade the session and a successful ping res
     client.calls.push(["ping", session]);
     throw new CapitalDemoApiError("provider unavailable HTTP 503", 503);
   };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -167,7 +182,7 @@ test("network timeouts degrade session health without discarding an unconfirmed 
     }
     return { markets: [{ epic: "AAPL" }] };
   };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -202,7 +217,7 @@ test("scheduled keepalive contains transient failures and recovers without an un
     },
     cancel() {},
   };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -225,7 +240,7 @@ test("scheduled keepalive contains transient failures and recovers without an un
 test("runtime marks failed provider authentication as error without leaking credentials", async () => {
   const client = createMockClient();
   client.startSession = async () => { throw new Error("Capital.com DEMO session creation failed with HTTP 401."); };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -241,7 +256,7 @@ test("provider credential rejection blocks automatic session recreation until cr
     client.calls.push(["connect", value]);
     throw new CapitalDemoApiError("authentication rejected HTTP 401", 401);
   };
-  const runtime = new CapitalDemoRuntime(client, {
+  const runtime = createTrackedRuntime(client, {
     apiKey: "demo-key",
     identifier: "demo-user",
     password: "demo-password",
@@ -259,10 +274,10 @@ test("broker session manager preserves creation throttling across account replac
   let now = 1_800_000_000_000;
   let factoryCalls = 0;
   const client = createMockClient();
-  const manager = new BrokerSessionManager(
+  const manager = createTrackedManager(
     (value) => {
       factoryCalls += 1;
-      return new CapitalDemoRuntime(client, value, () => now);
+      return createTrackedRuntime(client, value, () => now);
     },
     () => now,
     10_000,
@@ -321,7 +336,7 @@ test("broker session manager preserves the shared REST request budget across run
       monotonicNow += milliseconds;
     },
   });
-  const manager = new BrokerSessionManager(undefined, () => wallClockNow, 0, client);
+  const manager = createTrackedManager(undefined, () => wallClockNow, 0, client);
 
   assert.equal((await manager.connect({
     apiKey: "demo-key",
@@ -347,8 +362,8 @@ test("broker session manager preserves the shared REST request budget across run
 test("broker session manager enforces Capital.com one-session-per-second limit", async () => {
   let now = 1_800_000_000_000;
   const client = createMockClient();
-  const manager = new BrokerSessionManager(
-    (value) => new CapitalDemoRuntime(
+  const manager = createTrackedManager(
+    (value) => createTrackedRuntime(
       client,
       value,
       () => now,
@@ -382,8 +397,8 @@ test("broker session manager permits explicit re-submission of the same rejected
     client.calls.push(["connect", value]);
     throw new CapitalDemoApiError("authentication rejected HTTP 401", 401);
   };
-  const manager = new BrokerSessionManager(
-    (value) => new CapitalDemoRuntime(
+  const manager = createTrackedManager(
+    (value) => createTrackedRuntime(
       client,
       value,
       () => now,
@@ -413,7 +428,7 @@ test("broker session manager releases credential-bearing runtime after provider 
   client.endSession = async () => {
     throw new Error("provider logout unavailable");
   };
-  const manager = new BrokerSessionManager((value) => new CapitalDemoRuntime(
+  const manager = createTrackedManager((value) => createTrackedRuntime(
     client,
     value,
     () => 1_800_000_000_000,
@@ -437,7 +452,7 @@ test("broker logout still runs when the WebSocket stream shutdown reports failur
     authorization: "Bearer " + ipcCapability.toString("base64url"),
   };
   const client = createMockClient();
-  const manager = new BrokerSessionManager((value) => new CapitalDemoRuntime(
+  const manager = createTrackedManager((value) => createTrackedRuntime(
     client,
     value,
     () => 1_800_000_000_000,
@@ -485,8 +500,8 @@ test("broker logout still runs when the WebSocket stream shutdown reports failur
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
-const serverRuntime = new BrokerSessionManager(
-  (value) => new CapitalDemoRuntime(
+const serverRuntime = createTrackedManager(
+  (value) => createTrackedRuntime(
     serverClient,
     value,
     () => 1_800_000_000_000,
@@ -507,7 +522,10 @@ before(async () => {
 });
 
 after(async () => {
-  await serverRuntime.disconnect();
+  await Promise.allSettled([
+    ...Array.from(trackedManagers, (manager) => manager.disconnect()),
+    ...Array.from(trackedRuntimes, (runtime) => runtime.disconnect()),
+  ]);
   const closed = new Promise((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
   });
