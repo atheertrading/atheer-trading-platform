@@ -275,10 +275,7 @@ async function handleMarketDataRequest(
     return;
   }
 
-  const allowedMethod = pathname === "/broker-session/connect" ||
-      pathname === "/broker-session/disconnect"
-    ? "POST"
-    : pathname === "/broker-session/status" ||
+  const allowedMethod = pathname === "/broker-session/status" ||
       pathname === "/market-data/status" ||
       pathname === "/market-data/markets" ||
       pathname === "/market-data/history" ||
