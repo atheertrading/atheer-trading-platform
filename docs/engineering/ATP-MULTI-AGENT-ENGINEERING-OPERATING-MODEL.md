@@ -45,7 +45,7 @@ Actual agent availability, model/provider capability, tool access, repository pe
 
 The target operating topology is:
 
-`Owner ightarrow Chief Engineering Orchestrator ightarrow Specialized Roles ightarrow Integration / Quality Gate`
+`Owner →ightarrow Chief Engineering Orchestrator →ightarrow Specialized Roles →ightarrow Integration / Quality Gate`
 
 ### 3.1 Chief Engineering Orchestrator
 
