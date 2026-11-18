@@ -447,3 +447,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
 - These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.
+
+
+## 2026-11-18 — Engineering governance review published
+
+- Published [ATP-ENGINEERING-REVIEW-2026-11-18.md](ATP-ENGINEERING-REVIEW-2026-11-18.md), covering product/domain boundaries, EDL-024–EDL-032, broker/IPC security, canonical multi-asset domain, RiskEngine/OMS invariants, integration sequence, controlled DEMO acceptance and person-day estimates.
+- Created execution tracker [Issue #59](https://github.com/atheertrading/atheer-trading-platform/issues/59).
+- Registered workstreams and estimates in `TASK_REGISTER.md`; linked this review from `PROJECT_CONTINUITY.md`.
+- Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
+- This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
+- `CAP_ALLOW_TRADING=false`; no LIVE authorization.
