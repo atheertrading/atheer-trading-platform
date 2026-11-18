@@ -49,6 +49,7 @@ export class CapitalDemoRuntime {
   private keepaliveHandle: unknown = null;
   private lastSessionCreationAttemptAtMs: number | null = null;
   private generation = 0;
+  private authenticationBlocked = false;
   private readonly sessionCreationIntervalMs: number;
   private readonly keepaliveIntervalMs: number;
   private readonly sleep: (milliseconds: number) => Promise<void>;
@@ -86,6 +87,7 @@ export class CapitalDemoRuntime {
   }
 
   async connect(): Promise<CapitalDemoRuntimeStatus> {
+    if (this.authenticationBlocked) return this.status();
     if (this.session && this.connectionState === "connected") return this.status();
     if (this.session && this.connectionState === "degraded") {
       await this.runKeepalive().catch(() => undefined);
@@ -122,6 +124,9 @@ export class CapitalDemoRuntime {
           this.session = null;
           this.connectedAtMs = undefined;
           this.connectionState = "error";
+          if (error instanceof CapitalDemoApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+            this.authenticationBlocked = true;
+          }
           this.lastError = this.safeErrorMessage(error, "session creation");
         }
         throw new Error(this.safeErrorMessage(error, "session creation"));
@@ -250,6 +255,7 @@ export class CapitalDemoRuntime {
       return;
     }
 
+    if (error.statusCode === 403) this.authenticationBlocked = true;
     this.stopKeepalive();
     this.session = null;
     this.connectedAtMs = undefined;
