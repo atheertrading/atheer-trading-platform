@@ -167,7 +167,7 @@ Estimates are engineering planning ranges, not commitments. They assume the exis
 | System & Administration | 5–8 engineer-days | Medium | broker connection and secure settings contracts |
 | Visual/accessibility/localization QA across screens | 8–12 engineer-days | Medium | implemented screens, owner Mac/device matrix |
 
-Indicative sequential implementation total: 81–140 engineer-days, excluding major backend/domain work, design approval delays, and broker certification. Parallel work may reduce calendar duration but increases integration and review overhead. Re-estimate after shell + first two data screens are implemented and measured.
+Indicative sequential implementation total: 85–140 engineer-days, excluding major backend/domain work, design approval delays, and broker certification. Parallel work may reduce calendar duration but increases integration and review overhead. Re-estimate after shell + first two data screens are implemented and measured.
 
 ## 10. Delivery sequence and gates
 
