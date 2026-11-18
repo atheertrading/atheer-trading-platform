@@ -79,6 +79,10 @@ export class CapitalDemoRuntime {
 
   async connect(): Promise<CapitalDemoRuntimeStatus> {
     if (this.session && this.connectionState === "connected") return this.status();
+    if (this.session && this.connectionState === "degraded") {
+      await this.runKeepalive().catch(() => undefined);
+      return this.status();
+    }
     if (!this.credentials) return this.status();
     if (this.connecting) return this.connecting;
 
@@ -90,6 +94,7 @@ export class CapitalDemoRuntime {
       await this.waitForSessionCreationSlot();
       if (generation !== this.generation) return this.status();
 
+      this.lastSessionCreationAttemptAtMs = this.now();
       const session = await this.client.startSession(credentials);
       if (generation !== this.generation) {
         await this.client.endSession(session).catch(() => undefined);
@@ -165,7 +170,6 @@ export class CapitalDemoRuntime {
       const remaining = this.sessionCreationIntervalMs - elapsed;
       if (remaining > 0) await this.sleep(remaining);
     }
-    this.lastSessionCreationAttemptAtMs = this.now();
   }
 
   private startKeepalive(): void {
@@ -189,12 +193,20 @@ export class CapitalDemoRuntime {
       return;
     }
 
-    this.keepaliveInFlight = this.withSession(async (activeSession) => {
-      if (activeSession !== session) return;
-      await this.client.ping(activeSession);
-    }).then(() => undefined).finally(() => {
-      this.keepaliveInFlight = null;
-    });
+    this.keepaliveInFlight = this.client.ping(session)
+      .then(() => {
+        if (this.session === session) {
+          this.connectionState = "connected";
+          this.lastError = undefined;
+        }
+      })
+      .catch((error: unknown) => {
+        this.handleSessionFailure(session, error);
+        throw error;
+      })
+      .finally(() => {
+        this.keepaliveInFlight = null;
+      });
     return this.keepaliveInFlight;
   }
 
