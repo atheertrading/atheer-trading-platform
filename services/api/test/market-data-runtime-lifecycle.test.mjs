@@ -25,6 +25,10 @@ test("concurrent connect requests share one provider session creation", async ()
   assert.equal(starts, 1);
   assert.equal(first.state, "connected");
   assert.equal(second.state, "connected");
+
+  // The default runtime scheduler starts a real keepalive interval after
+  // authentication. Explicitly stop it so this test worker can exit cleanly.
+  await runtime.disconnect();
 });
 
 test("disconnect during authentication invalidates and closes the late session", async () => {
