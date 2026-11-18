@@ -343,7 +343,7 @@ struct MarketExplorerView: View {
 
     private func quoteRow(_ snapshot: MarketDataStreamQuoteSnapshot) -> some View {
         let quote = snapshot.quote
-        let quality = quote.freshness.state
+        let quality = snapshot.effectiveFreshnessState
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.results.first(where: { $0.epic == quote.instrumentId })?.name ?? quote.instrumentId)
