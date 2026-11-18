@@ -571,3 +571,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Q10 gaps remain: sequential session-creation rate limiting (1 request/second/API key), scheduled REST keepalive, priority allocation for open positions/strategies/watchlists, account-switch restoration and utilization metrics.
 - `CapitalDemoRuntime.connect()` coalesces concurrent connection requests but does not yet enforce the documented sequential request rate. `ping()` exists but is not scheduled.
 - Track as ATP-BRK-003 / ATP-MKT-007 and implement through the single CMS/session authority in ATP-BRK-002.
+
+
+## 2026-11-18 — ATP-BRK-003 REST session orchestration implementation
+
+- PR #49 adds sequential session-creation throttling (minimum one second between attempts) to the single backend runtime owner and retains concurrent connect coalescing.
+- PR #49 schedules REST `GET /ping` every five minutes, cancels the scheduler on disconnect, invalidates the session on HTTP 401/403, and uses a `degraded` state for transient provider errors until a successful ping restores connectivity.
+- Deterministic tests cover sequential reconnect throttling, keepalive scheduling/cancellation and degraded-to-connected recovery.
+- Cross-runtime/API-key throttling remains a responsibility of ATP-BRK-002's centralized CMS/session manager. Environment credential use also remains test/development-only until CMS integration.
+- Hosted CI and exact-head results are pending; no provider DEMO credentials or sessions were used.
