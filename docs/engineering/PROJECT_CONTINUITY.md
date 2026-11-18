@@ -546,3 +546,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Native Market Search requests send the marker. The SSE integration test also sends it.
 - API tests cover missing marker, cross-origin requests, cross-site Fetch Metadata and accepted native requests.
 - This mitigates browser CSRF/cross-origin access only. The marker is not secret and does not authenticate arbitrary local processes; production requires a per-launch capability token or authenticated local IPC.
+
+
+### ATP-MKT-006I — Catalogue metadata / live quote separation
+
+- Instrument catalogue responses are now allow-listed to identity and descriptive metadata.
+- Provider bid/offer fields are stripped from catalogue results; only the validated stream pipeline may supply live Bid/Ask.
+- This prevents catalogue values from being mistaken for timestamped live quotes in Market Watch, charts or automated decision inputs.
+- Regression test and EDL-021 added; exact-head CI pending.
