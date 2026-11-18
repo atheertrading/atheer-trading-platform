@@ -292,14 +292,28 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   const marketData = {
     status: () => ({ provider: "capital.com", environment: "DEMO", state: "connected" }),
   };
+  let streamState = "disconnected";
+  let activeInstrumentCount = 0;
   const stream = {
-    status: () => ({ provider: "capital.com", environment: "DEMO", state: "connected", activeInstrumentCount: 1 }),
+    status: () => ({
+      provider: "capital.com",
+      environment: "DEMO",
+      state: streamState,
+      activeInstrumentCount,
+      invalidQuoteCount: 0,
+      outOfOrderQuoteCount: 0,
+      duplicateQuoteCount: 0,
+    }),
     latest: () => [],
     async subscribe(epics, callback) {
       assert.deepEqual(epics, ["AAPL"]);
-      queueMicrotask(() => callback(quote));
+      streamState = "connected";
+      activeInstrumentCount = 1;
+      setTimeout(() => callback(quote), 5);
       return () => {
         released = true;
+        streamState = "disconnected";
+        activeInstrumentCount = 0;
         releaseSubscription();
       };
     },
@@ -352,6 +366,8 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
   ]);
   assert.equal(released, true);
   assert.match(body, /event: status/);
+  assert.match(body, /"state":"disconnected"/);
+  assert.match(body, /"state":"connected","activeInstrumentCount":1/);
   assert.match(body, /event: quote/);
   assert.match(body, /"instrumentId":"AAPL"/);
 
