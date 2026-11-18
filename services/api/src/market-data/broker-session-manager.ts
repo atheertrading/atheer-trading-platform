@@ -16,13 +16,19 @@ type RuntimeFactory = (credentials: CapitalDemoCredentials) => CapitalDemoRuntim
 export class BrokerSessionManager {
   private runtime: CapitalDemoRuntime | null = null;
   private lastSessionCreationAttemptAtMs: number | null = null;
+  // One REST client per backend process keeps the provider's 10 req/s budget
+  // intact across broker-session replacement and runtime recreation.
+  private readonly sharedClient = new CapitalDemoClient();
+  private readonly runtimeFactory: RuntimeFactory;
 
   constructor(
-    private readonly runtimeFactory: RuntimeFactory = (credentials) =>
-      new CapitalDemoRuntime(new CapitalDemoClient(), credentials),
+    runtimeFactory?: RuntimeFactory,
     private readonly now: () => number = Date.now,
     private readonly sessionCreationIntervalMs = DEFAULT_SESSION_CREATION_INTERVAL_MS,
-  ) {}
+  ) {
+    this.runtimeFactory = runtimeFactory ?? ((credentials) =>
+      new CapitalDemoRuntime(this.sharedClient, credentials));
+  }
 
   status(): BrokerSessionStatus {
     return this.runtime?.status() ?? {
