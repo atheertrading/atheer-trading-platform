@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+<title id="title">ATHEER Trading Pro — institutional screen shell concept</title>
+<desc id="desc">Structural wireframe showing persistent macOS application shell, navigation, account and environment context, workspace canvas, contextual panels, and persistent operational status.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07141d"/><stop offset="1" stop-color="#0d2028"/></linearGradient>
+  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#008080"/><stop offset="1" stop-color="#00cec8"/></linearGradient>
+  <style>
+    .panel{fill:#10242d;stroke:#24505a;stroke-width:1.5}.sub{fill:#0a1b23;stroke:#21434d;stroke-width:1}
+    .t{font:600 18px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#e8f1f3}
+    .s{font:13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#9eb6bd}
+    .xs{font:11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#9eb6bd}
+    .a{fill:#00cec8}.gold{fill:#ffd700}.line{stroke:#00a9a4;stroke-width:2;fill:none}
+  </style>
+</defs>
+<rect width="1440" height="900" rx="24" fill="url(#bg)"/>
+<rect x="18" y="18" width="1404" height="864" rx="18" fill="#08151d" stroke="#2b535d" stroke-width="2"/>
+<rect x="18" y="18" width="1404" height="66" rx="18" fill="#0c2029"/>
+<circle cx="45" cy="50" r="7" fill="#e85d5d"/><circle cx="68" cy="50" r="7" fill="#e8b84d"/><circle cx="91" cy="50" r="7" fill="#36bd78"/>
+<path d="M125 64 L145 28 L165 64 L151 64 L145 53 L139 64Z" fill="url(#accent)"/>
+<text x="180" y="47" class="t">ATHEER Trading Pro</text><text x="180" y="66" class="xs">INSTITUTIONAL PRECISION DESIGN SYSTEM</text>
+<rect x="495" y="31" width="390" height="38" rx="10" class="sub"/><text x="516" y="55" class="s">⌕  Search instruments, commands, and workspaces</text>
+<rect x="1000" y="31" width="78" height="34" rx="8" fill="#4a3d0b"/><text x="1018" y="53" class="xs" fill="#ffd700">DEMO</text>
+<text x="1090" y="53" class="s">Capital.com · Connected</text><circle cx="1322" cy="48" r="6" fill="#00c853"/><text x="1338" y="53" class="xs">Alerts</text>
+<rect x="32" y="98" width="220" height="730" rx="12" class="panel"/>
+<text x="55" y="133" class="t">Navigation</text><text x="55" y="158" class="xs">TASK-ORIENTED AREAS</text>
+<g class="s">
+<rect x="44" y="177" width="196" height="38" rx="8" fill="#12464a"/><text x="60" y="201" fill="#e8f1f3">⌂  Command Center</text>
+<text x="60" y="246">◫  Markets</text><text x="60" y="286">⌁  Charts &amp; Analysis</text><text x="60" y="326">▤  Intelligence &amp; Research</text><text x="60" y="366">◇  Strategy Center</text><text x="60" y="406">▶  Automated Trading</text><text x="60" y="446">⇧  Trading &amp; Execution</text><text x="60" y="486">▣  Positions &amp; Portfolio</text><text x="60" y="526">⬡  Risk Management</text><text x="60" y="566">▥  Performance &amp; Analytics</text><text x="60" y="606">✧  Atheer Mind OS</text><text x="60" y="646">⚙  System &amp; Administration</text>
+</g>
+<rect x="270" y="98" width="1138" height="86" rx="12" class="panel"/>
+<text x="294" y="130" class="t">Command Center</text><text x="294" y="155" class="s">Selected account · market context · task scope</text>
+<g>
+<rect x="680" y="112" width="160" height="54" rx="8" class="sub"/><text x="696" y="135" class="xs">ACCOUNT EQUITY</text><text x="696" y="155" class="t">Broker value</text>
+<rect x="852" y="112" width="160" height="54" rx="8" class="sub"/><text x="868" y="135" class="xs">AVAILABLE MARGIN</text><text x="868" y="155" class="t">Broker value</text>
+<rect x="1024" y="112" width="160" height="54" rx="8" class="sub"/><text x="1040" y="135" class="xs">OPEN EXPOSURE</text><text x="1040" y="155" class="t">Calculated</text>
+<rect x="1196" y="112" width="190" height="54" rx="8" class="sub"/><text x="1212" y="135" class="xs">RISK ENGINE</text><text x="1212" y="155" class="t">Operational state</text>
+</g>
+<rect x="270" y="198" width="760" height="430" rx="12" class="panel"/>
+<text x="294" y="234" class="t">Primary workspace canvas</text><text x="294" y="258" class="s">Panels are independently managed views over domain services</text>
+<rect x="292" y="280" width="716" height="322" rx="10" class="sub"/>
+<text x="316" y="313" class="s">CHART / MARKET TABLE / STRATEGY VIEW / ANALYTICS</text>
+<path d="M322 530 L390 485 L448 505 L505 425 L560 450 L625 385 L680 410 L742 340 L800 375 L865 325 L920 345 L978 305" class="line"/>
+<path d="M322 530 L390 485 L448 505 L505 425 L560 450 L625 385 L680 410 L742 340 L800 375 L865 325 L920 345 L978 305 L978 570 L322 570Z" fill="#00a9a4" opacity=".08"/>
+<text x="316" y="580" class="xs">Illustrative wireframe only · no market values or execution state represented</text>
+<rect x="1048" y="198" width="360" height="430" rx="12" class="panel"/>
+<text x="1072" y="234" class="t">Context inspector</text><text x="1072" y="258" class="s">Selection details · parameters · evidence</text>
+<rect x="1070" y="280" width="316" height="92" rx="8" class="sub"/><text x="1088" y="308" class="xs">SELECTED INSTRUMENT / OBJECT</text><text x="1088" y="339" class="t">Contextual details</text>
+<rect x="1070" y="386" width="316" height="100" rx="8" class="sub"/><text x="1088" y="414" class="xs">SOURCE &amp; FRESHNESS</text><text x="1088" y="443" class="s">Provider · timestamp · data state</text><text x="1088" y="465" class="s">Live / delayed / stale / unavailable</text>
+<rect x="1070" y="500" width="316" height="104" rx="8" class="sub"/><text x="1088" y="528" class="xs">GOVERNED ACTIONS</text><text x="1088" y="556" class="s">Intent → Identity → Domain → Risk</text><text x="1088" y="578" class="s">→ OMS → Gateway → Reconciliation</text>
+<rect x="270" y="644" width="1138" height="184" rx="12" class="panel"/>
+<text x="294" y="678" class="t">Supporting workspace panels</text>
+<g>
+<rect x="292" y="696" width="344" height="108" rx="8" class="sub"/><text x="312" y="725" class="s">POSITIONS / ORDERS</text><text x="312" y="755" class="xs">Broker-confirmed lifecycle and quantities</text>
+<rect x="650" y="696" width="344" height="108" rx="8" class="sub"/><text x="670" y="725" class="s">ALERTS / DECISION JOURNAL</text><text x="670" y="755" class="xs">Reason, provenance, acknowledgement</text>
+<rect x="1008" y="696" width="378" height="108" rx="8" class="sub"/><text x="1028" y="725" class="s">SERVICE HEALTH</text><text x="1028" y="755" class="xs">Broker · Market Data · Risk · OMS · Gateway</text>
+</g>
+<rect x="32" y="842" width="1376" height="26" rx="8" fill="#12353b"/>
+<circle cx="52" cy="855" r="5" fill="#00c853"/><text x="66" y="860" class="xs">Persistent operational status — environment, connectivity, quote freshness, risk state, critical alerts</text>
+<text x="1378" y="860" text-anchor="end" class="xs">STRUCTURAL CONCEPT · NOT IMPLEMENTED UI</text>
+</svg>
