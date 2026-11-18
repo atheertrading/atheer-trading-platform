@@ -680,3 +680,22 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #57's bounded-shutdown branch now includes the PR #56 Swift class-bound protocol and mutable supervisor corrections in commit `b1dcda177cf0ff2330a85a09f8f41040392e625c`. Local Sync Safety `44286395589` passed; exact-head CI `44286395905` was queued. The branch remains diverged from PR #56 and must be integrated without rewriting history.
 - No owner-Mac build, worktree sync, Keychain restart test, visual QA, or real Capital.com DEMO authentication was performed. `CAP_ALLOW_TRADING=false`; LIVE/dealing remain disabled.
 - Full evidence: `SESSION_2026-11-18_051_BOUNDED_SHUTDOWN_AND_ARCHITECTURE_REVIEW.md`.
+
+
+## 2026-11-18 — Batch 054: clean Market Explorer live-quote integration
+
+- Created a clean child branch from PR #55 head `73067706` after original PR #58 was found 34 ahead / 22 behind and non-mergeable. New branch is 11 ahead / 0 behind; no history rewrite.
+- Integrated native authenticated SSE client, stream view model, provider freshness parser, 40-epic selection, reconnect/backoff and quote ageing.
+- Preserved the original Market Explorer design-token system, responsive layout and accessibility rather than accepting the older wholesale UI rewrite.
+- Backend SSE publishes post-subscription and periodic provider status; active count reflects provider-confirmed subscriptions; client-visible transport errors are redacted.
+- Display-only DEMO market data; no OMS/order/execution capability. Credential confidentiality over local IPC remains P0 and is not solved by this quote stream.
+- Exact-head CI is pending. Owner-Mac build and real DEMO quote qualification are pending.
+- Evidence: `SESSION_2026-11-18_054_MARKET_EXPLORER_LIVE_STREAM_INTEGRATION.md`.
+
+
+## 2026-11-18 — PR stack reconciliation status
+
+- PRs #49, #50, #54 and #58 are closed unmerged as superseded/duplicate after their useful code, tests, diagrams or historical records were preserved.
+- PR #64 is the clean replacement for PR #58 and remains draft pending exact-head CI.
+- PRs #55 and #57 remain draft pending exact-head CI. PR #55 still has the P0 broker-credential confidentiality gate.
+- No PR in this stack has been merged in this batch. PR #57 may be integrated into PR #56 after its full macOS/backend checks pass; broker-session and live-stream branches must not be merged until the credential transport gate is resolved.

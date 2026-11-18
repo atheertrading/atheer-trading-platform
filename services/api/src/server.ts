@@ -335,11 +335,19 @@ async function handleMarketDataRequest(
         unsubscribe();
         return;
       }
+      // Publish the confirmed provider subscription state, not only the
+      // pre-subscription state sent when the SSE connection was opened.
+      response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
       for (const quote of streamRuntime.latest(epics)) {
         response.write("event: quote\ndata: " + JSON.stringify(quote) + "\n\n");
       }
       keepAlive = setInterval(() => {
-        if (!response.destroyed) response.write(": keep-alive\n\n");
+        if (!response.destroyed) {
+          response.write(": keep-alive\n\n");
+          // Provider WebSocket reconnects happen behind this stable local SSE
+          // connection; periodic status events keep the native UI truthful.
+          response.write("event: status\ndata: " + JSON.stringify(streamRuntime.status()) + "\n\n");
+        }
       }, 15_000);
     } catch {
       if (!response.destroyed) {

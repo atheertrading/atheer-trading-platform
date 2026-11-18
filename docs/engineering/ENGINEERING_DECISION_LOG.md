@@ -209,3 +209,12 @@ Code reconciliation on the current broker-session/streaming stack:
 - Future account-switch support must invalidate/reconnect the WebSocket and re-subscribe after the broker confirms the active account. Future OMS must enforce endpoint-specific DEMO quotas; no dealing routes are part of this work.
 
 This verifies documentation-to-code alignment only; it does not claim real DEMO authentication or live streaming. Full evidence: `SESSION_2026-11-18_052_CAPITAL_API_LIMITS_VERIFICATION.md`.
+
+
+## EDL-030 — Live quote transport and Market Explorer boundary (2026-11-18)
+
+The native Market Explorer consumes broker-normalized market data through a local, bearer-capability-authenticated SSE endpoint. The transport is for non-secret market-data events only; broker credentials must not be placed in this HTTP stream. The native client uses an ephemeral URLSession, no cookie storage/cache, loopback-only request validation, bounded event payloads, provider timestamp/freshness validation, and a 40-epic ceiling.
+
+The UI must preserve the shared ATHEER design-token system, responsive layouts and accessibility. It may display timestamped DEMO quotes and quality state but has no order-intent, OMS, execution, or strategy authority. Search results remain metadata-only. A future chart engine may consume this stream through a separate market-data abstraction; it must not turn this UI into an execution path.
+
+This decision does not resolve the separate P0 broker-credential confidentiality issue: credential handoff remains outside the HTTP loopback API and requires private IPC (e.g. stdio RPC or a protected Unix-domain channel) before secure authenticated broker connectivity is qualified.

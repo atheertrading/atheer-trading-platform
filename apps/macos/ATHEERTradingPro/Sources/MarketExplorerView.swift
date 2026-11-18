@@ -1,14 +1,18 @@
 import SwiftUI
 
+@MainActor
 struct MarketExplorerView: View {
     @StateObject private var model: MarketExplorerViewModel
+    @StateObject private var streamModel: MarketDataStreamViewModel
     let onOpenAPIConnection: () -> Void
 
     init(
         client: MarketSearchClient,
+        streamClient: MarketDataStreamClient,
         onOpenAPIConnection: @escaping () -> Void
     ) {
         _model = StateObject(wrappedValue: MarketExplorerViewModel(client: client))
+        _streamModel = StateObject(wrappedValue: MarketDataStreamViewModel(client: streamClient))
         self.onOpenAPIConnection = onOpenAPIConnection
     }
 
@@ -19,6 +23,7 @@ struct MarketExplorerView: View {
                 connectionPanel
                 searchPanel
                 resultsPanel
+                streamPanel
                 integrationBoundary
             }
             .padding(ATHEERDesignTokens.Spacing.page)
@@ -26,6 +31,22 @@ struct MarketExplorerView: View {
         }
         .task {
             await model.refreshBackendStatus()
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(nanoseconds: 15_000_000_000)
+                } catch {
+                    return
+                }
+                await model.refreshBackendStatus()
+            }
+        }
+        .onChange(of: model.backendStatus?.state) { newState in
+            if newState != .connected {
+                streamModel.stopMonitoring()
+            }
+        }
+        .onDisappear {
+            streamModel.stopMonitoring(clearQuotes: true)
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
     }
@@ -267,6 +288,8 @@ struct MarketExplorerView: View {
                 .frame(width: 150, alignment: .leading)
             Text("CURRENCY")
                 .frame(width: 90, alignment: .leading)
+            Text("MONITOR")
+                .frame(width: 96, alignment: .trailing)
         }
         .font(.system(size: 9, weight: .semibold))
         .tracking(0.6)
@@ -301,11 +324,246 @@ struct MarketExplorerView: View {
             Text(instrument.currency ?? "—")
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .frame(width: 90, alignment: .leading)
+
+            Button {
+                streamModel.toggleSelection(instrument.epic)
+            } label: {
+                Label(
+                    streamModel.isSelected(instrument.epic) ? "Selected" : "Monitor",
+                    systemImage: streamModel.isSelected(instrument.epic)
+                        ? "checkmark.circle.fill"
+                        : "plus.circle"
+                )
+                .font(.system(size: 10, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .disabled(!streamModel.canSelect(instrument.epic))
+            .frame(width: 96, alignment: .trailing)
+            .help("Add or remove this instrument from the live quote monitor")
+            .accessibilityLabel(
+                streamModel.isSelected(instrument.epic)
+                    ? "Remove \(instrument.epic) from live quote monitor"
+                    : "Add \(instrument.epic) to live quote monitor"
+            )
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .contentShape(Rectangle())
+        .accessibilityElement(children: .contain)
+    }
+
+    private var streamPanel: some View {
+        VStack(alignment: .leading, spacing: ATHEERDesignTokens.Spacing.standard) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("LIVE QUOTE MONITOR")
+                        .font(ATHEERDesignTokens.Typography.panelTitle)
+                        .tracking(0.8)
+                    Text("Selected instruments: \(streamModel.selectedCount)/40")
+                        .font(ATHEERDesignTokens.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("Clear Selection") {
+                    streamModel.clearSelection()
+                }
+                .buttonStyle(.bordered)
+                .disabled(streamModel.selectedEpics.isEmpty)
+                .accessibilityLabel("Clear all monitored instruments")
+
+                Button {
+                    if streamModel.isMonitoring {
+                        streamModel.stopMonitoring()
+                        Task { await model.refreshBackendStatus() }
+                    } else {
+                        streamModel.startMonitoring()
+                    }
+                } label: {
+                    Label(
+                        streamModel.isMonitoring ? "Stop Monitoring" : "Start Monitoring",
+                        systemImage: streamModel.isMonitoring ? "stop.fill" : "waveform.path"
+                    )
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(ATHEERDesignTokens.ColorRole.teal)
+                .disabled(
+                    !streamModel.isMonitoring &&
+                    (!streamModel.canStartMonitoring || model.backendStatus?.state != .connected)
+                )
+                .accessibilityLabel(streamModel.isMonitoring ? "Stop live quote monitoring" : "Start live quote monitoring")
+            }
+
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 145), alignment: .leading)],
+                alignment: .leading,
+                spacing: ATHEERDesignTokens.Spacing.standard
+            ) {
+                statusMetric(
+                    title: "STREAM",
+                    value: streamModel.connectionState.displayLabel,
+                    tint: streamStatusTint
+                )
+                statusMetric(
+                    title: "PROVIDER CONFIRMED",
+                    value: "\(streamModel.status?.activeInstrumentCount ?? model.backendStatus?.streaming?.activeInstrumentCount ?? 0)/40",
+                    tint: streamStatusTint
+                )
+                statusMetric(title: "LAST MESSAGE", value: lastMessageLabel)
+                statusMetric(
+                    title: "INVALID / OUT OF ORDER / DUPLICATE",
+                    value: "\(streamModel.status?.invalidQuoteCount ?? model.backendStatus?.streaming?.invalidQuoteCount ?? 0) / \(streamModel.status?.outOfOrderQuoteCount ?? model.backendStatus?.streaming?.outOfOrderQuoteCount ?? 0) / \(streamModel.status?.duplicateQuoteCount ?? model.backendStatus?.streaming?.duplicateQuoteCount ?? 0)"
+                )
+            }
+
+            if let error = streamModel.lastError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .font(ATHEERDesignTokens.Typography.caption)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.attention)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if streamModel.quotes.isEmpty {
+                Text(streamModel.isMonitoring
+                     ? "Waiting for verified Capital.com DEMO quote events…"
+                     : "Select instruments from the catalogue, then start monitoring to receive timestamped broker quotes.")
+                    .font(ATHEERDesignTokens.Typography.body)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, ATHEERDesignTokens.Spacing.standard)
+            } else {
+                ScrollView(.horizontal) {
+                    VStack(spacing: 0) {
+                        quoteHeader
+                        ForEach(streamModel.quotes.values.sorted { $0.id < $1.id }) { snapshot in
+                            quoteRow(snapshot)
+                        }
+                    }
+                    .frame(minWidth: 760, alignment: .leading)
+                }
+                .accessibilityLabel("Live market quote table")
+            }
+
+            Text("Display-only market data. Provider timestamps and freshness are validated; stale or invalid quotes are visibly classified. This monitor has no order or execution authority.")
+                .font(ATHEERDesignTokens.Typography.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ATHEERDesignTokens.ColorRole.panel)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(ATHEERDesignTokens.ColorRole.separator, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private var quoteHeader: some View {
+        HStack(spacing: 12) {
+            Text("INSTRUMENT / EPIC").frame(maxWidth: .infinity, alignment: .leading)
+            Text("BID").frame(width: 105, alignment: .trailing)
+            Text("ASK").frame(width: 105, alignment: .trailing)
+            Text("SPREAD").frame(width: 90, alignment: .trailing)
+            Text("AGE").frame(width: 80, alignment: .trailing)
+            Text("QUALITY").frame(width: 90, alignment: .trailing)
+        }
+        .font(.system(size: 9, weight: .bold))
+        .tracking(0.8)
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .accessibilityHidden(true)
+    }
+
+    private func quoteRow(_ snapshot: MarketDataStreamQuoteSnapshot) -> some View {
+        let quote = snapshot.quote
+        let quality = snapshot.effectiveFreshnessState
+        let instrumentName = model.results.first(where: { $0.epic == quote.instrumentId })?.name ?? quote.instrumentId
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(instrumentName)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                Text(quote.instrumentId)
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(formatPrice(quote.bid))
+                .frame(width: 105, alignment: .trailing)
+            Text(formatPrice(quote.ask))
+                .frame(width: 105, alignment: .trailing)
+            Text(formatPrice(quote.ask - quote.bid))
+                .frame(width: 90, alignment: .trailing)
+            Text(formatAge(snapshot.ageMilliseconds))
+                .frame(width: 80, alignment: .trailing)
+            Text(quality.rawValue.uppercased())
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(qualityColor(quality))
+                .frame(width: 90, alignment: .trailing)
+        }
+        .font(.system(size: 11, design: .monospaced))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(ATHEERDesignTokens.ColorRole.separator)
+                .frame(height: 1)
+        }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(instrumentName), bid \(formatPrice(quote.bid)), ask \(formatPrice(quote.ask)), spread \(formatPrice(quote.ask - quote.bid)), age \(formatAge(snapshot.ageMilliseconds)), quality \(quality.rawValue)"
+        )
+    }
+
+    private var lastMessageLabel: String {
+        if let timestamp = streamModel.status?.lastMessageAtMs {
+            return Date(timeIntervalSince1970: Double(timestamp) / 1_000)
+                .formatted(date: .omitted, time: .standard)
+        }
+        if let timestamp = model.backendStatus?.streaming?.lastMessageAtMs {
+            return Date(timeIntervalSince1970: timestamp / 1_000)
+                .formatted(date: .omitted, time: .standard)
+        }
+        return "—"
+    }
+
+    private var streamStatusTint: Color {
+        switch streamModel.connectionState {
+        case .connected:
+            return ATHEERDesignTokens.ColorRole.success
+        case .connecting, .degraded:
+            return ATHEERDesignTokens.ColorRole.attention
+        case .disconnected:
+            return .secondary
+        }
+    }
+
+    private func formatPrice(_ value: Double) -> String {
+        value.formatted(.number.precision(.significantDigits(1...8)))
+    }
+
+    private func formatAge(_ milliseconds: Double?) -> String {
+        guard let milliseconds, milliseconds.isFinite, milliseconds >= 0 else { return "—" }
+        if milliseconds < 1_000 {
+            return "\(Int(milliseconds.rounded())) ms"
+        }
+        if milliseconds < 60_000 {
+            return String(format: "%.1f s", milliseconds / 1_000)
+        }
+        return String(format: "%.1f m", milliseconds / 60_000)
+    }
+
+    private func qualityColor(_ quality: MarketDataQuoteFreshnessState) -> Color {
+        switch quality {
+        case .fresh:
+            return ATHEERDesignTokens.ColorRole.success
+        case .stale:
+            return ATHEERDesignTokens.ColorRole.attention
+        case .invalid:
+            return ATHEERDesignTokens.ColorRole.danger
+        }
     }
 
     private var integrationBoundary: some View {
@@ -315,7 +573,7 @@ struct MarketExplorerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Data and execution boundary")
                     .font(.system(size: 11, weight: .semibold))
-                Text("This screen does not display bid/ask values from an untimestamped search response or subscribe to live quotes. Streaming health is read from the backend session runtime; chart subscriptions, charting, and trading remain separate qualification milestones. No order or dealing action is exposed.")
+                Text("Catalogue search is metadata-only. Live bid/ask values appear only from timestamped DEMO stream events with provider freshness classification. Charting, strategy input, order intent, and execution remain separate governed milestones; no order or dealing action is exposed.")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
