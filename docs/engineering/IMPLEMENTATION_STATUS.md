@@ -460,3 +460,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - PR #54 exact-head run `44276116460`: backend toolchain and repository hygiene passed; macOS qualification remained in progress/queued at last inspection.
 - PR #55 final exact-head CI, Intel/Apple Silicon XCTest, owner-Mac launch/Keychain qualification and real DEMO broker acceptance remain pending.
 - Trading and LIVE access remain disabled. See `SESSION_2026-11-18_049_BROKER_SESSION_IPC_INTEGRATION.md`.
+
+
+## 2026-11-18 — Broker fixture lifecycle and stacked IPC integration (Batch 050)
+
+- PR #55 code/test head e3d5ff4a44a8ac4075603ce93887c27ba6dd164f adds tracked teardown for 14 CapitalDemoRuntime and 7 BrokerSessionManager fixtures in market-data-runtime.test.mjs; the streaming test suite separately tracks and disconnects streaming runtimes. This prevents test-owned keepalive intervals and sockets from surviving the suite.
+- Documentation commit f36578a7167acff29596ee0c02b34ebd0e11c07e records the batch and advances PR #55. The final exact-head CI on the new documentation commit is pending; no final-head test or macOS pass is claimed.
+- Local Sync Safety 44283628390 passed on the code/test head before the report commit. On that same head, API typecheck passed and API tests were still running; Intel and Apple Silicon jobs were queued. Do not carry these results forward as proof for the new head.
+- PR stack remains open/draft: #51 capability IPC → #54 managed backend process → #56 Swift actor-isolation correction → #55 backend broker-session integration. Integrate from #55 upward into #56, then #54, then #51; requalify #51 before main.
+- Market Explorer shows REST/streaming status but no live quote subscription yet. Authenticated native SSE subscription, quote normalization/freshness and UI states remain the next market-data implementation slice.
+- Owner-Mac build/launch, Keychain restart, visual/accessibility QA, and real Capital.com DEMO authentication remain unverified. LIVE/dealing/trading remain disabled.
