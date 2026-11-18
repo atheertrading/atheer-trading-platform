@@ -67,9 +67,13 @@ export interface RiskPolicy {
   readonly environment: TradingEnvironment;
   readonly accountCurrency: string;
   readonly allowedIntentOrigins: readonly IntentOriginKind[];
+  readonly allowedPermissionProfileReferences: readonly string[];
   /** This first increment intentionally supports only configured risk-increasing operations. */
   readonly riskIncreasingOperationCodes: readonly string[];
   readonly requiredAccountFields: readonly AccountBalanceField[];
+  readonly minimumAvailableFunds?: Money;
+  readonly minimumAvailableMargin?: Money;
+  readonly maximumUsedMargin?: Money;
   readonly maximumOrderQuantity: Quantity;
   readonly maximumOpenPositions: number;
   readonly maximumOpenPositionsPerInstrument: number;
@@ -202,9 +206,10 @@ function validateMoney(value: Money, field: string): void {
   }
 }
 
-function validatePolicy(policy: RiskPolicy, intent: OrderIntentEnvelope): void {
+function validatePolicy(policy: RiskPolicy): void {
   assertRecord(policy, "risk_policy");
   assertArray(policy.allowedIntentOrigins, "risk_policy_origins");
+  assertArray(policy.allowedPermissionProfileReferences, "risk_permission_profiles");
   assertArray(policy.riskIncreasingOperationCodes, "risk_policy_operations");
   assertArray(policy.requiredAccountFields, "risk_required_account_fields");
   assertRecord(policy.maximumOrderQuantity, "risk_maximum_order_quantity");
@@ -214,11 +219,17 @@ function validatePolicy(policy: RiskPolicy, intent: OrderIntentEnvelope): void {
   tradingEnvironment(policy.environment);
   currencyCode(policy.accountCurrency);
 
-  if (policy.environment !== intent.environment) {
-    throw new DomainValidationError("risk_policy_environment_mismatch", "Risk policy environment does not match the order intent.");
-  }
   if (policy.allowedIntentOrigins.length === 0 || policy.riskIncreasingOperationCodes.length === 0) {
     throw new DomainValidationError("incomplete_risk_policy", "Risk policy must declare allowed intent origins and risk-increasing operations.");
+  }
+  for (const reference of policy.allowedPermissionProfileReferences) {
+    nonEmptyString(reference, "risk_permission_profile_reference");
+  }
+  for (const value of [policy.minimumAvailableFunds, policy.minimumAvailableMargin, policy.maximumUsedMargin]) {
+    if (value !== undefined) validateMoney(value, "risk_margin_constraint");
+    if (value !== undefined && value.currency !== policy.accountCurrency) {
+      throw new DomainValidationError("risk_policy_currency_mismatch", "Account and margin policy values must use the configured account currency.");
+    }
   }
   for (const origin of policy.allowedIntentOrigins) {
     if (!["HUMAN", "STRATEGY", "ALGORITHM", "POSITION_MANAGEMENT", "RISK_MANAGEMENT", "AI_AGENT", "SYSTEM"].includes(origin)) {
@@ -226,12 +237,6 @@ function validatePolicy(policy: RiskPolicy, intent: OrderIntentEnvelope): void {
     }
   }
   for (const operation of policy.riskIncreasingOperationCodes) nonEmptyString(operation, "risk_operation_code");
-  if (!policy.riskIncreasingOperationCodes.includes(intent.payload.operationCode)) {
-    throw new DomainValidationError("unsupported_risk_operation", "Intent operation is not configured as a risk-increasing operation in this policy.");
-  }
-  if (!policy.allowedIntentOrigins.includes(intent.origin.kind)) {
-    throw new DomainValidationError("intent_origin_not_permitted", "Intent origin is not permitted by the active risk policy.");
-  }
   for (const field of policy.requiredAccountFields) {
     if (!["balance", "equity", "availableFunds", "usedMargin", "availableMargin", "realizedPnl", "unrealizedPnl"].includes(field)) {
       throw new DomainValidationError("invalid_required_account_field", "Risk policy contains an unsupported account field.");
@@ -333,8 +338,11 @@ function validateContext(context: PreTradeRiskContext, intent: OrderIntentEnvelo
   ) {
     throw new DomainValidationError("risk_portfolio_provenance_mismatch", "Portfolio risk snapshot must be internally derived and bound to the exact intent, account, instrument and environment.");
   }
-  if (context.portfolioRisk.asOf > context.portfolioRisk.provenance.receivedAt) {
-    throw new DomainValidationError("risk_portfolio_timestamp_mismatch", "Portfolio snapshot receipt time cannot precede its valuation time.");
+  if (
+    context.portfolioRisk.asOf > context.portfolioRisk.provenance.receivedAt ||
+    context.accountSnapshot.asOf > context.accountSnapshot.provenance.receivedAt
+  ) {
+    throw new DomainValidationError("risk_context_timestamp_mismatch", "Snapshot receipt timestamps cannot precede their source valuation/event times.");
   }
 
   decimalValue(context.marketQuote.bid.value);
@@ -411,7 +419,7 @@ export class RiskEngine {
     }
 
     try {
-      validatePolicy(policy, intent);
+      validatePolicy(policy);
     } catch {
       return this.createAssessment(
         intent,
@@ -421,6 +429,23 @@ export class RiskEngine {
         inputReferences(intent, undefined, policy),
         policy.version || "invalid",
       );
+    }
+
+    if (policy.environment !== intent.environment) {
+      return this.createAssessment(intent, evaluatedAt, "HELD", ["RISK_POLICY_ENVIRONMENT_MISMATCH"], inputReferences(intent, undefined, policy), policy.version);
+    }
+    if (!policy.allowedIntentOrigins.includes(intent.origin.kind)) {
+      return this.createAssessment(intent, evaluatedAt, "REJECTED", ["INTENT_ORIGIN_NOT_PERMITTED"], inputReferences(intent, undefined, policy), policy.version);
+    }
+    if (!policy.riskIncreasingOperationCodes.includes(intent.payload.operationCode)) {
+      return this.createAssessment(intent, evaluatedAt, "REJECTED", ["UNSUPPORTED_RISK_OPERATION"], inputReferences(intent, undefined, policy), policy.version);
+    }
+    if (
+      intent.origin.kind !== "HUMAN" &&
+      (intent.origin.permissionProfileReference === undefined ||
+        !policy.allowedPermissionProfileReferences.includes(intent.origin.permissionProfileReference))
+    ) {
+      return this.createAssessment(intent, evaluatedAt, "REJECTED", ["PERMISSION_PROFILE_NOT_AUTHORIZED"], inputReferences(intent, undefined, policy), policy.version);
     }
 
     let context: PreTradeRiskContext | undefined;
@@ -458,11 +483,6 @@ export class RiskEngine {
       if (value === undefined) continue;
       if (value.currency !== policy.accountCurrency) {
         held.push("ACCOUNT_FIELD_CURRENCY_MISMATCH:" + field);
-      } else if (
-        ["balance", "equity", "availableFunds", "usedMargin", "availableMargin"].includes(field) &&
-        moneyBelowZero(value)
-      ) {
-        rejected.push("ACCOUNT_FINANCIAL_VALUE_NEGATIVE:" + field);
       }
     }
 
@@ -525,6 +545,9 @@ export class RiskEngine {
 
     const specification = context.instrumentSpecification;
     const requestedQuantity = intent.payload.quantity;
+    if (specification.minimumDealSize === undefined) {
+      held.push("BROKER_MINIMUM_DEAL_SIZE_UNAVAILABLE");
+    }
     if (requestedQuantity === undefined) {
       rejected.push("ORDER_QUANTITY_REQUIRED");
     } else {
@@ -564,6 +587,12 @@ export class RiskEngine {
       }
     }
 
+    if (
+      decimalPlaces(context.marketQuote.bid.value) > specification.pricePrecision ||
+      decimalPlaces(context.marketQuote.ask.value) > specification.pricePrecision
+    ) {
+      rejected.push("MARKET_PRICE_PRECISION_EXCEEDED");
+    }
     if (policy.requireBrokerPriceIncrement && specification.priceIncrement === undefined) {
       held.push("BROKER_PRICE_INCREMENT_UNAVAILABLE");
     } else if (specification.priceIncrement !== undefined) {
@@ -573,12 +602,10 @@ export class RiskEngine {
       ) {
         held.push("BROKER_PRICE_INCREMENT_UNIT_MISMATCH");
       } else if (
-        decimalPlaces(context.marketQuote.bid.value) > specification.pricePrecision ||
-        decimalPlaces(context.marketQuote.ask.value) > specification.pricePrecision ||
         !isMultipleOfIncrement(decimalValue(context.marketQuote.bid.value), decimalValue(specification.priceIncrement.value)) ||
         !isMultipleOfIncrement(decimalValue(context.marketQuote.ask.value), decimalValue(specification.priceIncrement.value))
       ) {
-        rejected.push("MARKET_PRICE_PRECISION_OR_INCREMENT_INVALID");
+        rejected.push("MARKET_PRICE_INCREMENT_INVALID");
       }
     }
 
@@ -596,6 +623,11 @@ export class RiskEngine {
           rejected.push("STOP_LOSS_PRICE_UNIT_MISMATCH");
         } else if (decimalPlaces(stopPrice) > specification.pricePrecision) {
           rejected.push("STOP_LOSS_PRECISION_EXCEEDED");
+        } else if (
+          specification.priceIncrement !== undefined &&
+          !isMultipleOfIncrement(stopPrice, decimalValue(specification.priceIncrement.value))
+        ) {
+          rejected.push("STOP_LOSS_PRICE_INCREMENT_INVALID");
         } else if (
           (intent.payload.direction === "BUY" && compareDecimal(stopPrice, bid) >= 0) ||
           (intent.payload.direction === "SELL" && compareDecimal(stopPrice, ask) <= 0)
@@ -629,6 +661,28 @@ export class RiskEngine {
         held.push("PORTFOLIO_RISK_METRIC_INVALID");
       }
     }
+    if (
+      policy.minimumAvailableFunds !== undefined &&
+      context.accountSnapshot.availableFunds !== undefined &&
+      compareDecimal(decimalValue(context.accountSnapshot.availableFunds.amount), decimalValue(policy.minimumAvailableFunds.amount)) < 0
+    ) {
+      rejected.push("MINIMUM_AVAILABLE_FUNDS_NOT_MET");
+    }
+    if (
+      policy.minimumAvailableMargin !== undefined &&
+      context.accountSnapshot.availableMargin !== undefined &&
+      compareDecimal(decimalValue(context.accountSnapshot.availableMargin.amount), decimalValue(policy.minimumAvailableMargin.amount)) < 0
+    ) {
+      rejected.push("MINIMUM_AVAILABLE_MARGIN_NOT_MET");
+    }
+    if (
+      policy.maximumUsedMargin !== undefined &&
+      context.accountSnapshot.usedMargin !== undefined &&
+      compareDecimal(decimalValue(context.accountSnapshot.usedMargin.amount), decimalValue(policy.maximumUsedMargin.amount)) > 0
+    ) {
+      rejected.push("MAXIMUM_USED_MARGIN_EXCEEDED");
+    }
+
     if (moneyAbove(portfolio.projectedPerTradeRisk, policy.maximumPerTradeRisk)) {
       rejected.push("MAXIMUM_PER_TRADE_RISK_EXCEEDED");
     }
@@ -645,12 +699,19 @@ export class RiskEngine {
       rejected.push("MAXIMUM_DRAWDOWN_EXCEEDED");
     }
 
-    if (this.controls.isEmergencyHalted(intent.environment)) {
-      rejected.push("EMERGENCY_TRADING_HALT_ACTIVE");
+    let controlsAvailable = true;
+    try {
+      if (this.controls.isEmergencyHalted(intent.environment)) {
+        rejected.push("EMERGENCY_TRADING_HALT_ACTIVE");
+      }
+      if (!this.controls.isTradingEnabled(intent.environment)) {
+        held.push("TRADING_DISABLED");
+      }
+    } catch {
+      controlsAvailable = false;
+      held.push("TRADING_CONTROLS_UNAVAILABLE");
     }
-    if (!this.controls.isTradingEnabled(intent.environment)) {
-      held.push("TRADING_DISABLED");
-    }
+    if (!controlsAvailable) advisory.length = 0;
 
     const reasonCodes = [...new Set([...rejected, ...held, ...advisory])];
     const outcome: RiskDecisionOutcome = rejected.length > 0 ? "REJECTED" : held.length > 0 ? "HELD" : "AUTHORIZED";
