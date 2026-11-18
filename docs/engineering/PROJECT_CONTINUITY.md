@@ -554,3 +554,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Provider bid/offer fields are stripped from catalogue results; only the validated stream pipeline may supply live Bid/Ask.
 - This prevents catalogue values from being mistaken for timestamped live quotes in Market Watch, charts or automated decision inputs.
 - Regression test and EDL-021 added; exact-head CI pending.
+
+
+## 2026-11-18 — ATP-BRK-002 centralized broker session authority
+
+- Re-read Library Broker Integration Q5 and Q6. The owner direction requires backend-controlled authentication and a centralized CMS; backend services own CST and X-SECURITY-TOKEN lifecycle. Credentials must not be exposed to frontend state, strategies or agents.
+- Identified a current architecture split: PR #26 stores credentials in macOS Keychain and authenticates directly from Swift; PR #37 reads independent environment credentials and creates another backend session.
+- This is not an acceptable final integration because Market Data, Broker Management and future services could hold separate sessions and disagree on connection/expiry state.
+- Decision EDL-022: one backend CMS/session manager; secure native credential provisioning via authenticated local IPC or per-launch capability token; environment variables test-only; app UI delegates to backend.
+- PR #37 remains draft and must not merge as completed integration until ATP-BRK-002 is implemented and DEMO-qualified.
