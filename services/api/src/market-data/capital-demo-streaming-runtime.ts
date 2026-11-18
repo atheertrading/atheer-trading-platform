@@ -12,6 +12,8 @@ const SOCKET_CLOSE_TIMEOUT_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
+const QUOTE_MAXIMUM_AGE_MS = 5_000;
+const QUOTE_MAXIMUM_FUTURE_SKEW_MS = 250;
 
 export type MarketDataStreamState = "disconnected" | "connecting" | "connected" | "degraded";
 
@@ -112,9 +114,25 @@ export class CapitalDemoStreamingRuntime {
   }
 
   latest(epics: readonly string[]): MarketDataStreamQuote[] {
+    const nowMs = this.now();
     return epics.flatMap((epic) => {
       const quote = this.latestQuotes.get(epic);
-      return quote ? [quote] : [];
+      if (!quote) return [];
+
+      // A cached quote may be replayed long after its original receipt. Recompute
+      // freshness from the provider timestamp at replay time; never replay the
+      // original "fresh" authorization decision as if it were current.
+      const freshness = evaluateQuoteFreshness(quote, nowMs, {
+        maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
+        maximumFutureSkewMs: QUOTE_MAXIMUM_FUTURE_SKEW_MS,
+      });
+      return [{
+        ...quote,
+        freshness: {
+          ...freshness,
+          maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
+        },
+      }];
     });
   }
 
@@ -427,10 +445,10 @@ export class CapitalDemoStreamingRuntime {
       receivedAtMonotonicMs: this.monotonicNow(),
       freshness: {
         ...evaluateQuoteFreshness(normalized, receivedAtMs, {
-          maximumAgeMs: 5_000,
-          maximumFutureSkewMs: 250,
+          maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
+          maximumFutureSkewMs: QUOTE_MAXIMUM_FUTURE_SKEW_MS,
         }),
-        maximumAgeMs: 5_000,
+        maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
       },
     };
     this.latestQuotes.set(quote.instrumentId, quote);

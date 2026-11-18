@@ -207,6 +207,46 @@ test("stream ignores duplicate and out-of-order quotes while preserving valid up
   await runtime.disconnect();
 });
 
+test("cached quote replay recomputes freshness from the original provider timestamp", async () => {
+  let now = 1_800_000_000_000;
+  const sockets = [];
+  const runtime = trackRuntime(new CapitalDemoStreamingRuntime(
+    async () => streamInfo,
+    (url) => {
+      const socket = new FakeWebSocket(url);
+      sockets.push(socket);
+      return socket;
+    },
+    () => now,
+    () => 125,
+  ));
+  const unsubscribe = await runtime.subscribe(["AAPL"], () => undefined);
+  sockets[0].emitQuote({
+    epic: "AAPL",
+    bid: 199.5,
+    ofr: 199.6,
+    timestamp: now,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const initial = runtime.latest(["AAPL"])[0];
+  assert.equal(initial.freshness.state, "fresh");
+  assert.equal(initial.freshness.ageMs, 0);
+  assert.equal(initial.freshness.automatedDecisionsAllowed, true);
+
+  now += 6_000;
+  const replayed = runtime.latest(["AAPL"])[0];
+  assert.equal(replayed.providerTimestampMs, initial.providerTimestampMs);
+  assert.equal(replayed.receivedAtMs, initial.receivedAtMs);
+  assert.equal(replayed.freshness.state, "stale");
+  assert.equal(replayed.freshness.ageMs, 6_000);
+  assert.equal(replayed.freshness.automatedDecisionsAllowed, false);
+  assert.equal(replayed.freshness.reason, "quote_too_old");
+
+  unsubscribe();
+  await runtime.disconnect();
+});
+
 test("stream automatically reconnects and restores active subscriptions after interruption", async () => {
   const sockets = [];
   const runtime = createStreamingRuntime(sockets);
