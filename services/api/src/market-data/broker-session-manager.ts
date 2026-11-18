@@ -1,6 +1,8 @@
 import { CapitalDemoClient, type CapitalDemoCredentials } from "./capital-demo-client.ts";
 import { CapitalDemoRuntime } from "./capital-demo-runtime.ts";
 
+const DEFAULT_SESSION_CREATION_INTERVAL_MS = 1_000;
+
 export type BrokerSessionStatus = ReturnType<CapitalDemoRuntime["status"]>;
 type RuntimeFactory = (credentials: CapitalDemoCredentials) => CapitalDemoRuntime;
 
@@ -19,7 +21,7 @@ export class BrokerSessionManager {
     private readonly runtimeFactory: RuntimeFactory = (credentials) =>
       new CapitalDemoRuntime(new CapitalDemoClient(), credentials),
     private readonly now: () => number = Date.now,
-    private readonly sessionCreationIntervalMs = 10_000,
+    private readonly sessionCreationIntervalMs = DEFAULT_SESSION_CREATION_INTERVAL_MS,
   ) {}
 
   status(): BrokerSessionStatus {
