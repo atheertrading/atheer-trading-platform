@@ -86,6 +86,14 @@ export class CapitalDemoRuntime {
     };
   }
 
+  isAuthenticationBlockedFor(credentials: CapitalDemoCredentials): boolean {
+    return this.authenticationBlocked &&
+      this.credentials !== null &&
+      this.credentials.apiKey === credentials.apiKey &&
+      this.credentials.identifier === credentials.identifier &&
+      this.credentials.password === credentials.password;
+  }
+
   async connect(): Promise<CapitalDemoRuntimeStatus> {
     if (this.authenticationBlocked) return this.status();
     if (this.session && this.connectionState === "connected") return this.status();
@@ -260,7 +268,9 @@ export class CapitalDemoRuntime {
     this.session = null;
     this.connectedAtMs = undefined;
     this.connectionState = "disconnected";
-    this.lastError = "Capital.com DEMO session was rejected or expired.";
+    this.lastError = error.statusCode === 403
+      ? "Capital.com DEMO session access is forbidden (HTTP 403)."
+      : "Capital.com DEMO session was rejected or expired.";
   }
 
   private requireSession(): CapitalDemoSession {
