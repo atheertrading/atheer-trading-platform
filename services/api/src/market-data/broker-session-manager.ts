@@ -13,10 +13,13 @@ type RuntimeFactory = (credentials: CapitalDemoCredentials) => CapitalDemoRuntim
  */
 export class BrokerSessionManager {
   private runtime: CapitalDemoRuntime | null = null;
+  private lastSessionCreationAttemptAtMs: number | null = null;
 
   constructor(
     private readonly runtimeFactory: RuntimeFactory = (credentials) =>
       new CapitalDemoRuntime(new CapitalDemoClient(), credentials),
+    private readonly now: () => number = Date.now,
+    private readonly sessionCreationIntervalMs = 10_000,
   ) {}
 
   status(): BrokerSessionStatus {
@@ -29,7 +32,21 @@ export class BrokerSessionManager {
 
   async connect(credentials?: CapitalDemoCredentials): Promise<BrokerSessionStatus> {
     if (credentials) {
+      const now = this.now();
+      if (
+        this.lastSessionCreationAttemptAtMs !== null &&
+        now - this.lastSessionCreationAttemptAtMs < this.sessionCreationIntervalMs
+      ) {
+        const remainingMs = this.sessionCreationIntervalMs -
+          (now - this.lastSessionCreationAttemptAtMs);
+        return {
+          ...this.status(),
+          state: "error",
+          lastError: `Capital.com DEMO session creation is rate-limited. Retry in ${Math.ceil(remainingMs / 1_000)} seconds.`,
+        };
+      }
       if (this.runtime) await this.disconnect();
+      this.lastSessionCreationAttemptAtMs = now;
       this.runtime = this.runtimeFactory({
         apiKey: credentials.apiKey,
         identifier: credentials.identifier,
