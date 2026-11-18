@@ -264,12 +264,38 @@ export function createDataProvenance(input: DataProvenance): DataProvenance {
 }
 
 export function deepFreeze<T>(value: T, seen: WeakSet<object> = new WeakSet<object>()): Readonly<T> {
+  if (typeof value === "function") {
+    throw new DomainValidationError(
+      "invalid_immutable_value",
+      "Domain event payloads cannot contain executable values.",
+    );
+  }
+
   if (value !== null && typeof value === "object") {
     const objectValue = value as object;
+    const isArray = Array.isArray(objectValue);
+    const prototype = Object.getPrototypeOf(objectValue);
+    if (!isArray && prototype !== Object.prototype && prototype !== null) {
+      // Object.freeze does not make Map/Set contents or Date state immutable.
+      // Domain contracts intentionally accept only data-only object graphs.
+      throw new DomainValidationError(
+        "invalid_immutable_value",
+        "Domain values must contain only plain objects and arrays.",
+      );
+    }
+
     if (!seen.has(objectValue)) {
       seen.add(objectValue);
-      for (const nested of Object.values(value as Record<string, unknown>)) {
-        deepFreeze(nested, seen);
+      for (const key of Reflect.ownKeys(objectValue)) {
+        const descriptor = Object.getOwnPropertyDescriptor(objectValue, key);
+        if (!descriptor) continue;
+        if (!("value" in descriptor)) {
+          throw new DomainValidationError(
+            "invalid_immutable_value",
+            "Domain values cannot contain accessor properties.",
+          );
+        }
+        deepFreeze(descriptor.value, seen);
       }
       Object.freeze(objectValue);
     }
