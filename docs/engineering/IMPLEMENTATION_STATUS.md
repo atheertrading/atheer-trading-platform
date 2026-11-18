@@ -447,3 +447,14 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #44, #45 and #47 exact-head CI runs `44221728876`, `44227375230` and `44233627460` respectively report all jobs successful, including Intel/Apple Silicon, backend and repository hygiene where present.
 - These PRs remain drafts and are stacked on unmerged feature branches. Passing CI does not establish merge readiness into `main`; parent branch ancestry and integration order remain to be reconciled.
+
+
+## 2026-11-18 — Broker session orchestration follow-up
+
+- PR #48 merged to `main` at `3bb2f0b68c11eff019bbd88ce09cf3b7155b9ea4`; exact-head CI, CodeQL and Local Sync Safety passed.
+- PR #49 exact current head: `a16a0a065997ab912d46ba544cf8d4e0ada00ff0`.
+- PR #49 adds a minimum one-second interval between sequential Capital.com DEMO session-creation attempts within the single runtime owner, plus a five-minute scheduled REST `/ping` before the documented ten-minute inactivity threshold.
+- Follow-up fix: scheduled keepalive callbacks now contain rejected promises after `runKeepalive()` records the health transition; a new deterministic test covers HTTP 503 → `degraded`, normal scheduled-callback settlement, and successful recovery to `connected`. Manual `ping()` continues to report failures to its caller.
+- Local Sync Safety `44266234099` passed. Exact-head CI `44266234067` remains queued/in progress at report time; backend type-check passed, while backend tests and macOS jobs remain unverified.
+- PR #49 is not merge-ready for `main`: it is stacked on PR #37 and the feature branch is 106 commits ahead / 34 behind current `main`. ATP-BRK-002 remains a mandatory prerequisite.
+- No owner-Mac Xcode build/runtime, Keychain helper, secure IPC, or authentic Capital.com DEMO qualification is claimed.
