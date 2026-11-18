@@ -54,6 +54,26 @@ Every successful market-data response is explicitly labeled provider=capital.com
 - Freshness policy must be explicitly supplied by the caller; stale, malformed, future-dated, or invalid-policy quotes fail closed for automated decisions.
 - This increment does not yet implement the Capital.com WebSocket stream or qualify the Market Watch as real-time.
 
+## Pre-trade RiskEngine foundation
+
+The backend now contains a policy-driven pre-trade evaluation module at
+`src/risk/risk-engine.ts`. It consumes the canonical order-intent contract and injected
+versioned policy, account/instrument/quote context, exact-intent portfolio-risk projection,
+and trading-control ports. It returns the canonical `AUTHORIZED`, `REJECTED`, or `HELD`
+risk assessment with evidence references.
+
+This module is **not wired to an HTTP route or process runtime**. It does not submit orders,
+dispatch an outbox event, call a broker dealing API, or create OMS orders. Policy and
+portfolio-risk providers, account/position read models, persistence integration and full
+valuation semantics remain separate dependencies. Missing or invalid evidence, missing
+required broker specifications, unavailable controls and disabled trading fail closed.
+The supplied `DisabledRiskTradingControls` does not authorize trading.
+
+No financial policy defaults are embedded. Account, exposure, loss, drawdown, margin, spread,
+stop-loss, position-count and freshness limits must be explicitly supplied by a versioned
+policy. The engine does not infer FX conversion, contract multipliers or derivatives
+valuation. See [ATP-RISK-001 — Pre-Trade RiskEngine Foundation](../../docs/architecture/ATP_RISK_ENGINE_PRETRADE_FOUNDATION.md).
+
 ## Runtime and security boundaries
 
 - No runtime npm dependencies are used.

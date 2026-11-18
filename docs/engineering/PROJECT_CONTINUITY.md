@@ -665,3 +665,26 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Intel x86_64 and Apple Silicon arm64 checks remain queued. PR #81 remains draft and must not merge before its PR #76 parent is qualified and integrated.
 - Legacy PR #41 and downstream PR #42 remain open and untouched. PR #42 must be reconciled onto the canonical persistence implementation before OMS integration.
 - `CAP_ALLOW_TRADING=false`; no provider credentials, sessions, orders, dealing APIs or LIVE execution used.
+
+## 2026-11-18 — ATP-TEAM-B-001 Batch 067: Central Pre-Trade RiskEngine Foundation
+
+- Created backend feature branch `feat/central-risk-engine-foundation`, stacked on `feat/postgres-persistence-on-canonical-domain` (PR #81), which itself depends on canonical domain PR #76.
+- Added `services/api/src/risk/risk-engine.ts`: a provider-independent application-service RiskEngine consuming canonical OrderIntentEnvelope, an explicitly versioned risk policy, provenance-bearing account/instrument/market evidence, an intent-bound projected portfolio-risk snapshot and injected trading controls.
+- Outcomes use canonical `AUTHORIZED`, `REJECTED`, `HELD` with risk policy version, reason codes, input references and internal provenance. Missing/invalid policy/context, mismatched or stale evidence, missing required instrument metadata, disabled trading, unavailable controls and control-provider exceptions fail closed.
+- Exact decimal arithmetic is used for spread calculation, quantity increment, precision and monetary comparisons. Policy supplies all financial and freshness thresholds; none are embedded as runtime defaults.
+- Added policy boundaries for account currency, allowed intent origins and permission profiles, risk-increasing operations, quantity and broker specifications, open-position counts, per-trade/account/instrument exposure, daily loss, drawdown, spread, optional funds/margin constraints, quote/account/portfolio age, stop-loss requirements and control gates.
+- `PortfolioRiskSnapshot` is intentionally a provider input contract, not a calculation implementation. No FX conversion, derivative/CFD valuation, margin formula or post-trade sizing formula is inferred.
+- Added tests: `services/api/test/risk-engine.test.mjs` and `services/api/test/risk-engine-policy-boundaries.test.mjs`.
+- Added architecture note `docs/architecture/ATP_RISK_ENGINE_PRETRADE_FOUNDATION.md`, Mermaid diagram 15, diagram index entry and backend README boundary description.
+- Session report: `docs/engineering/SESSION_2026-11-18_067_CENTRAL_PRETRADE_RISK_ENGINE.md`.
+- No HTTP risk endpoint, policy store, account/position read model, portfolio valuation service, assessment persistence, OMS wiring, outbox consumer, Execution Gateway or broker dealing path is added. `CAP_ALLOW_TRADING=false` remains unchanged; LIVE remains disabled.
+- Exact-head Node 24 TypeScript build/tests, Repository Hygiene, CodeQL, Mermaid and Local Sync Safety remain pending until the stacked PR is opened and CI is inspected. No local Node 24, owner-Mac or broker DEMO test is claimed.
+
+### ATP-RISK-001A — exact-head qualification update
+
+For PR #86 head `e19897895b179d47c4ffee7b5fe68857fc20080f`:
+- Backend Toolchain passed on hosted Node.js 24: TypeScript type-check/build and API suite **59 passed, 0 failed** (CI `44394828144`, job `135121823729`).
+- Repository Hygiene passed on the same exact head (job `135121823904`).
+- Mermaid rendering passed (run `44394828042`); Local Sync Safety passed (run `44394827971`).
+- Intel x86_64 and Apple Silicon arm64 build/XCTest/Swift CodeQL jobs were still queued at last inspection. PR #86 remains Draft and stacked on PR #81. These backend results do not qualify the complete macOS matrix or the upstream PR #76/#81 chain.
+

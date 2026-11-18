@@ -403,3 +403,23 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Repository Hygiene, Mermaid and Local Sync Safety passed on the recorded exact head.
 - Intel and Apple Silicon jobs are queued. PR #81 remains draft and stacked on PR #76.
 - Owner-local PostgreSQL 18.7 migration/restore and owner-Mac qualification are not established by hosted CI.
+
+## ATP-RISK-001 — Central Pre-Trade RiskEngine Foundation (2026-11-18)
+
+| Work item | Priority | Scope | Status | Acceptance evidence / dependency |
+|---|---:|---|---|---|
+| ATP-RISK-001A | P0 | Implement policy-driven canonical pre-trade RiskEngine and fail-closed outcomes | IMPLEMENTED ON STACKED BRANCH — CI PENDING | `services/api/src/risk/risk-engine.ts`; canonical OrderIntentEnvelope/RiskAssessment; injected policy/context/clock/ID/control ports |
+| ATP-RISK-001B | P0 | Add deterministic risk evaluation and policy-boundary tests | IMPLEMENTED ON STACKED BRANCH — CI PENDING | `risk-engine.test.mjs` and `risk-engine-policy-boundaries.test.mjs`; Node 24 build and full test suite must pass on exact PR head |
+| ATP-RISK-001C | P1 | Document risk input provenance, policy semantics and non-execution boundary | IMPLEMENTED ON STACKED BRANCH — MERMAID/REPO CI PENDING | `ATP_RISK_ENGINE_PRETRADE_FOUNDATION.md`, diagram 15, API README, diagram index |
+| ATP-RISK-001D | P0 | Exact-head CI and ordered canonical integration | PENDING | Stack on PR #81 → PR #76; do not merge before parent dependencies and all exact-head checks pass |
+| ATP-RISK-001E | P0 | Implement authoritative policy store and provenance-bearing account/position/portfolio valuation providers | PENDING | Explicit owner/ADR policy reconciliation; no FX/derivative/margin formula inferred |
+| ATP-RISK-001F | P0 | Persist exact risk assessment and connect the single governed intent/OMS transaction | PENDING | Requires canonical PostgreSQL integration and exact AUTHORIZED assessment binding |
+| ATP-RISK-001G | P0 | Complete Execution Gateway, DEMO dealing and broker reconciliation qualification | PENDING | Must retain `CAP_ALLOW_TRADING=false`; LIVE remains separately gated |
+
+The RiskEngine branch does not introduce risk HTTP routes, policy defaults, execution dispatch, broker dealing or LIVE capability. Portfolio-risk projections are supplied by a future deterministic valuation service and are not computed by this increment.
+
+### ATP-RISK-001A qualification checkpoint — PR #86
+
+- Exact head `e19897895b179d47c4ffee7b5fe68857fc20080f`: Node.js 24 type-check/build and API suite **59 passed, 0 failed**; Repository Hygiene, Mermaid and Local Sync Safety passed.
+- Intel and Apple Silicon macOS build/XCTest/Swift CodeQL jobs were queued at last inspection. ATP-RISK-001D remains IN PROGRESS; do not treat backend test success as cross-architecture qualification.
+
