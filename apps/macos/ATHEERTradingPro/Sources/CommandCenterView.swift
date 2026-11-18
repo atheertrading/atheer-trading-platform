@@ -7,7 +7,27 @@ struct CommandCenterView: View {
     let onOpenAPIConnection: () -> Void
 
     @StateObject private var workspaceEngine = WorkspaceEngine()
+    @StateObject private var statusModel: CommandCenterStatusViewModel
     @State private var isPanelManagementPresented = false
+
+    init(
+        backendHealthModel: BackendHealthViewModel,
+        marketSearchClient: MarketSearchClient,
+        onOpenAPIConnection: @escaping () -> Void
+    ) {
+        self.backendHealthModel = backendHealthModel
+        self.onOpenAPIConnection = onOpenAPIConnection
+        _statusModel = StateObject(
+            wrappedValue: CommandCenterStatusViewModel(client: marketSearchClient)
+        )
+    }
+
+    private var statusPresentation: CommandCenterStatusPresentation {
+        CommandCenterStatusPresentation(
+            marketDataState: statusModel.marketDataState,
+            backendHealthState: backendHealthModel.state
+        )
+    }
 
     private var sidebarWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.sidebarWidth) }
     private var minimumPrimaryWidth: CGFloat { CGFloat(workspaceEngine.activeWorkspace.layout.minimumPrimaryWidth) }
@@ -47,6 +67,9 @@ struct CommandCenterView: View {
             }
         }
         .background(ATHEERDesignTokens.ColorRole.canvas)
+        .task {
+            await statusModel.refresh()
+        }
         .sheet(isPresented: $isPanelManagementPresented) {
             WorkspacePanelManagementView(engine: workspaceEngine)
         }
@@ -120,42 +143,42 @@ struct CommandCenterView: View {
     }
 
     private var operationalStatus: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 180), spacing: 10)],
-            alignment: .leading,
-            spacing: 10
-        ) {
-            CommandCenterStatusItem(
-                title: "MARKET DATA",
-                value: "UNAVAILABLE",
-                detail: "Provider not configured",
-                symbol: "waveform.path",
-                tint: ATHEERDesignTokens.ColorRole.attention
-            )
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("OPERATIONAL CONTEXT")
+                    .font(ATHEERDesignTokens.Typography.caption)
+                    .tracking(0.8)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.secondaryText)
 
-            CommandCenterStatusItem(
-                title: "BROKER",
-                value: "DISCONNECTED",
-                detail: "No broker adapter",
-                symbol: "building.columns",
-                tint: .secondary
-            )
+                Spacer()
 
-            CommandCenterStatusItem(
-                title: "ACCOUNT",
-                value: "NO SNAPSHOT",
-                detail: "Account state unavailable",
-                symbol: "person.crop.rectangle",
-                tint: .secondary
-            )
+                Button {
+                    Task { await statusModel.refresh() }
+                } label: {
+                    if statusModel.marketDataState == .checking {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Refreshing")
+                    } else {
+                        Label("Refresh status", systemImage: "arrow.clockwise")
+                    }
+                }
+                .buttonStyle(.borderless)
+                .disabled(statusModel.marketDataState == .checking)
+                .help("Refresh the backend-reported Capital.com DEMO REST session state")
+                .accessibilityIdentifier("command-center.refresh-status")
+            }
 
-            CommandCenterStatusItem(
-                title: "EXECUTION",
-                value: "DISABLED",
-                detail: "Trading gate is closed",
-                symbol: "lock",
-                tint: ATHEERDesignTokens.ColorRole.attention
-            )
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 180), spacing: 10)],
+                alignment: .leading,
+                spacing: 10
+            ) {
+                CommandCenterStatusItem(item: statusPresentation.marketData)
+                CommandCenterStatusItem(item: statusPresentation.broker)
+                CommandCenterStatusItem(item: statusPresentation.account)
+                CommandCenterStatusItem(item: statusPresentation.execution)
+            }
         }
     }
 
@@ -445,34 +468,43 @@ private struct CommandCenterPanel<Content: View>: View {
 }
 
 private struct CommandCenterStatusItem: View {
-    let title: String
-    let value: String
-    let detail: String
-    let symbol: String
-    let tint: Color
+    let item: CommandCenterStatusCard
+
+    private var tint: Color {
+        switch item.tone {
+        case .neutral:
+            return .secondary
+        case .positive:
+            return ATHEERDesignTokens.ColorRole.success
+        case .attention:
+            return ATHEERDesignTokens.ColorRole.attention
+        case .danger:
+            return ATHEERDesignTokens.ColorRole.danger
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 6) {
-                Image(systemName: symbol)
+                Image(systemName: item.symbol)
                     .foregroundColor(tint)
-                Text(title)
+                Text(item.title)
                     .font(.system(size: 9, weight: .bold))
                     .tracking(0.7)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ATHEERDesignTokens.ColorRole.secondaryText)
             }
 
-            Text(value)
+            Text(item.value)
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundColor(tint)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
 
-            Text(detail)
+            Text(item.detail)
                 .font(.system(size: 10))
                 .foregroundColor(.secondary)
-                .lineLimit(1)
-                .truncationMode(.tail)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         .padding(.horizontal, 12)
@@ -484,5 +516,6 @@ private struct CommandCenterStatusItem: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("command-center.status-card.\(item.id)")
     }
 }

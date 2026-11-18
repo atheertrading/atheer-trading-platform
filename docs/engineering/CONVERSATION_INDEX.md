@@ -105,3 +105,9 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 | ATP-2026-11-18-043 | 2026-11-18 | PR #33 Market Explorer merge and broker integration gate refresh | Merged exact qualified PR #33 at `2e8bf9bd`; recorded successful Intel/Apple Silicon/backend/hygiene/CodeQL/sync checks; reconciled Library Q5/Q6/Q10 with PR #26 and PR #37 duplicate session authorities and connection orchestration gaps; documented PR #37 ancestry divergence and downstream chart PR stack status. | PR #33; PR #37; PR #44/#45/#47; ATP-BRK-002; ATP-BRK-003; ATP-MKT-007; EDL-022; EDL-023; SESSION_2026-11-18_041_MARKET_EXPLORER_MERGE_AND_BROKER_GATES |
 
+
+
+| ATP-2026-11-19-002 | 2026-11-19 | Command Center backend status integration | Reconciled the current Team A UI branch, replaced static Command Center operational statuses with an injected read-only backend status projection, shared the existing MarketSearchClient at the application composition point, and added deterministic status-mapping tests. Exact-head qualification and owner-Mac visual/runtime checks remain pending. | ATP-UI-CC-STATUS-001; PR #90 parent; SESSION_2026-11-19_002_COMMAND_CENTER_STATUS_INTEGRATION; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER |
+
+
+| ATP-2026-11-19-003 | 2026-11-19 | Team A source-verified UI baseline audit | Audited current main and UI feature ancestry, actual four-destination navigation, implemented design/workspace/client foundations, test inventory and incomplete product screens; identified overlapping Command Center / app-composition files in the separate PR #70 → #83 chart/market stack and recorded the required preservation-first integration gate. | ATP-UI-BASELINE-001; UI_FRONTEND_BASELINE_AUDIT_2026-11-19; PR #69/#70/#73/#80/#83/#85/#89/#90/#91; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER |

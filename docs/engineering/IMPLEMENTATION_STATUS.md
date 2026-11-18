@@ -469,3 +469,25 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Not yet verified: exact-head CI, owner-Mac Xcode/runtime, screenshots, contrast, accessibility, localization/RTL, multi-display and complete component inventory.
 - This is not Phase 00 approval, full IPDS completion, broker certification, trading qualification or LIVE authorization.
 
+
+
+## ATP-UI-CC-STATUS-001 — Command Center backend status integration
+
+**Status:** Implemented on a focused UI child branch; exact-head qualification pending.
+
+- Command Center Market Data now reads the existing backend status contract and labels the result as a DEMO REST session; streaming is not inferred.
+- Broker and trading-gate cards are projected from the backend readiness snapshot through existing typed models and fail-closed presentation logic.
+- Account remains `NO SNAPSHOT`; no account contract or fabricated financial value was introduced.
+- One injected market-search client is shared by Command Center, Markets and instrument quick search.
+- Deterministic tests cover connected REST status, backend-unavailable behavior, readiness-derived broker/trading fields, and unknown broker state.
+- Branch: `feat/ui-command-center-status-integration`; parent PR #90 at `c0f386c1e7701f6445d1e70eea6ee87545c7e954`.
+- Exact-head hosted CI, owner-Mac launch, visual comparison, keyboard/VoiceOver, Light/RTL and authenticated DEMO acceptance remain separate gates.
+- Trading remains disabled; no LIVE or dealing path was introduced.
+
+
+## ATP-UI-BASELINE-001 — Source-verified UI baseline (2026-11-19)
+
+- Audit: [UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md](UI_FRONTEND_BASELINE_AUDIT_2026-11-19.md).
+- The current UI feature chain has four actual app destinations; the 12 PR #90 SVG compositions are design-review artifacts, not 12 completed SwiftUI screens.
+- The Command Center backend-status slice is implemented on PR #91; exact-head CI and owner-Mac qualification remain pending.
+- PR #70 / #83 form a separate chart/market-data chain and overlap the same three app-shell files as PR #91. Integration must be source-reviewed and history-preserving.

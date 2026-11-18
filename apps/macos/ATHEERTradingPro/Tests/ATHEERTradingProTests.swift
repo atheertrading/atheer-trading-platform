@@ -236,8 +236,17 @@ final class ATHEERTradingProTests: XCTestCase {
         let model = BackendHealthViewModel(
             client: StubBackendHealthClient(result: .failure(StubBackendHealthError.unavailable))
         )
+        let marketSearchClient = StubMarketSearchClient(
+            status: MarketDataBackendStatus(
+                provider: "capital.com",
+                environment: "DEMO",
+                state: .notConfigured
+            ),
+            results: []
+        )
         let view = CommandCenterView(
             backendHealthModel: model,
+            marketSearchClient: marketSearchClient,
             onOpenAPIConnection: {}
         )
 
@@ -912,6 +921,88 @@ final class ATHEERTradingProTests: XCTestCase {
         XCTAssertEqual(presentation.localAPI.tone, .attention)
         XCTAssertEqual(presentation.platform.title, "NOT VERIFIED")
         XCTAssertEqual(presentation.tradingGate.title, "NOT VERIFIED")
+    }
+
+    @MainActor
+    func testCommandCenterStatusUsesBackendMarketDataSessionAndSeparatesStreaming() async {
+        let client = StubMarketSearchClient(
+            status: MarketDataBackendStatus(
+                provider: "capital.com",
+                environment: "DEMO",
+                state: .connected
+            ),
+            results: []
+        )
+        let model = CommandCenterStatusViewModel(client: client)
+
+        await model.refresh()
+
+        let presentation = CommandCenterStatusPresentation(
+            marketDataState: model.marketDataState,
+            backendHealthState: .idle
+        )
+        XCTAssertEqual(presentation.marketData.value, "REST CONNECTED")
+        XCTAssertTrue(presentation.marketData.detail.contains("capital.com · DEMO"))
+        XCTAssertTrue(presentation.marketData.detail.contains("streaming is a separate capability"))
+        XCTAssertEqual(client.searchCallCount, 0, "Status refresh must not initiate an instrument search.")
+    }
+
+    func testCommandCenterStatusDoesNotInferBrokerAccountOrExecutionState() {
+        let presentation = CommandCenterStatusPresentation(
+            marketDataState: .notChecked,
+            backendHealthState: .disconnected("Backend is unavailable.")
+        )
+
+        XCTAssertEqual(presentation.marketData.value, "NOT CHECKED")
+        XCTAssertEqual(presentation.broker.value, "NOT VERIFIED")
+        XCTAssertEqual(presentation.account.value, "NO SNAPSHOT")
+        XCTAssertEqual(presentation.execution.value, "NOT VERIFIED")
+    }
+
+    func testCommandCenterStatusUsesBrokerAndTradingValuesFromBackendReadiness() {
+        let snapshot = BackendHealthSnapshot(
+            version: "0.1.0",
+            livenessTimestamp: "2026-11-19T00:00:00.000Z",
+            platformReady: false,
+            persistenceStatus: "not_configured",
+            brokerStatus: "not_configured",
+            tradingEnabled: false,
+            tradingStatus: "disabled",
+            readinessHTTPStatus: 503,
+            readinessTimestamp: "2026-11-19T00:00:01.000Z",
+            readinessFailure: nil
+        )
+        let presentation = CommandCenterStatusPresentation(
+            marketDataState: .notChecked,
+            backendHealthState: .connected(snapshot)
+        )
+
+        XCTAssertEqual(presentation.broker.value, "NOT CONFIGURED")
+        XCTAssertEqual(presentation.execution.value, "DISABLED")
+        XCTAssertEqual(presentation.execution.tone, .neutral)
+        XCTAssertEqual(presentation.account.value, "NO SNAPSHOT")
+    }
+
+    func testCommandCenterStatusDoesNotTreatUnknownBrokerReadinessAsConnected() {
+        let snapshot = BackendHealthSnapshot(
+            version: "0.1.0",
+            livenessTimestamp: "2026-11-19T00:00:00.000Z",
+            platformReady: true,
+            persistenceStatus: "ready",
+            brokerStatus: "pending_review",
+            tradingEnabled: false,
+            tradingStatus: "disabled",
+            readinessHTTPStatus: 200,
+            readinessTimestamp: "2026-11-19T00:00:01.000Z",
+            readinessFailure: nil
+        )
+        let presentation = CommandCenterStatusPresentation(
+            marketDataState: .notChecked,
+            backendHealthState: .connected(snapshot)
+        )
+
+        XCTAssertEqual(presentation.broker.value, "UNKNOWN")
+        XCTAssertEqual(presentation.execution.value, "DISABLED")
     }
 
 }
