@@ -915,7 +915,7 @@ private struct StubBrokerAuthenticationService: BrokerAuthenticationService {
     func validateSession() async throws -> BrokerAccountSnapshot { try result.get() }
 
     @MainActor
-    func disconnect() async {}
+    func disconnect() async throws {}
 }
 
 private final class InMemoryKeychainAccess: KeychainAccessing {
