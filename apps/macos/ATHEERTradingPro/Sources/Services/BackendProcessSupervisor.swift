@@ -99,7 +99,7 @@ struct BundledBackendRuntimeResolver: BackendRuntimeResolving {
 }
 
 @MainActor
-protocol BackendProcessManaging {
+protocol BackendProcessManaging: AnyObject {
     var onUnexpectedTermination: ((String) -> Void)? { get set }
     func start() async throws -> BackendIPCConnection
     func stop()
@@ -160,10 +160,10 @@ final class BackendProcessSupervisor: BackendProcessManaging {
     var onUnexpectedTermination: ((String) -> Void)?
 
     init(
-        resolver: BackendRuntimeResolving = BundledBackendRuntimeResolver(),
+        resolver: BackendRuntimeResolving? = nil,
         startupTimeoutNanoseconds: UInt64 = 15_000_000_000
     ) {
-        self.resolver = resolver
+        self.resolver = resolver ?? BundledBackendRuntimeResolver()
         self.startupTimeoutNanoseconds = startupTimeoutNanoseconds
     }
 
@@ -382,7 +382,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         }
         outputHandle?.readabilityHandler = nil
         outputHandle = nil
-        process = nil
+        self.process = nil
         capability?.clear()
         capability = nil
         connection = nil
