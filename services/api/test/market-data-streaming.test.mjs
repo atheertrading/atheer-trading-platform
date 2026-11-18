@@ -268,7 +268,7 @@ test("local SSE endpoint streams normalized quote events and releases subscripti
     providerTimestampMs: 1_800_000_000_000,
     receivedAtMs: 1_800_000_000_000,
     receivedAtMonotonicMs: 100,
-    freshness: { state: "fresh", ageMs: 0, automatedDecisionsAllowed: true, reason: "within_policy" },
+    freshness: { state: "fresh", ageMs: 0, automatedDecisionsAllowed: true, reason: "within_policy", maximumAgeMs: 5000 },
   };
   const marketData = {
     status: () => ({ provider: "capital.com", environment: "DEMO", state: "connected" }),
