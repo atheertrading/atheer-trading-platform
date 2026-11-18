@@ -69,7 +69,8 @@ Every successful broker market-data response is labeled with `provider=capital.c
 - CST and X-SECURITY-TOKEN remain backend-owned and are never returned to the native client.
 - No broker credentials, session tokens, account values, quotes, or order state are logged.
 - Session expiry or provider authorization failure invalidates or blocks the session according to the broker-session recovery policy.
-- The shared REST client applies a process-wide request-start budget; session creation has its own throttle.
+- The shared REST client applies a process-wide 100 ms request-start budget (10 requests/second); session creation has its own 1-second throttle.
+- HTTP 429 responses trigger at most three retries per request. The client honors a numeric or HTTP-date `Retry-After` value (bounded to 60 seconds), or uses exponential full jitter when the header is absent/invalid. The resulting cooldown is shared by all REST requests in the process. Network timeouts and other uncertain transport failures are not automatically retried; future dealing operations must define their own idempotency/reconciliation contract before any retry policy is enabled.
 - The stream enforces the provider instrument cap, preserves provider timestamps separately from local receipt time, validates quotes, suppresses duplicate/out-of-order observations, and reports freshness/degraded states.
 - No missing broker observations are fabricated or interpolated.
 - This service is read-only with respect to trading. It has no OMS submission path or Execution Gateway.
