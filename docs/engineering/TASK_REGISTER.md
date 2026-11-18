@@ -326,3 +326,12 @@ Acceptance:
 - PR #26 exact-head hosted CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain, and Repository Hygiene. Dedicated CodeQL `44231098441` and Local Sync Safety `44231098576` passed.
 - `ATP-BROKER-001` remains IN PROGRESS: owner-Mac Keychain restart/runtime QA on the merged head and real Capital.com DEMO authentication are still outstanding. LIVE/dealing remains disabled.
 - PR #33 is retargeted to `main` after PR #26 merge; current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; exact-head CI is running. Do not merge until Intel/Apple Silicon, backend and hygiene checks pass.
+
+
+## ATP-SEC-001A — Native local API request marker (cross-PR)
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-SEC-001A | P1 | Require native client marker and reject browser-origin access to local market-data routes | IN PROGRESS | PR #33 native Market Search sends `X-ATHEER-LOCAL-CLIENT: macOS`; PR #37 implements server-side Origin/Sec-Fetch-Site enforcement and regression tests. Both PRs must be integrated together. |
+
+The marker is not a secret and does not authenticate arbitrary local processes. It mitigates browser CSRF/cross-origin access only; production still requires a per-launch capability token or authenticated local IPC.
