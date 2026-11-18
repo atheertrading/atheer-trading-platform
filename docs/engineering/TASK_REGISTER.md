@@ -486,3 +486,9 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - PR #70 received explicit initializers for authenticated chart dependencies in `WorkspaceHomeView` and `CommandCenterView` after source review identified that initialized immutable properties were not exposed by the synthesized memberwise initializers.
 - Commits: `bd12cc67526c71550b31737763b3e05e012da8e3` and `484907de2f308231dac89d5e151beee6e95c250a`.
 - Status: IMPLEMENTED; exact-head CI pending. Do not mark TESTED or VERIFIED until the new PR #70 workflow completes.
+
+## ATP-CHART-001 follow-up — reject future-dated history at native boundary
+
+- Native historical payload decoding now rejects candle timestamps later than receipt timestamps; added XCTest regression coverage.
+- Commits: `68b70ed`, `b130e43`. Exact-head macOS CI pending.
+- Session report: `SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE.md`.
