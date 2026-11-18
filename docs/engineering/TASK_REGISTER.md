@@ -370,3 +370,61 @@ PR #33 now consolidates the original Market Explorer and search-lifecycle harden
 - Added regression tests for leap-year validity, month lengths, invalid month, and clock ranges.
 - Fix commit: `7ebe46ce7abd104cb74345169e16dbe64cb87998`.
 - Exact-head CI is pending for this commit. Prior head `34015bda...` had 46/46 backend tests and Intel x86_64 qualification passed; Apple Silicon remained queued. Do not carry those results onto the new head.
+
+## ATP-PERSISTENCE-001 — PostgreSQL durable trading journal — 2026-11-18
+
+- PR: #41, stacked on PR #40 (`feat/trading-domain-foundation`).
+- Added pinned `pg` 8.23.1 runtime dependency and generated npm lockfile.
+- Added PostgreSQL schema for instruments/specifications, broker accounts/snapshots, order intents, risk assessments, reconciliation events, audit events, and domain outbox.
+- Added transaction-scoped advisory-lock migration runner with version ledger and SHA-256 checksum drift rejection.
+- Added environment-pinned repository adapter, canonical JSON hashing, idempotent intent/risk persistence, conflict detection, and transactional audit/outbox writes.
+- Added PostgreSQL integration tests and PostgreSQL 17 CI service. Exact-head results remain pending; no local PostgreSQL, Node 24, production database, or Mac qualification is claimed.
+- Outbox event allow-list is restricted to durable domain-record events. No dispatcher, broker order submission, or execution-dispatch event is implemented.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No LIVE or production operation is enabled.
+- Remaining before batch completion: inspect exact-head CI, resolve all source/test findings, add failure/recovery and concurrency evidence, and update operational database setup/backup/restore guidance.
+
+- Operational safety refinement: API startup verifies the applied migration ledger/checksums and never auto-applies schema changes. Pending migrations are applied only through explicit `npm run migrate`; PostgreSQL setup and migration instructions are in `docs/operations/POSTGRESQL.md`.
+## ATP-PERSISTENCE-001 — PostgreSQL follow-up qualification — 2026-11-18
+
+| ID | Priority | Task | Status | Acceptance evidence / dependency |
+|---|---|---|---|---|
+| ATP-PERSISTENCE-002 | P0 | Align migration runner with NOINHERIT migrator and canonical `atheer` schema | DONE ON PR #41; HOSTED VERIFIED | `SET LOCAL ROLE atheer_db_owner` within migration transaction; all ledger, migration and repository SQL schema-qualified |
+| ATP-PERSISTENCE-003 | P0 | Add least-privilege PostgreSQL integration tests | DONE ON PR #41; HOSTED VERIFIED | NOINHERIT migrator and app role; table ownership verified; migrator/app direct table CREATE denied; app repository DML exercised |
+| ATP-PERSISTENCE-004 | P1 | Qualify owner-local PostgreSQL 18.7 after exact-head CI | BLOCKED / NOT RUN | Controlled local migration qualification plan; preserve current database and grants; no `npm run migrate` until exact-head CI is green and plan reviewed |
+| ATP-PERSISTENCE-005 | P1 | Verify default sequence privileges and document operational recovery | IN PROGRESS | Regression test added for owner-created sequence, app `nextval`, and app/migrator CREATE denial; exact-head CI pending. Backup/restore, retention, PITR, TLS, role provisioning and restore-drill docs remain outstanding |
+
+### Evidence and guardrails
+
+- Code-bearing head `94cc13d13f56fd1f2efa450747e72dc841f65017`: run `44207522335` passed Backend type-check and 49/49 PostgreSQL 17.12 integration tests; Repository Hygiene, Mermaid, and Local Sync Safety passed; Apple Silicon Debug/XCTest/Release passed (CodeQL skipped); Intel Debug/XCTest passed with Release in progress and CodeQL pending at last inspection.
+- Sequence privilege regression test was added afterward in commit `78a774289de6ccea0fe49c89c7877f65c8246828`; it is not covered by the previous 49/49 result.
+- Owner local foundation: Postgres.app PostgreSQL 18.7 on macOS 13.7.8 Intel, loopback-only at 127.0.0.1:5432; database `atheer_trading`, schema `atheer`, roles `atheer_db_owner`, `atheer_migrator`, `atheer_app`.
+- Do not run local migrations until ATP-PERSISTENCE-004 exit conditions are met. Do not grant CREATE to `atheer_app` or PUBLIC; do not weaken role separation; keep `CAP_ALLOW_TRADING=false`.
+- PR #41 remains OPEN / DRAFT and stacked on PR #40; no merge or approval is recorded.
+
+### Follow-up batch snapshot — branch HEAD `434ae1191c6a66cafe30e98f21c5ee03a8a4faf8`
+
+- Sequence privilege regression test and documentation reconciliation are committed; this branch HEAD is newer than the previously reported code-bearing head `94cc13d...`.
+- Current exact-head workflows: Mermaid run `44209957024` in progress; Local Sync Safety run `44209957152` passed; CI run `44209957185` has Backend queued and Intel/Apple Silicon/Repository Hygiene in progress at inspection.
+- The 49/49 Backend result applies to `94cc13d...` only and does not include the new sequence regression test. Do not carry it forward to `434ae119...`.
+
+### Verified GitHub snapshot — 2026-11-18 (current PR #41 HEAD)
+
+- PR #41 is OPEN / DRAFT; current HEAD `dba73544a768006bb8535f72c0a615fda42c88dd`, base is PR #40 HEAD `8d4afc4e59b2787a9252269cbcf11fa379bc65b6`.
+- Backend toolchain run `44210034147`: completed successfully. The exact-head backend report is 49/49 PostgreSQL 17.12 integration tests, including the sequence privilege regression; TypeScript type-check passed.
+- Repository Hygiene (`44210034147`): passed.
+- Mermaid render (`44210034098`): passed.
+- Local Sync Safety (`44210034195`): passed.
+- Apple Silicon arm64 job `134485862385`: XcodeGen and project generation passed; Debug build is currently in progress; XCTest and Release are pending. CodeQL init is skipped by workflow configuration and is not a pass/fail result.
+- Intel x86_64 job `134485862456`: XcodeGen installation is in progress; project generation, Debug, XCTest, Release, and CodeQL are pending.
+- These platform results are still incomplete; do not mark PR #41 fully qualified until both architecture jobs finish and the final HEAD is rechecked.
+- The 49/49 result is specific to this exact HEAD; do not transfer it to a later commit without rerunning CI.
+- Local PostgreSQL 18.7 remains untouched; do not run `npm run migrate` until hosted exact-head qualification is complete and a controlled local qualification plan is approved.
+- `CAP_ALLOW_TRADING=false` remains unchanged. No OMS worker, durable outbox consumer, Execution Gateway dispatcher, or broker order dispatch is implemented by this persistence PR.
+
+### Architecture and next-batch notes
+
+- Treat Mermaid diagram 05's Outbox → Execution Gateway path as target architecture, not implemented behavior. PR #41 currently persists domain outbox records only.
+- Concrete OMS Order/Position state sets and transition semantics remain blocked on reconciliation with the authoritative formal ADR/specification sources; do not invent states.
+- Preserve the invariant that workspace/panel visibility and trading runtime state are independent: hiding/closing a panel must not stop strategies, cancel orders, or close positions.
+- The full Workstation reference `Professional Trading Screens, Workspace Architecture & User Experience.md` and the historical 52-block Mermaid export were not available in the current Library retrieval. Their complete reconciliation remains pending; do not claim otherwise.
+- Next batch: complete Intel/arm64 qualification, recheck the exact PR head, then reconcile authoritative OMS/Execution specifications before designing ATP-OMS-001. No broker dispatch in that batch without separately approved controls.

@@ -100,3 +100,14 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-029 | 2026-11-18 | PR #40 strict UTC timestamp validation remediation | Reviewed canonical domain contracts, identified `Date.parse` calendar normalization, committed strict Gregorian date/time validation and regression coverage, recorded the focused review and exact-head CI boundary; requalification pending. | PR #40; commit `7ebe46ce7abd104cb74345169e16dbe64cb87998`; SESSION_2026-11-18_028_ATP_DOMAIN_001_FOUNDATION; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |
+
+## 2026-11-18 — ATP-PERSISTENCE-001
+
+- PR #41: PostgreSQL durable trading journal and migration foundation.
+- Architecture: `docs/architecture/ATP_PERSISTENCE_ARCHITECTURE.md`.
+- Diagram: `docs/architecture/diagrams/12-postgres-transactional-persistence.mmd`.
+- Decision: EDL-012 in `ENGINEERING_DECISION_LOG.md`.
+- Session: `SESSION_2026-11-18_029_ATP_PERSISTENCE_001.md`.
+| ATP-2026-11-18-030 | 2026-11-18 | Owner-local PostgreSQL foundation and PR #41 migration compatibility review | Recorded the verified Postgres.app 18.7 local cluster, database/schema/least-privilege roles and rollback/denial tests; re-inspected PR #41 exact-head CI and found the migration runner/schema qualification mismatch that blocks local migration. | SESSION_2026-11-18_030_POSTGRESQL_LOCAL_FOUNDATION_AND_PR41_REVIEW; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; POSTGRESQL operations runbook; PR #41 |
+
+| ATP-2026-11-18-031 | 2026-11-18 | PostgreSQL qualification continuation and sequence privileges | Confirmed role/schema remediation on PR #41 code-bearing head, added direct sequence-default-privilege regression coverage, reconciled stale continuity/status/task/runbook statements, and recorded exact-head CI and workstation/Mermaid evidence limits. | SESSION_2026-11-18_031_POSTGRESQL_QUALIFICATION_CONTINUATION; PROJECT_CONTINUITY; IMPLEMENTATION_STATUS; TASK_REGISTER; POSTGRESQL operations runbook; PR #41 |

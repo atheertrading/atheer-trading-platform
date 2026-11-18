@@ -12,12 +12,14 @@ interface LiveHealthResponse {
   readonly version: string;
   readonly timestamp: string;
 }
+export type PersistenceReadiness = "ready" | "not_configured" | "unavailable";
+
 interface ReadinessResponse {
   readonly status: "not_ready";
   readonly service: string;
   readonly timestamp: string;
   readonly dependencies: {
-    readonly persistence: "not_configured";
+    readonly persistence: PersistenceReadiness;
     readonly broker: "not_configured";
   };
   readonly trading: {
@@ -36,6 +38,7 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
 export function createApiServer(
   marketData?: CapitalDemoRuntime,
   marketDataStream?: CapitalDemoStreamingRuntime,
+  persistenceReadiness: () => PersistenceReadiness = () => "not_configured",
 ): Server {
   return createServer((request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
@@ -70,7 +73,7 @@ export function createApiServer(
       status: "not_ready",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
-      dependencies: { persistence: "not_configured", broker: "not_configured" },
+      dependencies: { persistence: persistenceReadiness(), broker: "not_configured" },
       trading: { enabled: false, status: "disabled" },
     };
     sendJson(response, 503, payload);
