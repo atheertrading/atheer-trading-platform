@@ -135,6 +135,9 @@ function normalizeCandle(
   receivedAtMs: number,
 ): NormalizedHistoricalCandle {
   const timestampMs = parseProviderUtcTimestamp(payload.snapshotTimeUTC);
+  if (timestampMs > receivedAtMs) {
+    throw new Error("Capital.com historical candle timestamp is future-dated relative to receipt time.");
+  }
   const bid = normalizeSide(payload, "bid");
   const ask = normalizeSide(payload, "ask");
 
