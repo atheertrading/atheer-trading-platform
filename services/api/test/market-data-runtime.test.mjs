@@ -514,6 +514,12 @@ test("broker session connect accepts bounded DEMO credentials and exposes only s
   assert.equal((await accountSwitch.json()).state, "error");
   assert.equal(serverRuntime.status().state, "connected");
 
+  const backendStatus = await fetch(baseUrl + "/market-data/status", { headers: authorization });
+  const backendStatusPayload = await backendStatus.json();
+  assert.equal(backendStatus.status, 200);
+  assert.equal(backendStatusPayload.streaming.state, "disconnected");
+  assert.equal(backendStatusPayload.streaming.activeInstrumentCount, 0);
+
   const markets = await fetch(baseUrl + "/market-data/markets?searchTerm=Apple", { headers: authorization });
   const payload = await markets.json();
   assert.equal(markets.status, 200);
