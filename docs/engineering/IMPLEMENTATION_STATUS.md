@@ -396,3 +396,26 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Market Explorer now defaults to an ephemeral URLSession with cookie storage and URL cache disabled.
 - Added URLProtocol-backed HTTP contract tests for GET status endpoint, GET markets endpoint, encoded searchTerm, no-store headers, DEMO status mapping, 503/500 mapping, and transport-failure mapping.
 - Exact-head hosted CI remains pending.
+
+
+## Integration checkpoint — 2026-11-18
+
+### Merged foundations
+
+- PR #24 Workspace / Command Center: merged as `bd83fd3c8df481104c347f05d9d4f38537d8b011`.
+- PR #25 Capital.com DEMO market-data foundation: merged as `6b570b8c5a3367784cde7fa2643593c5b5a1eda2`.
+- PR #26 secure Capital.com DEMO broker management: merged as `6b4668b9355178d5e13219f14cfe8cc847770915`.
+- PR #26 exact-head hosted CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain and Repository Hygiene. Dedicated CodeQL and Local Sync Safety also passed.
+
+### Remaining broker acceptance
+
+- Broker management is integrated in `main`, but `ATP-BROKER-001` is not production/DEMO-runtime complete.
+- Owner-Mac Keychain restart/persistence and UI runtime acceptance on the merged head remain pending.
+- Real Capital.com DEMO credentials have not been entered or authenticated in this session.
+- LIVE authentication, dealing, and order execution remain disabled.
+
+### Market Explorer
+
+- PR #33 retargeted to `main` after PR #26 merge.
+- Current exact head: `8885fd6f43098421973d098b2cd3d94a8e7545e3`.
+- Architecture boundary refactor, shared URLSession executor and HTTP-contract tests are implemented; exact-head CI is running.
