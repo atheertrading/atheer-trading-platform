@@ -290,6 +290,9 @@ struct MarketWatchPanelView: View {
             .accessibilityLabel(isSubscribed ? "Unsubscribe \(epic) from streaming" : "Subscribe \(epic) to streaming")
 
             Button {
+                if isSubscribed {
+                    model.toggleStreamSubscription(for: epic)
+                }
                 _ = watchlistStore.remove(epic)
             } label: {
                 Image(systemName: "xmark")
@@ -299,20 +302,20 @@ struct MarketWatchPanelView: View {
             .buttonStyle(.borderless)
             .help("Remove \(epic) from watchlist")
             .accessibilityLabel("Remove \(epic) from watchlist")
-            .contextMenu {
-                Button("Move up") {
-                    _ = watchlistStore.move(epic, to: max(0, watchlistIndex - 1))
-                }
-                .disabled(watchlistIndex == 0)
-                Button("Move down") {
-                    _ = watchlistStore.move(epic, to: min(watchlistStore.epics.count - 1, watchlistIndex + 1))
-                }
-                .disabled(watchlistIndex >= watchlistStore.epics.count - 1)
-            }
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
+        .contextMenu {
+            Button("Move up") {
+                _ = watchlistStore.move(epic, to: max(0, watchlistIndex - 1))
+            }
+            .disabled(watchlistIndex == 0)
+            Button("Move down") {
+                _ = watchlistStore.move(epic, to: min(watchlistStore.epics.count - 1, watchlistIndex + 1))
+            }
+            .disabled(watchlistIndex >= watchlistStore.epics.count - 1)
+        }
         .accessibilityElement(children: .contain)
     }
 
