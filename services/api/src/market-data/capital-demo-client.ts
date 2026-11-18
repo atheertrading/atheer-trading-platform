@@ -277,7 +277,8 @@ export class CapitalDemoClient {
       // server-directed rate-limit delay preceding a retry.
       const response = await this.fetcher(input, {
         ...init,
-        });
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
 
       if (response.status !== 429 || retryAttempt >= MAX_RATE_LIMIT_RETRIES) {
         return response;
@@ -315,7 +316,6 @@ export class CapitalDemoClient {
     const response = await this.fetchWithRateLimit(`${CAPITAL_DEMO_BASE_URL}${path}`, {
       method: "GET",
       headers: this.sessionHeaders(session),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     await this.assertSuccessful(response, path);
     return response;
