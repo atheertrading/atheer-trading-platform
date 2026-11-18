@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var selection: AppSection? = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
+    @StateObject private var marketExplorerModel = MarketExplorerViewModel()
+    @StateObject private var marketWatchlistStore = MarketWatchlistStore()
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
 
@@ -61,10 +63,17 @@ struct ContentView: View {
                 case .workspace:
                     WorkspaceHomeView(
                         backendHealthModel: backendHealthModel,
+                        marketExplorerModel: marketExplorerModel,
+                        marketWatchlistStore: marketWatchlistStore,
+                        onOpenMarkets: { selection = .markets },
                         onOpenAPIConnection: { selection = .apiConnection }
                     )
                 case .markets:
-                    MarketExplorerView(onOpenAPIConnection: { selection = .apiConnection })
+                    MarketExplorerView(
+                        model: marketExplorerModel,
+                        watchlistStore: marketWatchlistStore,
+                        onOpenAPIConnection: { selection = .apiConnection }
+                    )
                 case .apiConnection:
                     APIConnectionView(model: backendHealthModel)
                 case .settings:
@@ -82,6 +91,7 @@ struct ContentView: View {
         .frame(minWidth: 900, minHeight: 600)
         .task {
             await backendHealthModel.refresh()
+            await marketExplorerModel.refreshBackendStatus()
         }
     }
 }
