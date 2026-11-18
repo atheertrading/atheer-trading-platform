@@ -50,6 +50,7 @@ export async function readIPCStartupCapability(
   for (const chunk of chunks) {
     combined.set(chunk, offset);
     offset += chunk.length;
+    chunk.fill(0);
   }
   const encoded = new TextDecoder("ascii").decode(combined).trim();
   combined.fill(0);
