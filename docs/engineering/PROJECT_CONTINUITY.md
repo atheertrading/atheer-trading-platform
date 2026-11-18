@@ -767,5 +767,5 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Source review identified missing explicit initializers for injected immutable chart dependencies in `WorkspaceHomeView` and `CommandCenterView`; both were corrected on PR #70.
 - Commits: `bd12cc67526c71550b31737763b3e05e012da8e3`, `484907de2f308231dac89d5e151beee6e95c250a`.
 - PR #70 exact head: `484907de2f308231dac89d5e151beee6e95c250a`; exact-head CI is pending.
-- PR #71 remains open and currently reports non-mergeable after the chart branch advanced; preserve it until its ancestry purpose and current compare state are reconciled.
+- PR #71 was closed as redundant without deleting its branch or rewriting history: its only test-fixture change is already present byte-for-byte on PR #70 (`c1930bbb87d4ba66898f85ed90faed6c4a4efe56`). PR #70 remains based on PR #68 and is mergeable.
 - Owner Mac is not accessible through this session; no local pull/build/runtime verification is claimed.
