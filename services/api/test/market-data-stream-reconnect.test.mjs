@@ -90,10 +90,12 @@ test("market-data stream reconnect uses deterministic exponential full jitter", 
 
     assert.equal(runtime.status().state, "degraded");
     const expectedDelays = [250, 500, 1_000, 2_000, 4_000, 7_500, 7_500];
-    for (const expectedDelay of expectedDelays) {
-      assert.equal(reconnectDelays.at(-1), expectedDelay);
-      runtime.clearReconnectTimer();
-      runtime.scheduleReconnect();
+    for (let index = 0; index < expectedDelays.length; index += 1) {
+      assert.equal(reconnectDelays.at(-1), expectedDelays[index]);
+      if (index < expectedDelays.length - 1) {
+        runtime.clearReconnectTimer();
+        runtime.scheduleReconnect();
+      }
     }
     assert.deepEqual(reconnectDelays, expectedDelays);
     assert.equal(sockets.length, 1);
