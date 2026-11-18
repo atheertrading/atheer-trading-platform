@@ -226,8 +226,9 @@ async function handleMarketDataRequest(
     }
     try {
       const credentials = await readBrokerCredentials(request);
-      await streamRuntime?.disconnect();
-      const status = await runtime.connect(credentials);
+      const status = await runtime.connect(credentials, async () => {
+        await streamRuntime?.disconnect();
+      });
       sendJson(response, brokerSessionResponseStatus(status), status);
     } catch (error) {
       if (error instanceof RequestBodyError) {
