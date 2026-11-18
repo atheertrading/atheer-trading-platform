@@ -131,7 +131,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             } ?? authenticatedAt ?? Date()
             authenticatedAt = timestamp
             return BrokerAccountSnapshot(
-                accountIdentifier: maskedLoginIdentifier ?? "Capital.com DEMO",
+                maskedLoginIdentifier: maskedLoginIdentifier ?? "Capital.com DEMO",
                 currencyCode: nil,
                 authenticatedAt: timestamp
             )
