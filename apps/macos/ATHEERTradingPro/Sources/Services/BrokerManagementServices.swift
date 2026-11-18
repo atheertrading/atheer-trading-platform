@@ -346,7 +346,12 @@ final class BrokerManagementViewModel: ObservableObject {
         } catch is CancellationError {
             state = .disconnected
         } catch let error as BrokerAuthenticationError {
-            state = .authenticationFailed(error.localizedDescription)
+            switch error {
+            case .invalidCredentials, .liveDisabled:
+                state = .authenticationFailed(error.localizedDescription)
+            default:
+                state = .connectionFailed(error.localizedDescription)
+            }
         } catch {
             state = .connectionFailed(error.localizedDescription)
         }
