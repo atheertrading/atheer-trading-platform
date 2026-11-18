@@ -105,3 +105,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 | ATP-2026-11-18-043 | 2026-11-18 | PR #33 Market Explorer merge and broker integration gate refresh | Merged exact qualified PR #33 at `2e8bf9bd`; recorded successful Intel/Apple Silicon/backend/hygiene/CodeQL/sync checks; reconciled Library Q5/Q6/Q10 with PR #26 and PR #37 duplicate session authorities and connection orchestration gaps; documented PR #37 ancestry divergence and downstream chart PR stack status. | PR #33; PR #37; PR #44/#45/#47; ATP-BRK-002; ATP-BRK-003; ATP-MKT-007; EDL-022; EDL-023; SESSION_2026-11-18_041_MARKET_EXPLORER_MERGE_AND_BROKER_GATES |
 
+
+
+| ATP-2026-11-18-064 | 2026-11-18 | Domain runtime shape validation | Added typed runtime guards for malformed JSON-derived domain records/collections, deterministic regression tests, architecture documentation, and continuity tracking. | ATP-DOMAIN-001A; PR #76; SESSION_2026-11-18_064_DOMAIN_RUNTIME_SHAPE_VALIDATION |

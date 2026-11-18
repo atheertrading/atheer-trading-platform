@@ -457,3 +457,11 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Documentation commits: review `2e7596fc86395f760ae207208c6e08210aa974d2`; continuity `6024feae7f8f4601f6fea272cbf86817460c8699`; task register `b88cc47d1df83bd953d08928f6137481c3b0ecfd`.
 - This update changes documentation only. It does not establish new source implementation or test results. Current PR states/checks must be re-fetched before execution; preserve feature-branch history.
 - `CAP_ALLOW_TRADING=false`; no LIVE authorization.
+
+
+## 2026-11-18 — ATP-DOMAIN-001A runtime shape validation
+
+- Implemented plain-record and array guards and applied them before property access across provenance, instrument/account contracts, order intents, risk assessments, lifecycle policies, broker orders/positions, fills, execution, reconciliation and audit.
+- Added malformed-input regression tests and updated the canonical domain architecture contract.
+- Changes are committed on the existing canonical domain branch in PR #76. Exact-head CI is pending; no TESTED/VERIFIED status is claimed until its final workflow completes.
+- This package does not implement risk authorization, PostgreSQL persistence, OMS dispatch, Execution Gateway, broker dealing or LIVE capability.
