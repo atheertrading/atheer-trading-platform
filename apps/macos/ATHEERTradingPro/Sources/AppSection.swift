@@ -10,7 +10,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .workspace: return "Workspace"
+        case .workspace: return "Command Center"
         case .markets: return "Markets"
         case .apiConnection: return "API Connection"
         case .settings: return "Settings"
