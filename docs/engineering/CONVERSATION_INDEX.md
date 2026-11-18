@@ -114,3 +114,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-047 | 2026-11-18 | ATP-BRK-002 ephemeral-port startup contract | Added OS-assigned loopback port support and a machine-readable bound-port marker for the future macOS backend supervisor; added configuration tests and Mermaid startup sequence. Native Swift supervisor/authenticated client/runtime packaging remain pending; exact-head CI pending. | PR #52; EDL-025; ATP-BRK-002; SESSION_2026-11-18_047_BACKEND_EPHEMERAL_PORT |
+
+
+| ATP-2026-11-18-048 | 2026-11-18 | Native macOS backend process supervisor and authenticated IPC | Added Swift supervisor, 256-bit private-stdin capability bootstrap, ephemeral port discovery, authenticated market-data client, universal Node/API app resources, app lifecycle handling, and process-bootstrap tests. Keychain credential handoff and backend CMS remain pending; exact-head CI pending. | PR #53; EDL-025; ATP-BRK-002; SESSION_2026-11-18_048_NATIVE_BACKEND_SUPERVISOR |
