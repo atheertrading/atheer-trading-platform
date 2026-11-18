@@ -10,7 +10,7 @@ source_authority: Owner Q&A archive; Phase 00 v1.1 decisions; repository impleme
 implementation_status: "Initial appearance and semantic-token slice in this branch; full IPDS is not implemented"
 ---
 
-# ATHEER Trading Pro — Institutional Precision Design System (IPDS)
+## ATHEER Trading Pro — Institutional Precision Design System (IPDS)
 
 **Design direction:** Clarity Under Pressure  
 **Brand line:** Intelligence in Motion. Precision in Execution.
