@@ -11,7 +11,7 @@ test("bounded shutdown step reports success without diagnostics", async () => {
     (message) => diagnostics.push(message),
   );
 
-  assert.equal(completed, true);
+  assert.equal(completed, "succeeded");
   assert.deepEqual(diagnostics, []);
 });
 
@@ -24,20 +24,34 @@ test("bounded shutdown step contains failures without exposing provider details"
     (message) => diagnostics.push(message),
   );
 
-  assert.equal(completed, false);
+  assert.equal(completed, "failed");
   assert.deepEqual(diagnostics, ["ATHEER API shutdown broker_session failed."]);
   assert.equal(diagnostics.join(" ").includes("secret-session-token"), false);
 });
 
-test("bounded shutdown step times out and records a redacted diagnostic", async () => {
+test("bounded shutdown step reports a timeout without claiming its action was cancelled", async () => {
   const diagnostics = [];
-  const completed = await runBoundedShutdownStep(
+  let releaseAction;
+  let actionSettled = false;
+  const action = new Promise((resolve) => {
+    releaseAction = () => {
+      actionSettled = true;
+      resolve();
+    };
+  });
+
+  const outcome = await runBoundedShutdownStep(
     "market_data_stream",
-    () => new Promise(() => {}),
+    () => action,
     5,
     (message) => diagnostics.push(message),
   );
 
-  assert.equal(completed, false);
+  assert.equal(outcome, "timed_out");
+  assert.equal(actionSettled, false);
   assert.deepEqual(diagnostics, ["ATHEER API shutdown market_data_stream timed_out."]);
+
+  releaseAction();
+  await action;
+  assert.equal(actionSettled, true);
 });
