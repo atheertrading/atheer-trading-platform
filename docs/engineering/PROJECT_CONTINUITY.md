@@ -508,3 +508,16 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Panel reorder/drag-drop, interactive resize, docking and lifecycle operations beyond visibility are pending.
 - Profile creation/management UI, independent window management, restoration and multi-display orchestration are pending.
 - PR #24 remains draft and unmerged pending exact-head CI and owner-side native qualification.
+
+
+## ATP-MD-001 — Capital.com DEMO and Market Data Foundation (2026-11-17)
+
+- Owner-approved priority: Capital.com DEMO integration, then Market Data Architecture and real Market Watch, followed by charting and account/trading-domain surfaces. Preserve Command Center, Workspace and Navigation Architecture; execution remains risk-governed and disabled.
+- Inspected PR #24 exact head e9e7085fc7699da19fe934dfd35274e8c8217922. It contains the Command Center and Workspace Engine but intentionally has no broker adapter or market-data stream.
+- PR #25 is the active market-data increment, branch feat/market-data-capital-demo-foundation, based on PR #24.
+- Added a fixed-URL Capital.com DEMO REST adapter, backend in-memory session runtime, loopback status/connect/disconnect/market-search/history routes, provider-neutral quote/freshness contracts, mocked tests, and architecture/service documentation.
+- No provider credentials were supplied and no real Capital.com authentication or real market-data stream is claimed.
+- Capital.com public API documentation confirms REST DEMO URL, session headers, 10-minute inactivity expiry, and quote/OHLC WebSocket protocol. It does not explicitly identify the DEMO WebSocket hostname; confirm with provider before implementation.
+- Exact-head CI must be revalidated after every subsequent commit. The previous hosted backend pass on f5a388dbe5b91df7b4cad086ba3504ed7e928bf3 does not qualify later source changes.
+- Next: complete exact-head CI, resolve official DEMO WebSocket endpoint, implement stream lifecycle/recovery, then bind Market Watch/Charting only to validated provider data.
+- LIVE endpoints, dealing methods, order routes, and trading permissions remain absent; CAP_ALLOW_TRADING=false is unchanged.
