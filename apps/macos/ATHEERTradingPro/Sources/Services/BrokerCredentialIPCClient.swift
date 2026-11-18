@@ -26,6 +26,14 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
     }
 
     func connect(credentials: BrokerCredential) async throws -> BrokerCredentialIPCStatus {
+        guard
+            (1...512).contains(credentials.apiKey.utf8.count),
+            (1...512).contains(credentials.identifier.utf8.count),
+            (1...2_048).contains(credentials.password.utf8.count),
+            !credentials.password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else {
+            throw BrokerCredentialIPCError.invalidRequest
+        }
         guard let capabilityValue = capability.base64URL else {
             throw BackendProcessSupervisorError.capabilityCleared
         }
@@ -67,6 +75,9 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
     private func send(_ request: BrokerCredentialIPCRequest) async throws -> BrokerCredentialIPCResponse {
         let socketPath = socketURL.path
         var payload = try JSONEncoder().encode(request)
+        guard payload.count + 1 <= 8 * 1_024 else {
+            throw BrokerCredentialIPCError.invalidRequest
+        }
         payload.append(0x0A)
         defer {
             if !payload.isEmpty {
@@ -205,6 +216,9 @@ final class UnixDomainSocketBrokerCredentialIPCClient: BrokerCredentialIPCTransp
 
             if let newline = chunk[..<count].firstIndex(of: 0x0A) {
                 response.append(contentsOf: chunk[..<newline])
+                guard response.count <= maximumBytes else {
+                    throw BrokerCredentialIPCError.responseTooLarge
+                }
                 guard newline == count - 1 else {
                     throw BrokerCredentialIPCError.invalidResponse
                 }
@@ -238,6 +252,7 @@ private struct BrokerCredentialIPCResponse: Decodable, Sendable {
 }
 
 enum BrokerCredentialIPCError: Error, LocalizedError, Sendable {
+    case invalidRequest
     case invalidSocketPath
     case socketCreationFailed(Int32)
     case connectionFailed(Int32)
@@ -249,6 +264,8 @@ enum BrokerCredentialIPCError: Error, LocalizedError, Sendable {
 
     var errorDescription: String? {
         switch self {
+        case .invalidRequest:
+            return "The broker credential request is invalid or exceeds the allowed size."
         case .invalidSocketPath:
             return "The private broker credential socket path is invalid."
         case .socketCreationFailed:
