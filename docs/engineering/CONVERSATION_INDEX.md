@@ -125,3 +125,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 | ATP-2026-11-18-053 | 2026-11-18 | Native backend shutdown outcome qualification | Bounded SIGTERM then SIGKILL supervision, process exit-status handling, app termination gating, and shutdown tests; code carried forward into the private IPC branch. | PR #65; SESSION_2026-11-18_053_NATIVE_SHUTDOWN_OUTCOME_QUALIFICATION |
 | ATP-2026-11-18-055 | 2026-11-18 | Private broker credential IPC | Replaced HTTP credential POSTs with a capability-authenticated Unix-domain socket; private filesystem permissions, bounded protocol, sanitized status, bounded process shutdown and socket cleanup. | PR #65; EDL-031; ATP-SEC-003; SESSION_2026-11-18_055_PRIVATE_BROKER_CREDENTIAL_IPC |
+
+| ATP-2026-11-18-056 | 2026-11-18 | Private broker IPC review remediation | Fixed recursive UDS fixture teardown and Swift rejection-code interpolation; added focused XCTest. Exact-head CI pending. | PR #66; SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW |
