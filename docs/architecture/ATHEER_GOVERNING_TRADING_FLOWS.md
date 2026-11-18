@@ -1,8 +1,8 @@
 # ATHEER Governing Trading and Intelligence Flows
 
-**Source:** ChatGPT Library — `Atheer Q&A Repository.zip`, Mermaid source blocks transcribed on 2026-11-18.  
+**Source:** ChatGPT Library — `Atheer Q&A Repository.zip`, 12 fenced Mermaid source blocks inspected on 2026-11-18; the flows below are normalized engineering transcriptions and consolidations.  
 **Purpose:** Preserve owner-provided workflow diagrams in the engineering repository so implementation, tests, recovery procedures, and agent behavior can refer to the same governing flows.  
-**Authority note:** These are source diagrams, not evidence that the corresponding product modules are implemented. Requirements and implementation status remain tracked separately.
+**Authority note:** These normalized diagrams preserve the source workflows' control points and intent; they are not byte-for-byte reproductions and do not prove that the corresponding product modules are implemented. Requirements and implementation status remain tracked separately.
 
 ## 1. Manual intervention in automated trades
 
