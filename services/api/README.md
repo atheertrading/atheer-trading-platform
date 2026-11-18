@@ -48,8 +48,8 @@ All three values must be present to enable DEMO connection. Supply them through 
 - GET /market-data/status — provider/environment/connection state; never returns credentials or session tokens.
 - POST /market-data/connect — creates a Capital.com DEMO session using backend-held credentials.
 - POST /market-data/disconnect — terminates the current DEMO session.
-- GET /market-data/markets?searchTerm=... — searches provider instruments.
-- GET /market-data/history?epic=...&resolution=MINUTE&max=100 — retrieves provider historical prices. `max` is an integer from 1 through 1000 (default 100); invalid values return HTTP 400.
+- GET /market-data/markets?searchTerm=... — searches provider instruments; `searchTerm` must contain 1–100 characters after trimming (otherwise HTTP 400).
+- GET /market-data/history?epic=...&resolution=MINUTE&max=100 — retrieves provider historical prices. EPIC must match `[A-Za-z0-9_.-]{1,64}` after trimming; `max` is an integer from 1 through 1000 (default 100). Invalid EPIC, resolution, or `max` values return HTTP 400.
 
 Every successful market-data response is explicitly labeled provider=capital.com and environment=DEMO. Routes are served only by the loopback-bound local API. No trading endpoints exist.
 
