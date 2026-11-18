@@ -3,7 +3,7 @@ import Foundation
 import XCTest
 @testable import ATHEERTradingPro
 
-private final class UnixDomainSocketFixtureServer {
+private final class UnixDomainSocketFixtureServer: @unchecked Sendable {
     private let descriptor: Int32
     private let socketPath: String
 
@@ -51,7 +51,7 @@ private final class UnixDomainSocketFixtureServer {
         _ = Darwin.unlink(socketPath)
     }
 
-    func serveOneRequest() async throws -> [String: Any] {
+    func serveOneRequest() async throws -> Data {
         try await Task.detached(priority: .utility) {
             let client = Darwin.accept(self.descriptor, nil, nil)
             guard client >= 0 else {
@@ -99,7 +99,7 @@ private final class UnixDomainSocketFixtureServer {
             var responseData = try JSONSerialization.data(withJSONObject: response)
             responseData.append(0x0A)
             try Self.writeAll(client, data: responseData)
-            return request
+            return requestData
         }.value
     }
 
@@ -147,7 +147,8 @@ final class UnixDomainSocketBrokerCredentialIPCClientTests: XCTestCase {
                 password: "synthetic-demo-password"
             )
         )
-        let request = try await serverTask.value
+        let requestData = try await serverTask.value
+        let request = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData) as? [String: Any])
 
         XCTAssertEqual(status.provider, "capital.com")
         XCTAssertEqual(status.environment, "DEMO")
