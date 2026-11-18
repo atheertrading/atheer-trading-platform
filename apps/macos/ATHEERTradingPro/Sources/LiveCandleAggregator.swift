@@ -62,6 +62,8 @@ struct MarketChartCandle: Identifiable, Equatable {
 /// Deterministic in-memory quote-to-OHLC aggregation. It consumes every validated
 /// stream event, not the throttled Market Watch presentation cache.
 struct LiveCandleAggregator {
+    private static let maximumRetainedCandleCount = 500
+
     private(set) var lastAcceptedProviderTimestampMs: Int64?
 
     mutating func reset() {
@@ -122,20 +124,28 @@ struct LiveCandleAggregator {
                     receivedAtMs: quote.receivedAtMs, source: source
                 )
             } else {
-                candles.append(Self.newCandle(
+                Self.appendCandle(Self.newCandle(
                     quote, instrumentId: instrumentId,
                     resolution: resolution, timestampMs: bucketTimestampMs
-                ))
+                ), to: &candles)
             }
         } else {
-            candles.append(Self.newCandle(
+            Self.appendCandle(Self.newCandle(
                 quote, instrumentId: instrumentId,
                 resolution: resolution, timestampMs: bucketTimestampMs
-            ))
+            ), to: &candles)
         }
 
         lastAcceptedProviderTimestampMs = quote.providerTimestampMs
         return true
+    }
+
+    private static func appendCandle(_ candle: MarketChartCandle, to candles: inout [MarketChartCandle]) {
+        candles.append(candle)
+        let excessCount = candles.count - maximumRetainedCandleCount
+        if excessCount > 0 {
+            candles.removeFirst(excessCount)
+        }
     }
 
     private func supportsFixedUTCInterval(_ resolution: HistoricalPriceResolution) -> Bool {
