@@ -27,6 +27,35 @@ private final class MockMarketDataStreamClient: MarketDataStreamClient {
 }
 
 final class MarketDataStreamClientTests: XCTestCase {
+    func testStreamRequestUsesLoopbackAndBearerCapability() throws {
+        let request = try MarketDataStreamRequestBuilder.makeRequest(
+            baseURL: URL(string: "http://127.0.0.1:43127")!,
+            epics: ["WTI", "EURUSD", "WTI"],
+            authorization: "Bearer capability-token"
+        )
+
+        XCTAssertEqual(request.url?.host, "127.0.0.1")
+        XCTAssertEqual(request.url?.path, "/market-data/stream")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer capability-token")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "text/event-stream")
+        let components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        XCTAssertEqual(
+            components?.queryItems?.first(where: { $0.name == "epics" })?.value,
+            "EURUSD,WTI"
+        )
+
+        XCTAssertThrowsError(try MarketDataStreamRequestBuilder.makeRequest(
+            baseURL: URL(string: "http://example.com:43127")!,
+            epics: ["WTI"],
+            authorization: "Bearer capability-token"
+        ))
+        XCTAssertThrowsError(try MarketDataStreamRequestBuilder.makeRequest(
+            baseURL: URL(string: "http://127.0.0.1:43127")!,
+            epics: ["WTI"],
+            authorization: "invalid-token"
+        ))
+    }
+
     func testParserDecodesDEMOStatusEvent() throws {
         var parser = ServerSentEventParser()
         let payload = """
