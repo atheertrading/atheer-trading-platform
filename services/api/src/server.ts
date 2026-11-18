@@ -122,14 +122,15 @@ async function handleMarketDataRequest(
         return;
       }
       const rawMax = url.searchParams.get("max") ?? "100";
-      if (!/^\d+$/.test(rawMax)) {
+      const max = Number(rawMax);
+      if (!/^\d+$/.test(rawMax) || !Number.isSafeInteger(max) || max < 1 || max > 1000) {
         sendJson(response, 400, { error: "invalid_max" });
         return;
       }
       const result = await runtime.getPriceHistory(
         epic,
         resolution as "MINUTE" | "MINUTE_5" | "MINUTE_15" | "MINUTE_30" | "HOUR" | "HOUR_4" | "DAY" | "WEEK",
-        Number(rawMax),
+        max,
       );
       sendJson(response, 200, {
         provider: "capital.com",
