@@ -168,6 +168,7 @@ paths:
             minLength: 1
             maxLength: 64
             pattern: '^[A-Za-z0-9_.-]{1,64}$'
+        - name: resolution
           in: query
           required: false
           description: Provider-supported price-history resolution.
@@ -349,44 +350,3 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-
-        - name: resolution
-          in: query
-          required: false
-          description: Provider-supported price-history resolution.
-          schema:
-            type: string
-            enum: [MINUTE, MINUTE_5, MINUTE_15, MINUTE_30, HOUR, HOUR_4, DAY, WEEK]
-            default: MINUTE
-        - name: max
-          in: query
-          required: false
-          description: Maximum requested provider records.
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 1000
-            default: 100
-      responses:
-        '200':
-          description: Provider historical price records.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MarketHistoryResult'
-        '400':
-          description: Invalid resolution or max query parameter.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '502':
-          $ref: '#/components/responses/ProviderFailure'
-        '503':
-          description: Market-data runtime is unavailable.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '405':
-          $ref: '#/components/responses/MethodNotAllowed'
