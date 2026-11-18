@@ -329,11 +329,11 @@ struct MarketExplorerView: View {
 
     private var streamingTint: Color {
         switch model.backendStatus?.streaming?.state {
-        case .connected:
+        case .some(.connected):
             return ATHEERDesignTokens.ColorRole.success
-        case .connecting, .degraded:
+        case .some(.connecting), .some(.degraded):
             return ATHEERDesignTokens.ColorRole.attention
-        case .disconnected, .none:
+        case .some(.disconnected), .none:
             return .secondary
         }
     }
