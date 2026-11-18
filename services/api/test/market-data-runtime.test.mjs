@@ -239,6 +239,29 @@ test("broker session manager preserves creation throttling across account replac
   assert.deepEqual(client.calls.map((call) => call[0]), ["connect", "disconnect", "connect"]);
 });
 
+test("broker session manager releases credential-bearing runtime after provider logout failure", async () => {
+  const client = createMockClient();
+  client.endSession = async () => {
+    throw new Error("provider logout unavailable");
+  };
+  const manager = new BrokerSessionManager((value) => new CapitalDemoRuntime(
+    client,
+    value,
+    () => 1_800_000_000_000,
+    { scheduler: { schedule: () => "timer", cancel: () => {} } },
+  ));
+
+  const connected = await manager.connect({
+    apiKey: "demo-key",
+    identifier: "demo-user",
+    password: "demo-password",
+  });
+  assert.equal(connected.state, "connected");
+
+  await assert.rejects(manager.disconnect(), /provider logout unavailable/);
+  assert.equal(manager.status().state, "not_configured");
+});
+
 const ipcCapability = Buffer.alloc(32, 7);
 const authorization = { authorization: "Bearer " + ipcCapability.toString("base64url") };
 const serverClient = createMockClient();
