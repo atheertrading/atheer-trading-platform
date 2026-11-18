@@ -635,3 +635,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - ATP-BRK-002 / EDL-022 remains a mandatory integration gate: PR #26 direct Swift Keychain authentication and PR #37 environment-driven backend authentication are duplicate session authorities. One backend CMS/session manager must own credentials and session tokens; native app provisioning must use authenticated private IPC/per-launch capability; environment credentials remain test-only.
 - ATP-BRK-003 / ATP-MKT-007 / EDL-023 tracks sequential authentication throttling, scheduled REST keepalive, priority subscription allocation, account-switch restoration and connection metrics. Existing shared WebSocket/40-subscription/ping/reconnect code remains unmerged in PR #37.
 - PR #44/#45/#47 have green exact-head CI but remain draft, stacked on feature branches. Preserve the stack and resolve ancestry before mainline integration.
+
+
+## 2026-11-18 — Batch 053: native supervisor shutdown outcome handling
+
+- PR #57 now checks the backend child's final termination reason/status. Exit 0 is accepted; non-zero exit and signal termination surface explicit supervisor errors after capability/process state is cleared.
+- Added tests for graceful SIGTERM exit, forced SIGKILL escalation, non-zero shutdown exit, and idempotent cleanup.
+- Verified the child environment explicitly sets `CAP_ALLOW_TRADING=false`; the 256-bit IPC capability remains on stdin, not argv/environment.
+- Latest code head: `4a55032511125d98a9cb4861c8ab4173bea42a3e`. Local Sync Safety and CI results from earlier head `00d8aab` do not qualify this latest commit. Exact-head macOS builds/XCTest remain pending.
+- Limitation: native supervisor currently discards child stderr; the overall exit failure is surfaced, but operation-specific redacted shutdown diagnostics are not yet visible in the app. This is recorded as follow-up, not claimed complete.
+- Evidence: `SESSION_2026-11-18_053_NATIVE_SHUTDOWN_OUTCOME_QUALIFICATION.md`.
