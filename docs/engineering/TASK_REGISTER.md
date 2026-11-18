@@ -297,3 +297,11 @@ The initial Intel macOS job for PR #34 reached Debug compilation and failed beca
 Security boundary:
 - The marker header is not a secret and does not authenticate arbitrary local processes.
 - Production packaging still requires a per-launch local API token or authenticated IPC.
+
+
+## ATP-MKT-006I — Keep instrument catalogue metadata separate from live quotes
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-MKT-006I | P1 | Strip unvalidated provider bid/offer values from instrument catalogue responses; use validated streaming events as the only live quote source | IMPLEMENTED; exact-head CI pending | PR #37; CapitalDemoClient maps allow-listed metadata fields; regression test proves bid/offer are not exposed |
+
