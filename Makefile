@@ -9,7 +9,7 @@ help:
 	  'make sync            Safely fast-forward local main and preserve local work' \
 	  'make bootstrap       Sync, verify tools, install backend dependencies, generate Xcode project' \
 	  'make generate        Package backend runtime and generate the Xcode project' \
-  'make backend-package Build API and bundle verified universal Node runtime' \
+	  'make backend-package Build API and bundle verified universal Node runtime' \
 	  'make build           Build the macOS application' \
 	  'make test            Run macOS XCTest suite' \
 	  'make app-run         Build and request launch of the macOS application' \
