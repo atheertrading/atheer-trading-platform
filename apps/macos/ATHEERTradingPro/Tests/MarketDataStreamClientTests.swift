@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+@testable import ATHEERTradingPro
 
 @MainActor
 private final class MockMarketDataStreamClient: MarketDataStreamClient {
