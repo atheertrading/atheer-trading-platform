@@ -699,3 +699,25 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - PR #64 is the clean replacement for PR #58 and remains draft pending exact-head CI.
 - PRs #55 and #57 remain draft pending exact-head CI. PR #55 still has the P0 broker-credential confidentiality gate.
 - No PR in this stack has been merged in this batch. PR #57 may be integrated into PR #56 after its full macOS/backend checks pass; broker-session and live-stream branches must not be merged until the credential transport gate is resolved.
+
+
+## 2026-11-18 — Batch 055: private broker credential IPC
+
+- Replaced broker credential HTTP POST design with a dedicated per-process Unix-domain socket for connect/disconnect.
+- Native supervisor creates a mode-0700 temporary directory, passes only the socket path in child environment, verifies socket mode 0600 before readiness, and removes the directory after confirmed process exit.
+- Backend UDS requests require the existing 256-bit capability, constant-time validation, strict DEMO-only action/field allowlist, 8 KiB payload cap and bounded timeout. Credentials are never returned or logged.
+- HTTP credential connect/disconnect routes are removed; capability-authenticated session status and market-data HTTP routes remain.
+- Integrated bounded SIGTERM/SIGKILL process shutdown from session 053; app termination waits for confirmed exit.
+- Native and backend tests added. Exact-head CI and owner-Mac DEMO authentication remain pending; no credentials or orders were used.
+- Evidence: `SESSION_2026-11-18_055_PRIVATE_BROKER_CREDENTIAL_IPC.md`; decision EDL-031.
+
+
+## 2026-11-18 — PR #66 private IPC review remediation
+
+- Reviewed the exact PR #66 source and tests. Found recursive self-invocation in the backend UDS test fixture cleanup helper; corrected it to close the fixture server and then remove the temporary directory.
+- Corrected a Swift LocalizedError interpolation defect and added focused XCTest coverage.
+- Commits: `9dbc2ef35fc736f962f6f91b087c3096da346da7`, `f63f806469f980a47c1ee66f2eab6b3deafe39a8`, `8c12e593f118d778e8486a27240bfb12d58d360b`, `4d35e16e9c5ccce319f51366d7854088c5282505`.
+- Current PR #66 head: `4d35e16e9c5ccce319f51366d7854088c5282505`. Exact-head CI is pending; no test/build pass is claimed. Owner-Mac and real DEMO authentication qualification remain pending.
+- PR #66 remains OPEN / DRAFT, stacked on PR #64. Preserve its dependency chain; do not merge while checks are pending.
+- Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
+- `CAP_ALLOW_TRADING=false` remains unchanged; no credentials or orders were used.

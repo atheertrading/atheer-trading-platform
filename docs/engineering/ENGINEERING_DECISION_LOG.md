@@ -218,3 +218,12 @@ The native Market Explorer consumes broker-normalized market data through a loca
 The UI must preserve the shared ATHEER design-token system, responsive layouts and accessibility. It may display timestamped DEMO quotes and quality state but has no order-intent, OMS, execution, or strategy authority. Search results remain metadata-only. A future chart engine may consume this stream through a separate market-data abstraction; it must not turn this UI into an execution path.
 
 This decision does not resolve the separate P0 broker-credential confidentiality issue: credential handoff remains outside the HTTP loopback API and requires private IPC (e.g. stdio RPC or a protected Unix-domain channel) before secure authenticated broker connectivity is qualified.
+
+
+## EDL-031 — Broker credentials use private Unix-domain IPC (2026-11-18)
+
+Broker API key, identifier and password must never be sent in a loopback HTTP request body, command-line argument, or child-process environment. Credential connect/disconnect operations use a per-process Unix-domain socket created by the native supervisor. The parent directory is mode 0700, the socket is mode 0600, the request includes the existing 256-bit process capability, and the backend performs constant-time capability validation. The socket protocol is bounded, DEMO-only, action-allowlisted and returns sanitized status only.
+
+The native supervisor owns the socket directory lifecycle, validates the Darwin socket-path limit, verifies socket permissions before reporting readiness, and removes the directory only after confirmed child termination. HTTP remains capability-authenticated for non-secret status and market-data operations; HTTP credential connect/disconnect routes are removed.
+
+This decision supersedes the earlier open design choice between private stdio RPC and a protected Unix-domain channel. UDS is selected because it separates credential transport from readiness/log output and has explicit filesystem permissions and lifecycle ownership. LIVE execution remains disabled.

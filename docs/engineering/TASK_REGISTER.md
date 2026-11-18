@@ -425,3 +425,21 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Closed unmerged PRs #49, #50, #54 and #58 as superseded/duplicate after preserving their unique implementation and documentation.
 - PR #64 is the clean live quote integration branch; exact-head CI pending.
 - PR #55 and #57 exact-head CI pending. Do not merge broker authentication/streaming until private credential IPC replaces the local HTTP credential body.
+
+
+## ATP-SEC-003 — Private broker credential IPC (2026-11-18)
+
+- Replace loopback HTTP credential POST with a dedicated Unix-domain socket protected by a 0700 parent directory, 0600 socket, and the existing 256-bit process capability.
+- Remove HTTP connect/disconnect credential routes; retain authenticated non-secret status and market-data reads.
+- Enforce strict DEMO-only action/field allowlist, request bounds, timeouts, redacted responses, and no credentials in argv/environment/logs.
+- Native supervisor owns socket lifecycle and bounded backend termination; app shutdown requires confirmed process exit.
+- Exact-head CI and owner-Mac DEMO authentication qualification pending. No credentials or orders used.
+
+
+## ATP-SEC-003 review remediation — 2026-11-18
+
+- PR #66 review found and corrected recursive backend fixture teardown in `services/api/test/broker-credential-ipc.test.mjs`; cleanup now closes the UDS server before removing its private temporary directory.
+- Corrected Swift broker IPC rejection diagnostic interpolation and added XCTest coverage.
+- Commits: `9dbc2ef`, `f63f806`, `8c12e59`, `4d35e16`.
+- Exact-head CI on `4d35e16e9c5ccce319f51366d7854088c5282505` is pending; no passing result is claimed. Owner-Mac DEMO authentication qualification remains pending.
+- Session report: `SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW.md`.
