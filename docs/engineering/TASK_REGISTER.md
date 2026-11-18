@@ -469,3 +469,27 @@ PR #55 code head before Batch 051 documentation: `fe8a92dad23289901e11c81bbcaf8f
 - Backend initial/replayed quote classification, SSE DTO validation, SwiftUI freshness labels and deterministic boundary tests updated together.
 - Exact-head CI, Swift/XCTest, and owner-Mac DEMO runtime qualification pending.
 - Report: `SESSION_2026-11-18_063_QUOTE_FRESHNESS_POLICY_RECONCILIATION.md`.
+
+
+
+
+## ATP-MKT-005 — Authenticated historical market data port (2026-11-18)
+
+- Ported the existing historical DEMO contract into the current private-IPC / BrokerSessionManager stack; did not import the stale PR #38/#39 session implementation.
+- Added strict UTC range support, raw provider max validation, Bid/Ask OHLC normalization, timestamp/receipt lineage, duplicate conflict rejection, observed-gap reporting and raw-count pagination metadata.
+- The existing capability-protected route now returns 503 when the broker session is not connected; provider tokens remain server-side.
+- Added normalizer, client, authenticated API, disconnected-session and duplicate-pagination tests. Exact-head hosted CI pending.
+- PR #68 is stacked on PR #67. Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
+
+## ATP-MKT-005 follow-up — reject future-dated history
+
+- Backend historical normalization now rejects any candle timestamp later than its receipt timestamp; a deterministic regression test covers the failure.
+- Commits: `aa425f9`, `b9f1a71`. Exact-head CI pending.
+- Session report: `SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA.md`.
+
+## ATP-ENG-060 — inherited broker IPC CI regression corrections
+
+- Corrected URLProtocol request-body test capture to support both `httpBody` and bounded `httpBodyStream` representations.
+- Corrected stale Unix-domain IPC error-description assertion to match the production private-channel wording.
+- Propagated test-only corrections through PR #55–#70 dependency branches where the affected tests exist.
+- Exact-head CI reruns pending; see session 058 for diagnosis.
