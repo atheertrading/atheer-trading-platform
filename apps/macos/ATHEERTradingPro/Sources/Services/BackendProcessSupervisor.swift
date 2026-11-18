@@ -171,8 +171,11 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         if let connection, process?.isRunning == true {
             return connection
         }
-        guard process?.isRunning != true else {
-            throw BackendProcessSupervisorError.launchFailed
+        if let process, !process.isRunning {
+            capability?.clear()
+            capability = nil
+            connection = nil
+            self.process = nil
         }
         guard #available(macOS 13.5, *) else {
             throw BackendProcessSupervisorError.unsupportedOperatingSystem
@@ -202,7 +205,7 @@ final class BackendProcessSupervisor: BackendProcessManaging {
             child.terminationHandler = { [weak self] terminatedProcess in
                 let status = terminatedProcess.terminationStatus
                 Task { @MainActor [weak self] in
-                    self?.handleTermination(status: status)
+                    self?.handleTermination(of: terminatedProcess, status: status)
                 }
             }
 
@@ -369,7 +372,8 @@ final class BackendProcessSupervisor: BackendProcessManaging {
         }
     }
 
-    private func handleTermination(status: Int32) {
+    private func handleTermination(of terminatedProcess: Process, status: Int32) {
+        guard process === terminatedProcess else { return }
         let wasReady = connection != nil
         if readyContinuation != nil {
             finishStartup(.failure(BackendProcessSupervisorError.processExited(status)))
