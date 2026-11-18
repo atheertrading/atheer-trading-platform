@@ -103,10 +103,10 @@ struct BrokerManagementView: View {
                 Divider().overlay(ATHEERDesignTokens.ColorRole.separator)
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("AUTHENTICATED ACCOUNT")
+                        Text("LOGIN IDENTITY")
                             .font(ATHEERDesignTokens.Typography.caption)
                             .foregroundColor(.secondary)
-                        Text(account.accountIdentifier)
+                        Text(account.maskedLoginIdentifier)
                             .font(.system(size: 13, weight: .semibold, design: .monospaced))
                     }
                     Spacer()
