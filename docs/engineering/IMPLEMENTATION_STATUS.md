@@ -399,3 +399,20 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - PR #37 must remain unmerged as a completed integration until the backend CMS is the single session authority and the macOS Broker Management UI delegates to it.
 - Environment variables may be used only as test/development fixtures. Production credential provisioning requires encrypted vault/Keychain-backed storage and authenticated local IPC or a per-launch capability token.
 - No real credentials were accessed; no LIVE or dealing capability is enabled.
+
+
+## ATP-BRK-003 / ATP-MKT-007 — Connection orchestration qualification — 2026-11-18
+
+Implemented in the PR #37 streaming foundation:
+- One shared server-side WebSocket runtime.
+- Hard 40-instrument subscription cap with deduplication.
+- Five-minute WebSocket ping.
+- Reconnect with bounded exponential backoff.
+- Latest quote cache and invalid/duplicate/out-of-order counters.
+
+Still required:
+- Enforce the documented 1 session-creation request/second/API-key limit across sequential attempts; current runtime only coalesces concurrent attempts.
+- Schedule REST session keepalive; `CapitalDemoRuntime.ping()` exists but is not scheduled.
+- Prioritize the 40 slots for open positions and active strategies before watchlists/analytics.
+- Restore subscriptions coherently after account switching and expose connection utilization metrics.
+- These controls must be implemented through the single backend session authority required by ATP-BRK-002.
