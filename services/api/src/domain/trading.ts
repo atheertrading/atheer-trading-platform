@@ -146,12 +146,13 @@ export function createOrderIntentEnvelope<TPayload extends OrderIntentPayload>(
   if (input.origin.agentReference !== undefined) {
     nonEmptyString(input.origin.agentReference, "agent_reference");
   }
-  if (input.marketDataReference !== undefined) {
-    nonEmptyString(input.marketDataReference, "market_data_reference");
-    if (input.marketDataSnapshotAt === undefined) {
-      throw new DomainValidationError("missing_market_data_timestamp", "A market-data reference requires its source snapshot timestamp.");
-    }
+  if ((input.marketDataReference === undefined) !== (input.marketDataSnapshotAt === undefined)) {
+    throw new DomainValidationError(
+      "incomplete_market_data_reference",
+      "Market-data reference and snapshot timestamp must be supplied together.",
+    );
   }
+  if (input.marketDataReference !== undefined) nonEmptyString(input.marketDataReference, "market_data_reference");
   if (input.marketDataSnapshotAt !== undefined) utcTimestamp(input.marketDataSnapshotAt);
   if (input.signalAt !== undefined) utcTimestamp(input.signalAt);
   return deepFreeze({ ...input }) as OrderIntentEnvelope<Readonly<TPayload>>;
@@ -476,6 +477,9 @@ export function createAuditEvent(input: AuditEvent): AuditEvent {
   if (input.provenance !== undefined) createDataProvenance(input.provenance);
   if (input.provenance !== undefined && input.provenance.environment !== input.environment) {
     throw new DomainValidationError("audit_provenance_mismatch", "Audit event and provenance environments must match.");
+  }
+  if (input.provenance !== undefined && input.provenance.eventAt !== input.occurredAt) {
+    throw new DomainValidationError("audit_timestamp_mismatch", "Audit event time must match its provenance event time.");
   }
   for (const code of input.reasonCodes) nonEmptyString(code, "audit_reason_code");
   return deepFreeze({ ...input, reasonCodes: [...input.reasonCodes] }) as AuditEvent;
