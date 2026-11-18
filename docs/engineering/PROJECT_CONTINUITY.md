@@ -782,3 +782,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Added backend fail-closed validation and a deterministic regression test on PR #68.
 - Commits: `aa425f9af869987367e12c274292bf00733a1559`, `b9f1a719556bc291c4430e7e273f023aa5409eae`.
 - Exact-head hosted CI remains pending. No provider or trading execution was used; `CAP_ALLOW_TRADING=false` remains unchanged.
+
+## 2026-11-18 — PR #70 ancestry reconciliation
+
+- PR #70 was 51 commits ahead / 11 behind its PR #68 base due to independent updates on the parent branch.
+- Reconciled the branches without rewriting either history: created merge commit `b38902d0342962b3d12f327ff3a90881ed063fd0` with PR #68 head `96da1112eb2ca7eff8dd13ee165e36cbf625ef51` as first parent and prior PR #70 head `9916767a272de737497cffd88adc75d836d5849a` as second parent.
+- Merged tree preserves the current PR #68 backend/historical-data validation and documentation, then overlays the chart-specific SwiftUI/client/test/architecture files from PR #70. Conflicting shared test files retain the corrected PR #68 versions.
+- GitHub compare now reports PR #70 as 52 commits ahead / 0 behind its base. This resolves ancestry divergence; it does not establish merge readiness or CI success.
+- New exact-head CI and source review are required before merge.
