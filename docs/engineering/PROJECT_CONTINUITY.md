@@ -735,7 +735,8 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
   - `097d2b1` EDL-013.
   - `0499eb1` task register.
   - `2a4df67` implementation status.
-- PR #42 is not yet opened at this continuity snapshot. The branch is still being reviewed before PR creation.
+- PR #42 is OPEN / DRAFT: https://github.com/atheertrading/atheer-trading-platform/pull/42. Current branch head at this update is `995145c6d44435fad1b5ee3c342e994c0852e119`.
+- Follow-up hardening commits: `4921f8f` resolved the domain export-name collision; `d475a35` revoked app UPDATE/DELETE on orders; `8e03ec1` added DB denial tests for order/lifecycle mutation; `05b8b55` and `995145c` documented the immutable projection boundary.
 
 ### Implemented behavior (not yet hosted-qualified)
 
@@ -761,3 +762,13 @@ New deterministic tests and architecture/Mermaid/session documentation are commi
 - Intel x86_64 and Apple Silicon arm64 macOS jobs were still in progress at last inspection. This is not a completed PR #41 platform qualification.
 - These results do not qualify PR #42. PR #42 requires exact-head CI across backend, PostgreSQL, Mermaid, repository hygiene, Intel and Apple Silicon.
 - No local PostgreSQL 18.7 migration or local Mac pull was performed. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+### PR #42 exact-head qualification update
+
+- Backend type-check and full PostgreSQL 17.12 integration suite passed on earlier code head `d9c4663d8c579e2aaf7eb122c0da67a32f2ee906`: 52 passed, 0 failed, 0 skipped.
+- Repository Hygiene, Mermaid diagram rendering, and Local Sync Safety also passed on that earlier head.
+- Subsequent hardening made both `atheer.orders` and `atheer.order_lifecycle_events` SELECT/INSERT-only for `atheer_app`, with UPDATE/DELETE revoked and explicit denial tests added. Documentation was updated accordingly.
+- These follow-up commits advanced the branch to `995145c6d44435fad1b5ee3c342e994c0852e119`; the prior 52/52 and workflow results do not qualify this new head. A fresh exact-head CI run is required.
+- Intel and Apple Silicon macOS jobs on the earlier run were cancelled before qualification; neither architecture is currently qualified for PR #42.
+- PR #41 current head remains `c9eb73d28c24398dfcb435525118f971aae221e8`; Backend/Hygiene/Mermaid/Local Sync passed, Apple Silicon passed, Intel Debug was still in progress at last inspection.
