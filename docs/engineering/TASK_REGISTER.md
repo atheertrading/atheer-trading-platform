@@ -328,7 +328,7 @@ Required implementation:
 
 | Work item | Priority | Scope | Status | Evidence |
 |---|---:|---|---|---|
-| ATP-BRK-003 | P1 | Centralize REST session keepalive, one-session-creation-per-second rate limit, connection health and account-switch recovery | IN PROGRESS | PR #37 coalesces concurrent connect calls and has WebSocket heartbeat/reconnect; REST keepalive and sequential authentication throttle remain |
+| ATP-BRK-003 | P1 | Centralize REST session keepalive, one-session-creation-per-second rate limit, connection health and account-switch recovery | PARTIAL | PR #49 adds sequential one-second throttling within the single runtime owner and schedules REST `/ping` every five minutes; cross-runtime coordination remains part of CMS/session-manager unification |
 | ATP-MKT-007 | P1 | Allocate the 40-instrument WebSocket capacity by operational priority and restore subscriptions after reconnect/account switch | PARTIAL | PR #37 implements one shared stream, 40 cap, dedupe, 5-minute ping, reconnect and quality counters; position/strategy/watchlist priority allocator remains |
 
 The Library's Q10 distinguishes REST requests, persistent WebSocket sessions, authenticated broker sessions and individual subscriptions. Do not treat them as one universal connection limit or invent undocumented provider limits.
