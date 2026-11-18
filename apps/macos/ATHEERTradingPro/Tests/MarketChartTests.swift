@@ -247,4 +247,31 @@ final class MarketChartTests: XCTestCase {
         let view = ChartWorkspaceView(model: MarketChartViewModel(), watchlistStore: MarketWatchlistStore(), onOpenMarkets: {})
         XCTAssertNotNil(view)
     }
+
+    func testLiveAggregatorRetainsOnlyTheMostRecent500Candles() {
+        let interval: Int64 = 60_000
+        let start: Int64 = 1_800_000_000_000
+        var candles: [MarketChartCandle] = []
+        var aggregator = LiveCandleAggregator()
+
+        for index in 0...500 {
+            let timestamp = start + Int64(index) * interval + 1_000
+            let bid = 100.0 + Double(index)
+            XCTAssertTrue(aggregator.ingest(
+                makeQuote(timestampMs: timestamp, bid: bid, ask: bid + 0.2),
+                instrumentId: "GOLD",
+                resolution: .minute,
+                candles: &candles
+            ))
+        }
+
+        XCTAssertEqual(candles.count, 500)
+        XCTAssertEqual(candles.first?.timestampMs, start + interval)
+        XCTAssertEqual(candles.last?.timestampMs, start + 500 * interval)
+        XCTAssertEqual(candles.first?.bid.open, 101.0)
+        XCTAssertEqual(candles.last?.bid.close, 600.0)
+        XCTAssertEqual(candles.first?.source, .liveAggregated)
+        XCTAssertEqual(candles.last?.source, .liveAggregated)
+    }
+
 }
