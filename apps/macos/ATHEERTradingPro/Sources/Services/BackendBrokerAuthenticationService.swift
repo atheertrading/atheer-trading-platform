@@ -83,19 +83,7 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             }
 
             guard payload.state == "connected" else {
-                let providerError = payload.lastError ?? ""
-                if providerError.contains("HTTP 401") ||
-                    providerError.localizedCaseInsensitiveContains("rejected or expired") {
-                    throw BrokerAuthenticationError.invalidCredentials
-                }
-                if providerError.contains("HTTP 403") {
-                    throw BrokerAuthenticationError.providerRejected(403)
-                }
-                if providerError.contains("HTTP 429") ||
-                    providerError.localizedCaseInsensitiveContains("rate-limited") {
-                    throw BrokerAuthenticationError.rateLimited
-                }
-                throw BrokerAuthenticationError.unavailable
+                throw authenticationError(providerError: payload.lastError)
             }
 
             let timestamp = payload.connectedAtMs.map {
@@ -153,16 +141,6 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
             return try JSONDecoder().decode(BrokerCredentialIPCStatus.self, from: data)
         } catch {
             throw BrokerAuthenticationError.invalidResponse
-        }
-    }
-
-    private func authenticationError(statusCode: Int) -> BrokerAuthenticationError {
-        switch statusCode {
-        case 400, 401: return .invalidCredentials
-        case 403: return .providerRejected(403)
-        case 429: return .rateLimited
-        case 503: return .unavailable
-        default: return .providerRejected(statusCode)
         }
     }
 
