@@ -78,7 +78,7 @@ test("market-data stream reconnect uses deterministic exponential full jitter", 
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(sockets.length, 1);
     sockets[0].open();
-    const unsubscribe = await subscriptionPromise;
+    await subscriptionPromise;
     assert.equal(runtime.status().state, "connected");
 
     globalThis.setTimeout = (callback, delay, ...args) => {
@@ -92,7 +92,6 @@ test("market-data stream reconnect uses deterministic exponential full jitter", 
     assert.equal(reconnectDelayMs, 250);
     assert.equal(sockets.length, 1);
 
-    unsubscribe();
     await runtime.disconnect();
   } finally {
     globalThis.setTimeout = originalSetTimeout;
