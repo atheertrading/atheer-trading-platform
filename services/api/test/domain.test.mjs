@@ -535,3 +535,103 @@ test("public domain constructors reject malformed runtime object and array shape
     { code: "invalid_lifecycle_transition_policy" },
   );
 });
+
+test("account monetary snapshots must match the broker account currency when declared", () => {
+  const account = {
+    id: brokerAccountId("account-currency-check"),
+    brokerId: brokerId("capital.com"),
+    environment: "DEMO",
+    brokerAccountReference: brokerAccountReference("broker-account-ref-currency"),
+    accountCurrency: currencyCode("USD"),
+  };
+  const provenance = brokerProvenance();
+  const snapshot = {
+    accountId: account.id,
+    environment: "DEMO",
+    asOf: provenance.eventAt,
+    provenance,
+    balance: { amount: decimalValue("1000"), currency: currencyCode("EUR") },
+  };
+
+  assert.throws(
+    () => validateAccountBalanceSnapshot(account, snapshot),
+    { code: "account_snapshot_currency_mismatch" },
+  );
+});
+
+test("instrument specifications enforce broker-declared price and quantity precision", () => {
+  assert.throws(
+    () => validateInstrumentSpecification(instrumentSpecification({
+      pricePrecision: 2,
+      priceIncrement: price("0.0005", unitCode("QUOTE_TICK")),
+    })),
+    { code: "price_increment_precision_mismatch" },
+  );
+
+  assert.throws(
+    () => validateInstrumentSpecification(instrumentSpecification({
+      quantityPrecision: 2,
+      minimumDealSize: { value: decimalValue("0.001"), unit: unitCode("CONTRACT") },
+    })),
+    { code: "quantity_precision_mismatch" },
+  );
+});
+
+test("instrument specification validates opaque broker constraint units", () => {
+  assert.throws(
+    () => validateInstrumentSpecification(instrumentSpecification({
+      constraints: [{ code: "MINIMUM_SIZE", rawValue: "0.1", unit: "INVALID UNIT" }],
+    })),
+    { code: "invalid_unit_code" },
+  );
+});
+
+test("order intent market-data reference and snapshot time must be supplied together", () => {
+  const baseIntent = {
+    id: orderIntentId("intent-market-data-pair"),
+    commandId: "command-market-data-pair",
+    correlationId: "correlation-market-data-pair",
+    idempotencyKey: idempotencyKey("idempotency-market-data-pair"),
+    accountId: brokerAccountId("account-demo-1"),
+    instrumentId: instrumentId("instrument-GOLD"),
+    instrumentSpecificationId: instrumentSpecificationId("spec-GOLD-v1"),
+    environment: "DEMO",
+    origin: { kind: "HUMAN", sourceId: sourceId("trader-1") },
+    createdAt: utcTimestamp(1_800_000_000_200),
+    intentVersion: 1,
+    schemaVersion: "1.0.0",
+    payload: {
+      operationCode: "OPEN",
+      quantity: quantity("0.1", unitCode("CONTRACT")),
+    },
+  };
+
+  assert.throws(
+    () => createOrderIntentEnvelope({
+      ...baseIntent,
+      marketDataSnapshotAt: utcTimestamp(1_800_000_000_150),
+    }),
+    { code: "incomplete_market_data_reference" },
+  );
+});
+
+test("audit event occurrence time must match provenance event time", () => {
+  const provenance = brokerProvenance();
+  assert.throws(
+    () => createAuditEvent({
+      id: "audit-time-mismatch",
+      actorKind: "BROKER",
+      actorId: sourceId("capital.com"),
+      actionCode: "BROKER_STATE_OBSERVED",
+      subjectType: "ACCOUNT",
+      subjectId: "account-demo-1",
+      outcomeCode: "SUCCESS",
+      occurredAt: utcTimestamp(provenance.eventAt + 1),
+      correlationId: "correlation-audit-time-mismatch",
+      environment: "DEMO",
+      reasonCodes: [],
+      provenance,
+    }),
+    { code: "audit_timestamp_mismatch" },
+  );
+});
