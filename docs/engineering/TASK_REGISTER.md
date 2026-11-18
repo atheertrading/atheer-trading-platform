@@ -380,3 +380,13 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - Estimates are person-day planning ranges and must be refined after exact-head review and technical spikes; 25–40% contingency is recommended. The controlled DEMO core planning range is 47–83 PD from the reviewed baseline, excluding advanced strategy/AI and broad charting polish.
 - No item is considered implemented or verified by virtue of being registered here. Require linked PR, exact SHA, relevant CI, owner-workstation evidence where applicable, and acceptance.
 - Keep `CAP_ALLOW_TRADING=false`; LIVE remains separately gated.
+
+
+## ATP-DOMAIN-001A — Runtime shape validation (2026-11-18)
+
+| Work item | Priority | Scope | Status | Evidence |
+|---|---:|---|---|---|
+| ATP-DOMAIN-001A | P0 | Reject malformed JSON/runtime record and array shapes at public financial-domain boundaries with typed domain errors | IMPLEMENTED ON PR BRANCH — EXACT-HEAD CI PENDING | PR #76; commits 5ebc0ae, 7e1ff48, 4f996d2, 3d4e837, 84a1d3f, 120c917; Session 064 |
+
+- Acceptance: malformed root/nested records and malformed collection shapes produce stable `DomainValidationError` codes; valid existing fixtures remain compatible; backend type-check/tests and repository checks pass on the exact final head.
+- This is validation only. No RiskEngine formula, execution authorization, order dispatch, broker dealing, or LIVE behavior is introduced.
