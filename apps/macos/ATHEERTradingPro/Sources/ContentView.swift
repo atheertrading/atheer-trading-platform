@@ -5,6 +5,7 @@ struct ContentView: View {
     @ObservedObject private var backendRuntimeModel: BackendRuntimeViewModel
     @State private var selection: AppSection? = .workspace
     @State private var showingBrokers = false
+    @State private var selectedChartInstrumentId: String?
 
     init(backendRuntimeModel: BackendRuntimeViewModel? = nil) {
         _backendRuntimeModel = ObservedObject(
@@ -47,6 +48,8 @@ struct ContentView: View {
                     Section("MARKETS") {
                         Label(AppSection.markets.title, systemImage: AppSection.markets.systemImage)
                             .tag(AppSection.markets)
+                        Label(AppSection.charts.title, systemImage: AppSection.charts.systemImage)
+                            .tag(AppSection.charts)
                     }
                     Section("SYSTEM") {
                         Label(AppSection.apiConnection.title, systemImage: AppSection.apiConnection.systemImage)
@@ -67,7 +70,10 @@ struct ContentView: View {
                 case .workspace:
                     WorkspaceHomeView(
                         backendHealthModel: backendRuntimeModel.healthModel,
-                        onOpenAPIConnection: { selection = .apiConnection }
+                        marketHistoryClient: backendRuntimeModel.marketHistoryClient,
+                        selectedChartInstrumentId: selectedChartInstrumentId,
+                        onOpenAPIConnection: { selection = .apiConnection },
+                        onOpenMarkets: { selection = .markets }
                     )
                 case .markets:
                     if let client = backendRuntimeModel.marketSearchClient,
@@ -75,7 +81,25 @@ struct ContentView: View {
                         MarketExplorerView(
                             client: client,
                             streamClient: streamClient,
+                            onOpenAPIConnection: { selection = .apiConnection },
+                            onOpenChart: { instrumentId in
+                                selectedChartInstrumentId = instrumentId
+                                selection = .charts
+                            }
+                        )
+                    } else {
+                        BackendRuntimeUnavailableView(
+                            state: backendRuntimeModel.state,
+                            onRetry: { Task { await backendRuntimeModel.start() } },
                             onOpenAPIConnection: { selection = .apiConnection }
+                        )
+                    }
+                case .charts:
+                    if let client = backendRuntimeModel.marketHistoryClient {
+                        ChartWorkspaceView(
+                            client: client,
+                            initialInstrumentId: selectedChartInstrumentId,
+                            onOpenMarkets: { selection = .markets }
                         )
                     } else {
                         BackendRuntimeUnavailableView(
