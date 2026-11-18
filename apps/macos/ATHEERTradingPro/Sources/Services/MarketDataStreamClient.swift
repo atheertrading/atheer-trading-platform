@@ -1,16 +1,5 @@
 import Foundation
 
-enum MarketDataStreamConnectionState: String, Decodable, Equatable {
-    case disconnected
-    case connecting
-    case connected
-    case degraded
-
-    var displayLabel: String {
-        rawValue.replacingOccurrences(of: "_", with: " ").uppercased()
-    }
-}
-
 enum MarketDataQuoteFreshnessState: String, Decodable, Equatable {
     case fresh
     case stale
