@@ -606,3 +606,14 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Added deterministic URLProtocol contract tests for GET /market-data/status, GET /market-data/markets, encoded searchTerm, Cache-Control no-store, 503 backend-not-connected, 500 unexpected status, and transport failure → backendUnavailable.
 - Added commits `5c1ae728`, `a0f28db8`, `834afa04`, `a310237f`, `ea1b16f8`, `0201e059`.
 - Exact-head CI pending.
+
+
+## 2026-11-18 — PR #24 / #25 / #26 integration
+
+- PR #24 merged to `main` at `bd83fd3c8df481104c347f05d9d4f38537d8b011`.
+- PR #25 merged to `main` at `6b570b8c5a3367784cde7fa2643593c5b5a1eda2`.
+- PR #26 merged to `main` at `6b4668b9355178d5e13219f14cfe8cc847770915` using a normal history-preserving merge.
+- PR #26 exact-head CI run `44231098511` passed Intel x86_64 Debug/XCTest/Release/Swift CodeQL, Apple Silicon arm64 Debug/XCTest/Release, Backend Toolchain and Repository Hygiene. Dedicated CodeQL run `44231098441` and Local Sync Safety run `44231098576` passed.
+- This supersedes older continuity statements that PR #24/#25/#26 remained OPEN / DRAFT.
+- The merged broker-management foundation remains DEMO-only and read-only. Owner-Mac Keychain restart/runtime qualification and real DEMO authentication remain pending; no LIVE or dealing capability was enabled.
+- PR #33 has been retargeted to `main` after the PR #26 merge. Current head `8885fd6f43098421973d098b2cd3d94a8e7545e3`; its exact-head CI is running.
