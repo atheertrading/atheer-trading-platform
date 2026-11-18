@@ -367,3 +367,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Hosted TypeScript/API tests and real DEMO provider verification remain pending. No real quote receipt is claimed.
 - macOS consumer, durable history, OHLC stream, Charting, and RiskEngine integration are not part of this increment.
 - `CAP_ALLOW_TRADING=false` remains unchanged; no dealing or LIVE capability added.
+
+
+## ATP-SEC-001A — Local market-data API browser-origin guard — 2026-11-18
+
+- Confirmed runtime configuration rejects any bind host except `127.0.0.1`.
+- Added a guard to every `/market-data/*` route requiring `X-ATHEER-LOCAL-CLIENT: macOS`, no `Origin` header, and `Sec-Fetch-Site` absent or `none`.
+- Updated the native Market Search adapter to send the marker header.
+- Added API tests for missing marker, cross-origin Origin, cross-site Fetch Metadata, accepted native request, and SSE request marker.
+- Exact-head hosted CI pending.
+- The marker is a browser CSRF mitigation, not a secret or local-process authentication. Production requires per-launch capability token or authenticated local IPC.
