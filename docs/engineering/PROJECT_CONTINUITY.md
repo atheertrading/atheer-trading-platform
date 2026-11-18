@@ -680,3 +680,11 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No HTTP risk endpoint, policy store, account/position read model, portfolio valuation service, assessment persistence, OMS wiring, outbox consumer, Execution Gateway or broker dealing path is added. `CAP_ALLOW_TRADING=false` remains unchanged; LIVE remains disabled.
 - Exact-head Node 24 TypeScript build/tests, Repository Hygiene, CodeQL, Mermaid and Local Sync Safety remain pending until the stacked PR is opened and CI is inspected. No local Node 24, owner-Mac or broker DEMO test is claimed.
 
+### ATP-RISK-001A — exact-head qualification update
+
+For PR #86 head `e19897895b179d47c4ffee7b5fe68857fc20080f`:
+- Backend Toolchain passed on hosted Node.js 24: TypeScript type-check/build and API suite **59 passed, 0 failed** (CI `44394828144`, job `135121823729`).
+- Repository Hygiene passed on the same exact head (job `135121823904`).
+- Mermaid rendering passed (run `44394828042`); Local Sync Safety passed (run `44394827971`).
+- Intel x86_64 and Apple Silicon arm64 build/XCTest/Swift CodeQL jobs were still queued at last inspection. PR #86 remains Draft and stacked on PR #81. These backend results do not qualify the complete macOS matrix or the upstream PR #76/#81 chain.
+
