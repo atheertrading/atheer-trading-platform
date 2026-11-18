@@ -916,3 +916,16 @@ See the CI status correction table in IMPLEMENTATION_STATUS.md for the exact SHA
 - Added ATP-MKT-006 architecture note, Mermaid diagram 16, EDL-016, task/status/continuity records.
 - Implementation is committed below PR #44 and is not yet hosted-qualified. Owner-Mac runtime, visual/accessibility QA and authenticated provider acceptance remain outstanding.
 - No market-data persistence, volume aggregation, indicators, drawings, strategy execution, orders, broker dealing, risk-policy change or LIVE capability was added. `CAP_ALLOW_TRADING=false` remains unchanged.
+
+
+## 2026-11-18 — ATP-MKT-006H bounded live candle retention
+
+- Revalidated PR #45 exact HEAD `218d07c637738c14541482d067954325f16da224`. CI run `44227375230` passed Backend Toolchain, Repository Hygiene, Intel x86_64 Debug/XCTest/Release/Swift CodeQL, and Apple Silicon arm64 Debug/XCTest/Release. Mermaid run `44227375328` and Local Sync Safety run `44227375239` passed. Apple Silicon CodeQL is intentionally skipped.
+- Corrected older documentation that still described PR #45 exact-head CI as pending.
+- Source review found unbounded growth in the volatile live candle array, despite historical bootstrap being limited to 500 candles.
+- Created child branch `fix/live-candle-retention-2026-11-18` from exact PR #45 HEAD. Added a 500-candle retention cap in `LiveCandleAggregator`; the oldest bars are removed only when a new accepted bucket exceeds the cap.
+- Added a deterministic XCTest that ingests 501 distinct minute buckets and verifies a 500-entry result, chronological boundary timestamps, and preserved OHLC values.
+- Source commit: `82d64fe30b67abc25c18e4be8ce0d0006a01b191`. Test commit: `329101f388867097ccf5bf2c684d84af5e1d80ca`.
+- Updated ATP-MKT-006 architecture note, task register, implementation status, and EDL-017. The fix branch's exact-head CI remains pending.
+- No Mac/Xcode execution was performed through this remote session. No authenticated Capital.com DEMO runtime, visual/accessibility, or live provider acceptance is claimed.
+- No persistence, synthetic candles, indicators, drawing tools, order entry, RiskEngine/OMS/Execution Gateway behavior, broker dealing, or LIVE capability was added. `CAP_ALLOW_TRADING=false` remains unchanged.
