@@ -394,3 +394,5 @@ Do not conflate REST request-rate limits, authenticated REST session inactivity,
 - The current OpenAPI contract describes the API as loopback-only and not yet per-request capability authenticated. Keep the service restricted to `127.0.0.1` until authenticated IPC/runtime integration is merged and qualified.
 - No LIVE or broker dealing functionality is included; `CAP_ALLOW_TRADING=false` remains unchanged.
 
+- ATP-API-065 follow-up: OpenAPI duplicate-root-section defect corrected in PR #84; regression test now requires exactly one root OpenAPI, info, servers, tags, paths and components section and checks component references. Status remains IMPLEMENTED — exact final-head CI and macOS matrix qualification pending.
+
