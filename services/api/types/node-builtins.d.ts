@@ -32,6 +32,7 @@ declare module "node:process" {
     stdin: AsyncIterable<Uint8Array>;
     stdout: WritableStream;
     exitCode: number | undefined;
+    exit(code?: number): never;
     on(event: "SIGINT" | "SIGTERM", listener: () => void): this;
   }
   const process: Process;
