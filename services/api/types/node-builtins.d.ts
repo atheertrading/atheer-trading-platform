@@ -1,5 +1,5 @@
 declare module "node:http" {
-  export interface IncomingMessage {
+  export interface IncomingMessage extends AsyncIterable<Uint8Array> {
     method?: string;
     url?: string;
     headers: Readonly<Record<string, string | string[] | undefined>>;
