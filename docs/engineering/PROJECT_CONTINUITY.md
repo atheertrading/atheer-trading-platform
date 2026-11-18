@@ -537,3 +537,12 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - No macOS SSE consumer or Market Explorer quote UI has been added yet. This is a backend foundation increment only.
 - The 5-second freshness evaluation is informational at arrival time and is not wired to RiskEngine/OMS/Execution Gateway.
 - DEMO only; `CAP_ALLOW_TRADING=false` unchanged; no dealing or LIVE functionality.
+
+
+## 2026-11-18 — ATP-SEC-001A local API browser-origin guard
+
+- The API runtime binds only to `127.0.0.1`.
+- All `/market-data/*` routes require `X-ATHEER-LOCAL-CLIENT: macOS`, reject any `Origin` header, and reject `Sec-Fetch-Site` values other than absent or `none`.
+- Native Market Search requests send the marker. The SSE integration test also sends it.
+- API tests cover missing marker, cross-origin requests, cross-site Fetch Metadata and accepted native requests.
+- This mitigates browser CSRF/cross-origin access only. The marker is not secret and does not authenticate arbitrary local processes; production requires a per-launch capability token or authenticated local IPC.
