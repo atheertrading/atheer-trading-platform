@@ -6,6 +6,7 @@ import SwiftUI
 struct WorkspaceHomeView: View {
     @ObservedObject var backendHealthModel: BackendHealthViewModel
     let marketHistoryClient: MarketHistoryClient?
+    let marketDataStreamModel: MarketDataStreamViewModel?
     let selectedChartInstrumentId: String?
     let onOpenAPIConnection: () -> Void
     let onOpenMarkets: () -> Void
@@ -13,12 +14,14 @@ struct WorkspaceHomeView: View {
     init(
         backendHealthModel: BackendHealthViewModel,
         marketHistoryClient: MarketHistoryClient? = nil,
+        marketDataStreamModel: MarketDataStreamViewModel? = nil,
         selectedChartInstrumentId: String? = nil,
         onOpenAPIConnection: @escaping () -> Void,
         onOpenMarkets: @escaping () -> Void = {}
     ) {
         _backendHealthModel = ObservedObject(wrappedValue: backendHealthModel)
         self.marketHistoryClient = marketHistoryClient
+        self.marketDataStreamModel = marketDataStreamModel
         self.selectedChartInstrumentId = selectedChartInstrumentId
         self.onOpenAPIConnection = onOpenAPIConnection
         self.onOpenMarkets = onOpenMarkets
@@ -28,6 +31,7 @@ struct WorkspaceHomeView: View {
         CommandCenterView(
             backendHealthModel: backendHealthModel,
             marketHistoryClient: marketHistoryClient,
+            marketDataStreamModel: marketDataStreamModel,
             selectedChartInstrumentId: selectedChartInstrumentId,
             onOpenAPIConnection: onOpenAPIConnection,
             onOpenMarkets: onOpenMarkets
