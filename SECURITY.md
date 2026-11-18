@@ -35,3 +35,12 @@ Report suspected vulnerabilities privately through GitHub's private vulnerabilit
 ## Security improvements
 
 Secret scanning, dependency scanning, branch protection, signed releases, notarization, and runtime credential controls must be configured and verified as separate engineering tasks. This document does not claim those controls are already active.
+
+
+## Local market-data API trust boundary
+
+- The development API must bind exclusively to `127.0.0.1`; `HOST` values other than loopback are rejected by runtime configuration.
+- Every `/market-data/*` request must include `X-ATHEER-LOCAL-CLIENT: macOS`, must omit the browser `Origin` header, and may only omit `Sec-Fetch-Site` or use `none`.
+- No CORS permissions are granted. Browser-origin and unidentified requests are rejected before broker/session/stream operations.
+- The native macOS HTTP adapter must send the client marker header. Future SSE/stream consumers must do the same.
+- **Threat-model limitation:** this marker is not a secret or user authentication credential. It mitigates browser CSRF/cross-origin access; it does not authenticate arbitrary local processes running as the same user. Production packaging must add a per-launch local API capability token or authenticated local IPC before exposing broker/session controls beyond this development boundary.
