@@ -2,27 +2,22 @@ import Foundation
 
 @MainActor
 final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
-    private struct ConnectPayload: Encodable {
-        let apiKey: String
-        let identifier: String
-        let password: String
-    }
-
-    private struct SessionStatusPayload: Decodable {
-        let provider: String
-        let environment: String
-        let state: String
-        let connectedAtMs: Double?
-        let lastError: String?
-    }
-
     private let connection: BackendIPCConnection
+    private let credentialTransport: BrokerCredentialIPCTransport
     private let requestExecutor: URLSessionRequestExecutor
     private var maskedLoginIdentifier: String?
     private var authenticatedAt: Date?
 
-    init(connection: BackendIPCConnection, session: URLSession? = nil) {
+    init(
+        connection: BackendIPCConnection,
+        session: URLSession? = nil,
+        credentialTransport: BrokerCredentialIPCTransport? = nil
+    ) {
         self.connection = connection
+        self.credentialTransport = credentialTransport ?? UnixDomainSocketBrokerCredentialIPCClient(
+            socketURL: connection.credentialSocketURL,
+            capability: connection.capability
+        )
         let resolvedSession: URLSession
         if let session {
             resolvedSession = session
@@ -43,37 +38,14 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         guard environment == .demo else { throw BrokerAuthenticationError.liveDisabled }
         guard credential.isValid else { throw BrokerCredentialStoreError.invalidCredential }
 
-        var request = try makeRequest(path: "/broker-session/connect", method: "POST")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        var body = try JSONEncoder().encode(
-            ConnectPayload(
-                apiKey: credential.apiKey,
-                identifier: credential.identifier,
-                password: credential.password
-            )
-        )
-        request.httpBody = body
-        defer {
-            body.resetBytes(in: 0..<body.count)
-            request.httpBody = nil
-        }
-
         do {
-            let (data, response) = try await requestExecutor.data(for: request)
-            guard let http = response as? HTTPURLResponse else {
-                throw BrokerAuthenticationError.invalidResponse
-            }
-            guard http.statusCode == 200 else {
-                throw authenticationError(statusCode: http.statusCode)
-            }
-
-            let payload = try decodeStatus(data)
+            let payload = try await credentialTransport.connect(credentials: credential)
             guard payload.provider == "capital.com",
-                  payload.environment == "DEMO",
-                  payload.state == "connected" else {
+                  payload.environment == "DEMO" else {
                 throw BrokerAuthenticationError.invalidResponse
+            }
+            guard payload.state == "connected" else {
+                throw authenticationError(providerError: payload.lastError)
             }
 
             let timestamp = payload.connectedAtMs.map {
@@ -148,12 +120,15 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
     }
 
     func disconnect() async throws {
-        let request = try makeRequest(path: "/broker-session/disconnect", method: "POST")
-        let (_, response) = try await requestExecutor.data(for: request)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        do {
+            try await credentialTransport.disconnect()
+            clearLocalState()
+        } catch {
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
             throw BrokerAuthenticationError.unavailable
         }
-        clearLocalState()
     }
 
     private func makeRequest(path: String, method: String) throws -> URLRequest {
@@ -173,9 +148,9 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         return request
     }
 
-    private func decodeStatus(_ data: Data) throws -> SessionStatusPayload {
+    private func decodeStatus(_ data: Data) throws -> BrokerCredentialIPCStatus {
         do {
-            return try JSONDecoder().decode(SessionStatusPayload.self, from: data)
+            return try JSONDecoder().decode(BrokerCredentialIPCStatus.self, from: data)
         } catch {
             throw BrokerAuthenticationError.invalidResponse
         }
@@ -189,6 +164,22 @@ final class BackendBrokerAuthenticationService: BrokerAuthenticationService {
         case 503: return .unavailable
         default: return .providerRejected(statusCode)
         }
+    }
+
+    private func authenticationError(providerError: String?) -> BrokerAuthenticationError {
+        let message = providerError ?? ""
+        if message.contains("HTTP 401") ||
+            message.localizedCaseInsensitiveContains("rejected or expired") {
+            return .invalidCredentials
+        }
+        if message.contains("HTTP 403") {
+            return .providerRejected(403)
+        }
+        if message.contains("HTTP 429") ||
+            message.localizedCaseInsensitiveContains("rate-limited") {
+            return .rateLimited
+        }
+        return .unavailable
     }
 
     private func clearLocalState() {
