@@ -129,3 +129,5 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-18-056 | 2026-11-18 | Private broker IPC review remediation | Fixed recursive UDS fixture teardown and Swift rejection-code interpolation; added focused XCTest. Exact-head CI pending. | PR #66; SESSION_2026-11-18_056_PRIVATE_IPC_TEST_FIX_REVIEW |
 
 | ATP-2026-11-18-057 | 2026-11-18 | Cached quote freshness replay correction | Recalculate quote freshness at replay time from original provider timestamp; preserve receipt provenance; add stale-cache regression test. Hosted CI pending. | PR #67; SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY |
+
+| ATP-2026-11-18-057A | 2026-11-18 | Library Mermaid and quote freshness source reconciliation | Inspected available curated and Q&A Mermaid diagrams; updated canonical market-data pipeline diagram for cache replay freshness. Separate 52-block archive not accessible; freshness policy reconciliation remains pending. | PR #67; SESSION_2026-11-18_057_CACHED_QUOTE_FRESHNESS_REPLAY |
