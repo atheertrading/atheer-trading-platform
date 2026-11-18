@@ -15,24 +15,57 @@ import {
 
 const enabled = typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL.length > 0;
 
+function asRole(adminPool, role) {
+  return {
+    async connect() {
+      const client = await adminPool.connect();
+      try { await client.query("SET ROLE " + role); return client; }
+      catch (error) { client.release(); throw error; }
+    },
+    async query(sql, values) {
+      const client = await this.connect();
+      try { return await client.query(sql, values); }
+      finally { client.release(); }
+    },
+    async end() {},
+  };
+}
+
 test("PostgreSQL migrations and durable trading journal preserve transactional invariants", { skip: !enabled }, async (t) => {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
+  const adminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 8 });
   try {
+    await adminPool.query("CREATE ROLE atheer_db_owner NOLOGIN");
+    await adminPool.query("CREATE ROLE atheer_migrator NOLOGIN NOINHERIT");
+    await adminPool.query("GRANT atheer_db_owner TO atheer_migrator");
+    await adminPool.query("CREATE ROLE atheer_app NOLOGIN");
+    await adminPool.query("CREATE SCHEMA atheer AUTHORIZATION atheer_db_owner");
+    await adminPool.query("GRANT USAGE ON SCHEMA atheer TO atheer_app");
+    await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO atheer_app");
+    await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT USAGE, SELECT ON SEQUENCES TO atheer_app");
+    const migratorPool = asRole(adminPool, "atheer_migrator");
+    const appPool = asRole(adminPool, "atheer_app");
     const migrations = await loadSqlMigrations();
     assert.ok(migrations.length > 0, "No SQL migrations were discovered.");
-    await runSqlMigrations(pool);
-    await Promise.all([runSqlMigrations(pool), runSqlMigrations(pool)]);
-    await verifySqlMigrations(pool);
-    const serverVersion = await pool.query("SHOW server_version");
+    await runSqlMigrations(migratorPool);
+    await Promise.all([runSqlMigrations(migratorPool), runSqlMigrations(migratorPool)]);
+    await verifySqlMigrations(appPool);
+    await assert.rejects(
+      appPool.query("CREATE TABLE atheer.app_must_not_create (id integer)"),
+      (error) => error && error.code === "42501",
+    );
+    const ownership = await appPool.query("SELECT tableowner FROM pg_tables WHERE schemaname='atheer'");
+    assert.ok(ownership.rows.length > 0);
+    assert.ok(ownership.rows.every((row) => row.tableowner === "atheer_db_owner"));
+    const serverVersion = await appPool.query("SHOW server_version");
     console.info("PostgreSQL integration server version: " + serverVersion.rows[0].server_version);
     assert.match(serverVersion.rows[0].server_version, /^17\./);
     await assert.rejects(
-      applySqlMigrations(pool, [{ version: migrations[0].version, sql: migrations[0].sql + "\n-- checksum drift\n" }]),
+      applySqlMigrations(migratorPool, [{ version: migrations[0].version, sql: migrations[0].sql + "\n-- checksum drift\n" }]),
       (error) => error instanceof PersistenceConflictError && error.message.includes("checksum"),
     );
 
     await assert.rejects(
-      applySqlMigrations(pool, [
+      applySqlMigrations(migratorPool, [
         { version: "002", sql: "SELECT 1;" },
         { version: "002", sql: "SELECT 2;" },
       ]),
@@ -61,7 +94,7 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
       quantityIncrement: quantity("0.1", unitCode("CONTRACT")), lotSize: quantity("1", unitCode("LOT")),
       contractSize: quantity("100", unitCode("OUNCE")), constraints: [],
     };
-    const repository = new PostgresTradingRepository(pool, tradingEnvironment("DEMO"));
+    const repository = new PostgresTradingRepository(appPool, tradingEnvironment("DEMO"));
     await repository.registerBrokerAccount(account);
     await repository.registerBrokerAccount(account);
     await repository.registerInstrument(instrument, specification);
@@ -83,8 +116,8 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     };
     await repository.recordAccountSnapshot(account, accountSnapshot);
     await repository.recordAccountSnapshot(account, accountSnapshot);
-    const exactBalance = await pool.query(
-      "SELECT payload->'balance'->>'amount' AS amount FROM account_balance_snapshots WHERE environment='DEMO' AND account_id=$1 AND as_of=$2",
+    const exactBalance = await appPool.query(
+      "SELECT payload->'balance'->>'amount' AS amount FROM atheer.account_balance_snapshots WHERE environment='DEMO' AND account_id=$1 AND as_of=$2",
       [account.id, new Date(accountSnapshot.asOf).toISOString()],
     );
     assert.equal(exactBalance.rows[0].amount, "1000.25");
@@ -125,7 +158,7 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await assert.rejects(
       repository.persistIntentAndRiskAssessment(orphanIntent, { ...assessment, id: riskAssessmentId(prefix + "-orphan-risk"), intentId: orphanIntent.id }),
     );
-    const orphanCount = await pool.query("SELECT count(*)::text AS count FROM order_intents WHERE environment='DEMO' AND intent_id=$1", [orphanIntent.id]);
+    const orphanCount = await appPool.query("SELECT count(*)::text AS count FROM atheer.order_intents WHERE environment='DEMO' AND intent_id=$1", [orphanIntent.id]);
     assert.equal(orphanCount.rows[0].count, "0");
 
     const conflictingIntent = createOrderIntentEnvelope({
@@ -148,22 +181,22 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     });
     await repository.recordAuditEvent(audit);
 
-    const outbox = await pool.query("SELECT event_type FROM domain_outbox WHERE environment='DEMO' AND correlation_id=$1 ORDER BY event_type", [intent.correlationId]);
+    const outbox = await appPool.query("SELECT event_type FROM atheer.domain_outbox WHERE environment='DEMO' AND correlation_id=$1 ORDER BY event_type", [intent.correlationId]);
     assert.deepEqual(outbox.rows.map((row) => row.event_type).sort(), ["order.intent.persisted", "risk.assessment.persisted", "audit.event.persisted"].sort());
-    const persisted = await pool.query("SELECT outcome FROM risk_assessments WHERE environment='DEMO' AND risk_assessment_id=$1", [assessment.id]);
+    const persisted = await appPool.query("SELECT outcome FROM atheer.risk_assessments WHERE environment='DEMO' AND risk_assessment_id=$1", [assessment.id]);
     assert.equal(persisted.rows[0].outcome, "REJECTED");
-    const reconciliationCount = await pool.query("SELECT count(*)::text AS count FROM reconciliation_events WHERE environment='DEMO' AND reconciliation_event_id=$1", [reconciliation.id]);
+    const reconciliationCount = await appPool.query("SELECT count(*)::text AS count FROM atheer.reconciliation_events WHERE environment='DEMO' AND reconciliation_event_id=$1", [reconciliation.id]);
     assert.equal(reconciliationCount.rows[0].count, "1");
-    const auditCount = await pool.query("SELECT count(*)::text AS count FROM audit_events WHERE environment='DEMO' AND audit_event_id=$1", [audit.id]);
+    const auditCount = await appPool.query("SELECT count(*)::text AS count FROM atheer.audit_events WHERE environment='DEMO' AND audit_event_id=$1", [audit.id]);
     assert.equal(auditCount.rows[0].count, "1");
 
-    const wrongEnvironment = new PostgresTradingRepository(pool, tradingEnvironment("SIMULATION"));
+    const wrongEnvironment = new PostgresTradingRepository(appPool, tradingEnvironment("SIMULATION"));
     await assert.rejects(wrongEnvironment.registerBrokerAccount(account), PersistenceConflictError);
     await t.test("rejected risk decisions are journaled but never create execution-dispatch events", async () => {
-      const dispatch = await pool.query("SELECT count(*)::text AS count FROM domain_outbox WHERE event_type LIKE 'execution.dispatch.%' OR event_type='broker.order.submit'");
+      const dispatch = await appPool.query("SELECT count(*)::text AS count FROM atheer.domain_outbox WHERE event_type LIKE 'execution.dispatch.%' OR event_type='broker.order.submit'");
       assert.equal(dispatch.rows[0].count, "0");
     });
   } finally {
-    await pool.end();
+    await adminPool.end();
   }
 });
