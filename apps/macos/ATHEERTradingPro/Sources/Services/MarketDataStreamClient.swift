@@ -2,6 +2,8 @@ import Foundation
 
 enum MarketDataQuoteFreshnessState: String, Decodable, Equatable {
     case fresh
+    case aging
+    case entryBlocked = "entry_blocked"
     case stale
     case invalid
 }
@@ -21,8 +23,10 @@ struct MarketDataStreamStatus: Decodable, Equatable {
 struct MarketDataQuoteFreshness: Decodable, Equatable {
     let state: MarketDataQuoteFreshnessState
     let ageMs: Double?
-    let maximumAgeMs: Int
-    let automatedDecisionsAllowed: Bool
+    let normalAgeMs: Int
+    let automatedEntryBlockAgeMs: Int
+    let staleAgeMs: Int
+    let newAutomatedEntriesAllowed: Bool
     let reason: String
 }
 
@@ -118,12 +122,14 @@ struct ServerSentEventParser {
                 switch freshness.state {
                 case .fresh:
                     ageMatchesState = freshness.ageMs.map {
-                        $0 >= 0 && $0 <= Double(freshness.maximumAgeMs)
+                        $0 >= 0 && $0 <= Double(freshness.normalAgeMs)
                     } ?? false
+                case .aging:
+                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.normalAgeMs) && $0 <= Double(freshness.automatedEntryBlockAgeMs) } ?? false
+                case .entryBlocked:
+                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.automatedEntryBlockAgeMs) && $0 <= Double(freshness.staleAgeMs) } ?? false
                 case .stale:
-                    ageMatchesState = freshness.ageMs.map {
-                        $0 > Double(freshness.maximumAgeMs)
-                    } ?? false
+                    ageMatchesState = freshness.ageMs.map { $0 > Double(freshness.staleAgeMs) } ?? false
                 case .invalid:
                     ageMatchesState = true
                 }
@@ -140,12 +146,13 @@ struct ServerSentEventParser {
                       quote.receivedAtMonotonicMs.isFinite,
                       quote.receivedAtMonotonicMs >= 0,
                       ageIsValid,
-                      freshness.maximumAgeMs > 0,
-                      freshness.maximumAgeMs <= 60_000,
+                      freshness.normalAgeMs == 5_000,
+                      freshness.automatedEntryBlockAgeMs == 10_000,
+                      freshness.staleAgeMs == 15_000,
                       ageMatchesState,
                       !freshness.reason.isEmpty,
                       freshness.reason.count <= 128,
-                      (freshness.state == .fresh) == freshness.automatedDecisionsAllowed else {
+                      ((freshness.state == .fresh || freshness.state == .aging) == freshness.newAutomatedEntriesAllowed) else {
                     throw MarketDataStreamError.invalidResponse
                 }
                 return .quote(quote)

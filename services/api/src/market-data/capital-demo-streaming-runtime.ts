@@ -12,13 +12,14 @@ const SOCKET_CLOSE_TIMEOUT_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
-const QUOTE_MAXIMUM_AGE_MS = 5_000;
-const QUOTE_MAXIMUM_FUTURE_SKEW_MS = 250;
+const QUOTE_FRESHNESS_POLICY = { normalAgeMs: 5_000, automatedEntryBlockAgeMs: 10_000, staleAgeMs: 15_000, maximumFutureSkewMs: 250 } as const;
 
 export type MarketDataStreamState = "disconnected" | "connecting" | "connected" | "degraded";
 
 export interface MarketDataStreamQuoteFreshness extends QuoteFreshnessResult {
-  readonly maximumAgeMs: number;
+  readonly normalAgeMs: number;
+  readonly automatedEntryBlockAgeMs: number;
+  readonly staleAgeMs: number;
 }
 
 export interface MarketDataStreamQuote extends NormalizedQuote {
@@ -123,14 +124,13 @@ export class CapitalDemoStreamingRuntime {
       // freshness from the provider timestamp at replay time; never replay the
       // original "fresh" authorization decision as if it were current.
       const freshness = evaluateQuoteFreshness(quote, nowMs, {
-        maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
-        maximumFutureSkewMs: QUOTE_MAXIMUM_FUTURE_SKEW_MS,
+        ...QUOTE_FRESHNESS_POLICY,
       });
       return [{
         ...quote,
         freshness: {
           ...freshness,
-          maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
+          ...QUOTE_FRESHNESS_POLICY,
         },
       }];
     });
@@ -445,10 +445,9 @@ export class CapitalDemoStreamingRuntime {
       receivedAtMonotonicMs: this.monotonicNow(),
       freshness: {
         ...evaluateQuoteFreshness(normalized, receivedAtMs, {
-          maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
-          maximumFutureSkewMs: QUOTE_MAXIMUM_FUTURE_SKEW_MS,
+          ...QUOTE_FRESHNESS_POLICY,
         }),
-        maximumAgeMs: QUOTE_MAXIMUM_AGE_MS,
+        ...QUOTE_FRESHNESS_POLICY,
       },
     };
     this.latestQuotes.set(quote.instrumentId, quote);

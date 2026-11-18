@@ -443,7 +443,7 @@ struct MarketExplorerView: View {
                 .accessibilityLabel("Live market quote table")
             }
 
-            Text("Display-only market data. Provider timestamps and freshness are validated; stale or invalid quotes are visibly classified. This monitor has no order or execution authority.")
+            Text("Display-only market data. Quotes are normal through 5s, aging through 10s, block new automated entries above 10s, and are stale above 15s. Position management remains a separate risk decision; this monitor has no order or execution authority.")
                 .font(ATHEERDesignTokens.Typography.caption)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -559,8 +559,10 @@ struct MarketExplorerView: View {
         switch quality {
         case .fresh:
             return ATHEERDesignTokens.ColorRole.success
-        case .stale:
+        case .aging:
             return ATHEERDesignTokens.ColorRole.attention
+        case .entryBlocked, .stale:
+            return ATHEERDesignTokens.ColorRole.danger
         case .invalid:
             return ATHEERDesignTokens.ColorRole.danger
         }

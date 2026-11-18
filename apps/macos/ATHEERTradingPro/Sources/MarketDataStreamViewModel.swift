@@ -15,11 +15,20 @@ struct MarketDataStreamQuoteSnapshot: Identifiable {
 
     var effectiveFreshnessState: MarketDataQuoteFreshnessState {
         guard let ageMilliseconds else { return .invalid }
-        if quote.freshness.state == .fresh &&
-            ageMilliseconds > Double(quote.freshness.maximumAgeMs) {
-            return .stale
-        }
-        return quote.freshness.state
+        guard quote.freshness.state != .invalid else { return .invalid }
+        if ageMilliseconds > Double(quote.freshness.staleAgeMs) { return .stale }
+        if ageMilliseconds > Double(quote.freshness.automatedEntryBlockAgeMs) { return .entryBlocked }
+        if ageMilliseconds > Double(quote.freshness.normalAgeMs) { return .aging }
+        return .fresh
+    }
+
+    var newAutomatedEntriesAllowed: Bool {
+        guard let ageMilliseconds else { return false }
+        return quote.freshness.newAutomatedEntriesAllowed &&
+            ageMilliseconds <= Double(quote.freshness.automatedEntryBlockAgeMs) &&
+            quote.freshness.state != .invalid &&
+            quote.freshness.state != .entryBlocked &&
+            quote.freshness.state != .stale
     }
 }
 

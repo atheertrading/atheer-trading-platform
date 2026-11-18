@@ -79,7 +79,7 @@ final class MarketDataStreamClientTests: XCTestCase {
     func testParserDecodesFreshDEMOQuoteEvent() throws {
         var parser = ServerSentEventParser()
         let payload = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"maximumAgeMs":5000,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":15000,"newAutomatedEntriesAllowed":true,"reason":"within_normal_range"}}
         """
 
         XCTAssertNil(try parser.consume("event: quote"))
@@ -93,7 +93,7 @@ final class MarketDataStreamClientTests: XCTestCase {
         XCTAssertEqual(quote.bid, 100.0)
         XCTAssertEqual(quote.ask, 100.1)
         XCTAssertEqual(quote.freshness.state, .fresh)
-        XCTAssertTrue(quote.freshness.automatedDecisionsAllowed)
+        XCTAssertTrue(quote.freshness.newAutomatedEntriesAllowed)
     }
 
     func testParserRejectsOversizedEventPayload() throws {
@@ -106,7 +106,7 @@ final class MarketDataStreamClientTests: XCTestCase {
     func testParserRejectsUnboundedFreshnessThreshold() throws {
         var parser = ServerSentEventParser()
         _ = try parser.consume("event: quote")
-        let payload = #"{"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":1,"ask":2,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":1,"freshness":{"state":"fresh","ageMs":0,"maximumAgeMs":60001,"reason":"within_threshold","automatedDecisionsAllowed":true}}"#
+        let payload = #"{"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":1,"ask":2,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000000,"receivedAtMonotonicMs":1,"freshness":{"state":"fresh","ageMs":0,"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":60001,"reason":"within_normal_range","newAutomatedEntriesAllowed":true}}"#
         _ = try parser.consume("data: \(payload)")
         XCTAssertThrowsError(try parser.consume(""))
     }
@@ -114,7 +114,7 @@ final class MarketDataStreamClientTests: XCTestCase {
     func testParserRejectsCrossedQuoteAndInconsistentFreshnessPolicy() {
         var crossedParser = ServerSentEventParser()
         let crossedQuote = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.2,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"automatedDecisionsAllowed":true,"reason":"within_policy"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.2,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"fresh","ageMs":100.0,"newAutomatedEntriesAllowed":true,"reason":"within_normal_range"}}
         """
         XCTAssertNil(try? crossedParser.consume("event: quote"))
         XCTAssertNil(try? crossedParser.consume("data: \(crossedQuote)"))
@@ -122,7 +122,7 @@ final class MarketDataStreamClientTests: XCTestCase {
 
         var freshnessParser = ServerSentEventParser()
         let inconsistentFreshness = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"stale","ageMs":9000.0,"maximumAgeMs":5000,"automatedDecisionsAllowed":true,"reason":"quote_too_old"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"AAPL","bid":100.0,"ask":100.1,"providerTimestampMs":1800000000000,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"entry_blocked","ageMs":11000.0,"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":15000,"newAutomatedEntriesAllowed":true,"reason":"automated_entries_blocked"}}
         """
         XCTAssertNil(try? freshnessParser.consume("event: quote"))
         XCTAssertNil(try? freshnessParser.consume("data: \(inconsistentFreshness)"))
@@ -132,7 +132,7 @@ final class MarketDataStreamClientTests: XCTestCase {
     func testParserPreservesInvalidFutureTimestampQuoteForQualityDisplay() throws {
         var parser = ServerSentEventParser()
         let payload = """
-        {"provider":"capital.com","environment":"DEMO","instrumentId":"WTI","bid":80.0,"ask":80.1,"providerTimestampMs":1800000000020,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"invalid","ageMs":-10.0,"maximumAgeMs":5000,"automatedDecisionsAllowed":false,"reason":"provider_timestamp_in_future"}}
+        {"provider":"capital.com","environment":"DEMO","instrumentId":"WTI","bid":80.0,"ask":80.1,"providerTimestampMs":1800000000020,"receivedAtMs":1800000000010,"receivedAtMonotonicMs":123.0,"freshness":{"state":"invalid","ageMs":-10.0,"normalAgeMs":5000,"automatedEntryBlockAgeMs":10000,"staleAgeMs":15000,"newAutomatedEntriesAllowed":false,"reason":"provider_timestamp_in_future"}}
         """
 
         XCTAssertNil(try parser.consume("event: quote"))
@@ -141,7 +141,7 @@ final class MarketDataStreamClientTests: XCTestCase {
             return XCTFail("Expected an invalid quote to remain visible for diagnostics.")
         }
         XCTAssertEqual(quote.freshness.state, .invalid)
-        XCTAssertFalse(quote.freshness.automatedDecisionsAllowed)
+        XCTAssertFalse(quote.freshness.newAutomatedEntriesAllowed)
     }
 
     func testQuoteBecomesLocallyStaleAfterBackendFreshnessWindow() {
@@ -157,16 +157,25 @@ final class MarketDataStreamClientTests: XCTestCase {
             freshness: MarketDataQuoteFreshness(
                 state: .fresh,
                 ageMs: 100,
-                maximumAgeMs: 5_000,
-                automatedDecisionsAllowed: true,
-                reason: "within_policy"
+                normalAgeMs: 5_000,
+                automatedEntryBlockAgeMs: 10_000,
+                staleAgeMs: 15_000,
+                newAutomatedEntriesAllowed: true,
+                reason: "within_normal_range"
             )
         )
         let snapshot = MarketDataStreamQuoteSnapshot(
             quote: quote,
             receivedAtUptime: ProcessInfo.processInfo.systemUptime - 6
         )
-        XCTAssertEqual(snapshot.effectiveFreshnessState, .stale)
+        XCTAssertEqual(snapshot.effectiveFreshnessState, .aging)
+        XCTAssertTrue(snapshot.newAutomatedEntriesAllowed)
+        let blockedSnapshot = MarketDataStreamQuoteSnapshot(quote: quote, receivedAtUptime: ProcessInfo.processInfo.systemUptime - 11)
+        XCTAssertEqual(blockedSnapshot.effectiveFreshnessState, .entryBlocked)
+        XCTAssertFalse(blockedSnapshot.newAutomatedEntriesAllowed)
+        let staleSnapshot = MarketDataStreamQuoteSnapshot(quote: quote, receivedAtUptime: ProcessInfo.processInfo.systemUptime - 16)
+        XCTAssertEqual(staleSnapshot.effectiveFreshnessState, .stale)
+        XCTAssertFalse(staleSnapshot.newAutomatedEntriesAllowed)
     }
 
     @MainActor
@@ -205,9 +214,11 @@ final class MarketDataStreamClientTests: XCTestCase {
             freshness: MarketDataQuoteFreshness(
                 state: .fresh,
                 ageMs: 100,
-                maximumAgeMs: 5_000,
-                automatedDecisionsAllowed: true,
-                reason: "within_policy"
+                normalAgeMs: 5_000,
+                automatedEntryBlockAgeMs: 10_000,
+                staleAgeMs: 15_000,
+                newAutomatedEntriesAllowed: true,
+                reason: "within_normal_range"
             )
         )))
 
