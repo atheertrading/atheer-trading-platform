@@ -341,3 +341,39 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 
 - Follow-up commit `f22cac58682910256049541c252b6e54bf17c682` defers the always-visible navigation sidebar List selection state update as an additional AppKit reentrancy safeguard. This is source-level mitigation; owner runtime confirmation remains pending.
+
+## ATP-SCR-MKT-001 — Market Explorer / Instrument Search — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FEATURE BRANCH  
+**Verification status:** PENDING  
+**Branch:** feat/macos-market-explorer  
+**Dependency chain:** PR #24 → PR #25 → PR #26 → Market Explorer feature branch
+
+- Added a Markets navigation destination and native Market Explorer screen.
+- Added typed backend market-data status and instrument-search contracts with provider/environment validation.
+- Search is gated on backend Capital.com DEMO REST session state being connected.
+- The screen explicitly distinguishes REST session, market streaming (not connected), and trading (disabled).
+- Only instrument metadata is rendered. Untimestamped bid/offer fields are omitted.
+- Five deterministic XCTest cases cover status and market payload decoding, LIVE/invalid payload rejection, disconnected-session gating, and connected search results.
+- Native Keychain broker credentials from PR #26 and backend environment credentials/session from PR #25 remain separate. No secure credential/session bridge is implemented.
+- Exact-head hosted CI, owner-Mac build/XCTest, app runtime, visual QA, accessibility, and real DEMO provider verification remain pending.
+- No streaming, charts, watchlists, orders, dealing, risk mutation, LIVE capability, or production readiness is claimed.
+
+
+## ATP-MKT-002 — Market Explorer Search Lifecycle Hardening — 2026-11-17
+
+**Implementation status:** IMPLEMENTED ON FOCUSED BRANCH  
+**Verification status:** PENDING  
+**Branch:** `fix/market-explorer-search-lifecycle`  
+**Base:** PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`
+
+- Search and backend-status requests use generation tracking to ignore stale completions.
+- Editing the search query invalidates the previous request and clears obsolete result state; unavailable status is retained.
+- Search eligibility and request validation both enforce 1–100 characters; the existing search UI shows an accessible length counter.
+- Added XCTest source coverage for overlong query rejection and out-of-order response handling.
+- CI and owner-Mac verification remain pending. No compilation/test success is claimed.
+- No new screen, streaming, chart, dealing, LIVE, or risk-control functionality was added.
+
+
+- PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
+- Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS build or XCTest result is yet available.
