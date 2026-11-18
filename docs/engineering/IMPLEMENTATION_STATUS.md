@@ -377,3 +377,14 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 
 - PR #33: https://github.com/atheertrading/atheer-trading-platform/pull/33 (OPEN / DRAFT), exact head `a0d6164dbed794cb2d83f211146412bab7a0787f`, based on PR #31 exact head `66de2c54cf1ae8156bd3b3e1c8447ae2dfe5e4be`.
 - Initial exact-head CI #44170652406: Repository Hygiene passed; Backend Toolchain in progress; Intel and Apple Silicon macOS jobs queued. Local Sync Safety #44170652465 passed. No macOS build or XCTest result is yet available.
+
+
+## ATP-UI-ARCH-001A — Market Explorer boundary separation — 2026-11-18
+
+- Replaced provider-facing `MarketSearchInstrument` and Decodable status models in the presentation path with provider-independent `MarketInstrumentSummary` and `MarketDataBackendStatus`.
+- Provider response DTOs are now private to `MarketSearchClient.swift`; the adapter maps DTOs into semantic models.
+- Moved `MarketExplorerViewModel` into its own source file and removed its default concrete HTTP-client construction.
+- `ContentView` now selects `URLSessionMarketSearchClient` at the composition root and injects the protocol into Market Explorer.
+- Added an unknown backend-state rejection test and migrated search lifecycle tests to semantic models.
+- Code commits: `448fc017d8729fe047a6437f0f9c77bb81b53063`, `a4ea2355a7865eec3284605e0a1a4097ef954ded`, `e3cf9c04bb27bd7c3311ce04825a99688514afd5`, `65b53535304117aff11f71aa7f83bd89c5636c43`, `4b19bc34fbb7599f42673303a08b4a7ab53e6001`, `82d67fde50d56bad020e51d455b653e6901c6237`.
+- Exact-head hosted CI is pending. No local Mac/Xcode run is claimed for the refactor.
