@@ -58,7 +58,7 @@ The chart is not a live quote monitor and must not be treated as an executable s
 
 ## Verification status
 
-- Source and test changes committed on the PR #69 branch.
+- Source and test changes committed on the PR #70 branch.
 - Hosted exact-head macOS CI and all dependent PR checks are pending.
 - No local Xcode build, owner-Mac pull, provider DEMO authentication, or live historical response is claimed.
 - The prior local Mac record from 2026-11-17 is historical evidence only and does not qualify this branch.
@@ -67,7 +67,7 @@ The chart is not a live quote monitor and must not be treated as an executable s
 
 PR #66's previous CI run exposed a compile error in the MarketSearch test fixture: the new `BackendIPCConnection` initializer required `credentialSocketURL`. The fixture was corrected on the updated PR #66 head and the same test-only correction was propagated to descendant branches so their exact-head checks include it. The previous PR #66 run remains failed; the updated exact-head rerun and Apple Silicon qualification are pending.
 
-PR #69 is stacked on PR #68, which is stacked on PR #67. The older PR #43/#44 chart branch remains open but is not merge-ready: its original client used a static backend port and omitted the private IPC bearer capability, which would fail against the current API.
+PR #70 is stacked on PR #68, which is stacked on PR #67. The older PR #43/#44 chart branch remains open but is not merge-ready: its original client used a static backend port and omitted the private IPC bearer capability, which would fail against the current API.
 
 ## Safety
 
