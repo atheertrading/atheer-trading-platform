@@ -135,3 +135,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 | ATP-2026-11-18-058 | 2026-11-18 | Authenticated historical DEMO market data | Port historical normalization and strict UTC ranges into secure BrokerSessionManager path; add API/client/normalizer tests and Mermaid diagram 10. CI pending. | PR #68; SESSION_2026-11-18_058_AUTHENTICATED_HISTORICAL_MARKET_DATA |
 
 | ATP-2026-11-18-059 | 2026-11-18 | Authenticated historical chart workspace | Port chart UI and strict client onto dynamic BackendIPCConnection with private capability; integrate Market Explorer and Command Center; tests and Mermaid diagram 11. CI pending. | PR #70; SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE |
+
+
+| ATP-2026-11-18-060 | 2026-11-18 | Authenticated chart dependency-initializer remediation | Reviewed the PR #70 integration source; added explicit initializers for WorkspaceHomeView and CommandCenterView, updated the session/task/status/continuity records, and triggered exact-head CI. Source implementation is committed; hosted qualification pending. | PR #70; commits bd12cc67526c71550b31737763b3e05e012da8e3 / 484907de2f308231dac89d5e151beee6e95c250a; SESSION_2026-11-18_059_AUTHENTICATED_CHART_WORKSPACE |
