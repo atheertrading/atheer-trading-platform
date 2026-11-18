@@ -1,0 +1,224 @@
+# ATHEER Trading Pro — Product and Engineering Roadmap
+
+**Document ID:** ATP-ROADMAP-001  
+**Version:** 0.1.0  
+**Date:** 2026-11-18  
+**Status:** Working engineering roadmap derived from the Library vision and architecture baseline; delivery sequence is evidence-driven and subject to refinement.  
+**Tracking:** [ATP-ENG-063](https://github.com/atheertrading/atheer-trading-platform/issues/77) · [12-screen IPDS plan](https://github.com/atheertrading/atheer-trading-platform/issues/72)
+
+## 1. Product thesis
+
+ATHEER Trading Pro is a professional, extensible, multi-asset Trading Operating System. It is not merely a charting terminal, a broker-specific front end, or an AI chat interface.
+
+The system connects:
+
+- Market intelligence and broker-verified instrument data.
+- Quantitative research, analytics and charting.
+- Strategy engineering, deterministic simulation and backtesting.
+- Manual and automated trading through one governed order path.
+- Central risk authorization, OMS, execution and position management.
+- Broker-state reconciliation, auditability and operational controls.
+- Atheer Mind OS and specialized agents as bounded decision-support capabilities.
+- A professional, configurable macOS workstation, with web and multi-user capability as later horizons.
+
+Capital.com is the initial primary broker integration. The platform domain must remain broker-neutral so future adapters can be added without redesigning strategy, risk, OMS or UI contracts.
+
+Potential asset classes include FX, metals, energy, indices, equities, digital assets and agricultural commodities. This list describes the platform domain, not guaranteed availability from any broker. An instrument may be shown as tradable only after its availability, account/jurisdiction eligibility, market-data entitlement, contract specifications and order capabilities are verified from authoritative provider data.
+
+## 2. Product principles
+
+1. **Capital preservation and trader authority:** financial safety is a system property, not a UI preference.
+2. **Broker truth:** broker-confirmed orders, fills, positions, balances and margin are authoritative for broker-connected activity.
+3. **One governed order path:** manual, strategy and AI-generated proposals converge on the same OrderIntent and risk/OMS/Execution Gateway path.
+4. **No fabricated financial state:** never synthesize quotes, balances, margin, positions, fills or execution status.
+5. **Environment isolation:** DEMO, SIMULATION, BACKTEST and LIVE have separate configuration, persistence, authorization and reporting.
+6. **Deterministic safety:** hard financial constraints and risk decisions are deterministic; AI cannot authorize its own actions.
+7. **Modular extensibility:** provider-neutral domain contracts, broker adapters, dependency inversion and explicit capability models.
+8. **Evidence-driven delivery:** every milestone requires artifacts, acceptance criteria, tests, resolved dependencies and archived evidence.
+
+## 3. Target domain architecture
+
+| Domain | Responsibility | Required boundary |
+|---|---|---|
+| Data OS / Market Intelligence | Provider ingestion, normalization, provenance, freshness, replay, gaps and subscriptions | Provider DTOs do not leak into UI, risk or strategy |
+| Instrument Registry / BIDCMS | Canonical instrument identity, asset class, broker availability and contract specifications | Tradability is account/provider capability-qualified |
+| Quantitative Research | Indicators, features, charting, historical datasets and research | Deterministic calculations and reproducible inputs |
+| Strategy OS | Strategy definitions, versions, lifecycle and signal generation | Strategies emit intents; they do not deal directly |
+| Risk & Portfolio | Pre-trade controls, exposure, margin, concentration, limits and emergency policy | Independent authorization; fail closed on unknown/stale state |
+| OMS | Durable order state machine, idempotency, fills, cancel/replace and reconciliation | Broker acknowledgement is not a fill |
+| Execution Gateway | The only broker-dealing boundary | Rejects absent/expired/invalid risk authorization |
+| Position Management | Broker-sourced positions, protective actions and lifecycle monitoring | Local state is reconciled projection, not broker truth |
+| Atheer Mind OS / Agent OS | Research, analysis, explanation, proposals and bounded workflows | No broker secrets, self-authorized risk or direct dealing |
+| Workstation & Operations | Navigation, workspaces, charts, controls, audit and observability | UI cannot bypass backend governance |
+| Identity & Tenant Services | User identity, authorization, isolation and later team/organization support | User, broker account, trading account and tenant are distinct |
+
+## 4. Strategic horizons
+
+These horizons operationalize the Library's three-to-five-year vision. They are strategic outcomes, not fixed release dates.
+
+### Horizon 1 — Professional core
+
+Establish a dependable owner-managed workstation with verified broker connectivity, multi-asset instrument discovery, reliable live/historical market data, charting, manual DEMO trading, centralized RiskEngine, OMS, Execution Gateway, position management, strategy development and historical backtesting.
+
+**Outcome:** a professionally integrated DEMO-capable trading workstation with a complete and reconciled order lifecycle.
+
+### Horizon 2 — Intelligence ecosystem
+
+Add Atheer Mind OS, Agent OS, Skill OS, quantitative research, market-regime and volatility analysis, news/economic-event intelligence, advanced strategy validation and continuous position intelligence.
+
+**Outcome:** AI-assisted decision intelligence with auditable evidence and bounded permissions, never a parallel execution authority.
+
+### Horizon 3 — Scalable infrastructure
+
+Introduce multi-user identity, role/permission controls, isolated workspaces, independent broker connections, expanded broker adapters, portfolio management, resource governance and resilient service deployment.
+
+**Outcome:** independent users and trading environments supported without architectural redesign.
+
+### Horizon 4 — Professional and institutional capabilities
+
+Add organizational/team workspaces, cross-strategy exposure and correlation, advanced portfolio intelligence, institutional reporting/audit and more sophisticated automation governance where validated demand justifies it.
+
+### Horizon 5 — Integrated ecosystem
+
+Consolidate broker-independent trading infrastructure, modular analytical/algorithmic capabilities, model-provider extensibility, organizational capabilities and a governed developer/strategy integration ecosystem.
+
+## 5. Engineering milestones and dependency order
+
+The following M0–M11 sequence follows the consolidated architecture's recommended implementation path.
+
+| Milestone | Scope | Exit condition | Current evidence |
+|---|---|---|---|
+| **M0 — Source Reconciliation** | Authority, source inventory, conflicts, repository/Library continuity | Canonical sources and conflicts recorded; branch integration plan verified | Partial; ATP-ENG-063 remains open |
+| **M1 — Requirements & Architecture** | Product requirements, domain boundaries, contracts, ADRs and acceptance criteria | Critical contracts and owners established; unresolved items explicitly registered | Architecture records exist; formal reconciliation/approval gaps remain |
+| **M2 — Security & Persistence** | Identity/capability, secret custody, local IPC, durable store, audit and recovery | Threat model, Keychain lifecycle, authenticated IPC, migrations, backup/restore and security tests pass | UDS/capability work exists on PR #66; lifecycle qualification and durable trading persistence remain incomplete |
+| **M3 — Data OS** | Market-data ingestion, provenance, normalization, freshness, replay, historical data and subscription governance | Deterministic quality/recovery tests; provider data provenance preserved | Streaming/history partial on open PRs; catalog/persistence/reconciliation remain |
+| **M4 — Capital.com Integration** | DEMO session, instrument discovery, market navigation, REST/WebSocket and broker capabilities | Official contract verified; account/instrument capabilities qualified; reconnect/keepalive and data soak pass | Read-only DEMO REST/stream/history on open PRs; no end-to-end account runtime evidence |
+| **M5 — OMS & Risk Engine** | Canonical order domain, intent journal, risk policies and OMS state machine | Manual/strategy/AI intents share one fail-closed path; idempotency and durable state verified | Not implemented in reviewed source |
+| **M6 — Execution Gateway** | Controlled broker dealing, confirmation, retry and reconciliation | Only authorized OMS commands reach broker; ambiguous outcomes reconciled before retry | Not implemented in reviewed source |
+| **M7 — Strategy & Position Management** | Strategy lifecycle, position monitoring, protective actions and account/portfolio projections | Deterministic strategy lifecycle and broker-reconciled position controls pass | Not implemented in reviewed source |
+| **M8 — Intelligence & Research** | Quant research, backtesting, AI agents, model gateway and market intelligence | Reproducible research; agent permissions/audit; no execution bypass | Architecture direction exists; implementation not verified |
+| **M9 — Desktop & Web Integration** | 12-screen IPDS, macOS workspace, accessibility, RTL and future web client | Screen contracts, automated tests, native visual/accessibility/RTL QA | macOS shell/chart and IPDS foundation are on separate open PRs; screen blueprint is proposed |
+| **M10 — Integration & DEMO Validation** | End-to-end broker/data/risk/OMS/execution/position reconciliation and soak | Complete DEMO lifecycle, failure/restart/reconciliation evidence and rollback | Not achieved |
+| **M11 — Release Readiness** | Packaging, signing, security review, SLOs, recovery, release evidence | All release gates pass and owner release decision is recorded | Not started |
+
+```mermaid
+flowchart TD
+    A["M0 Source Reconciliation"] --> B["M1 Requirements and Architecture"]
+    B --> C["M2 Security and Persistence"]
+    B --> D["M3 Data OS"]
+    C --> E["M4 Capital.com Integration"]
+    D --> E
+    C --> F["M5 OMS and Risk Engine"]
+    D --> F
+    E --> G["M6 Execution Gateway"]
+    F --> G
+    G --> H["M7 Strategy and Position Management"]
+    D --> I["M8 Intelligence and Research"]
+    B --> I
+    H --> J["M9 Desktop and Web Integration"]
+    I --> J
+    G --> J
+    J --> K["M10 Integration and DEMO Validation"]
+    K --> L["M11 Release Readiness"]
+    L --> M["OWNER GATE: LIVE Authorization"]
+```
+
+### Critical path
+
+Source reconciliation → Requirements closure → Architecture → Security and persistence → Market data and broker integration → RiskEngine and OMS → Execution Gateway → Position Management → End-to-end DEMO validation → Release readiness.
+
+Strategy research, UI design, historical testing and AI can proceed in parallel when their dependencies are satisfied. None can establish an independent execution capability.
+
+## 6. DEMO trading vertical slice — mandatory product acceptance
+
+The first functional trading milestone is not a collection of isolated order buttons. It is one end-to-end, broker-reconciled vertical slice:
+
+`Manual / Strategy / AI Proposal → OrderIntent → Identity & Domain Validation → Central RiskEngine → OMS → Execution Gateway → Capital.com DEMO Adapter → Broker Confirmation → Reconciliation → Position Projection`
+
+Minimum acceptance:
+
+- Canonical `Account`, `Instrument`, `OrderIntent`, `Order`, `Fill`, `Position` and `ExecutionReport` contracts.
+- Durable intent journal/outbox, UUID/correlation IDs, idempotency and append-only audit.
+- Risk checks for account state, instrument capabilities, market status, quote freshness, exposure, margin, order size, price bounds and strategy/user limits.
+- Broker acknowledgement separated from execution confirmation; use the broker deal reference and confirmation endpoint.
+- Timeout/unknown result treated as ambiguous; reconcile before retry.
+- Partial fills, reject, cancel/replace, disconnect, restart and duplicate submission tested.
+- Manual, strategy and AI proposals use exactly the same risk and execution path.
+- Emergency halt, cancel-pending and controlled close workflows are tested against verified broker state.
+- DEMO and SIM/BACKTEST remain isolated; no LIVE route is enabled by default.
+
+## 7. Multi-asset and multi-broker requirements
+
+A platform-level instrument must not be a raw broker epic. The canonical registry must model at least:
+
+- Stable platform instrument identity and provider-specific identifiers.
+- Asset class, underlying, quote/base currencies and contract multiplier.
+- Tick size, lot/quantity increments, minimum/maximum size and precision.
+- Trading sessions, holidays, market status and data entitlements.
+- Margin/leverage, financing, overnight fees and applicable risk semantics.
+- Supported order types, time-in-force, stop/limit behavior and modification capabilities.
+- Broker/account/jurisdiction availability and verification timestamp.
+- Price source, provider timestamp, receipt timestamp and quality state.
+
+Broker subscription caps must be handled by a scheduler with priority, capacity telemetry and explicit degraded states. A provider's current 40-instrument stream cap is a broker constraint, not the platform's total instrument limit.
+
+## 8. AI and automation governance
+
+- Atheer Mind OS coordinates decision intelligence; Agent OS governs specialized agents; Skill OS provides reusable capabilities; Algorithm OS owns deterministic calculations; Data OS owns verified data; Strategy OS owns strategy lifecycle; Model Gateway isolates model providers.
+- AI may research, analyze, explain, rank and propose intents.
+- Agents may operate only within explicit permission profiles and auditable scopes.
+- No agent or strategy may hold broker credentials, call dealing endpoints directly, authorize its own risk, change risk limits or expand its permissions.
+- RiskEngine and OMS remain deterministic and authoritative.
+- Every proposal must carry source evidence, timestamp, identity, uncertainty/confidence and expiry.
+
+## 9. Workstation and IPDS roadmap
+
+Issue #72 defines a 12-screen information architecture and the delivery order:
+
+1. Application Shell and Navigation.
+2. Command Center.
+3. Markets.
+4. Charts and Analysis.
+5. Trading, Risk and Positions — only after domain/governance gates, DEMO qualification only.
+6. Intelligence and Research.
+7. Strategy Center.
+8. Automated Trading.
+9. Performance and Analytics.
+10. Atheer Mind OS.
+11. System and Administration.
+12. Remaining operational/detail views defined by the approved screen inventory.
+
+Cross-cutting requirements: dark-first, adaptive density, Light/Dark semantic tokens, Arabic RTL, keyboard/accessibility, operational states, responsive panels, visual QA and no fabricated financial values.
+
+The corrected UI-only estimate is 85–140 engineer-days. It excludes backend/domain implementation, broker qualification, owner-review latency and release certification. Re-estimate after Shell, Command Center and Markets have been implemented and measured.
+
+## 10. Current integration baseline — 2026-11-18
+
+- `main`: `31e3e5547c9204645427ec56426e741d4bcfa955`.
+- Broker/chart stack: PR #51, #52, #53, #56, #55, #64, #66, #67, #68, #70. No PR in this chain is merged.
+- PR #51 is 20 ahead / 4 behind main; the immediate child branches from #52 through #70 are aligned to their declared parents.
+- PR #52 and #53 are Draft due incomplete/failed qualification; PR #57 is closed as superseded by #66.
+- PR #69 (IPDS foundation) is 6 ahead / 0 behind main; PR #73 (screen blueprint) is 10 ahead / 0 behind #69.
+- PR #70 is 422 ahead / 10 behind #69. Shared Swift files and Mermaid identifiers require integration.
+- Current source implementation is read-only Capital.com DEMO market data and historical charting on open branches. The trading core (RiskEngine, OMS, Execution Gateway, broker dealing, positions and reconciliation) is not implemented in the reviewed branch set.
+- Exact-head CI, owner-Mac build/runtime, Keychain restart and actual DEMO authentication are not complete.
+
+## 11. Milestone closure policy
+
+A milestone cannot close unless:
+
+- Mandatory deliverables exist.
+- Acceptance criteria are satisfied.
+- Required deterministic tests and exact-head CI pass.
+- Known limitations are recorded.
+- Dependencies are resolved or formally dispositioned.
+- Security and risk reviews are complete where applicable.
+- Evidence is archived and traceable to exact commits.
+- Required approval is recorded.
+
+## 12. Explicit non-goals and owner gates
+
+- This roadmap does not authorize LIVE dealing, production deployment, changes to risk limits or broker-account permissions.
+- `CAP_ALLOW_TRADING=false` remains the default until DEMO reconciliation and RiskEngine/Execution Gateway validation are complete.
+- LIVE activation remains a separate explicit Owner Gate after M11 release readiness.
+- No milestone may weaken mandatory security, risk, audit or environment-isolation controls.
