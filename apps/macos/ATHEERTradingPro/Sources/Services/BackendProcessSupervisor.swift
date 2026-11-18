@@ -99,7 +99,7 @@ struct BundledBackendRuntimeResolver: BackendRuntimeResolving {
 }
 
 @MainActor
-protocol BackendProcessManaging {
+protocol BackendProcessManaging: AnyObject {
     var onUnexpectedTermination: ((String) -> Void)? { get set }
     func start() async throws -> BackendIPCConnection
     func stop()
