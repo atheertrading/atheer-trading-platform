@@ -33,6 +33,8 @@ function asRole(adminPool, role) {
 
 test("PostgreSQL migrations and durable trading journal preserve transactional invariants", { skip: !enabled }, async (t) => {
   const adminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 8 });
+  const migratorAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
+  const appAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
   try {
     await adminPool.query("CREATE ROLE atheer_db_owner NOLOGIN");
     await adminPool.query("CREATE ROLE atheer_migrator NOLOGIN NOINHERIT");
@@ -42,8 +44,6 @@ test("PostgreSQL migrations and durable trading journal preserve transactional i
     await adminPool.query("GRANT USAGE ON SCHEMA atheer TO atheer_app");
     await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO atheer_app");
     await adminPool.query("ALTER DEFAULT PRIVILEGES FOR ROLE atheer_db_owner IN SCHEMA atheer GRANT USAGE, SELECT ON SEQUENCES TO atheer_app");
-    const migratorAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
-    const appAdminPool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4 });
     const migratorPool = asRole(migratorAdminPool, "atheer_migrator");
     const appPool = asRole(appAdminPool, "atheer_app");
     const migrations = await loadSqlMigrations();
