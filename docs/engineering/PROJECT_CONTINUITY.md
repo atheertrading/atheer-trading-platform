@@ -645,3 +645,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Estimates are planning ranges, not delivery commitments: controlled DEMO core 47–83 person-days from the reviewed baseline, excluding advanced strategy/AI and broad charting polish; apply 25–40% integration/qualification contingency.
 - This is a governance/planning record only. No source implementation, PR merge, broker permission, production deployment, risk-limit change or LIVE dealing was performed by this documentation update.
 - Preserve the existing PR #37 ancestry; re-fetch current exact heads/checks before integration. Keep `CAP_ALLOW_TRADING=false`.
+
+
+## 2026-11-18 — ATP-DOMAIN-001A runtime shape validation
+
+- Canonical domain work remains on PR #76, branch `feat/canonical-multi-asset-domain-foundation`.
+- Added runtime record/array validation guards across the provider-independent financial domain and tests for malformed JSON-derived shapes.
+- Commit sequence: `5ebc0ae`, `7e1ff48`, `4f996d2`, `3d4e837`, `84a1d3f`, `120c917`; project tracking and session records follow.
+- Final exact-head CI remains the qualification gate. No merge or local Mac qualification is claimed.
+- PR #41/#42 remain dependent legacy stacks and must be reconciled after domain qualification; preserve their history and PostgreSQL least-privilege requirements.
+- `CAP_ALLOW_TRADING=false`; no credentials, broker sessions, orders or LIVE execution used.
