@@ -286,6 +286,22 @@ final class MarketDataStreamClientTests: XCTestCase {
     }
 
     @MainActor
+    func testWatchlistRestoreDeduplicatesAndCapsPersistedInstrumentIdentities() {
+        let epics = (0..<45).map { "EPIC_\($0)" } + ["EPIC_0", "invalid epic", "AAPL\nInjected"]
+        let persistence = InMemoryMarketWatchlistPersistence(selectedEpics: epics)
+        let model = MarketDataStreamViewModel(
+            client: MockMarketDataStreamClient(),
+            persistence: persistence
+        )
+
+        XCTAssertEqual(model.selectedCount, 40)
+        XCTAssertEqual(model.selectedEpics.count, 40)
+        XCTAssertFalse(model.selectedEpics.contains("invalid epic"))
+        XCTAssertFalse(model.selectedEpics.contains("AAPL\nInjected"))
+    }
+
+
+    @MainActor
     func testWatchlistSelectionsPersistAcrossRuntimeModelRecreation() {
         let persistence = InMemoryMarketWatchlistPersistence()
         let firstModel = MarketDataStreamViewModel(
