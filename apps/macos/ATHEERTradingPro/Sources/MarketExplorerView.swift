@@ -263,6 +263,7 @@ struct MarketExplorerView: View {
                 Button(streamModel.isMonitoring ? "Stop" : "Start Monitoring") {
                     if streamModel.isMonitoring {
                         streamModel.stopMonitoring()
+                        Task { await model.refreshBackendStatus() }
                     } else {
                         streamModel.startMonitoring()
                     }
