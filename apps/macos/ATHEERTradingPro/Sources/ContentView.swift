@@ -3,6 +3,9 @@ import SwiftUI
 struct ContentView: View {
     @State private var selection: AppSection = .workspace
     @StateObject private var backendHealthModel = BackendHealthViewModel()
+    @StateObject private var systemAdministrationMarketStatusModel = CommandCenterStatusViewModel(
+        client: URLSessionMarketSearchClient()
+    )
     @StateObject private var brokerManagementModel = BrokerManagementViewModel()
     @State private var showingBrokers = false
     @State private var isInstrumentQuickSearchPresented = false
@@ -33,7 +36,12 @@ struct ContentView: View {
                     case .apiConnection:
                         APIConnectionView(model: backendHealthModel)
                     case .settings:
-                        SettingsHomeView(onOpenBrokers: { showingBrokers = true })
+                        SettingsHomeView(
+                            backendHealthModel: backendHealthModel,
+                            marketDataStatusModel: systemAdministrationMarketStatusModel,
+                            onOpenBrokers: { showingBrokers = true },
+                            onOpenAPIConnection: { selection = .apiConnection }
+                        )
                             .sheet(isPresented: $showingBrokers) {
                                 BrokerManagementView(model: brokerManagementModel)
                                     .frame(minWidth: IPDSViewportMetrics.brokerManagementSheetSize.width, minHeight: IPDSViewportMetrics.brokerManagementSheetSize.height)
@@ -84,8 +92,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     navigationGroup("WORKSPACE", sections: [.workspace])
                     navigationGroup("MARKETS", sections: [.markets])
-                    navigationGroup("SYSTEM", sections: [.apiConnection])
-                    navigationGroup("PREFERENCES", sections: [.settings])
+                    navigationGroup("SYSTEM", sections: [.apiConnection, .settings])
                 }
                 .padding(.horizontal, 10)
                 .padding(.top, 20)

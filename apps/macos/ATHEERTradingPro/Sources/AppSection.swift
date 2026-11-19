@@ -13,7 +13,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         case .workspace: return "Command Center"
         case .markets: return "Markets"
         case .apiConnection: return "API Connection"
-        case .settings: return "Settings"
+        case .settings: return "System & Administration"
         }
     }
 
@@ -22,7 +22,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         case .workspace: return "WORKSPACE"
         case .markets: return "MARKETS"
         case .apiConnection: return "SYSTEM"
-        case .settings: return "PREFERENCES"
+        case .settings: return "SYSTEM"
         }
     }
 
