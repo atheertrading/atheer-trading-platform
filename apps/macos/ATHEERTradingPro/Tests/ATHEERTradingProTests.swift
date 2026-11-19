@@ -11,13 +11,13 @@ final class ATHEERTradingProTests: XCTestCase {
     func testNavigationExposesOnlyImplementedDestinations() {
         XCTAssertEqual(AppSection.allCases, [.workspace, .markets, .apiConnection, .settings])
         XCTAssertEqual(AppSection.workspace.title, "Command Center")
-        XCTAssertEqual(AppSection.settings.title, "Settings")
+        XCTAssertEqual(AppSection.settings.title, "System & Administration")
     }
 
     func testNavigationMetadataMapsOnlyImplementedDestinationsToStableGroups() {
         XCTAssertEqual(
             AppSection.allCases.map(\.groupTitle),
-            ["WORKSPACE", "MARKETS", "SYSTEM", "PREFERENCES"]
+            ["WORKSPACE", "MARKETS", "SYSTEM", "SYSTEM"]
         )
         XCTAssertEqual(Set(AppSection.allCases.map(\.id)).count, AppSection.allCases.count)
         XCTAssertTrue(AppSection.allCases.allSatisfy { !$0.systemImage.isEmpty })
