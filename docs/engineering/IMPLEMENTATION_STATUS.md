@@ -475,3 +475,13 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - Repository Hygiene, Mermaid and Local Sync Safety passed. Intel/Apple Silicon remain queued. No full PR qualification or merge is claimed.
 - Owner-local PostgreSQL 18.7 backup/restore and owner-Mac runtime qualification remain pending.
 - Transactional outbox contains domain events only; no execution publisher, OMS worker, Execution Gateway or broker dealing was introduced.
+
+
+## 2026-11-18 — ATP-TRADING-001 persisted pre-trade authorization coordinator
+
+- Implemented `PreTradeAuthorizationService` on branch `feat/pretrade-authorization-coordinator`, stacked on PR #82 at parent head `b8a465f7a80dd1ca96f9f213977f2caa97b4fdf8`.
+- The coordinator validates/freezes typed intents, invokes the injected RiskEngine port, validates assessment-to-intent and environment binding, and records AUTHORIZED/REJECTED/HELD decisions through the durable journal before returning.
+- Manual, strategy, and AI-agent intents share the same service boundary. Evaluation/persistence failures fail closed.
+- Added seven focused backend tests and Mermaid source `14-pretrade-authorization-coordinator.mmd`.
+- New branch exact-head hosted CI is pending; no test pass or merge is claimed. No HTTP route, concrete runtime wiring, OMS order creation, broker dispatch, or LIVE capability was introduced.
+- Dependencies remain the open canonical domain/PostgreSQL/OMS stack and the separate concrete RiskEngine PR #86. `CAP_ALLOW_TRADING=false` remains mandatory.

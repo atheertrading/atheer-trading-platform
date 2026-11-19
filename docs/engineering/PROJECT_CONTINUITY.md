@@ -665,3 +665,13 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Intel x86_64 and Apple Silicon arm64 checks remain queued. PR #81 remains draft and must not merge before its PR #76 parent is qualified and integrated.
 - Legacy PR #41 and downstream PR #42 remain open and untouched. PR #42 must be reconciled onto the canonical persistence implementation before OMS integration.
 - `CAP_ALLOW_TRADING=false`; no provider credentials, sessions, orders, dealing APIs or LIVE execution used.
+
+
+## 2026-11-18 — ATP-TRADING-001 persisted pre-trade authorization coordinator
+
+- Created branch `feat/pretrade-authorization-coordinator` from exact PR #82 head `b8a465f7a80dd1ca96f9f213977f2caa97b4fdf8`; the branch is intentionally stacked and is not a mainline integration.
+- Added a dependency-injected pre-trade coordinator that validates a canonical immutable order intent, evaluates it through a RiskEngine port, validates assessment identity/environment, and persists all three decision outcomes before returning a completed result.
+- Manual, strategy, algorithmic, and AI-agent sources converge on this one backend service boundary. A failed evaluator or failed journal write cannot produce an authorization result.
+- The new service does not create an OMS order or issue a broker command. Authenticated HTTP/IPC composition, durable replay retrieval, concrete RiskEngine binding, and outbox/Execution Gateway remain separate gates.
+- Added regression tests and a source-controlled Mermaid sequence diagram. Exact-head CI is pending; no runtime, local Mac, database migration, DEMO broker, or LIVE verification is claimed.
+- Preserve the parent dependency order (#76 → #81 → #82) and separately qualify PR #86. Keep `CAP_ALLOW_TRADING=false`.

@@ -111,3 +111,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-18-065 | 2026-11-18 | PostgreSQL persistence port and backend qualification | Ported the existing PostgreSQL persistence foundation onto the canonical domain, corrected legacy bootstrap/server dependencies, and qualified hosted backend/PostgreSQL tests (37/37). | ATP-PERSISTENCE-001; PR #81; SESSION_2026-11-18_065_POSTGRES_CANONICAL_DOMAIN_PORT |
+
+
+| ATP-2026-11-18-067 | 2026-11-18 | Persisted pre-trade authorization coordinator | Added a dependency-injected backend coordinator for the common manual/strategy/algorithm/AI intent boundary; validated immutable intent and RiskAssessment identity/environment; persisted AUTHORIZED/REJECTED/HELD decisions before returning; added deterministic tests, Mermaid sequence source, and continuity/status records. Stacked on PR #82; exact-head CI pending; no broker dispatch or LIVE capability. | ATP-TRADING-001; PR #87; SESSION_2026-11-18_067_PRETRADE_AUTHORIZATION_COORDINATOR; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY; TASK_REGISTER |
