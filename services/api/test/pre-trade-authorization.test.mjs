@@ -158,7 +158,7 @@ test("manual, strategy, algorithmic, and AI intents use the same risk and journa
     }));
   }
 
-  assert.deepEqual(observedOrigins, ["HUMAN", "STRATEGY", "AI_AGENT"]);
+  assert.deepEqual(observedOrigins, ["HUMAN", "STRATEGY", "ALGORITHM", "AI_AGENT"]);
 });
 
 test("rejects an assessment for another intent before it reaches persistence", async () => {
