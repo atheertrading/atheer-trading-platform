@@ -48,7 +48,7 @@ The application root enables text selection for read-only \`Text\` content so te
 
 ### 3.3 Sensitive values
 
-Credential entry, masked API keys, session tokens, cookies, private keys, and secure broker data are excluded from shared copy/drag helpers. Any future revealed-secret copy action requires a separate, explicit security decision and user action. No such facility is introduced by this increment.
+Credential entry, masked API keys, session tokens, cookies, private keys, authenticated account identifiers displayed as sensitive account data, and secure broker data are excluded from shared copy/drag helpers. Any future revealed-secret copy action requires a separate, explicit security decision and user action. No such facility is introduced by this increment.
 
 ## 4. Transfer types and representations
 
