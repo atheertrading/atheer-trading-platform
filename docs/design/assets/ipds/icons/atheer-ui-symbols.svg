@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="720" height="236" viewBox="0 0 720 236" role="img" aria-labelledby="title desc">
+  <title id="title">ATHEER geometric interface symbol atlas</title>
+  <desc id="desc">Ten reusable geometric SVG symbols on a dark navy presentation sheet. Native macOS interfaces should use SF Symbols when a suitable system symbol exists.</desc>
+  <defs>
+    <style>
+      .tile { fill: #0B1B2B; stroke: #24445E; stroke-width: 1; }
+      .label { fill: #DCE8EF; font: 11px -apple-system, BlinkMacSystemFont, sans-serif; }
+      .glyph { color: #40DCD2; }
+    </style>
+  <symbol id="atheer-market-search" viewBox="0 0 24 24">
+    <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="m15.5 15.5 5 5M7.5 12l2-2 1.8 1.5 3.2-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="atheer-candlestick-chart" viewBox="0 0 24 24">
+    <path d="M5 3v18M12 2v20M19 4v16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="3.2" y="8" width="3.6" height="6" rx="0.7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <rect x="10.2" y="6" width="3.6" height="10" rx="0.7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <rect x="17.2" y="9" width="3.6" height="5" rx="0.7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  </symbol>
+  <symbol id="atheer-risk-shield" viewBox="0 0 24 24">
+    <path d="M12 2.5 20 5.5v5.8c0 5-3.3 8.5-8 10.2-4.7-1.7-8-5.2-8-10.2V5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="m8.3 12.1 2.4 2.4 5-5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="atheer-strategy-flow" viewBox="0 0 24 24">
+    <rect x="2.8" y="3" width="6" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <rect x="15.2" y="16" width="6" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="18.2" cy="5.5" r="2.7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M8.8 5.5h3.8a2.5 2.5 0 0 1 2.5 2.5v5.5a2.5 2.5 0 0 0 2.5 2.5M12 8.5l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="atheer-portfolio-grid" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="8" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <rect x="13" y="3" width="8" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <rect x="13" y="10" width="8" height="11" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <rect x="3" y="13" width="8" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="atheer-order-flow" viewBox="0 0 24 24">
+    <path d="M4 5h11M12 2l3 3-3 3M20 12H9m3-3-3 3 3 3M4 19h11m-3-3 3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="atheer-activity-pulse" viewBox="0 0 24 24">
+    <path d="M2 13h4l2.3-7 4.2 13 2.8-8 1.7 2H22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="atheer-intelligence-spark" viewBox="0 0 24 24">
+    <path d="M12 2.5 14.2 9.8 21.5 12l-7.3 2.2L12 21.5l-2.2-7.3L2.5 12l7.3-2.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M19 2v4M17 4h4M4 17v4M2 19h4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="atheer-workspace-layout" viewBox="0 0 24 24">
+    <rect x="2.5" y="3" width="19" height="18" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M2.5 8h19M9 8v13M15.5 8v13" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  </symbol>
+  <symbol id="atheer-system-settings" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.5-2-3.4-2.4 1a7.8 7.8 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.6A7.8 7.8 0 0 0 7 6.6l-2.4-1-2 3.4 2 1.5a7.7 7.7 0 0 0 0 3l-2 1.5 2 3.4 2.4-1a7.8 7.8 0 0 0 2.6 1.5l.4 2.6h4l.4-2.6a7.8 7.8 0 0 0 2.6-1.5l2.4 1 2-3.4z" transform="translate(-1 -1) scale(.92)" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+  </symbol>
+  </defs>
+  <rect width="720" height="236" fill="#001F3F"/>
+  <g transform="translate(12 12)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-market-search" href="#atheer-market-search" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Market Search</text></g>
+  <g transform="translate(154 12)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-candlestick-chart" href="#atheer-candlestick-chart" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Candlestick Chart</text></g>
+  <g transform="translate(296 12)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-risk-shield" href="#atheer-risk-shield" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Risk Shield</text></g>
+  <g transform="translate(438 12)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-strategy-flow" href="#atheer-strategy-flow" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Strategy Flow</text></g>
+  <g transform="translate(580 12)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-portfolio-grid" href="#atheer-portfolio-grid" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Portfolio Grid</text></g>
+  <g transform="translate(12 122)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-order-flow" href="#atheer-order-flow" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Order Flow</text></g>
+  <g transform="translate(154 122)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-activity-pulse" href="#atheer-activity-pulse" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Activity Pulse</text></g>
+  <g transform="translate(296 122)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-intelligence-spark" href="#atheer-intelligence-spark" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Intelligence Spark</text></g>
+  <g transform="translate(438 122)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-workspace-layout" href="#atheer-workspace-layout" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">Workspace Layout</text></g>
+  <g transform="translate(580 122)"><rect class="tile" width="130" height="96" rx="10"/><use xlink:href="#atheer-system-settings" href="#atheer-system-settings" x="49" y="12" width="32" height="32" class="glyph"/><text class="label" x="65" y="75" text-anchor="middle">System Settings</text></g>
+</svg>
