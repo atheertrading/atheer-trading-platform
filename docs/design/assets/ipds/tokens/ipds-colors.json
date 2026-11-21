@@ -37,7 +37,8 @@
       "onNegative": "#001F3F",
       "warning": "#FFD700",
       "information": "#4EA5FF",
-      "neutral": "#AAB6B8",
+      "neutral": "#384959",
+      "neutralText": "#AAB6B8",
       "separator": "#354044"
     },
     "light": {
@@ -54,7 +55,8 @@
       "onNegative": "#FFFFFF",
       "warning": "#8A6200",
       "information": "#005DAA",
-      "neutral": "#52616A",
+      "neutral": "#52616B",
+      "neutralText": "#52616A",
       "separator": "#D9E1E3"
     }
   },
