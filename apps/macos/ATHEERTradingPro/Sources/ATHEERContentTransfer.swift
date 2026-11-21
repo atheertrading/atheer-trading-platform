@@ -68,6 +68,18 @@ struct ATHEERWorkspaceLayoutTransfer: Codable, Equatable, Transferable {
     let panels: [Panel]
     let layout: WorkspaceLayoutConfiguration
 
+    init(
+        schemaVersion: Int,
+        workspaceName: String,
+        panels: [Panel],
+        layout: WorkspaceLayoutConfiguration
+    ) {
+        self.schemaVersion = schemaVersion
+        self.workspaceName = workspaceName
+        self.panels = panels
+        self.layout = layout
+    }
+
     init(workspace: WorkspaceDocument) {
         schemaVersion = Self.currentSchemaVersion
         workspaceName = workspace.name
