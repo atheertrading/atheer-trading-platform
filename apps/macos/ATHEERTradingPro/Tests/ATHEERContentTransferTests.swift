@@ -152,7 +152,7 @@ final class ATHEERContentTransferTests: XCTestCase {
         )
         XCTAssertFalse(
             ATHEERInstrumentReferenceTransfer(
-                identifier: "WTI\n",
+                identifier: "WTI\nM1",
                 identifierKind: .symbol
             ).isValid
         )
