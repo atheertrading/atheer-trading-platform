@@ -87,6 +87,14 @@ struct InstrumentQuickSearchView: View {
                 .onSubmit {
                     Task { await model.search() }
                 }
+                .dropDestination(for: ATHEERInstrumentReferenceTransfer.self) { transfers, _ in
+                    guard transfers.count == 1, let transfer = transfers.first else { return false }
+                    return applyInstrumentTransfer(transfer)
+                }
+                .pasteDestination(for: ATHEERInstrumentReferenceTransfer.self) { transfers in
+                    guard transfers.count == 1, let transfer = transfers.first else { return }
+                    _ = applyInstrumentTransfer(transfer)
+                }
                 .accessibilityIdentifier("instrument-quick-search.query")
                 .accessibilityLabel("Search instruments by name or EPIC")
 
@@ -156,16 +164,7 @@ struct InstrumentQuickSearchView: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(model.results) { instrument in
-                        Button {
-                            onSelect(instrument)
-                            dismiss()
-                        } label: {
-                            instrumentRow(instrument)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier(
-                            "instrument-quick-search.result.\(instrument.epic)"
-                        )
+                        instrumentResultButton(instrument)
 
                         if instrument.id != model.results.last?.id {
                             Divider()
@@ -195,6 +194,60 @@ struct InstrumentQuickSearchView: View {
                 symbol: "xmark.octagon"
             )
         }
+    }
+
+    @ViewBuilder
+    private func instrumentResultButton(_ instrument: MarketInstrumentSummary) -> some View {
+        let button = Button {
+            onSelect(instrument)
+            dismiss()
+        } label: {
+            instrumentRow(instrument)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("instrument-quick-search.result.\(instrument.epic)")
+
+        if let transfer = instrumentTransfer(for: instrument) {
+            button
+                .draggable(transfer)
+                .copyable([transfer])
+        } else {
+            button
+        }
+    }
+
+    private func instrumentTransfer(
+        for instrument: MarketInstrumentSummary
+    ) -> ATHEERInstrumentReferenceTransfer? {
+        guard let status = model.backendStatus,
+              status.provider == "capital.com",
+              status.environment == "DEMO",
+              status.state == .connected else {
+            return nil
+        }
+        return ATHEERInstrumentReferenceTransfer(
+            identifier: instrument.epic,
+            identifierKind: .epic,
+            providerIdentifier: status.provider
+        )
+    }
+
+    @discardableResult
+    private func applyInstrumentTransfer(
+        _ transfer: ATHEERInstrumentReferenceTransfer
+    ) -> Bool {
+        guard transfer.isValid,
+              transfer.identifierKind == .epic,
+              let status = model.backendStatus,
+              status.provider == "capital.com",
+              status.environment == "DEMO",
+              status.state == .connected,
+              transfer.providerIdentifier == status.provider else {
+            return false
+        }
+        model.searchTerm = transfer.identifier
+        searchFieldIsFocused = true
+        return true
     }
 
     private func instrumentRow(_ instrument: MarketInstrumentSummary) -> some View {
