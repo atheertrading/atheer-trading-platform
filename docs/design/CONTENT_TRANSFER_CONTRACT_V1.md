@@ -73,7 +73,7 @@ It does not contain the panel's service state, market data, account state, strat
 
 Move/copy policy:
 - Drop within the same workspace and same panel region reorders the existing panel.
-- Drop from another workspace in the active profile copies the panel configuration to the destination; the source remains unchanged.
+- Cross-workspace panel transfer copies the panel configuration and keeps the source unchanged. The current management surface exposes this primarily through typed Copy/Paste; a simultaneous cross-workspace drag source/destination is not claimed by the current single-workspace screen.
 - Duplicate panel identities are rejected by the existing workspace invariants.
 - Unsupported panel regions and unknown IDs are rejected.
 - Existing Move Up/Move Down controls and panel context-menu commands remain as keyboard/menu alternatives.
