@@ -339,8 +339,17 @@ struct WorkspacePanelManagementView: View {
         }
         .contextMenu {
             Button("Copy Panel Reference") {
-                ATHEERClipboardService.copy(configuration.panelID.rawValue)
-                transferFeedback = "Panel reference copied."
+                let transfer = ATHEERWorkspacePanelTransfer(
+                    sourceWorkspaceID: engine.activeWorkspace.id,
+                    panelID: configuration.panelID
+                )
+                let copied = ATHEERClipboardService.copyJSON(
+                    transfer,
+                    contentType: .atheerWorkspacePanel
+                )
+                transferFeedback = copied
+                    ? "Panel reference copied."
+                    : "Panel reference could not be copied."
             }
             Button("Move Up") {
                 guard regionIndex > 0 else { return }
