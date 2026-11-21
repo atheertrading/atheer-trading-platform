@@ -116,8 +116,13 @@ final class WorkspaceContentTransferTests: XCTestCase {
 
 private final class InMemoryWorkspaceTransferPersistence: WorkspacePersistence {
     private(set) var snapshot: WorkspaceSnapshot?
+    var shouldFailSave = false
 
     init(snapshot: WorkspaceSnapshot? = nil) {
+        self.snapshot = snapshot
+    }
+
+    func setInitialSnapshot(_ snapshot: WorkspaceSnapshot) {
         self.snapshot = snapshot
     }
 
@@ -126,6 +131,9 @@ private final class InMemoryWorkspaceTransferPersistence: WorkspacePersistence {
     }
 
     func save(_ snapshot: WorkspaceSnapshot) throws {
+        guard !shouldFailSave else {
+            throw WorkspacePersistenceError.corruptData("Simulated persistence failure")
+        }
         self.snapshot = snapshot
     }
 }
