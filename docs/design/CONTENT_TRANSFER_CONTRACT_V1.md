@@ -142,7 +142,7 @@ CSV/TSV, chart artifact exchange, position/order report export, multi-item trans
 - No drag/drop or paste can submit, amend, cancel, or close an order or position.
 - No drag/drop or paste can start/stop a strategy, change risk policy, enable trading, authenticate a broker, or change permissions.
 - A copied instrument ID or layout is untrusted input and must be validated again by the destination.
-- No account identifiers or secret material are serialized unless an explicit approved export contract permits it.
+- Sensitive account identifiers and secret material are excluded from this transfer contract; future reporting exports require a separately approved redaction and data-minimization contract.
 - No clipboard helper infers permission from a visual state, an enabled button, or a drag operation.
 - The app's read-only/trading-disabled baseline remains unchanged.
 
