@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
+  <title id="title">ATHEER geometric brand mark</title>
+  <desc id="desc">A geometric capital A with a triangular counter, rendered in the ATHEER gold-to-turquoise brand gradient.</desc>
+  <defs>
+    <linearGradient id="atheer-brand-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD700"/>
+      <stop offset="1" stop-color="#00CEC8"/>
+    </linearGradient>
+  </defs>
+  <path id="atheer-mark" fill="url(#atheer-brand-gradient)" fill-rule="evenodd" d="M50 3 L97 94 H73 L50 50 L27 94 H3 Z M50 51 L63 78 H37 Z"/>
+</svg>

@@ -1,0 +1,68 @@
+{
+  "name": "ATHEER Trading Pro — IPDS Color Tokens",
+  "version": "1.0.0",
+  "status": "proposed",
+  "provenance": {
+    "turquoiseConflict": {
+      "ownerQA": "#40E0D0",
+      "phase00AndCurrentImplementation": "#00CEC8",
+      "resolution": "unresolved; preserve current implementation value until design authority decision"
+    }
+  },
+  "primitive": {
+    "graphiteBlack": "#121212",
+    "deepTeal": "#093732",
+    "midnightNavy": "#001F3F",
+    "teal": "#008080",
+    "currentTurquoise": "#00CEC8",
+    "gold": "#FFD700",
+    "slateBlue": "#384959",
+    "mutedTeal": "#3C635F",
+    "softTurquoise": "#81D8D0",
+    "positiveGreen": "#00C853",
+    "negativeRed": "#D32F2F"
+  },
+  "semantic": {
+    "dark": {
+      "canvas": "#121212",
+      "navigation": "#093732",
+      "panel": "#1A1E1F",
+      "panelElevated": "#242A2B",
+      "primaryText": "#F1F5F5",
+      "secondaryText": "#AAB6B8",
+      "accent": "#00CEC8",
+      "onAccent": "#001F3F",
+      "positive": "#00C853",
+      "negative": "#EF5350",
+      "onNegative": "#001F3F",
+      "warning": "#FFD700",
+      "information": "#4EA5FF",
+      "neutral": "#384959",
+      "neutralText": "#AAB6B8",
+      "separator": "#354044"
+    },
+    "light": {
+      "canvas": "#F4F7F7",
+      "navigation": "#E7F0EE",
+      "panel": "#FFFFFF",
+      "panelElevated": "#F0F4F4",
+      "primaryText": "#172126",
+      "secondaryText": "#52636A",
+      "accent": "#007D78",
+      "onAccent": "#FFFFFF",
+      "positive": "#15803D",
+      "negative": "#B42318",
+      "onNegative": "#FFFFFF",
+      "warning": "#8A6200",
+      "information": "#005DAA",
+      "neutral": "#52616B",
+      "neutralText": "#52616A",
+      "separator": "#D9E1E3"
+    }
+  },
+  "rules": [
+    "Feature views consume semantic tokens rather than raw palette values.",
+    "Positive, negative, selected, connected, and action-side semantics remain distinct.",
+    "Do not use color as the sole state indicator."
+  ]
+}

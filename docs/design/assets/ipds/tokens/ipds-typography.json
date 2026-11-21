@@ -1,0 +1,27 @@
+{
+  "name": "ATHEER Trading Pro — IPDS Typography Tokens",
+  "version": "1.0.0",
+  "status": "proposed",
+  "family": "Native macOS system font; allow platform script fallback for Arabic",
+  "numericFamily": "Monospaced system font for precision-sensitive values",
+  "roles": {
+    "display": {"sizePt": 28, "weight": "semibold"},
+    "screenTitle": {"sizePt": 25, "weight": "semibold"},
+    "sectionTitle": {"sizePt": 16, "weight": "semibold"},
+    "standardBody": {"sizePt": 13, "weight": "regular"},
+    "panelTitle": {"sizePt": 13, "weight": "semibold"},
+    "controlLabel": {"sizePt": 13, "weight": "medium"},
+    "legacyBody": {"sizePt": 12, "weight": "regular", "note": "Preserved for compatibility with existing views"},
+    "caption": {"sizePt": 10, "weight": "medium", "note": "Legacy compact metadata role"},
+    "metadata": {"sizePt": 10, "weight": "regular"},
+    "numeric": {"sizePt": 15, "weight": "semibold", "design": "monospaced"},
+    "tableNumeric": {"sizePt": 12, "weight": "medium", "design": "monospaced"},
+    "diagnostic": {"sizePt": 11, "weight": "regular", "design": "monospaced"}
+  },
+  "rules": [
+    "Prefer native control typography where the system supplies it.",
+    "Use tabular or monospaced figures for aligned financial values.",
+    "Do not force Latin fonts onto Arabic glyphs.",
+    "Validate line wrapping, mixed-direction identifiers, prices, currencies, and timestamps in RTL."
+  ]
+}

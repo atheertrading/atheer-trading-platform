@@ -62,3 +62,12 @@ All contributions must follow [AGENTS.md](AGENTS.md), applicable specifications 
 ## License
 
 No open-source license has been selected yet. Public visibility does not itself grant permission to reuse, modify, or redistribute this software. A license decision must be made explicitly by the project owner.
+
+
+## IPDS reusable visual asset package
+
+The native macOS UI workstream is establishing a reusable Institutional Precision Design System package on `feat/ipds-visual-asset-package`. The proposal adds semantic Swift design tokens, native SwiftUI component wrappers, geometric SVG identity assets, a reusable symbol atlas, and JSON handoff manifests.
+
+See `docs/design/IPDS_ASSET_PACKAGE_V1.md` for the specification and `docs/design/assets/ipds/` for editable assets. The implementation preserves the macOS 13 deployment target and the existing unresolved `#40E0D0` / `#00CEC8` turquoise decision. The app-icon master is not yet integrated into the Xcode asset catalog.
+
+The package remains a Draft engineering increment pending exact-head macOS CI and native Mac visual/accessibility qualification.
