@@ -249,13 +249,6 @@ struct WorkspacePanelManagementView: View {
             sourceWorkspaceID: engine.activeWorkspace.id,
             panelID: configuration.panelID
         )
-        let isDropTarget = Binding<Bool>(
-            get: { targetedPanelID == configuration.panelID },
-            set: { isTargeted in
-                targetedPanelID = isTargeted ? configuration.panelID : nil
-            }
-        )
-
         HStack(spacing: 10) {
             Image(systemName: "line.3.horizontal")
                 .foregroundColor(.secondary)
@@ -328,7 +321,9 @@ struct WorkspacePanelManagementView: View {
                     location: location
                 )
             },
-            isTargeted: isDropTarget
+            isTargeted: { isTargeted in
+                targetedPanelID = isTargeted ? configuration.panelID : nil
+            }
         )
         .overlay {
             if targetedPanelID == configuration.panelID {
