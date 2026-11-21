@@ -187,7 +187,7 @@ ATHEERButton(variant: .primary, size: .regular, action: saveWorkspace) {
 }
 ```
 
-The wrapper selects native SwiftUI button styles by semantic variant. The underlying Button retains native activation, keyboard behavior, and system focus treatment. Prefer native toolbar items and system button styles for window-toolbar commands. Destructive actions must use the appropriate native Button role and separate confirmation/authorization where required.
+The wrapper selects native SwiftUI button styles by semantic variant and exposes explicit enabled/loading inputs. Loading displays a progress indicator and disables repeated activation. The underlying Button retains native activation, keyboard behavior, and system focus treatment. Primary and destructive label colors use theme-aware foreground tokens. Prefer native toolbar items and system button styles for window-toolbar commands. Destructive actions must use the appropriate native Button role and separate confirmation/authorization where required.
 
 ### 7.3 ATHEERToggleRow
 
