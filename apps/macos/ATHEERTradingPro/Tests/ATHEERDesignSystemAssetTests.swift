@@ -10,6 +10,7 @@ final class ATHEERDesignSystemAssetTests: XCTestCase {
         XCTAssertEqual(ATHEERDesignTokens.PrimitiveColor.gold, 0xFFD700)
         XCTAssertEqual(ATHEERDesignTokens.PrimitiveColor.positive, 0x00C853)
         XCTAssertEqual(ATHEERDesignTokens.PrimitiveColor.negative, 0xD32F2F)
+        XCTAssertEqual(ATHEERDesignTokens.PrimitiveColor.slateBlue, 0x384959)
     }
 
     func testExistingTypographyAndSpacingContractsRemainStable() {
