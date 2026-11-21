@@ -8,6 +8,7 @@ struct ATHEERTradingProApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .textSelection(.enabled)
                 .preferredColorScheme(
                     ATHEERAppearance.resolve(appearancePreference).colorScheme
                 )
