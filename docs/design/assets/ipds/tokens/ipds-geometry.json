@@ -1,0 +1,17 @@
+{
+  "name": "ATHEER Trading Pro — IPDS Geometry and Control Tokens",
+  "version": "1.0.0",
+  "status": "proposed",
+  "spacingPt": {"extraSmall": 4, "compact": 6, "small": 8, "standard": 12, "content": 16, "section": 18, "large": 24, "page": 24, "extraLarge": 32},
+  "radiusPt": {"small": 6, "standard": 8, "large": 12, "capsule": 999},
+  "strokePt": {"standard": 1, "focus": 2},
+  "controlTargetsPt": {"macOSDefaultReference": 28, "macOSMinimumReference": 20, "touchExpandedProjectTarget": 44},
+  "buttonHeightsPt": {"compact": 28, "regular": 32, "prominent": 40, "critical": 44},
+  "motionSeconds": {"quick": 0.12, "standard": 0.18, "deliberate": 0.24},
+  "notes": [
+    "Spacing and button heights are ATHEER project tokens, not Apple-mandated dimensions.",
+    "The macOS default and minimum values are platform reference metrics; do not force all controls to the minimum.",
+    "Touch target expansion is adaptive and must not permanently inflate pointer/keyboard layouts.",
+    "Legacy token values are retained for source compatibility."
+  ]
+}
