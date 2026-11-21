@@ -109,7 +109,6 @@ struct BrokerManagementView: View {
                         Text(account.accountIdentifier)
                             .font(.system(size: 13, weight: .semibold, design: .monospaced))
                             .textSelection(.disabled)
-                            .accessibilityLabel("Authenticated account identifier is hidden from clipboard selection")
                     }
                     Spacer()
                     if let currency = account.currencyCode {
