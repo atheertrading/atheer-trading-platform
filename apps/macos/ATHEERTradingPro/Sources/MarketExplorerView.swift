@@ -162,6 +162,14 @@ struct MarketExplorerView: View {
                     .onSubmit {
                         Task { await model.search() }
                     }
+                    .dropDestination(for: ATHEERInstrumentReferenceTransfer.self) { transfers, _ in
+                        guard transfers.count == 1, let transfer = transfers.first else { return false }
+                        return applyInstrumentTransfer(transfer)
+                    }
+                    .pasteDestination(for: ATHEERInstrumentReferenceTransfer.self) { transfers in
+                        guard transfers.count == 1, let transfer = transfers.first else { return }
+                        _ = applyInstrumentTransfer(transfer)
+                    }
                     .accessibilityLabel("Search Capital.com DEMO instruments")
                 if !model.searchTerm.isEmpty {
                     Button {
@@ -293,7 +301,19 @@ struct MarketExplorerView: View {
         .background(ATHEERDesignTokens.ColorRole.panelElevated)
     }
 
+    @ViewBuilder
     private func instrumentRow(_ instrument: MarketInstrumentSummary) -> some View {
+        let row = instrumentRowContent(instrument)
+        if let transfer = instrumentTransfer(for: instrument) {
+            row
+                .draggable(transfer)
+                .copyable([transfer])
+        } else {
+            row
+        }
+    }
+
+    private func instrumentRowContent(_ instrument: MarketInstrumentSummary) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(instrument.name ?? instrument.epic)
@@ -323,6 +343,41 @@ struct MarketExplorerView: View {
         .padding(.vertical, 12)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+    }
+
+    private func instrumentTransfer(
+        for instrument: MarketInstrumentSummary
+    ) -> ATHEERInstrumentReferenceTransfer? {
+        guard let status = model.backendStatus,
+              status.provider == "capital.com",
+              status.environment == "DEMO",
+              status.state == .connected else {
+            return nil
+        }
+
+        return ATHEERInstrumentReferenceTransfer(
+            identifier: instrument.epic,
+            identifierKind: .epic,
+            providerIdentifier: status.provider
+        )
+    }
+
+    @discardableResult
+    private func applyInstrumentTransfer(
+        _ transfer: ATHEERInstrumentReferenceTransfer
+    ) -> Bool {
+        guard transfer.isValid,
+              transfer.identifierKind == .epic,
+              let status = model.backendStatus,
+              status.state == .connected,
+              status.environment == "DEMO",
+              status.provider == transfer.providerIdentifier,
+              status.provider == "capital.com" else {
+            return false
+        }
+
+        model.searchTerm = transfer.identifier
+        return true
     }
 
     private var integrationBoundary: some View {
