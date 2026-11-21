@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 /// A selectable, explicitly copyable row for non-sensitive diagnostic values.
@@ -15,6 +14,7 @@ struct CopyableValueRow: View {
             Text(value)
                 .font(.system(size: 12, design: .monospaced))
                 .textSelection(.enabled)
+                .copyable([value])
                 .lineLimit(2)
             Button(action: copyValue) {
                 Image(systemName: "doc.on.doc")
@@ -30,7 +30,6 @@ struct CopyableValueRow: View {
     }
 
     private func copyValue() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(value, forType: .string)
+        ATHEERClipboardService.copy(value)
     }
 }
