@@ -387,6 +387,84 @@ final class WorkspaceEngine: ObservableObject {
         return recoveryState == .clean
     }
 
+    /// Copies a panel configuration between two workspaces in the active profile.
+    /// The source remains unchanged; no domain service or financial state is transferred.
+    @discardableResult
+    func copyPanelConfiguration(
+        _ panelID: WorkspacePanelID,
+        from sourceWorkspaceID: UUID,
+        to destinationWorkspaceID: UUID,
+        at targetIndex: Int? = nil
+    ) -> Bool {
+        guard sourceWorkspaceID != destinationWorkspaceID,
+              let profile = snapshot.profiles.first(where: { $0.id == snapshot.activeProfileID }),
+              profile.workspaceIDs.contains(sourceWorkspaceID),
+              profile.workspaceIDs.contains(destinationWorkspaceID),
+              let sourceWorkspace = snapshot.workspaces.first(where: { $0.id == sourceWorkspaceID }),
+              let sourcePanel = sourceWorkspace.panels.first(where: { $0.panelID == panelID }),
+              let destinationIndex = snapshot.workspaces.firstIndex(where: { $0.id == destinationWorkspaceID }),
+              !snapshot.workspaces[destinationIndex].panels.contains(where: { $0.panelID == panelID }) else {
+            return false
+        }
+
+        var candidate = snapshot
+        var destinationPanels = candidate.workspaces[destinationIndex].panels
+            .sorted { $0.order < $1.order }
+        let insertionIndex = min(max(targetIndex ?? destinationPanels.count, 0), destinationPanels.count)
+        destinationPanels.insert(
+            WorkspacePanelConfiguration(
+                panelID: panelID,
+                isVisible: sourcePanel.isVisible,
+                order: insertionIndex
+            ),
+            at: insertionIndex
+        )
+        for index in destinationPanels.indices {
+            destinationPanels[index].order = index
+        }
+
+        candidate.workspaces[destinationIndex].panels = destinationPanels
+        candidate.workspaces[destinationIndex].updatedAt = Date()
+
+        do {
+            try Self.validate(candidate)
+            try persistence.save(candidate)
+            snapshot = candidate
+            recoveryState = .clean
+            return true
+        } catch {
+            recoveryState = .persistenceFailure(String(describing: error))
+            return false
+        }
+    }
+
+    /// Imports a workspace layout as a new workspace in the active profile.
+    /// The transfer package is validated before persistence and never overwrites an existing workspace.
+    @discardableResult
+    func importWorkspaceLayout(_ transfer: ATHEERWorkspaceLayoutTransfer) -> UUID? {
+        guard let workspace = try? transfer.makeWorkspaceDocument(),
+              let profileIndex = snapshot.profiles.firstIndex(where: { $0.id == snapshot.activeProfileID }) else {
+            return nil
+        }
+
+        var candidate = snapshot
+        candidate.workspaces.append(workspace)
+        candidate.profiles[profileIndex].workspaceIDs.append(workspace.id)
+        candidate.profiles[profileIndex].activeWorkspaceID = workspace.id
+        candidate.activeWorkspaceID = workspace.id
+
+        do {
+            try Self.validate(candidate)
+            try persistence.save(candidate)
+            snapshot = candidate
+            recoveryState = .clean
+            return workspace.id
+        } catch {
+            recoveryState = .persistenceFailure(String(describing: error))
+            return nil
+        }
+    }
+
     func renameActiveWorkspace(to name: String) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
