@@ -1,6 +1,5 @@
 ---
 document_id: ATP-IPDS-ASSET-001
-title: "ATHEER Trading Pro — IPDS Reusable Visual Asset and SwiftUI Component Package"
 version: 1.0.0
 status: "Proposed implementation increment — pending Design Authority review"
 approval_status: "Not formally approved"
