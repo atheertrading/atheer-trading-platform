@@ -108,6 +108,7 @@ struct BrokerManagementView: View {
                             .foregroundColor(.secondary)
                         Text(account.accountIdentifier)
                             .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .textSelection(.disabled)
                     }
                     Spacer()
                     if let currency = account.currencyCode {

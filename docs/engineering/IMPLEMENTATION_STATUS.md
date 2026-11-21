@@ -501,3 +501,19 @@ PR #26 is Draft and stacked on PR #25 head. It does not modify PR #24 or PR #25.
 - `WorkspacePanelManagementView` exposes a destructive confirmation and disables the action when the invariant fails.
 - Four isolated XCTest methods cover normal delete/persist, last-workspace rejection, shared-profile repair and atomic rejection.
 - Branch `feat/ui-workspace-lifecycle-delete` is stacked on PR #91. Owner-Mac UI interaction and multi-profile restoration remain pending.
+
+
+## ATP-UI-CONTENT-TRANSFER-001 — Application clipboard and context-aware drag-and-drop (2026-11-21)
+
+**Status:** Initial native implementation candidate on `feat/ui-content-transfer`; exact-head CI and owner-Mac qualification pending.
+
+- Issue #16 was extended to cover application-wide clipboard semantics and context-aware drag-and-drop, structured transfer formats, validation, security exclusions, and native acceptance tests.
+- The first clipboard increment remains the merged PR #17: selectable/copyable non-sensitive API diagnostics and native text-editing commands. It was not a full application-wide audit.
+- The new child branch adds broad native text selection at the application root and routes explicit diagnostic copying through `ATHEERClipboardService`.
+- Introduced versioned `Transferable` payloads and exported UTIs for workspace-panel references, presentation-only workspace layouts, and provider-grounded instrument references. Plain-text proxies provide interoperability.
+- Workspace Management supports panel reorder within the same region, typed panel copy/paste, structured layout copy, and validated layout import as a new workspace. Engine mutations validate/persist candidate state before publishing; cross-profile panel copy and duplicate IDs are rejected.
+- Market Explorer and Instrument Quick Search expose instrument drag/copy and accept provider-bound EPIC references only while the verified Capital.com DEMO backend status is connected. Applying a reference populates search text only and does not auto-submit a search.
+- Added deterministic tests for payload schema/identity validation, duplicate/unknown panel rejection, invalid geometry, source-preserving panel copy, and safe layout import/no-mutation failure.
+- No backend source/contracts, broker dealing APIs, credentials, order/position operations, risk policies, strategy controls, or LIVE authorization are modified. CAP_ALLOW_TRADING remains false.
+- Not implemented in this slice: a complete table/log/control clipboard audit, TSV/CSV exports, chart/report artifact formats, position/order snapshots, file-import/export UI, multi-item transfers, explicit UndoManager-backed workspace reorder, or native VoiceOver/keyboard/runtime qualification.
+- Exact-head GitHub CI and supported-Mac build/test/interaction checks must be recorded before merge. Issue #16 remains open until its full acceptance criteria are evidenced.

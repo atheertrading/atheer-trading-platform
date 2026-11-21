@@ -697,3 +697,20 @@ PR #10 remains open and unchanged. PR #17 is not merged. The API process remains
 - Added atomic workspace deletion with validation across every referencing profile, active-workspace fallback selection and last-workspace protection; exposed a confirmed destructive action in `WorkspacePanelManagementView`.
 - Added isolated XCTest coverage for deletion persistence, shared-profile reference repair and rejection without partial mutation.
 - Session: [SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE.md](SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE.md). Branch `feat/ui-workspace-lifecycle-delete` is stacked on PR #91; qualification pending.
+
+
+## 2026-11-21 — Application content transfer increment
+
+- Reconfirmed Issue #16 and the partial clipboard work already merged in PR #17. The existing `CopyableValueRow` supported non-sensitive diagnostic copying; the full app-wide audit and owner-Mac interaction validation remained outstanding.
+- Updated Issue #16 to include context-aware drag/drop, versioned UTIs, JSON/plain-text interoperability, workspace move/copy semantics, instrument references, validation, accessibility, and strict trading/credential exclusions.
+- Created child branch `feat/ui-content-transfer` from the IPDS package branch `feat/ipds-visual-asset-package`; no branch ancestry was rewritten.
+- Added `ATHEERContentTransfer.swift` with versioned Codable/Transferable payloads for panel references, workspace layouts, and provider-grounded instrument references, plus custom JSON-conforming UTIs.
+- Added `ATHEERClipboardService` for explicit non-sensitive text and typed JSON clipboard writes. Existing diagnostic rows now use the service; the application root enables native text selection without converting read-only values into editable controls.
+- Added workspace-engine transactions to copy a panel configuration to another workspace in the active profile and import a validated layout as a new workspace. Source workspace layouts are not modified by copy.
+- Added native drag/drop and clipboard surfaces to Workspace Panel Management. Same-workspace drops reorder a panel within its primary/secondary region; typed panel references can be pasted into a different active workspace. Layout JSON can be copied and pasted/dropped to import a new workspace.
+- Added instrument reference drag/copy to provider-backed DEMO search results, with drop/paste validation against the current connected Capital.com DEMO status. The resulting EPIC only populates the search field.
+- Registered custom UTIs through the XcodeGen target Info.plist configuration; build generation/type correctness remains unverified pending CI.
+- Added deterministic payload/engine XCTest suites and `docs/design/CONTENT_TRANSFER_CONTRACT_V1.md`.
+- Verification at record creation: source changes and test files are committed to the feature branch; exact-head CI and native macOS build/XCTest have not yet been qualified. No owner-Mac copy/paste, drag/drop, focus, VoiceOver, or full app clipboard audit is claimed.
+- Safety: no backend changes, credentials, broker session, order, position, risk, strategy, OMS, Execution Gateway, or LIVE behavior. `CAP_ALLOW_TRADING=false` remains unchanged.
+- Remaining gates: inspect exact PR head and CI logs, fix compiler/Info.plist failures, qualify macOS 13 Transferable and custom UTIs, audit every implemented text/secure/table/list control, implement any required follow-up, and execute owner-Mac accessibility/keyboard/interoperability QA.

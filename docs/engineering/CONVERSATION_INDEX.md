@@ -114,3 +114,6 @@ For each new substantial session, add one row and preserve chronology. The detai
 
 
 | ATP-2026-11-19-004 | 2026-11-19 | Workspace deletion lifecycle and profile-reference repair | Added the missing workspace-delete operation with per-profile last-workspace protection, active selection recovery, atomic snapshot validation, persisted confirmation UI and isolated XCTest coverage. Exact-head CI and owner-Mac interaction checks pending. | ATP-UI-WORKSPACE-DELETE-001; WorkspaceEngine.swift; WorkspacePanelManagementView.swift; WorkspaceLifecycleTests.swift; SESSION_2026-11-19_003_WORKSPACE_LIFECYCLE_DELETE; TASK_REGISTER; IMPLEMENTATION_STATUS |
+
+
+| ATP-2026-11-21-002 | 2026-11-21 | Application-wide clipboard and context-aware drag-and-drop | Revalidated Issue #16 and the partial clipboard baseline in merged PR #17; extended the requirement to typed content-transfer semantics; added versioned Transferable payloads/UTIs, shared clipboard service, workspace panel move/copy and layout import, provider-grounded DEMO instrument transfer, deterministic tests, and a content-transfer contract. Exact-head CI and native Mac clipboard/drag/accessibility audit remain pending. | Issue #16; branch `feat/ui-content-transfer`; CONTENT_TRANSFER_CONTRACT_V1; TASK_REGISTER; IMPLEMENTATION_STATUS; PROJECT_CONTINUITY |

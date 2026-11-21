@@ -41,6 +41,31 @@ targets:
     platform: macOS
     sources:
       - path: Sources
+    info:
+      path: ATHEERTradingPro-Info.plist
+      properties:
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.atheertrading.workspace-panel
+            UTTypeDescription: ATHEER Workspace Panel Reference
+            UTTypeConformsTo:
+              - public.json
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - atheerpanel
+          - UTTypeIdentifier: com.atheertrading.workspace-layout
+            UTTypeDescription: ATHEER Workspace Layout
+            UTTypeConformsTo:
+              - public.json
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - atheerworkspace
+          - UTTypeIdentifier: com.atheertrading.instrument-reference
+            UTTypeDescription: ATHEER Instrument Reference
+            UTTypeConformsTo:
+              - public.json
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - atheerinstrument
     settings:
       base:
         INFOPLIST_KEY_CFBundleDisplayName: ATHEER Trading Pro
