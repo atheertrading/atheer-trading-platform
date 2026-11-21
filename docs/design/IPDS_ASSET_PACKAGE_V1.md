@@ -223,7 +223,7 @@ Use native controls for tabs, segmented pickers, pop-up selection, checkboxes, r
 | Color tokens | tokens/ipds-colors.json | Primitive and semantic Dark/Light roles |
 | Typography tokens | tokens/ipds-typography.json | Typography hierarchy and numerical roles |
 | Geometry tokens | tokens/ipds-geometry.json | Spacing, radii, strokes, targets, buttons, motion |
-| PNG previews | previews/ | 2× review exports; SVG remains editable source |
+| PNG previews | Distribution ZIP under previews/ | 2× review exports; SVG remains editable source |
 
 The app icon SVG is a full-bleed master. Do not bake a second rounded-corner mask into a future platform export. This artwork is not yet integrated into the Xcode asset catalog or approved as the final app icon. No SVG is downloaded or rendered remotely at runtime.
 
