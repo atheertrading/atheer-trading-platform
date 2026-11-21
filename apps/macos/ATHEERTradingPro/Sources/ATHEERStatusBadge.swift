@@ -13,7 +13,7 @@ enum ATHEERStatusTone {
         case .warning: return ATHEERDesignTokens.ColorRole.warning
         case .negative: return ATHEERDesignTokens.ColorRole.error
         case .information: return ATHEERDesignTokens.ColorRole.information
-        case .neutral: return ATHEERDesignTokens.ColorRole.neutral
+        case .neutral: return ATHEERDesignTokens.ColorRole.neutralText
         }
     }
 
