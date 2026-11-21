@@ -118,6 +118,8 @@ This increment preserves #00CEC8 to avoid silently changing existing screens. Th
 
 The runtime token implementation provides appearance-aware roles for canvas, navigation, panel, elevated panel, primary/secondary text, accent, text-on-accent, brand mark colors, positive, negative, warning, information, neutral, separators, focus, border, and destructive foreground.
 
+Compatibility rule: the pre-existing dark neutral role `#384959` and light neutral role `#52616B` are preserved. The brighter neutral foreground used by informational badges is exposed separately as `neutralText`; a presentation refinement must not silently repurpose an established semantic token.
+
 Semantic rules:
 
 - Accent is not synonymous with profit, market direction, or trade side.
